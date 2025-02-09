@@ -1,0 +1,16 @@
+{{- range .Values.ubi9.template.spec.volumes }}
+  {{- if eq .name "cache" }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .persistentVolumeClaim.claimName }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  volumeMode: Filesystem
+  {{- end }}
+{{- end }}

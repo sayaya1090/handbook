@@ -1,0 +1,43 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17
+  backup:
+    {{- with .Values.bucket.name }}
+    barmanObjectStore:
+      destinationPath: 's3://{{ . }}'
+      endpointURL: 'http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local'
+      s3Credentials:
+        accessKeyId:
+          key: AWS_ACCESS_KEY_ID
+          name: bucket
+        secretAccessKey:
+          key: AWS_SECRET_ACCESS_KEY
+          name: bucket
+      wal:
+        compression: bzip2
+        maxParallel: 8
+    {{- end }}
+    retentionPolicy: 7d
+    target: prefer-standby
+  instances: 3
+  storage:
+    {{- with .Values.persistence.size }}
+    size: {{ . | quote }}
+    {{- end }}
+    {{- with .Values.persistence.storageClass }}
+    storageClass: {{ . | quote }}
+    {{- end }}
+  postgresql:
+    parameters:
+      timezone: "Asia/Seoul"
+  superuserSecret:
+    name: postgres
+  enableSuperuserAccess: true
+  bootstrap:
+    initdb:
+      database: handbook
+      owner: postgres
+      encoding: UTF8

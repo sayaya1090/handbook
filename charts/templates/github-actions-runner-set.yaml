@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-github-actions-runner-set
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: {{ .Release.Namespace }}
+    server: 'https://kubernetes.default.svc'
+  project: handbook
+  revisionHistoryLimit: 0
+  syncPolicy:
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    path: charts/github-actions-runner-set
+    repoURL: 'https://github.com/sayaya1090/handbook.git'
+    targetRevision: {{ .Values.revision }}
+    helm:
+      parameters:
+        - name: mode
+          value: {{ .Values.mode }}
+        - name: revision
+          value: {{ .Values.revision }}

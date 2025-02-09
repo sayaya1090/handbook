@@ -1,0 +1,18 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: postgresql-pooler
+spec:
+  cluster:
+    name: postgresql
+  instances: 3
+  type: rw
+  pgbouncer:
+    poolMode: session
+    parameters:
+      max_client_conn: "1000"
+      default_pool_size: "10"
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'true'

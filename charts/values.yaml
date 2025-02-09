@@ -1,0 +1,9 @@
+host: handbook.sayaya.dev
+mode: ''
+revision: main
+persistence:
+  size: 3Gi
+  storageClass: lvms-local-storage
+bucket:
+  name: handbook
+  maxSize: 10Gi

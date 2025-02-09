@@ -1,0 +1,124 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+spec:
+  source:
+    type: Dockerfile
+    dockerfile: |
+      FROM registry.access.redhat.com/ubi9/ubi-init:9.5
+
+      LABEL org.opencontainers.image.title "actions-runner-ubi9"
+      LABEL org.opencontainers.image.description "A RedHat UBI 9 based runner image for GitHub Actions"
+
+      # Arguments
+      ARG TARGETPLATFORM=linux/x64
+      ARG RUNNER_VERSION=2.322.0
+      ARG RUNNER_CONTAINER_HOOKS_VERSION=0.6.2
+
+      # Shell setup
+      SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+      # The UID env var should be used in child Containerfile.
+      ENV UID=1000
+      ENV DOCKER_UID=123
+      ENV GID=0
+      ENV USERNAME="runner"
+      ENV WORKDIR="/home/$USERNAME"
+
+      # This is to mimic the OpenShift behaviour of adding the dynamic user to group 0.
+      RUN useradd -G 0 -u $UID $USERNAME
+      ENV HOME $WORKDIR
+
+      # Make and set the working directory
+      RUN mkdir -p $WORKDIR && \
+      chown -R $USERNAME:$GID $WORKDIR
+
+      WORKDIR $WORKDIR
+
+      # Runner download supports amd64 as x64
+      RUN export ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) && \
+      curl -L -o runner.tar.gz https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${ARCH}-${RUNNER_VERSION}.tar.gz && \
+      tar xzf ./runner.tar.gz && rm runner.tar.gz && \
+      ./bin/installdependencies.sh && \
+
+      # Install container hooks
+      dnf install -y unzip && \
+      curl -f -L -o runner-container-hooks.zip https://github.com/actions/runner-container-hooks/releases/download/v${RUNNER_CONTAINER_HOOKS_VERSION}/actions-runner-hooks-k8s-${RUNNER_CONTAINER_HOOKS_VERSION}.zip && \
+      unzip ./runner-container-hooks.zip -d ./k8s && \
+      rm runner-container-hooks.zip && \
+
+      # Install docker
+      dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && \
+      groupadd -r -g $DOCKER_UID docker && \
+      useradd -r -u $DOCKER_UID -g $DOCKER_UID docker && \
+      dnf install -y docker-ce fuse-overlayfs && \
+      systemctl enable docker && \
+      usermod -aG docker $USERNAME && \
+
+      # Install software
+      dnf update -y && \
+      dnf install dnf-plugins-core -y && \
+      dnf install -y git jq krb5-libs libicu libyaml-devel lttng-ust zsh net-tools openssl-libs wget rsync && \
+
+      # Change default shell
+      /usr/bin/sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"# && \
+
+      # Install the `gh` cli
+      dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && \
+      dnf install -y gh && \
+
+      # Install the `oc` cli
+      curl "https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz" -o "oc.tar.gz" && \
+      tar -xvf oc.tar.gz && \
+      rm oc.tar.gz && \
+      mv oc /usr/bin/ && \
+      mv kubectl /usr/bin/ && \
+
+      # Install chrome
+      dnf install -y vulkan xdg-utils \
+      https://download.rockylinux.org/vault/rocky/9.5/AppStream/x86_64/kickstart/Packages/l/liberation-sans-fonts-2.1.3-5.el9.noarch.rpm \
+      https://download.rockylinux.org/vault/rocky/9.5/AppStream/x86_64/kickstart/Packages/l/liberation-serif-fonts-2.1.3-5.el9.noarch.rpm \
+      https://download.rockylinux.org/vault/rocky/9.5/AppStream/x86_64/kickstart/Packages/l/liberation-fonts-2.1.3-5.el9.noarch.rpm \
+      https://download.rockylinux.org/vault/rocky/9.5/AppStream/x86_64/kickstart/Packages/x/xdg-utils-1.1.3-11.el9.noarch.rpm \
+      https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm && \
+
+      # Install helm using the in-line curl to bash method
+      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash && \
+
+      # Install the `aws` cli
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+      unzip awscliv2.zip && \
+      rm awscliv2.zip && \
+      ./aws/install && \
+
+      # Setup default locale to KoKr
+      dnf install -y https://dl.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/Packages/g/glibc-langpack-ko-2.34-125.el9_5.1.x86_64.rpm && \
+      dnf clean all && \
+
+      # Set the working directory
+      chown -R $USERNAME:$UID $WORKDIR
+      USER $USERNAME
+
+      ENV LANG='ko_KR.UTF-8' LANGUAGE='ko_KR;ko' LC_ALL='ko_KR.UTF-8'
+
+      CMD ["./run.sh"]
+  strategy:
+    type: Docker
+  successfulBuildsHistoryLimit: 0
+  failedBuildsHistoryLimit: 1
+  runPolicy: Serial
+  triggers:
+    - type: ConfigChange
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner:latest'
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+  namespace: {{ .Release.Namespace }}

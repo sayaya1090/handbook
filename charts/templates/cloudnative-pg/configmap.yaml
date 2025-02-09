@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: postgresql
+  namespace: {{ .Release.Namespace }}
+data:
+  postgresql.yaml: |
+    spring:
+      r2dbc:
+        url: r2dbc:postgresql://postgresql-pooler:5432/handbook
+        username: ${postgres.username}
+        password: ${postgres.password}
+        pool:
+          initial-size: 5
+          max-size: 10
+          max-idle-time: 30m
+          validation-query: SELECT 1
