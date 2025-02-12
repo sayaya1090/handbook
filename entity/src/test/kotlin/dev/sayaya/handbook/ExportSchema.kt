@@ -31,3 +31,33 @@ internal class ExportSchema(@PersistenceContext private val em: EntityManager): 
         }
     }
 }
+
+/*
+@Component
+class SQL(
+    @PersistenceContext
+    private val entityManager: EntityManager,
+) {
+    @Transactional
+    @EventListener(ApplicationReadyEvent::class)
+    fun createView() {
+        val sqlFiles = listOf(
+            "resources/create_request_view.sql",
+            "resources/create_work_view.sql",
+            "resources/create_worklist_view.sql",
+            "resources/create_serial_trigger.sql",
+            "resources/create_index_trigger.sql",
+            "resources/create_sequencing_batch_trigger.sql",
+        )
+        sqlFiles.forEach { sqlFile ->
+            val sql = readSqlFromFile(sqlFile)
+            entityManager.createNativeQuery(sql.trimIndent()).executeUpdate()
+        }
+    }
+    private fun readSqlFromFile(filePath: String): String {
+        val resource = ClassPathResource(filePath)
+        val path = resource.file.toPath()
+        return String(Files.readAllBytes(path))
+    }
+}
+ */

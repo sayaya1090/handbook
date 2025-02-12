@@ -1,17 +1,25 @@
 package dev.sayaya.handbook.entity
 
 import jakarta.persistence.*
+import java.io.Serializable
 
-@Embeddable
-internal class Attribute {
-    @Column(nullable = false) lateinit var name: String
-    @Column(nullable = false) lateinit var type: AttributeType
+@Table(name = "attribute")
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "attribute_type", discriminatorType = DiscriminatorType.STRING)
+internal abstract class Attribute {
+    @EmbeddedId private val pk: AttributeId = AttributeId()
     @Column(nullable = false) var primitive: Boolean = false
     @Column(nullable = false) var nullable: Boolean = false
-    @Column var regex: String? = null                   // type = value 일 때만 유효
-    @Column var subtype: Attribute? = null              // type = array, enum, enumset, map 일 때만 유효
-    @Column var valueSubtype: Attribute? = null         // type = map 일 때만 유효
-    @Column var referenceType: AttributeType? = null    // type = document일 때만 유효
-    @Column var fileExtensions: String? = null          // type = file일 때만 유효 
     @Column var description: String? = null
+
+    companion object {
+        @Embeddable
+        class AttributeId : Serializable {
+            @Column(name = "type", length = 16, nullable = false, updatable = false)
+            private var type: String = ""
+            @Column(name = "name", length = 32, nullable = false, updatable = false)
+            private var name: String = ""
+        }
+    }
 }
