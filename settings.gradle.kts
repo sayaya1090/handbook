@@ -19,6 +19,16 @@ dependencyResolutionManagement {
             library("stdlib", "org.jetbrains.kotlin", "kotlin-stdlib").withoutVersion()
             bundle("kotlin", listOf("reflect", "stdlib"))
 
+            library("spring-webflux", "org.springframework.boot", "spring-boot-starter-webflux").withoutVersion()
+            library("kotlin-reactor", "io.projectreactor.kotlin", "reactor-kotlin-extensions").withoutVersion()
+            library("kotlin-coroutines-reactor", "org.jetbrains.kotlinx", "kotlinx-coroutines-reactor").withoutVersion()
+            library("kotlin-jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").withoutVersion()
+            library("spring-actuator", "org.springframework.boot", "spring-boot-starter-actuator").withoutVersion()
+            bundle("kotlin-webflux", listOf("spring-webflux", "kotlin-reactor", "kotlin-coroutines-reactor", "kotlin-jackson", "spring-actuator"))
+
+            library("spring-gateway", "org.springframework.cloud", "spring-cloud-starter-gateway").withoutVersion()
+            library("spring-discovery", "org.springframework.cloud", "spring-cloud-starter-zookeeper-discovery").withoutVersion()
+
             library("spring-cloud-bom", "org.springframework.cloud", "spring-cloud-dependencies").version { require("2024.0.0") }
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
@@ -34,4 +44,6 @@ dependencyResolutionManagement {
         }
     }
 }
+include("domain")
 include("entity")
+include("persist")
