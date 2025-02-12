@@ -9,12 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     name: ChatGPT Code Review
     steps:
-      - name: ChatGPT Code Review
-        uses: dlidstrom/genai-code-review@v3
-        with:
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          github_pr_id: ${{ github.event.number }}
-          openai_model: "gpt-4o"
-          mode: files
-          language: ko
+      - uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
+          MODEL: gpt-4o
