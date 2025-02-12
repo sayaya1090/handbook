@@ -1,10 +1,9 @@
 plugins {
     kotlin("jvm")
-    kotlin("kapt")
     kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
-    `java-test-fixtures`
+    id("java-test-fixtures")
 }
 dependencies {
     runtimeOnly("org.postgresql:postgresql")
