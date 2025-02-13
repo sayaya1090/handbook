@@ -15,6 +15,7 @@ class Type {
     @CreatedBy @ManyToOne @JoinColumn(name = "created_by", nullable = false) private lateinit var createBy: User
     @LastModifiedDate @Column(name = "last_modified_at", nullable = false) private lateinit var astModifyDateTime: LocalDateTime
     @LastModifiedBy @ManyToOne @JoinColumn(name = "last_modified_by", nullable = false) private lateinit var lastModifyBy: User
-    @Column(columnDefinition = "text", nullable = false) var description: String = ""
+    @ManyToOne(cascade = [CascadeType.REMOVE]) @JoinColumn(name = "parent") var parent: Type? = null
     @ElementCollection @CollectionTable(name = "attributes", joinColumns = [JoinColumn(name = "type")]) var attributes: List<String> = listOf()
+    @Column(columnDefinition = "text", nullable = false) var description: String = ""
 }
