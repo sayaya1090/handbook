@@ -16,7 +16,7 @@ import java.util.*
     Index(columnList = "effective_date, expiry_date"),
     Index(columnList = "attributes")
 ]) @Entity
-class Document {
+internal class Document {
     @Id var id: UUID = UUID.randomUUID()
     @Column(length = 16, nullable = false) lateinit var serial: String
     @ManyToOne @JoinColumn(name = "type", nullable = false) lateinit var type: Type
