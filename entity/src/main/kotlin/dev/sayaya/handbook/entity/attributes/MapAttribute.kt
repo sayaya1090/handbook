@@ -3,6 +3,8 @@ package dev.sayaya.handbook.entity.attributes
 import dev.sayaya.handbook.entity.Attribute
 import dev.sayaya.handbook.entity.AttributeType
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.io.Serializable
 
 @Entity
@@ -10,12 +12,12 @@ import java.io.Serializable
 internal class MapAttribute: Attribute() {
     @Enumerated(EnumType.STRING) @Column(name="key_type") lateinit var keyType: AttributeType
     @Enumerated(EnumType.STRING) @Column(name="value_type") lateinit var valueType: AttributeType
-    @Column(name="key_validators", columnDefinition = "jsonb") var keyValidators: String? = null
-    @Column(name="value_validators", columnDefinition = "jsonb") var valueValidators: String? = null
+    @JdbcTypeCode(SqlTypes.JSON) @Column(name="key_validators", columnDefinition = "jsonb") var keyValidators: Serializable? = null
+    @JdbcTypeCode(SqlTypes.JSON) @Column(name="value_validators", columnDefinition = "jsonb") var valueValidators: Serializable? = null
     companion object {
         fun of(type: dev.sayaya.handbook.entity.Type, name: String,
                keyType: AttributeType, valueType: AttributeType,
-               keyValidators: String? = null, valueValidators: String? = null) = MapAttribute().apply {
+               keyValidators: Serializable? = null, valueValidators: Serializable? = null) = MapAttribute().apply {
             this.type = type
             this.name = name
             this.keyType = keyType
