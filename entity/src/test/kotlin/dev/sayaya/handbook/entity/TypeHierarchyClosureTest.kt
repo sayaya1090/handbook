@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.entity
 
-import dev.sayaya.handbook.ExportSchema.Companion.execute
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainAll
@@ -22,7 +21,7 @@ import java.time.LocalDateTime
     "spring.jpa.show-sql=true",
     "spring.jpa.hibernate.ddl-auto=update"
 ])
-class TypeHierarchyClosureTest (
+internal class TypeHierarchyClosureTest (
     private val tx: PlatformTransactionManager,
     @PersistenceContext
     private val em: EntityManager
@@ -38,17 +37,6 @@ class TypeHierarchyClosureTest (
             ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성
             ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
             em.merge(user)
-        }
-        fun TypeHierarchyClosure.dump(): List<String> {
-            val result: List<TypeHierarchyClosure> = em.createNativeQuery(
-                """
-                    SELECT * FROM type_hierarchy_closure t
-                    WHERE t.descendant IN ('type_1', 'type_2', 'type_3')
-                    ORDER BY t.descendant, t.depth
-                    """.trimIndent(),
-                TypeHierarchyClosure::class.java
-            ).resultList as List<TypeHierarchyClosure>
-            return result.map { "${ it.id.descendant.id } -> ${ it.id.ancestor.id } (depth=${ it.depth })" }
         }
         When("계층 구조를 가진 데이터를 저장하면") {
             fun Typeof(id: String, parent:Type?) = Type().apply {
@@ -141,10 +129,11 @@ class TypeHierarchyClosureTest (
 }) {
 
     companion object {
+        val database = Database()
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            Database.registerDynamicProperties(registry)
+            database.registerDynamicProperties(registry)
         }
         fun PlatformTransactionManager.transactional(action: () -> Unit) {
             val transactionDefinition = DefaultTransactionDefinition()
@@ -156,6 +145,14 @@ class TypeHierarchyClosureTest (
                 rollback(status)
                 throw e
             }
+        }
+        fun EntityManager.execute(resource: ClassPathResource) {
+            resource.inputStream.bufferedReader().use { it.readText() }.trimIndent().let { execute(it) }
+        }
+        fun EntityManager.execute(sql: String) {
+            sql.also(::println)
+                .let(::createNativeQuery)
+                .executeUpdate()
         }
     }
 }

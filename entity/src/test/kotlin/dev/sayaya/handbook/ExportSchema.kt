@@ -27,7 +27,7 @@ internal class ExportSchema(
         ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
     }
     expect("PostgreSQL 스키마 덤프") {
-        val schemaSql = Database.dump()
+        val schemaSql = database.dump()
         val schemaPath = Path.of("src/testFixtures/resources/schema.sql")
         Files.createDirectories(schemaPath.parent)
         Files.writeString(schemaPath, schemaSql, CREATE, TRUNCATE_EXISTING)
@@ -39,10 +39,11 @@ internal class ExportSchema(
     }
 }) {
     companion object {
+        val database = Database()
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            Database.registerDynamicProperties(registry)
+            database.registerDynamicProperties(registry)
         }
         fun PlatformTransactionManager.transactional(action: () -> Unit) {
             val transactionDefinition = DefaultTransactionDefinition()

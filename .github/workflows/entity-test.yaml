@@ -6,7 +6,7 @@ on:
     paths:
       - entity/**
 jobs:
-  test-and-deploy-to-test:
+  test:
     runs-on: ubuntu-latest
     env:
       SUBMODULE: entity
@@ -20,8 +20,6 @@ jobs:
           java-version: 21
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: 8.9
       - name: Test
         run: gradle $SUBMODULE:test
       - name: Report
