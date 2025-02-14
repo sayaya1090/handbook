@@ -20,7 +20,5 @@ jobs:
           java-version: 21
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
-      - name: Test
-        run: gradle $SUBMODULE:test
-      - name: Report
+      - name: Test & Report
         run: gradle $SUBMODULE:koverXmlReport
