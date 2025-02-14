@@ -47,6 +47,7 @@ internal class TypeHierarchyClosureTest (
                 type2 = em.merge(type2)
                 type3 = em.merge(type3)
             }
+            @Suppress("UNCHECKED_CAST")
             fun dumpTypeHierarchyClosure(): List<String> {
                 val result: List<TypeHierarchyClosure> = em.createNativeQuery(
                     """

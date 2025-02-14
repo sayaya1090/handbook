@@ -56,10 +56,10 @@ internal class ExportSchema(
                 throw e
             }
         }
-        fun EntityManager.execute(resource: ClassPathResource) {
+        private fun EntityManager.execute(resource: ClassPathResource) {
             resource.inputStream.bufferedReader().use { it.readText() }.trimIndent().let { execute(it) }
         }
-        fun EntityManager.execute(sql: String) {
+        private fun EntityManager.execute(sql: String) {
             sql.also(::println)
                 .let(::createNativeQuery)
                 .executeUpdate()

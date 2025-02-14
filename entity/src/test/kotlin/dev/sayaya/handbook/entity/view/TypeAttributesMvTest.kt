@@ -27,7 +27,7 @@ import java.time.LocalDateTime
     "spring.jpa.show-sql=true",
     "spring.jpa.hibernate.ddl-auto=update"
 ])
-internal class TypeAttributesMvTestprivate(
+internal class TypeAttributesMvTest(
     val tx: PlatformTransactionManager,
     @PersistenceContext private val em: EntityManager
 ) : BehaviorSpec({
@@ -54,24 +54,25 @@ internal class TypeAttributesMvTestprivate(
                 type1 = em.find(Type::class.java, type1.id)
                 type2 = em.find(Type::class.java, type2.id)
                 type3 = em.find(Type::class.java, type3.id)
-                var type1Attr1 = ValueAttribute.of(em.find(Type::class.java, type1.id), "common_attr").apply {
+                val type1Attr1 = ValueAttribute.of(em.find(Type::class.java, type1.id), "common_attr").apply {
                     description = "Common Attribute in Type1"
                 }
-                var type2Attr1 = ArrayAttribute.of(type2, "unique_attr", AttributeType.Value).apply {
+                val type2Attr1 = ArrayAttribute.of(type2, "unique_attr", AttributeType.Value).apply {
                     description = "Unique Attribute in Type2"
                 }
-                var type2Attr2 = ValueAttribute.of(type2, "common_attr").apply {
+                val type2Attr2 = ValueAttribute.of(type2, "common_attr").apply {
                     description = "Overwritten Attribute in Type2"
                 }
-                var type3Attr1 = DocumentAttribute.of(type3, "exclusive_attr", type1).apply {
+                val type3Attr1 = DocumentAttribute.of(type3, "exclusive_attr", type1).apply {
                     description = "Exclusive Attribute in Type3"
                 }
-                type1Attr1 = em.merge(type1Attr1)
-                type2Attr1 = em.merge(type2Attr1)
-                type2Attr2 = em.merge(type2Attr2)
-                type3Attr1 = em.merge(type3Attr1)
+                em.merge(type1Attr1)
+                em.merge(type2Attr1)
+                em.merge(type2Attr2)
+                em.merge(type3Attr1)
                 em.createNativeQuery("REFRESH MATERIALIZED VIEW type_attributes").executeUpdate()
             }
+            @Suppress("UNCHECKED_CAST")
             fun dumpTypeAttributes(): List<String> {
                 val result: List<TypeAttributesMv> = em.createNativeQuery(
                     """
@@ -138,10 +139,10 @@ internal class TypeAttributesMvTestprivate(
                 throw e
             }
         }
-        fun EntityManager.execute(resource: ClassPathResource) {
+        private fun EntityManager.execute(resource: ClassPathResource) {
             resource.inputStream.bufferedReader().use { it.readText() }.trimIndent().let { execute(it) }
         }
-        fun EntityManager.execute(sql: String) {
+        private fun EntityManager.execute(sql: String) {
             sql.also(::println)
                 .let(::createNativeQuery)
                 .executeUpdate()
