@@ -1,5 +1,5 @@
 CREATE OR REPLACE VIEW type_attributes AS
-WITH RECURSIVE ranked_attributes AS (
+WITH ranked_attributes AS (
     -- 1. 조상과 자식 관계 연결
     SELECT
         thc.descendant AS type_id,
