@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.DefaultTransactionDefinition
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.*
@@ -16,11 +18,13 @@ import java.nio.file.StandardOpenOption.*
     "spring.jpa.show-sql=true",
     "spring.jpa.hibernate.ddl-auto=update"
 ])
-internal class ExportSchema(@PersistenceContext private val em: EntityManager): ExpectSpec({
-    expect("트리거 생성") {
-        val resource = ClassPathResource("resources/create_request_view.sql")
-        val path = resource.file.toPath()
-        String(Files.readAllBytes(path)).trimIndent().let(em::createNativeQuery).executeUpdate()
+internal class ExportSchema(
+    private val tx: PlatformTransactionManager,
+    @PersistenceContext private val em: EntityManager
+): ExpectSpec({
+    tx.transactional {
+        ClassPathResource("createTriggers.sql").let { em.execute(it) }          // 트리거 생성
+        ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
     }
     expect("PostgreSQL 스키마 덤프") {
         val schemaSql = Database.dump()
@@ -28,12 +32,36 @@ internal class ExportSchema(@PersistenceContext private val em: EntityManager): 
         Files.createDirectories(schemaPath.parent)
         Files.writeString(schemaPath, schemaSql, CREATE, TRUNCATE_EXISTING)
     }
+    expect("샘플 데이터 삽입 테스트") {
+        tx.transactional {
+            ClassPathResource("sampleData.sql").let { em.execute(it) }
+        }
+    }
 }) {
     companion object {
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
             Database.registerDynamicProperties(registry)
+        }
+        fun PlatformTransactionManager.transactional(action: () -> Unit) {
+            val transactionDefinition = DefaultTransactionDefinition()
+            val status = getTransaction(transactionDefinition)
+            try {
+                action()
+                commit(status)
+            } catch (e: Exception) {
+                rollback(status)
+                throw e
+            }
+        }
+        fun EntityManager.execute(resource: ClassPathResource) {
+            resource.inputStream.bufferedReader().use { it.readText() }.trimIndent().let { execute(it) }
+        }
+        fun EntityManager.execute(sql: String) {
+            sql.also(::println)
+                .let(::createNativeQuery)
+                .executeUpdate()
         }
     }
 }

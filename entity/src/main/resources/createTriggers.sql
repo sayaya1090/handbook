@@ -19,7 +19,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 트리거 생성
-CREATE TRIGGER trg_update_closure AFTER INSERT ON type
+CREATE TRIGGER trg_update_closure_on_insert AFTER INSERT ON type
 FOR EACH ROW EXECUTE FUNCTION update_closure_on_insert();
 
 -- 타입 삭제 시 기존 경로 삭제
@@ -67,7 +67,7 @@ BEGIN
     INSERT INTO type_hierarchy_closure (ancestor, descendant, depth)
     SELECT c.ancestor, d.id, c.depth + 1
     FROM type_hierarchy_closure c
-    JOIN descendants d ON c.descendant_id = NEW.id;
+             JOIN descendants d ON c.descendant = NEW.id;
 
     RETURN NEW;
 END;
@@ -76,6 +76,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_update_closure_on_update
     AFTER UPDATE ON type
     FOR EACH ROW
-    WHEN (OLD.parent_id IS DISTINCT FROM NEW.parent_id)
+    WHEN (OLD.parent IS DISTINCT FROM NEW.parent)
 EXECUTE FUNCTION update_closure_on_update();
 

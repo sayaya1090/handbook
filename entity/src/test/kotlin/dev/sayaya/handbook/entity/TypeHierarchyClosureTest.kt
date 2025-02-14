@@ -1,0 +1,161 @@
+package dev.sayaya.handbook.entity
+
+import dev.sayaya.handbook.ExportSchema.Companion.execute
+import dev.sayaya.handbook.testcontainer.Database
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.shouldBe
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.ClassPathResource
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.DefaultTransactionDefinition
+import java.time.LocalDateTime
+
+/*
+  Type 추가, 변경, 삭제 시 TypeHierarchyClosure 테이블에 정의된 트리거 작동을 테스트한다
+ */
+@SpringBootTest(properties = [
+    "spring.jpa.show-sql=true",
+    "spring.jpa.hibernate.ddl-auto=update"
+])
+class TypeHierarchyClosureTest (
+    private val tx: PlatformTransactionManager,
+    @PersistenceContext
+    private val em: EntityManager
+) : BehaviorSpec({
+    Given("DB 초기화") {
+        val user = User().apply {
+            id = "system"
+            name = "system"
+            createDateTime = LocalDateTime.now()
+            lastModifyDateTime = LocalDateTime.now()
+        }
+        tx.transactional {
+            ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성
+            ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
+            em.merge(user)
+        }
+        fun TypeHierarchyClosure.dump(): List<String> {
+            val result: List<TypeHierarchyClosure> = em.createNativeQuery(
+                """
+                    SELECT * FROM type_hierarchy_closure t
+                    WHERE t.descendant IN ('type_1', 'type_2', 'type_3')
+                    ORDER BY t.descendant, t.depth
+                    """.trimIndent(),
+                TypeHierarchyClosure::class.java
+            ).resultList as List<TypeHierarchyClosure>
+            return result.map { "${ it.id.descendant.id } -> ${ it.id.ancestor.id } (depth=${ it.depth })" }
+        }
+        When("계층 구조를 가진 데이터를 저장하면") {
+            fun Typeof(id: String, parent:Type?) = Type().apply {
+                this.id = id
+                description = id
+                createDateTime = LocalDateTime.now()
+                createBy = user
+                lastModifyDateTime = LocalDateTime.now()
+                lastModifyBy = user
+                this.parent = parent
+            }
+            var type1 = Typeof("type_1", null)
+            var type2 = Typeof("type_2", type1)
+            var type3 = Typeof("type_3", type2)
+
+            tx.transactional {
+                type1 = em.merge(type1)
+                type2 = em.merge(type2)
+                type3 = em.merge(type3)
+            }
+            fun dumpTypeHierarchyClosure(): List<String> {
+                val result: List<TypeHierarchyClosure> = em.createNativeQuery(
+                    """
+                    SELECT * FROM type_hierarchy_closure t
+                    WHERE t.descendant IN ('type_1', 'type_2', 'type_3')
+                    ORDER BY t.descendant, t.depth
+                    """.trimIndent(),
+                    TypeHierarchyClosure::class.java
+                ).resultList as List<TypeHierarchyClosure>
+                return result.map { "${ it.id.descendant.id } -> ${ it.id.ancestor.id } (depth=${ it.depth })" }
+            }
+            Then("TypeHierarchyCloser 테이블에 전체 계층 구조가 저장된다") {
+                val mappedResult = dumpTypeHierarchyClosure()
+                val expectedResult = listOf(
+                    "type_1 -> type_1 (depth=0)",
+                    "type_2 -> type_2 (depth=0)",
+                    "type_2 -> type_1 (depth=1)",
+                    "type_3 -> type_3 (depth=0)",
+                    "type_3 -> type_2 (depth=1)",
+                    "type_3 -> type_1 (depth=2)"
+                )
+                mappedResult shouldContainAll expectedResult
+                mappedResult.size shouldBe expectedResult.size
+            }
+            When("계층 구조가 변경되면") {
+                type3.parent = type1
+                tx.transactional {
+                    em.merge(type3)
+                }
+                Then("TypeHierarchyCloser 테이블에 전체 계층 구조가 저장된다") {
+                    val mappedResult = dumpTypeHierarchyClosure()
+                    val expectedResult = listOf(
+                        "type_1 -> type_1 (depth=0)",
+                        "type_2 -> type_2 (depth=0)",
+                        "type_2 -> type_1 (depth=1)",
+                        "type_3 -> type_3 (depth=0)",
+                        "type_3 -> type_1 (depth=1)",
+                    )
+                    mappedResult shouldContainAll expectedResult
+                    mappedResult.size shouldBe expectedResult.size
+                }
+            }
+            When("리프 노드를 삭제하면") {
+                tx.transactional {
+                    em.find(Type::class.java, type3.id).let(em::remove)
+                }
+                Then("TypeHierarchyCloser 테이블에 삭제 후 전체 계층 구조가 반영된다") {
+                    val mappedResult = dumpTypeHierarchyClosure()
+                    val expectedResult = listOf(
+                        "type_1 -> type_1 (depth=0)",
+                        "type_2 -> type_2 (depth=0)",
+                        "type_2 -> type_1 (depth=1)"
+                    )
+                    mappedResult shouldContainAll expectedResult
+                    mappedResult.size shouldBe expectedResult.size
+                }
+            }
+            When("부모 노드를 삭제하면") {
+                tx.transactional {
+                    em.find(Type::class.java, type1.id).let(em::remove)
+                }
+                Then("TypeHierarchyCloser 테이블에 삭제 후 전체 계층 구조가 반영된다") {
+                    val mappedResult = dumpTypeHierarchyClosure()
+                    mappedResult shouldBe emptyList()
+                }
+            }
+        }
+    }
+
+}) {
+
+    companion object {
+        @JvmStatic
+        @DynamicPropertySource
+        fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
+            Database.registerDynamicProperties(registry)
+        }
+        fun PlatformTransactionManager.transactional(action: () -> Unit) {
+            val transactionDefinition = DefaultTransactionDefinition()
+            val status = getTransaction(transactionDefinition)
+            try {
+                action()
+                commit(status)
+            } catch (e: Exception) {
+                rollback(status)
+                throw e
+            }
+        }
+    }
+}

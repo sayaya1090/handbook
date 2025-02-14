@@ -8,5 +8,6 @@ import java.io.Serializable
 @Entity
 @DiscriminatorValue("Array")
 internal class ArrayAttribute: Attribute() {
+    @Enumerated(EnumType.STRING) @Column(name="value_type") lateinit var type: AttributeType
     @Column(name="value_validators", columnDefinition = "jsonb") lateinit var validators: Serializable
 }
