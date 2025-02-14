@@ -23,8 +23,7 @@ import java.time.LocalDateTime
 ])
 internal class TypeHierarchyClosureTest (
     private val tx: PlatformTransactionManager,
-    @PersistenceContext
-    private val em: EntityManager
+    @PersistenceContext private val em: EntityManager
 ) : BehaviorSpec({
     Given("DB 초기화") {
         val user = User().apply {
@@ -39,18 +38,9 @@ internal class TypeHierarchyClosureTest (
             em.merge(user)
         }
         When("계층 구조를 가진 데이터를 저장하면") {
-            fun Typeof(id: String, parent:Type?) = Type().apply {
-                this.id = id
-                description = id
-                createDateTime = LocalDateTime.now()
-                createBy = user
-                lastModifyDateTime = LocalDateTime.now()
-                lastModifyBy = user
-                this.parent = parent
-            }
-            var type1 = Typeof("type_1", null)
-            var type2 = Typeof("type_2", type1)
-            var type3 = Typeof("type_3", type2)
+            var type1 = Type.of(user, "type_1", null)
+            var type2 = Type.of(user, "type_2", type1)
+            var type3 = Type.of(user, "type_3", type2)
 
             tx.transactional {
                 type1 = em.merge(type1)
@@ -127,9 +117,8 @@ internal class TypeHierarchyClosureTest (
     }
 
 }) {
-
     companion object {
-        val database = Database()
+        private val database = Database()
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
