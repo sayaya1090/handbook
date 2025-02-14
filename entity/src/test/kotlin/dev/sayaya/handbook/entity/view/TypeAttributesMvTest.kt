@@ -18,7 +18,7 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.DefaultTransactionDefinition
-import java.time.LocalDateTime
+import java.time.Instant
 
 /*
   Type 추가, 변경, 삭제 시 자식 Type이 부모 Type의 Attribute를 상속하는지 검증한다
@@ -35,8 +35,8 @@ internal class TypeAttributesMvTest(
         val user = User().apply {
             id = "system"
             name = "system"
-            createDateTime = LocalDateTime.now()
-            lastModifyDateTime = LocalDateTime.now()
+            createDateTime = Instant.now()
+            lastModifyDateTime = Instant.now()
         }
         var type1 = Type.of(user,"type_1", null)
         var type2 = Type.of(user,"type_2", type1)

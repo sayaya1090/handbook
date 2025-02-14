@@ -27,7 +27,7 @@ internal class IntegrationTest(
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            Database.registerDynamicProperties(registry)
+            Database().registerDynamicProperties(registry)
         }
     }
 }

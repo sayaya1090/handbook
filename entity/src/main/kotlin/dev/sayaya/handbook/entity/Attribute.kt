@@ -21,7 +21,6 @@ internal abstract class Attribute {
     @Column(name = "name", length = 32, nullable = false, updatable = false)
     lateinit var name: String
 
-    @Column(nullable = false) open var primitive: Boolean = false
     @Column(nullable = false) open var nullable: Boolean = false
     @Column open var description: String? = null
 

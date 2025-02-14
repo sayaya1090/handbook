@@ -18,8 +18,6 @@ data class TypeAttributesMv(
     val description: String? = null,
     @Column(name = "nullable", nullable = false)
     val nullable: Boolean,
-    @Column(name = "primitive", nullable = false)
-    val primitive: Boolean,
     @Column(name = "value_type")
     val valueType: String? = null,
     @Column(name = "reference_type")

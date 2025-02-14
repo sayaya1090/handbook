@@ -7,7 +7,6 @@ WITH ranked_attributes AS (
         att.name,
         att.description,
         att.nullable,
-        att.primitive,
         att.value_type,
         att.reference_type,
         ROW_NUMBER() OVER (
@@ -16,19 +15,14 @@ WITH ranked_attributes AS (
                 CASE WHEN att.type = thc.descendant THEN 0 ELSE 1 END, -- 자식의 속성이 우선
                 thc.depth ASC                                           -- 가까운 조상의 속성이 우선
             ) AS rank_num
-    FROM
-        type_hierarchy_closure thc
-            JOIN
-        attribute att
-        ON
-            thc.ancestor = att.type
+    FROM type_hierarchy_closure thc
+        JOIN attribute att ON thc.ancestor = att.type
 ) SELECT
      ra.type,
      ra.attribute_type,
      ra.name,
      ra.description,
      ra.nullable,
-     ra.primitive,
      ra.value_type,
      ra.reference_type
 FROM
