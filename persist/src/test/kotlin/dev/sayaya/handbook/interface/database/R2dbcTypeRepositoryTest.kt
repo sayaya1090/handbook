@@ -111,7 +111,7 @@ class R2dbcTypeRepositoryTest(
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            Database.registerDynamicProperties(registry)
+            Database().registerDynamicProperties(registry)
         }
     }
 }

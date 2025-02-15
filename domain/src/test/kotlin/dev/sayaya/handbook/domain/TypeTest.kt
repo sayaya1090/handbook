@@ -25,7 +25,7 @@ class TypeTest : StringSpec({
         )
 
         parentType.id shouldBe "parent-type"
-        childType.parent shouldBe parentType
+        childType.parent shouldBe parentType.id
         childType.attributes.shouldNotBeEmpty()
     }
     

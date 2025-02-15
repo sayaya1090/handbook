@@ -30,7 +30,7 @@ internal class AuthorizationTest(private val client: WebTestClient): BehaviorSpe
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            Database.registerDynamicProperties(registry)
+            Database().registerDynamicProperties(registry)
         }
     }
 }
