@@ -3,7 +3,6 @@ package dev.sayaya.handbook.`interface`.database
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.ShouldSpec
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import org.slf4j.LoggerFactory
@@ -23,26 +22,30 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
-@DataR2dbcTest
-//@Import(R2dbcTypeRepositoryTest.Companion.TestConfig::class)
+@DataR2dbcTest(properties = [
+    "logging.level.io.r2dbc.postgresql.QUERY=DEBUG",
+    "logging.level.io.r2dbc.postgresql.PARAM=DEBUG",
+]) @Import(R2dbcTypeRepositoryTest.Companion.TestConfig::class)
 class R2dbcTypeRepositoryTest(
     private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
-    /*databaseClient.sql("""
-        INSERT INTO "user" (id, last_modified_at, created_at, last_login_at, name) 
-        VALUES ('system', NOW(), NOW(), null, 'system')
-        """.trimIndent()
-    ).fetch().rowsUpdated().let(StepVerifier::create).verifyComplete()*/
-
-    beforeTest {
-        // 테스트 전 기존 데이터를 항상 비웁니다 (격리된 테스트 환경을 유지하기 위해).
-        //databaseClient.sql("DELETE FROM type").fetch().rowsUpdated().let(StepVerifier::create).verifyComplete()
-    }
-    val attributeRepo = mockk<R2dbcAttributeRepository>().apply {
-        every { findByType(any()) } returns Flux.empty()
-    }
+    val attributeRepo = mockk<R2dbcAttributeRepository>()
     val repository = R2dbcTypeRepository(template, attributeRepo)
+
+    beforeSpec {
+        databaseClient.sql("""
+            INSERT INTO "user" (id, last_modified_at, created_at, last_login_at, name) 
+            VALUES ('system', NOW(), NOW(), null, 'system')
+        """.trimIndent()
+        ).fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
+
+        every { attributeRepo.findByType(any()) } returns Flux.empty()
+        every { attributeRepo.save(any(), any()) } answers { Mono.just(secondArg()) }
+    }
+    beforeTest {
+        databaseClient.sql("DELETE FROM type").fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
+    }
     should("ID가 없는 경우 새로운 Type을 삽입한다") {
         // Given
         val type = Type(
@@ -68,8 +71,10 @@ class R2dbcTypeRepositoryTest(
     should("ID가 있는 경우 Type을 업데이트한다") {
         // Given
         databaseClient.sql("""
-            INSERT INTO type (id, primitive, description, parent)
-            VALUES ('type1', TRUE, 'Old Type', NULL)
+            INSERT INTO type (id, last_modified_at, created_at, description, created_by, last_modified_by, parent, primitive) 
+            VALUES ('parent1', NOW(), NOW(), 'parent1', 'system', 'system', null, false);
+            INSERT INTO type (id, last_modified_at, created_at, description, created_by, last_modified_by, parent, primitive) 
+            VALUES ('type1', NOW(), NOW(), 'type1', 'system', 'system', null, false);
         """).fetch().rowsUpdated().block()
 
         val updatedType = Type(
@@ -81,13 +86,15 @@ class R2dbcTypeRepositoryTest(
         )
 
         // When
-        val result = repository.save(updatedType).block()
+        val result = repository.save(updatedType)
 
         // Then
-        result?.id shouldBe "type1"
-        result?.description shouldBe "Updated Type"
-        result?.primitive shouldBe false
-        result?.parent shouldBe "parent1"
+        StepVerifier.create(result).expectNextMatches {
+            it.id == "type1" &&
+            it.description == "Updated Type" &&
+            it.primitive.not() &&
+            it.parent == "parent1"
+        }.verifyComplete()
     }
 }) {
     companion object {
