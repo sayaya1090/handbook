@@ -7,7 +7,6 @@ WITH ranked_attributes AS (
         att.name,
         att.description,
         att.nullable,
-        att.primitive,
         att.value_type,
         att.reference_type,
         ROW_NUMBER() OVER (
@@ -28,7 +27,6 @@ WITH ranked_attributes AS (
      ra.name,
      ra.description,
      ra.nullable,
-     ra.primitive,
      ra.value_type,
      ra.reference_type
 FROM

@@ -19,6 +19,7 @@ internal class Type {
     @LastModifiedBy @ManyToOne @JoinColumn(name = "last_modified_by", nullable = false) lateinit var lastModifyBy: User
     @ManyToOne @OnDelete(action = OnDeleteAction.CASCADE) @JoinColumn(name = "parent") var parent: Type? = null
     @Column(columnDefinition = "text", nullable = false) var description: String = ""
+    @Column(nullable = false) var primitive: Boolean = false
     companion object {
         fun of(user: User, id: String, parent: Type?) = Type().apply {
             this.id = id

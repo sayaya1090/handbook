@@ -12,14 +12,16 @@ class TypeTest : StringSpec({
             id = "parent-type",
             parent = null,
             description = "The parent type",
-            attributes = listOf(Attribute.Companion.ValueAttribute(name = "Attr1"))
+            attributes = listOf(Attribute.Companion.ValueAttribute(name = "Attr1")),
+            primitive = false
         )
 
         val childType = Type(
             id = "child-type",
-            parent = parentType,
+            parent = parentType.id,
             description = "The child type",
-            attributes = listOf(Attribute.Companion.MapAttribute(name = "MapAttr"))
+            attributes = listOf(Attribute.Companion.MapAttribute(name = "MapAttr")),
+            primitive = false
         )
 
         parentType.id shouldBe "parent-type"
@@ -33,7 +35,8 @@ class TypeTest : StringSpec({
                 id = "",
                 parent = null,
                 description = "Invalid blank id",
-                attributes = emptyList()
+                attributes = emptyList(),
+                primitive = false
             )
         }
         exceptionForBlank shouldHaveMessage "Type id cannot be blank"

@@ -36,15 +36,16 @@ class AttributeTest : StringSpec({
             id = "doc-type",
             parent = null,
             description = "A document type",
-            attributes = emptyList()
+            attributes = emptyList(),
+            primitive = false
         )
         val docAttr = Attribute.Companion.DocumentAttribute(
             name = "DocumentAttribute1",
             description = "Reference document",
-            referenceType = referenceType
+            referenceType = referenceType.id
         )
         docAttr.type shouldBe AttributeType.Document
-        docAttr.referenceType shouldBe referenceType
+        docAttr.referenceType shouldBe referenceType.id
     }
 
     "FileAttribute는 확장자 유효성을 올바르게 검증한다" {
