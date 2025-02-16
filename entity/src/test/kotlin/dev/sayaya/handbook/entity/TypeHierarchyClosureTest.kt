@@ -12,7 +12,7 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.DefaultTransactionDefinition
-import java.time.LocalDateTime
+import java.time.Instant
 
 /*
   Type 추가, 변경, 삭제 시 TypeHierarchyClosure 테이블에 정의된 트리거 작동을 테스트한다
@@ -29,8 +29,8 @@ internal class TypeHierarchyClosureTest (
         val user = User().apply {
             id = "system"
             name = "system"
-            createDateTime = LocalDateTime.now()
-            lastModifyDateTime = LocalDateTime.now()
+            createDateTime = Instant.now()
+            lastModifyDateTime = Instant.now()
         }
         tx.transactional {
             ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성

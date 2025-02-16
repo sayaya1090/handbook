@@ -15,12 +15,8 @@ WITH ranked_attributes AS (
                 CASE WHEN att.type = thc.descendant THEN 0 ELSE 1 END, -- 자식의 속성이 우선
                 thc.depth ASC                                           -- 가까운 조상의 속성이 우선
             ) AS rank_num
-    FROM
-        type_hierarchy_closure thc
-            JOIN
-        attribute att
-        ON
-            thc.ancestor = att.type
+    FROM type_hierarchy_closure thc
+        JOIN attribute att ON thc.ancestor = att.type
 ) SELECT
      ra.type,
      ra.attribute_type,
