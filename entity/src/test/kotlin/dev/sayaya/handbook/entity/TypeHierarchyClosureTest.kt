@@ -38,9 +38,9 @@ internal class TypeHierarchyClosureTest (
             em.merge(user)
         }
         When("계층 구조를 가진 데이터를 저장하면") {
-            var type1 = Type.of(user, "type_1", null)
-            var type2 = Type.of(user, "type_2", type1)
-            var type3 = Type.of(user, "type_3", type2)
+            var type1 = Type.of("type_1", null)
+            var type2 = Type.of("type_2", type1)
+            var type3 = Type.of("type_3", type2)
 
             tx.transactional {
                 type1 = em.merge(type1)
@@ -57,7 +57,7 @@ internal class TypeHierarchyClosureTest (
                     """.trimIndent(),
                     TypeHierarchyClosure::class.java
                 ).resultList as List<TypeHierarchyClosure>
-                return result.map { "${ it.descendant.id } -> ${ it.ancestor.id } (depth=${ it.depth })" }
+                return result.map { "${ it.descendant } -> ${ it.ancestor } (depth=${ it.depth })" }
             }
             Then("TypeHierarchyCloser 테이블에 전체 계층 구조가 저장된다") {
                 val mappedResult = dumpTypeHierarchyClosure()

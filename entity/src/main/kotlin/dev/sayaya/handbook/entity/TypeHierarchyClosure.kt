@@ -5,24 +5,18 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import java.io.Serializable
 
-@Table(
-    name = "type_hierarchy_closure",
-    indexes = [
-        Index(columnList = "ancestor"),
-        Index(columnList = "descendant")
-    ]
-)
-@Entity
+@Table(name = "type_hierarchy_closure", indexes = [
+    Index(columnList = "ancestor"),
+    Index(columnList = "descendant")
+]) @Entity
 @IdClass(TypeHierarchyClosure.Companion.TypeHierarchyClosureId::class)
 internal class TypeHierarchyClosure {
-    @Id
-    @ManyToOne
+    @Id @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ancestor", nullable = false)
     lateinit var ancestor: Type // 복합 키의 첫 번째 필드
 
-    @Id
-    @ManyToOne
+    @Id @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "descendant", nullable = false)
     lateinit var descendant: Type // 복합 키의 두 번째 필드

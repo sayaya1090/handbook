@@ -2,6 +2,7 @@ package dev.sayaya.handbook.entity.attributes
 
 import dev.sayaya.handbook.entity.Attribute
 import dev.sayaya.handbook.entity.Type
+import dev.sayaya.handbook.entity.TypeDefinition
 import jakarta.persistence.*
 
 @Entity
@@ -9,7 +10,7 @@ import jakarta.persistence.*
 internal class DocumentAttribute: Attribute() {
     @ManyToOne @JoinColumn(name="reference_type") lateinit var referenceType: Type
     companion object {
-        fun of(type: Type, name: String, referenceType: Type) = DocumentAttribute().apply {
+        fun of(type: TypeDefinition, name: String, referenceType: Type) = DocumentAttribute().apply {
             this.type = type
             this.name = name
             this.referenceType = referenceType

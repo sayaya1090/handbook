@@ -14,8 +14,8 @@ internal abstract class Attribute {
     @Id
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "type", nullable = false)
-    lateinit var type: Type
+    @JoinColumn(name = "type_definition", nullable = false)
+    lateinit var type: TypeDefinition
 
     @Id
     @Column(name = "name", length = 32, nullable = false, updatable = false)
@@ -26,7 +26,7 @@ internal abstract class Attribute {
 
     companion object {
         data class AttributeId(
-            val type: Type = Type(),
+            val type: TypeDefinition = TypeDefinition(),
             val name: String = ""
         ) : Serializable
     }
