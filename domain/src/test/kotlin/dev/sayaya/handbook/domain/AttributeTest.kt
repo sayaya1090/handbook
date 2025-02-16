@@ -5,17 +5,18 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
+import java.time.Instant
 
 class AttributeTest : StringSpec({
     "ValueAttribute는 기본값 및 올바른 속성 타입을 반환한다" {
-        val valueAttr = Attribute.Companion.ValueAttribute()
+        val valueAttr = Attribute.Companion.ValueAttribute(inherited = false)
         valueAttr.name shouldBe Attribute.DEFAULT_NAME
         valueAttr.description shouldBe Attribute.DEFAULT_DESCRIPTION
         valueAttr.type shouldBe AttributeType.Value
     }
 
     "ArrayAttribute는 기본값 및 올바른 타입 속성을 설정한다" {
-        val arrayAttr = Attribute.Companion.ArrayAttribute(valueType = AttributeType.Document)
+        val arrayAttr = Attribute.Companion.ArrayAttribute(valueType = AttributeType.Document, inherited = false)
         arrayAttr.name shouldBe Attribute.DEFAULT_NAME
         arrayAttr.description shouldBe Attribute.DEFAULT_DESCRIPTION
         arrayAttr.type shouldBe AttributeType.Array
@@ -25,7 +26,8 @@ class AttributeTest : StringSpec({
     "MapAttribute는 적절한 keyType 및 valueType으로 초기화된다" {
         val mapAttr = Attribute.Companion.MapAttribute(
             keyType = AttributeType.Value,
-            valueType = AttributeType.File
+            valueType = AttributeType.File,
+            inherited = false
         )
         mapAttr.type shouldBe AttributeType.Map
         mapAttr.keyType shouldBe AttributeType.Value
@@ -34,6 +36,9 @@ class AttributeTest : StringSpec({
     "DocumentAttribute는 ReferenceType과 올바른 속성 타입을 반환한다" {
         val referenceType = Type(
             id = "doc-type",
+            version = "1.0",
+            effectDateTime = Instant.now(),
+            expireDateTime = Instant.MAX,
             parent = null,
             description = "A document type",
             attributes = emptyList(),
@@ -42,7 +47,7 @@ class AttributeTest : StringSpec({
         val docAttr = Attribute.Companion.DocumentAttribute(
             name = "DocumentAttribute1",
             description = "Reference document",
-            referenceType = referenceType.id
+            referenceType = referenceType.id, inherited = false
         )
         docAttr.type shouldBe AttributeType.Document
         docAttr.referenceType shouldBe referenceType.id
@@ -52,7 +57,8 @@ class AttributeTest : StringSpec({
         // 정상적인 확장자
         val fileAttr = Attribute.Companion.FileAttribute(
             name = "MyFileAttr",
-            extensions = setOf("txt", "pdf", "docx")
+            extensions = setOf("txt", "pdf", "docx"),
+            inherited = false
         )
         fileAttr.type shouldBe AttributeType.File
         fileAttr.extensions shouldContain "txt"
@@ -61,7 +67,8 @@ class AttributeTest : StringSpec({
         val exception = shouldThrow<IllegalArgumentException> {
             Attribute.Companion.FileAttribute(
                 name = "InvalidFileAttr",
-                extensions = setOf("!invalid", "123$")
+                extensions = setOf("!invalid", "123$"),
+                inherited = false
             )
         }
         exception shouldHaveMessage "FileAttribute extensions must contain only alphanumeric characters."

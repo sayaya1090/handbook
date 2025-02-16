@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.core.io.ClassPathResource
+import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.transaction.PlatformTransactionManager
@@ -51,10 +52,20 @@ internal class ExportSchema(
             try {
                 action()
                 commit(status)
+            } catch (e: JpaSystemException) {
+                if (!status.isCompleted) rollback(status)
+                throw unwrapException(e)
             } catch (e: Exception) {
-                rollback(status)
+                if (!status.isCompleted) rollback(status)
                 throw e
             }
+        }
+        private fun unwrapException(exception: JpaSystemException): Throwable {
+            var cause: Throwable = exception
+            while (cause.cause != null && cause != cause.cause) { // 자신과 부모가 동일하지 않을 때
+                cause = cause.cause!!
+            }
+            return cause
         }
         private fun EntityManager.execute(resource: ClassPathResource) {
             resource.inputStream.bufferedReader().use { it.readText() }.trimIndent().let { execute(it) }

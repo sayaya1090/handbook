@@ -7,9 +7,9 @@ import jakarta.persistence.*
 @Entity
 @DiscriminatorValue("Document")
 internal class DocumentAttribute: Attribute() {
-    @ManyToOne @JoinColumn(name="reference_type") lateinit var referenceType: Type
+    @Column(length = 64, name="reference_type") lateinit var referenceType: String
     companion object {
-        fun of(type: Type, name: String, referenceType: Type) = DocumentAttribute().apply {
+        fun of(type: Type, name: String, referenceType: String) = DocumentAttribute().apply {
             this.type = type
             this.name = name
             this.referenceType = referenceType

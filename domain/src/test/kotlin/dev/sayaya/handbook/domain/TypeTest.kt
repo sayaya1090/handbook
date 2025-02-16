@@ -5,22 +5,29 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
+import java.time.Instant
 
 class TypeTest : StringSpec({
     "Type은 부모와 자식 관계가 올바르게 설정된다" {
         val parentType = Type(
             id = "parent-type",
+            version = "1.0",
+            effectDateTime = Instant.now(),
+            expireDateTime = Instant.MAX,
             parent = null,
             description = "The parent type",
-            attributes = listOf(Attribute.Companion.ValueAttribute(name = "Attr1")),
+            attributes = listOf(Attribute.Companion.ValueAttribute(name = "Attr1", inherited = false)),
             primitive = false
         )
 
         val childType = Type(
             id = "child-type",
+            version = "1.0",
+            effectDateTime = Instant.now(),
+            expireDateTime = Instant.MAX,
             parent = parentType.id,
             description = "The child type",
-            attributes = listOf(Attribute.Companion.MapAttribute(name = "MapAttr")),
+            attributes = listOf(Attribute.Companion.MapAttribute(name = "MapAttr", inherited = false)),
             primitive = false
         )
 
@@ -33,6 +40,9 @@ class TypeTest : StringSpec({
         val exceptionForBlank = shouldThrow<IllegalArgumentException> {
             Type(
                 id = "",
+                version = "1.0",
+                effectDateTime = Instant.now(),
+                expireDateTime = Instant.MAX,
                 parent = null,
                 description = "Invalid blank id",
                 attributes = emptyList(),

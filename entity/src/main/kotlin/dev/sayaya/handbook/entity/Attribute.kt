@@ -16,14 +16,12 @@ internal abstract class Attribute {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "type", nullable = false)
     lateinit var type: Type
-
     @Id
     @Column(name = "name", length = 32, nullable = false, updatable = false)
     lateinit var name: String
 
     @Column(nullable = false) open var nullable: Boolean = false
     @Column open var description: String? = null
-
     companion object {
         data class AttributeId(
             val type: Type = Type(),

@@ -5,10 +5,11 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
 import java.io.Serializable
+import java.util.*
 
 @Table("attribute")
 data class R2dbcAttributeEntity (
-    val type: String,
+    val type: UUID,
     val name: String,
     val attributeType: AttributeType,
     val keyType: AttributeType?,
@@ -19,10 +20,8 @@ data class R2dbcAttributeEntity (
     var nullable: Boolean,
 ) {
     @Transient @Id val id: R2dbcAttributeId = R2dbcAttributeId(type, name)
+
     companion object {
-        data class R2dbcAttributeId (
-            val type: String,
-            val name: String
-        ) : Serializable
+        data class R2dbcAttributeId (val type: UUID, val name: String) : Serializable
     }
 }

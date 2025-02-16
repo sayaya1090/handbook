@@ -2,7 +2,6 @@ package dev.sayaya.handbook.`interface`.database
 
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
-import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.exception.MissingFieldException
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria.where
@@ -12,46 +11,52 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.*
 
 @Repository
 class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
-    fun findByType(type: String): Flux<Attribute> = findAllByTypeId(type).map(::toDomain)
-    private fun findAllByTypeId(type: String): Flux<R2dbcAttributeEntity> = template.select(query(where("type").`is`(type)), R2dbcAttributeEntity::class.java)
+    fun findByType(type: UUID): Flux<Attribute> = findAllByTypeId(type).map(::toDomain)
+    private fun findAllByTypeId(type: UUID): Flux<R2dbcAttributeEntity> = template.select(query(where("type").`is`(type)), R2dbcAttributeEntity::class.java)
     private fun toDomain(entity: R2dbcAttributeEntity): Attribute = when(entity.attributeType) {
         AttributeType.Value -> Attribute.Companion.ValueAttribute(
             name=entity.id.name,
             description=entity.description,
-            nullable=entity.nullable
+            nullable=entity.nullable,
+            inherited = false
         )
         AttributeType.Array -> Attribute.Companion.ArrayAttribute (
             name=entity.id.name,
             description=entity.description,
             nullable=entity.nullable,
-            valueType = entity.valueType ?: throw MissingFieldException("Missing valueType for ArrayAttribute with name: ${entity.id.name}")
+            valueType = entity.valueType ?: throw MissingFieldException("Missing valueType for ArrayAttribute with name: ${entity.id.name}"),
+            inherited = false
         )
         AttributeType.Map -> Attribute.Companion.MapAttribute(
             name=entity.id.name,
             description=entity.description,
             nullable=entity.nullable,
             keyType = entity.keyType ?: throw IllegalStateException("Missing keyType for MapAttribute with name: ${entity.id.name}"),
-            valueType = entity.valueType ?: throw IllegalStateException("Missing valueType for MapAttribute with name: ${entity.id.name}")
+            valueType = entity.valueType ?: throw IllegalStateException("Missing valueType for MapAttribute with name: ${entity.id.name}"),
+            inherited = false
         )
         AttributeType.File -> Attribute.Companion.FileAttribute(
             name=entity.id.name,
             description=entity.description,
             nullable=entity.nullable,
-            extensions = entity.fileExtensions?.split(",")?.map { it.trim() }?.toSet() ?: throw IllegalStateException()
+            extensions = entity.fileExtensions?.split(",")?.map { it.trim() }?.toSet() ?: throw IllegalStateException(),
+            inherited = false
         )
         AttributeType.Document -> Attribute.Companion.DocumentAttribute(
             name=entity.id.name,
             description=entity.description,
             nullable=entity.nullable,
-            referenceType = entity.referenceType ?: throw IllegalStateException()
+            referenceType = entity.referenceType ?: throw IllegalStateException(),
+            inherited = false
         )
         else -> throw IllegalArgumentException("Unsupported AttributeType: '${entity.attributeType}'")
     }
     @Transactional
-    fun save(type: Type, attributes: List<Attribute>): Mono<List<Attribute>> = findAllByTypeId(type.id)  // Step 1: 기존 데이터 조회
+    fun save(type: R2dbcTypeEntity, attributes: List<Attribute>): Mono<List<Attribute>> = findAllByTypeId(type.id)  // Step 1: 기존 데이터 조회
         .collectList()
         .flatMap { currentAttributes ->
             val attributesToInsert = attributes.filter { incoming ->
@@ -71,7 +76,7 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
             // Step 3: 모든 작업 실행 후 최종 데이터 반환
             Flux.concat(insertFlux, updateFlux, deleteFlux).thenMany(findByType(type.id)).collectList()
         }
-    private fun Attribute.toEntity(type: Type): R2dbcAttributeEntity = when(this) {
+    private fun Attribute.toEntity(type: R2dbcTypeEntity): R2dbcAttributeEntity = when(this) {
         is Attribute.Companion.ValueAttribute   -> R2dbcAttributeEntity(
             type = type.id,
             name = name,
@@ -129,8 +134,8 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
         )
         else -> throw IllegalArgumentException("Unsupported AttributeType: '${type}'")
     }
-    private fun insert(type: Type, attribute: Attribute): Mono<R2dbcAttributeEntity> = attribute.toEntity(type).let { template.insert(it) }
-    private fun update(type: Type, attribute: Attribute): Mono<R2dbcAttributeEntity> = attribute.toEntity(type).let { entity ->
+    private fun insert(type: R2dbcTypeEntity, attribute: Attribute): Mono<R2dbcAttributeEntity> = attribute.toEntity(type).let { template.insert(it) }
+    private fun update(type: R2dbcTypeEntity, attribute: Attribute): Mono<R2dbcAttributeEntity> = attribute.toEntity(type).let { entity ->
         val update = Update.update("attribute_type", entity.attributeType)
             .set("key_type", entity.keyType)
             .set("value_type", entity.valueType)
