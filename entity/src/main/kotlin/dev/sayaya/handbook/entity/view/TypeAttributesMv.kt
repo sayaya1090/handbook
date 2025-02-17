@@ -9,19 +9,15 @@ import java.time.Instant
 ]) @Entity --MV */
 @IdClass(TypeAttributesMv.Companion.TypeAttributesMvId::class)
 data class TypeAttributesMv(
-    @Id @Column(name = "type", nullable = false)
+    @Id @Column(nullable = false)
     val type: String,
-    @Column(name = "attribute_type")
     val attributeType: String? = null,
-    @Id @Column(name = "name", nullable = false)
+    @Id @Column(nullable = false)
     val name: String,
-    @Column(name = "description")
     val description: String? = null,
-    @Column(name = "nullable", nullable = false)
+    @Column(nullable = false)
     val nullable: Boolean,
-    @Column(name = "value_type")
     val valueType: String? = null,
-    @Column(name = "reference_type")
     val referenceType: String? = null,
     @Column(name = "effective_at", nullable = false) val effectiveDateTime: Instant,
     @Column(name = "expire_at", nullable = false) val expiryDateTime: Instant

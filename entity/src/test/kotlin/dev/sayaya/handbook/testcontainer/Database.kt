@@ -14,7 +14,7 @@ internal class Database {
     fun dump(): String {
         val process = ProcessBuilder(
             "docker", "exec", postgres.containerId,
-            "pg_dump", "-h", "localhost", "-U", postgres.username, "--no-owner", postgres.databaseName
+            "pg_dump", "-h", "localhost", "-U", postgres.username, "--no-owner", "--schema-only", postgres.databaseName
         ).redirectErrorStream(true).start()
 
         val output = process.inputStream.bufferedReader().use { it.readText() }

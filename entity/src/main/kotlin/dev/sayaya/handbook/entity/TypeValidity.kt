@@ -19,10 +19,10 @@ internal class TypeValidity {
     @Column(name = "expire_at", nullable = false) lateinit var expiryDateTime: Instant
 
     companion object {
-        data class TypeValidityId (
-            val type: Type = Type(),
-            val id: UUID = UUID.randomUUID()
-        ) : Serializable
+        class TypeValidityId : Serializable {
+            lateinit var type: Type
+            lateinit var id: UUID
+        }
 
         fun of(id: UUID = UUID.randomUUID(), user: User, type: Type, effectiveDateTime: Instant, expiryDateTime: Instant) = TypeValidity().apply {
             this.id = id

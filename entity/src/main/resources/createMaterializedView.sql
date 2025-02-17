@@ -1,3 +1,4 @@
+CREATE MATERIALIZED VIEW public.type_attributes AS
 WITH RECURSIVE
     -- 1. validity_chain 재귀 구조 최적화
     validity_chain AS (

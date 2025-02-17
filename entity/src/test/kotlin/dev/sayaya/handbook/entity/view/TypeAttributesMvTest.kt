@@ -35,55 +35,59 @@ internal class TypeAttributesMvTest(
     @PersistenceContext private val em: EntityManager,
 ) : BehaviorSpec({
     Given("DB 초기화") {
-        val user = User().apply {
-            id = "system"
-            name = "system"
-            createDateTime = Instant.now()
-            lastModifyDateTime = Instant.now()
-        }
-        val type1 = Type.of("type_1", null)
-        val type2 = Type.of("type_2", type1)
-        val type3 = Type.of("type_3", type2)
 
-        val dateMin = LocalDate.of(1970, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
-        val dateMax = LocalDate.of(2999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()
-        val type1Validity = TypeValidity.of(UUID.randomUUID(), user, type1, dateMin, dateMax)
-        val type2Validity = TypeValidity.of(UUID.randomUUID(), user, type2, dateMin, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant())
-        val type2Validity2 = TypeValidity.of(UUID.randomUUID(), user, type2, type2Validity.expiryDateTime, dateMax)
-        val type3Validity = TypeValidity.of(UUID.randomUUID(), user, type3, dateMin, type2Validity.expiryDateTime)
-        val type3Validity2 = TypeValidity.of(UUID.randomUUID(), user, type3, type3Validity.expiryDateTime, dateMax)
+        var type1: Type? = null
+        var type2: Type? = null
+        var type3: Type? = null
 
-        val type1Definition = TypeDefinition.of(UUID.randomUUID(), user, type1Validity)
-        val type2Definition = TypeDefinition.of(UUID.randomUUID(), user, type2Validity)
-        val type2Definition2 = TypeDefinition.of(UUID.randomUUID(), user, type2Validity2)
-        val type3Definition = TypeDefinition.of(UUID.randomUUID(), user, type3Validity)
-        val type3Definition2 = TypeDefinition.of(UUID.randomUUID(), user, type3Validity2)
+        var type1Definition: TypeDefinition? = null
+        var type2Definition: TypeDefinition? = null
+        var type2Definition2: TypeDefinition? = null
+        var type3Definition: TypeDefinition? = null
+        var type3Definition2: TypeDefinition? = null
 
         tx.transactional {
             ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성
             ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
-            em.merge(user)
-            em.merge(type1)
-            em.merge(type2)
-            em.merge(type3)
-            em.merge(type1Validity)
-            em.merge(type2Validity)
-            em.merge(type2Validity2)
-            em.merge(type3Validity)
-            em.merge(type3Validity2)
-            em.merge(type1Definition)
-            em.merge(type2Definition)
-            em.merge(type2Definition2)
-            em.merge(type3Definition)
-            em.merge(type3Definition2)
+            var user = User().apply {
+                id = "system"
+                name = "system"
+                createDateTime = Instant.now()
+                lastModifyDateTime = Instant.now()
+            }
+            user = em.merge(user)
+
+            type1 = em.merge(Type.of("type_1", null))
+            type2 = em.merge(Type.of("type_2", type1))
+            type3 = em.merge(Type.of("type_3", type2))
+
+            val dateMin = LocalDate.of(1970, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
+            val dateMin2 = LocalDate.of(1990, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
+            val dateMax = LocalDate.of(2999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()
+            var type1Validity = TypeValidity.of(UUID.randomUUID(), user, type1!!, dateMin, dateMax)
+            var type2Validity = TypeValidity.of(UUID.randomUUID(), user, type2!!, dateMin2, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+            var type2Validity2 = TypeValidity.of(UUID.randomUUID(), user, type2!!, type2Validity.expiryDateTime, dateMax)
+            var type3Validity = TypeValidity.of(UUID.randomUUID(), user, type3!!, dateMin2, type2Validity.expiryDateTime)
+            var type3Validity2 = TypeValidity.of(UUID.randomUUID(), user, type3!!, type3Validity.expiryDateTime, dateMax)
+            type1Validity = em.merge(type1Validity)
+            type2Validity = em.merge(type2Validity)
+            type2Validity2 = em.merge(type2Validity2)
+            type3Validity = em.merge(type3Validity)
+            type3Validity2 = em.merge(type3Validity2)
+
+            type1Definition = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type1Validity))
+            type2Definition = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type2Validity))
+            type2Definition2 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type2Validity2))
+            type3Definition = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type3Validity))
+            type3Definition2 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type3Validity2))
         }
         When("계층 구조를 가진 데이터에 Attribute를 저장하고 MV를 업데이트하면") {
             tx.transactional {
-                val type1Def = em.find(TypeDefinition::class.java, type1Definition.id)
-                val type2Def = em.find(TypeDefinition::class.java, type2Definition.id)
-                val type2Def2 = em.find(TypeDefinition::class.java, type2Definition2.id)
-                val type3Def = em.find(TypeDefinition::class.java, type3Definition.id)
-                val type3Def2 = em.find(TypeDefinition::class.java, type3Definition2.id)
+                val type1Def = em.find(TypeDefinition::class.java, type1Definition!!.id)
+                val type2Def = em.find(TypeDefinition::class.java, type2Definition!!.id)
+                val type2Def2 = em.find(TypeDefinition::class.java, type2Definition2!!.id)
+                val type3Def = em.find(TypeDefinition::class.java, type3Definition!!.id)
+                val type3Def2 = em.find(TypeDefinition::class.java, type3Definition2!!.id)
                 val type1DefAttr1 = ValueAttribute.of(type1Def, "common_attr").apply {
                     description = "Common Attribute in Type1"
                 }
@@ -93,13 +97,13 @@ internal class TypeAttributesMvTest(
                 val type2DefAttr2 = ValueAttribute.of(type2Def, "common_attr").apply {
                     description = "Overwritten Attribute in Type2"
                 }
-                val type3DefAttr1 = DocumentAttribute.of(type3Def, "exclusive_attr", type1).apply {
+                val type3DefAttr1 = DocumentAttribute.of(type3Def, "exclusive_attr", type1!!).apply {
                     description = "Exclusive Attribute in Type3"
                 }
                 val type2Def2Attr2 = ValueAttribute.of(type2Def2, "common_attr").apply {
                     description = "Overwritten Attribute in Type2"
                 }
-                val type3Def2Attr1 = DocumentAttribute.of(type3Def2, "exclusive_attr", type1).apply {
+                val type3Def2Attr1 = DocumentAttribute.of(type3Def2, "exclusive_attr", type1!!).apply {
                     description = "Exclusive Attribute in Type3"
                 }
                 val type3Def2Attr2 = MapAttribute.of(type3Def2, "exclusive_attr2", AttributeType.Value, AttributeType.Value).apply {
@@ -119,7 +123,7 @@ internal class TypeAttributesMvTest(
                 val result: List<TypeAttributesMv> = em.createNativeQuery(
                     """
                     SELECT * FROM type_attributes t
-                    ORDER BY t.type, t.name
+                    ORDER BY t.type, t.effective_at, t.name
                     """.trimIndent(),
                     TypeAttributesMv::class.java
                 ).resultList as List<TypeAttributesMv>
@@ -129,33 +133,41 @@ internal class TypeAttributesMvTest(
             Then("TypeHierarchyCloser 테이블에 전체 계층 구조가 저장된다") {
                 val mappedResult = dumpTypeAttributes()
                 val expectedResult = listOf(
-                    "type_1:common_attr (description=Common Attribute in Type1)",
-                    "type_2:common_attr (description=Overwritten Attribute in Type2)",
-                    "type_2:unique_attr (description=Unique Attribute in Type2)",
-                    "type_3:common_attr (description=Overwritten Attribute in Type2)",
-                    "type_3:exclusive_attr (description=Exclusive Attribute in Type3)",
-                    "type_3:unique_attr (description=Unique Attribute in Type2)"
+                    "type_1:common_attr [1970-01-01~2999-12-31] (description=Common Attribute in Type1)",
+                    "type_2:common_attr [1990-01-01~2000-01-01] (description=Overwritten Attribute in Type2)",
+                    "type_2:unique_attr [1990-01-01~2000-01-01] (description=Unique Attribute in Type2)",
+                    "type_2:common_attr [2000-01-01~2999-12-31] (description=Overwritten Attribute in Type2)",
+                    "type_3:common_attr [1990-01-01~2000-01-01] (description=Overwritten Attribute in Type2)",
+                    "type_3:exclusive_attr [1990-01-01~2000-01-01] (description=Exclusive Attribute in Type3)",
+                    "type_3:unique_attr [1990-01-01~2000-01-01] (description=Unique Attribute in Type2)",
+                    "type_3:common_attr [2000-01-01~2999-12-31] (description=Overwritten Attribute in Type2)",
+                    "type_3:exclusive_attr [2000-01-01~2999-12-31] (description=Exclusive Attribute in Type3)",
+                    "type_3:exclusive_attr2 [2000-01-01~2999-12-31] (description=Added Attribute in Type3)"
                 )
                 mappedResult shouldContainAll expectedResult
                 mappedResult.size shouldBe expectedResult.size
             }
             When("계층 구조를 변경하고 MV를 업데이트하면") {
                 tx.transactional {
-                    em.merge(type3.apply {
+                    em.merge(type3!!.apply {
                         parent = type1
                     }) // Type 계층 구조 변경
-                    em.createNativeQuery("DELETE FROM attribute WHERE type='${type2.id}' AND name='unique_attr'").executeUpdate() // 상속하던 속성 삭제
+                    em.createNativeQuery("DELETE FROM attribute WHERE type_definition='${type2Definition!!.id}' AND description='Overwritten Attribute in Type2'").executeUpdate() // 상속하던 속성 삭제
                     em.createNativeQuery("REFRESH MATERIALIZED VIEW type_attributes").executeUpdate()
                 }
                 Then("TypeHierarchyCloser 테이블에 변경된 계층 구조가 저장된다") {
                     val mappedResult = dumpTypeAttributes()
+                    println(mappedResult)
                     val expectedResult = listOf(
-                        "type_1:common_attr (description=Common Attribute in Type1)",
-                        "type_2:common_attr (description=Common Attribute in Type1)",   // 오버라이드 속성이 제거되고 부모를 상속한다
-                        "type_2:unique_attr (description=Unique Attribute in Type2)",
-                        "type_3:common_attr (description=Common Attribute in Type1)",
-                        "type_3:exclusive_attr (description=Exclusive Attribute in Type3)",
-                        // 부모가 변경되어 type_3의 type_2 상속 속성이 제거된다
+                        "type_1:common_attr [1970-01-01~2999-12-31] (description=Common Attribute in Type1)",
+                        "type_2:common_attr [1990-01-01~2000-01-01] (description=Common Attribute in Type1)",   // 오버라이드 속성이 제거되고 부모를 상속한다
+                        "type_2:unique_attr [1990-01-01~2000-01-01] (description=Unique Attribute in Type2)",
+                        "type_2:common_attr [2000-01-01~2999-12-31] (description=Overwritten Attribute in Type2)",
+                        "type_3:common_attr [1990-01-01~2000-01-01] (description=Common Attribute in Type1)",
+                        "type_3:exclusive_attr [1990-01-01~2000-01-01] (description=Exclusive Attribute in Type3)",
+                        "type_3:common_attr [2000-01-01~2999-12-31] (description=Common Attribute in Type1)",
+                        "type_3:exclusive_attr [2000-01-01~2999-12-31] (description=Exclusive Attribute in Type3)",
+                        "type_3:exclusive_attr2 [2000-01-01~2999-12-31] (description=Added Attribute in Type3)" // 부모가 변경되어 type_3의 type_2 상속 속성이 제거된다
                     )
                     mappedResult shouldContainAll expectedResult
                     mappedResult.size shouldBe expectedResult.size
