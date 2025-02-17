@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedBy
@@ -21,9 +23,11 @@ internal class Group {
     @ManyToMany @JoinTable(name = "group_member",
         joinColumns = [JoinColumn(name = "\"group\"")],
         inverseJoinColumns = [JoinColumn(name = "member")])
+    @OnDelete(action = OnDeleteAction.CASCADE)
     lateinit var members: List<User>
     @ManyToMany @JoinTable(name = "group_role",
         joinColumns = [JoinColumn(name = "\"group\"")],
         inverseJoinColumns = [JoinColumn(name = "role")])
+    @OnDelete(action = OnDeleteAction.CASCADE)
     lateinit var roles: List<Role>
 }

@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
 import java.time.Instant
@@ -13,7 +15,7 @@ internal class TypeDefinition {
     @ManyToOne @JoinColumns(value = [
         JoinColumn(name = "type", referencedColumnName="type", nullable = false),
         JoinColumn(name = "validity", referencedColumnName="id", nullable = false)
-    ]) lateinit var type: TypeValidity
+    ]) @OnDelete(action = OnDeleteAction.CASCADE) lateinit var type: TypeValidity
     @CreatedDate @Column(name = "created_at", nullable = false) lateinit var createDateTime: Instant
     @CreatedBy @ManyToOne @JoinColumn(name = "created_by", nullable = false) lateinit var createBy: User
     @Column(columnDefinition = "text", nullable = false) var description: String = ""

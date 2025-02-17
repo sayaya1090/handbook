@@ -57,10 +57,11 @@ internal class TypeHierarchyClosureTest (
                     """.trimIndent(),
                     TypeHierarchyClosure::class.java
                 ).resultList as List<TypeHierarchyClosure>
-                return result.map { "${ it.descendant } -> ${ it.ancestor } (depth=${ it.depth })" }
+                return result.map { "${ it.descendant.id } -> ${ it.ancestor.id } (depth=${ it.depth })" }
             }
             Then("TypeHierarchyCloser 테이블에 전체 계층 구조가 저장된다") {
                 val mappedResult = dumpTypeHierarchyClosure()
+                println(mappedResult)
                 val expectedResult = listOf(
                     "type_1 -> type_1 (depth=0)",
                     "type_2 -> type_2 (depth=0)",
@@ -79,6 +80,7 @@ internal class TypeHierarchyClosureTest (
                 }
                 Then("TypeHierarchyCloser 테이블에 전체 계층 구조가 저장된다") {
                     val mappedResult = dumpTypeHierarchyClosure()
+                    println(mappedResult)
                     val expectedResult = listOf(
                         "type_1 -> type_1 (depth=0)",
                         "type_2 -> type_2 (depth=0)",

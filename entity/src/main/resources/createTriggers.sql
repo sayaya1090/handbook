@@ -5,13 +5,13 @@ CREATE OR REPLACE FUNCTION update_closure_on_insert()
     RETURNS TRIGGER AS $$
 BEGIN
     -- 기존 상위 계층들과 새로운 타입 연결
-    INSERT INTO type_hierarchy_closure (ancestor, descendant, depth)
+    INSERT INTO public.type_hierarchy_closure (ancestor, descendant, depth)
     SELECT ancestor, NEW.id, depth + 1
-    FROM type_hierarchy_closure
+    FROM public.type_hierarchy_closure
     WHERE descendant = NEW.parent;
 
     -- 자기 자신에 대한 정보 추가
-    INSERT INTO type_hierarchy_closure (ancestor, descendant, depth)
+    INSERT INTO public.type_hierarchy_closure (ancestor, descendant, depth)
     VALUES (NEW.id, NEW.id, 0);
 
     RETURN NEW;
@@ -27,7 +27,7 @@ CREATE OR REPLACE FUNCTION update_closure_on_delete()
     RETURNS TRIGGER AS $$
 BEGIN
     -- 삭제된 타입과 연관된 모든 경로 삭제
-    DELETE FROM type_hierarchy_closure
+    DELETE FROM public.type_hierarchy_closure
     WHERE ancestor = OLD.id OR descendant = OLD.id;
 
     RETURN OLD;
@@ -43,19 +43,19 @@ CREATE OR REPLACE FUNCTION update_closure_on_update()
     RETURNS TRIGGER AS $$
 BEGIN
     -- 1. 기존 계층 관계 삭제
-    DELETE FROM type_hierarchy_closure
+    DELETE FROM public.type_hierarchy_closure
     WHERE descendant IN (
         SELECT id FROM type WHERE id = NEW.id OR parent = NEW.id
     );
 
     -- 2. 새로운 부모의 계층 관계 복사
-    INSERT INTO type_hierarchy_closure (ancestor, descendant, depth)
+    INSERT INTO public.type_hierarchy_closure (ancestor, descendant, depth)
     SELECT ancestor, NEW.id, depth + 1
-    FROM type_hierarchy_closure
+    FROM public.type_hierarchy_closure
     WHERE descendant = NEW.parent;
 
     -- 3. 자기 자신 추가
-    INSERT INTO type_hierarchy_closure (ancestor, descendant, depth)
+    INSERT INTO public.type_hierarchy_closure (ancestor, descendant, depth)
     VALUES (NEW.id, NEW.id, 0);
 
     -- 4. 모든 자식 타입도 갱신
@@ -64,9 +64,9 @@ BEGIN
         UNION
         SELECT t.id FROM type t JOIN descendants d ON t.parent = d.id
     )
-    INSERT INTO type_hierarchy_closure (ancestor, descendant, depth)
+    INSERT INTO public.type_hierarchy_closure (ancestor, descendant, depth)
     SELECT c.ancestor, d.id, c.depth + 1
-    FROM type_hierarchy_closure c
+    FROM public.type_hierarchy_closure c
              JOIN descendants d ON c.descendant = NEW.id;
 
     RETURN NEW;
