@@ -71,10 +71,8 @@ class R2dbcTypeRepositoryTest(
     should("ID가 있는 경우 Type을 업데이트한다") {
         // Given
         databaseClient.sql("""
-            INSERT INTO type (id, last_modified_at, created_at, description, created_by, last_modified_by, parent, primitive) 
-            VALUES ('parent1', NOW(), NOW(), 'parent1', 'system', 'system', null, false);
-            INSERT INTO type (id, last_modified_at, created_at, description, created_by, last_modified_by, parent, primitive) 
-            VALUES ('type1', NOW(), NOW(), 'type1', 'system', 'system', null, false);
+            INSERT INTO type (id, parent) VALUES ('parent1', null);
+            INSERT INTO type (id, parent) VALUES ('type1', null);
         """).fetch().rowsUpdated().block()
 
         val updatedType = Type(

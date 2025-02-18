@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono
 import reactor.util.function.Tuple2
 import reactor.util.function.Tuples
 
+// 도메인 Type을 엔티티 Type, TypeVersion, TypeDefinition, Attribute로 나누어 저장한다.
 @Repository
 class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val attributeRepo: R2dbcAttributeRepository): TypeRepository {
     @Transactional

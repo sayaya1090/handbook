@@ -5,6 +5,7 @@ interface Attribute {
     val description: String?
     val type: AttributeType
     val nullable: Boolean
+    val inherited: Boolean
 
     companion object {
         const val DEFAULT_NAME = ""
@@ -13,7 +14,8 @@ interface Attribute {
         data class ValueAttribute (
             override val name: String = DEFAULT_NAME,
             override val description: String? = DEFAULT_DESCRIPTION,
-            override val nullable: Boolean = false
+            override val nullable: Boolean = false,
+            override val inherited: Boolean
         ): Attribute {
             override val type: AttributeType = AttributeType.Value
         }
@@ -21,7 +23,8 @@ interface Attribute {
             override val name: String = DEFAULT_NAME,
             override val description: String? = DEFAULT_DESCRIPTION,
             val valueType: AttributeType = AttributeType.Value,
-            override val nullable: Boolean = false
+            override val nullable: Boolean = false,
+            override val inherited: Boolean
         ): Attribute {
             override val type: AttributeType = AttributeType.Array
         }
@@ -30,7 +33,8 @@ interface Attribute {
             override val description: String? = DEFAULT_DESCRIPTION,
             val keyType: AttributeType = AttributeType.Value,
             val valueType: AttributeType = AttributeType.Value,
-            override val nullable: Boolean = false
+            override val nullable: Boolean = false,
+            override val inherited: Boolean
         ): Attribute {
             override val type: AttributeType = AttributeType.Map
         }
@@ -38,7 +42,8 @@ interface Attribute {
             override val name: String = DEFAULT_NAME,
             override val description: String? = DEFAULT_DESCRIPTION,
             val referenceType: String,
-            override val nullable: Boolean = false
+            override val nullable: Boolean = false,
+            override val inherited: Boolean
         ): Attribute {
             override val type: AttributeType = AttributeType.Document
         }
@@ -46,7 +51,8 @@ interface Attribute {
             override val name: String = DEFAULT_NAME,
             override val description: String? = DEFAULT_DESCRIPTION,
             val extensions: Set<String> = emptySet(),
-            override val nullable: Boolean = false
+            override val nullable: Boolean = false,
+            override val inherited: Boolean
         ): Attribute {
             override val type: AttributeType = AttributeType.File
             init {
