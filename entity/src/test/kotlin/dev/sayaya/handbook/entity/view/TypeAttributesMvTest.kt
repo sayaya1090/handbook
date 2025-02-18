@@ -40,10 +40,10 @@ internal class TypeAttributesMvTest(
         var type2: Type? = null
         var type3: Type? = null
 
-        var type1Definition: TypeDefinition? = null
-        var type2Definition: TypeDefinition? = null
+        var type1Definition1: TypeDefinition? = null
+        var type2Definition1: TypeDefinition? = null
         var type2Definition2: TypeDefinition? = null
-        var type3Definition: TypeDefinition? = null
+        var type3Definition1: TypeDefinition? = null
         var type3Definition2: TypeDefinition? = null
 
         tx.transactional {
@@ -64,29 +64,29 @@ internal class TypeAttributesMvTest(
             val dateMin = LocalDate.of(1970, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
             val dateMin2 = LocalDate.of(1990, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
             val dateMax = LocalDate.of(2999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()
-            var type1Validity = TypeValidity.of(UUID.randomUUID(), user, type1!!, dateMin, dateMax)
-            var type2Validity = TypeValidity.of(UUID.randomUUID(), user, type2!!, dateMin2, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant())
-            var type2Validity2 = TypeValidity.of(UUID.randomUUID(), user, type2!!, type2Validity.expiryDateTime, dateMax)
-            var type3Validity = TypeValidity.of(UUID.randomUUID(), user, type3!!, dateMin2, type2Validity.expiryDateTime)
-            var type3Validity2 = TypeValidity.of(UUID.randomUUID(), user, type3!!, type3Validity.expiryDateTime, dateMax)
-            type1Validity = em.merge(type1Validity)
-            type2Validity = em.merge(type2Validity)
-            type2Validity2 = em.merge(type2Validity2)
-            type3Validity = em.merge(type3Validity)
-            type3Validity2 = em.merge(type3Validity2)
+            var type1Version1 = TypeVersion.of(user, type1!!, "t1-v1", dateMin, dateMax)
+            var type2Version1 = TypeVersion.of(user, type2!!, "t2-v1", dateMin2, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+            var type2Version2 = TypeVersion.of(user, type2!!, "t2-v2", type2Version1.expiryDateTime, dateMax)
+            var type3Version1 = TypeVersion.of(user, type3!!, "t3-v1", dateMin2, type2Version1.expiryDateTime)
+            var type3Version2 = TypeVersion.of(user, type3!!, "t3-v2", type3Version1.expiryDateTime, dateMax)
+            type1Version1 = em.merge(type1Version1)
+            type2Version1 = em.merge(type2Version1)
+            type2Version2 = em.merge(type2Version2)
+            type3Version1 = em.merge(type3Version1)
+            type3Version2 = em.merge(type3Version2)
 
-            type1Definition = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type1Validity))
-            type2Definition = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type2Validity))
-            type2Definition2 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type2Validity2))
-            type3Definition = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type3Validity))
-            type3Definition2 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type3Validity2))
+            type1Definition1 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type1Version1))
+            type2Definition1 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type2Version1))
+            type2Definition2 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type2Version2))
+            type3Definition1 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type3Version1))
+            type3Definition2 = em.merge(TypeDefinition.of(UUID.randomUUID(), user, type3Version2))
         }
         When("계층 구조를 가진 데이터에 Attribute를 저장하고 MV를 업데이트하면") {
             tx.transactional {
-                val type1Def = em.find(TypeDefinition::class.java, type1Definition!!.id)
-                val type2Def = em.find(TypeDefinition::class.java, type2Definition!!.id)
+                val type1Def = em.find(TypeDefinition::class.java, type1Definition1!!.id)
+                val type2Def = em.find(TypeDefinition::class.java, type2Definition1!!.id)
                 val type2Def2 = em.find(TypeDefinition::class.java, type2Definition2!!.id)
-                val type3Def = em.find(TypeDefinition::class.java, type3Definition!!.id)
+                val type3Def = em.find(TypeDefinition::class.java, type3Definition1!!.id)
                 val type3Def2 = em.find(TypeDefinition::class.java, type3Definition2!!.id)
                 val type1DefAttr1 = ValueAttribute.of(type1Def, "common_attr").apply {
                     description = "Common Attribute in Type1"
@@ -152,7 +152,7 @@ internal class TypeAttributesMvTest(
                     em.merge(type3!!.apply {
                         parent = type1
                     }) // Type 계층 구조 변경
-                    em.createNativeQuery("DELETE FROM attribute WHERE type_definition='${type2Definition!!.id}' AND description='Overwritten Attribute in Type2'").executeUpdate() // 상속하던 속성 삭제
+                    em.createNativeQuery("DELETE FROM attribute WHERE type_definition='${type2Definition1!!.id}' AND description='Overwritten Attribute in Type2'").executeUpdate() // 상속하던 속성 삭제
                     em.createNativeQuery("REFRESH MATERIALIZED VIEW type_attributes").executeUpdate()
                 }
                 Then("TypeHierarchyCloser 테이블에 변경된 계층 구조가 저장된다") {

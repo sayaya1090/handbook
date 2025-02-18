@@ -6,11 +6,13 @@ import java.time.Instant
 
 /*@Table(name = "type_attributes", indexes=[
     Index(columnList = "type, name"),
+    Index(columnList = "effective_at, expire_at, type")
 ]) @Entity --MV */
 @IdClass(TypeAttributesMv.Companion.TypeAttributesMvId::class)
 data class TypeAttributesMv(
     @Id @Column(nullable = false)
     val type: String,
+    val version: String,
     val attributeType: String? = null,
     @Id @Column(nullable = false)
     val name: String,

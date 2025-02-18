@@ -1,42 +1,42 @@
 CREATE MATERIALIZED VIEW public.type_attributes AS
 WITH RECURSIVE
-    -- 1. validity_chain 재귀 구조 최적화
-    validity_chain AS (
+    -- 1. version_chain 재귀 구조 최적화
+    version_chain AS (
         SELECT
             t.id AS type,
             t.parent,
-            tv.id AS validity_id,
+            tv.version,
             tv.effective_at,
             tv.expire_at,
             0 AS depth
         FROM type t
-                 JOIN type_validity tv ON t.id = tv.type
+                 JOIN type_version tv ON t.id = tv.type
         UNION ALL
         SELECT
             vc.type,
             t.parent,
-            tv.id AS validity_id,
+            tv.version,
             tv.effective_at,
             tv.expire_at,
             vc.depth + 1
-        FROM validity_chain vc
+        FROM version_chain vc
                  JOIN type t ON t.id = vc.parent
-                 JOIN type_validity tv ON t.id = tv.type
+                 JOIN type_version tv ON t.id = tv.type
         WHERE t.parent IS NOT NULL
     ),
     -- 2. 유효한 transition_point만을 선택
-    validity_transitions AS (
+    version_transitions AS (
         SELECT
             vc.type,
             vc.effective_at AS transition_point,
-            vc.validity_id AS trigger_validity_id
-        FROM validity_chain vc
+            vc.version AS trigger_version
+        FROM version_chain vc
         UNION ALL
         SELECT
             vc.type,
             vc.expire_at AS transition_point,
-            vc.validity_id AS trigger_validity_id
-        FROM validity_chain vc
+            vc.version AS trigger_version
+        FROM version_chain vc
     ),
     -- 3. transition_point를 정렬하고 유효 기간 정리
     ordered_transitions AS (
@@ -47,17 +47,17 @@ WITH RECURSIVE
                 PARTITION BY vt.type
                 ORDER BY vt.transition_point
                 ) AS expire_at
-        FROM validity_transitions vt
+        FROM version_transitions vt
     ),
     -- 4. 버전 정보 필터링
     versions AS (
         SELECT DISTINCT ON (ot.type, ot.effective_at)
             ot.type,
-            tv.id AS validity_id,
+            tv.version,
             ot.effective_at,
             ot.expire_at
         FROM ordered_transitions ot
-                 JOIN type_validity tv ON tv.type = ot.type
+                 JOIN type_version tv ON tv.type = ot.type
         WHERE ot.effective_at < ot.expire_at
           AND tv.effective_at <= ot.effective_at
           AND tv.expire_at > ot.effective_at
@@ -67,6 +67,7 @@ WITH RECURSIVE
     inheritance_chain AS (
         SELECT
             v.type AS descendant_type,
+            v.version,
             v.effective_at,
             v.expire_at,
             att.name AS attribute_name,
@@ -79,11 +80,12 @@ WITH RECURSIVE
             t.parent AS parent_type
         FROM versions v
                  JOIN type t ON t.id = v.type
-                 JOIN type_definition td ON td.validity = v.validity_id
+                 JOIN type_definition td ON td.type=v.type AND td.version = v.version
                  LEFT JOIN attribute att ON att.type_definition = td.id
         UNION ALL
         SELECT
             ic.descendant_type,
+            tv.version,
             ic.effective_at,
             ic.expire_at,
             att.name,
@@ -96,16 +98,17 @@ WITH RECURSIVE
             t.parent
         FROM inheritance_chain ic
                  JOIN type t ON t.id = ic.parent_type
-                 JOIN type_validity tv ON t.id = tv.type
+                 JOIN type_version tv ON t.id = tv.type
             AND tv.effective_at <= ic.effective_at
             AND tv.expire_at > ic.effective_at
-                 JOIN type_definition td ON td.validity = tv.id
+                 JOIN type_definition td ON td.type=tv.type AND td.version = tv.version
                  LEFT JOIN attribute att ON att.type_definition = td.id
     ),
     -- 6. 필터링된 inheritance 결과에서 우선순위를 계산
     filtered_inheritance AS (
         SELECT
             ic.descendant_type,
+            ic.version,
             ic.effective_at,
             ic.expire_at,
             ic.attribute_name,
@@ -124,6 +127,7 @@ WITH RECURSIVE
 -- 최종 결과 반환
 SELECT
     descendant_type AS type,
+    version,
     attribute_type,
     attribute_name AS name,
     description,
@@ -134,3 +138,6 @@ SELECT
     expire_at
 FROM filtered_inheritance
 WHERE priority = 1;
+
+CREATE INDEX idx1iajpy9hywmtq6kx97n618xud ON public.type_attributes USING btree (type, name);
+CREATE INDEX idxpeomg1rph19vxib9crrljggdw ON public.type_attributes USING btree (effective_at, expire_at, type);
