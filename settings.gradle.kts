@@ -19,7 +19,25 @@ dependencyResolutionManagement {
             library("stdlib", "org.jetbrains.kotlin", "kotlin-stdlib").withoutVersion()
             bundle("kotlin", listOf("reflect", "stdlib"))
 
+            library("spring-webflux", "org.springframework.boot", "spring-boot-starter-webflux").withoutVersion()
+            library("kotlin-reactor", "io.projectreactor.kotlin", "reactor-kotlin-extensions").withoutVersion()
+            library("kotlin-coroutines-reactor", "org.jetbrains.kotlinx", "kotlinx-coroutines-reactor").withoutVersion()
+            library("kotlin-jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").withoutVersion()
+            library("spring-actuator", "org.springframework.boot", "spring-boot-starter-actuator").withoutVersion()
+            bundle("kotlin-webflux", listOf("spring-webflux", "kotlin-reactor", "kotlin-coroutines-reactor", "kotlin-jackson", "spring-actuator"))
+
+            library("spring-gateway", "org.springframework.cloud", "spring-cloud-starter-gateway").withoutVersion()
+            library("spring-discovery", "org.springframework.cloud", "spring-cloud-starter-zookeeper-discovery").withoutVersion()
+
             library("spring-cloud-bom", "org.springframework.cloud", "spring-cloud-dependencies").version { require("2024.0.0") }
+            library("spring-log4j2", "org.springframework.boot", "spring-boot-starter-log4j2").withoutVersion()
+            // library("spring-security", "org.springframework.boot", "spring-boot-starter-security").withoutVersion()
+            // library("spring-kubernetes-client", "org.springframework.cloud", "spring-cloud-starter-kubernetes-fabric8").withoutVersion()
+            bundle("spring-client", listOf("spring-log4j2"/*, "spring-security"*/))
+
+            library("r2dbc", "org.springframework.boot", "spring-boot-starter-data-r2dbc").withoutVersion()
+            library("r2dbc-postgres", "org.postgresql", "r2dbc-postgresql").withoutVersion()
+            bundle("r2dbc-postgres", listOf("r2dbc", "r2dbc-postgres"))
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("5.9.1") }
@@ -34,4 +52,7 @@ dependencyResolutionManagement {
         }
     }
 }
+include("domain")
 include("entity")
+include("persist")
+include("testcontainer")
