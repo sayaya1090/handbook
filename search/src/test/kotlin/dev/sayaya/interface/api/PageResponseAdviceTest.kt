@@ -3,33 +3,45 @@ package dev.sayaya.`interface`.api
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
-import org.mockito.Mockito.mock
+import io.mockk.mockk
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.ReactiveAdapterRegistry
+import org.springframework.core.ResolvableType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpHeaders.CACHE_CONTROL
 import org.springframework.http.HttpStatus
+import org.springframework.http.codec.EncoderHttpMessageWriter
+import org.springframework.http.codec.HttpMessageWriter
+import org.springframework.http.codec.json.Jackson2JsonEncoder
+import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.mock.web.server.MockServerWebExchange
 import org.springframework.web.reactive.HandlerResult
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
+@SpringBootTest
 class PageResponseAdviceTest : ShouldSpec({
-    val advice = PageResponseAdvice(mock(), mock(), mock())
+    val advice = PageResponseAdvice(ReactiveAdapterRegistry.getSharedInstance(), listOf(EncoderHttpMessageWriter(Jackson2JsonEncoder())), mockk())
     context("supports 메서드 동작 확인") {
         should("Mono<Page> 타입인 경우 true를 반환해야 한다") {
-            val handlerResult: HandlerResult = mock()
-            every { handlerResult.returnType.rawClass } returns Mono::class.java
+            val handlerResult: HandlerResult = mockk()
+            val resolveType: ResolvableType = mockk()
+            every { handlerResult.returnType } returns resolveType
+            every { resolveType.rawClass } returns Mono::class.java
 
             val pageClass = Page::class.java
-            every { handlerResult.returnType.getGeneric(0).rawClass } returns pageClass
+            every { resolveType.getGeneric(0).rawClass } returns pageClass
 
             val result = advice.supports(handlerResult)
             result shouldBe true
         }
 
         should("Mono<Page>가 아닌 반환 타입인 경우 false를 반환해야 한다") {
-            val handlerResult: HandlerResult = mock()
-            every { handlerResult.returnType.rawClass } returns String::class.java
+            val handlerResult: HandlerResult = mockk()
+            val resolveType: ResolvableType = mockk()
+            every { handlerResult.returnType } returns resolveType
+            every { resolveType.rawClass } returns Mono::class.java
 
             val result = advice.supports(handlerResult)
             result shouldBe false
