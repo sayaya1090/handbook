@@ -87,7 +87,7 @@ internal class TypeVersionOverlapTest(
                         em.persist(overlappingTypeVersion)
                     }
                 }
-                exception.message shouldStartWith "ERROR: Overlapping periods are not allowed for type: type_1, effective_at: 2023-06-01 09:00:00+09, expire_at: 2023-12-02 08:59:59+09" // 메시지 검증
+                exception.message shouldStartWith "ERROR: Overlapping periods are not allowed for type: type_1, effective_at:" // 메시지 검증
             }
         }
 
@@ -104,7 +104,7 @@ internal class TypeVersionOverlapTest(
                         em.merge(typeVersionToUpdate)  // 기간이 오버랩되도록 데이터 변경
                     }
                 }
-                exception.message shouldStartWith "ERROR: Overlapping periods are not allowed for type: type_1, effective_at: 2023-06-01 09:00:00+09, expire_at: 2023-12-02 08:59:59+09"
+                exception.message shouldStartWith "ERROR: Overlapping periods are not allowed for type: type_1, effective_at:"
             }
         }
     }

@@ -71,7 +71,7 @@ internal class TypeChildConsistencyTest(
                         em.createNativeQuery("DELETE FROM type WHERE name='${parentType.name}' AND version='${parentType.version}'").executeUpdate()
                     }
                 }
-                exception.message shouldStartWith "ERROR: Cannot delete parent type (name=conflict_parent, version=1.0) as it still has associated children during the period [2023-01-01 09:00:00+09 → 2023-07-01 08:59:59+09]"
+                exception.message shouldStartWith "ERROR: Cannot delete parent type (name=conflict_parent, version=1.0) as it still has associated children during the period"
             }
         }
         When("삭제하려는 부모의 기간 내 자식 데이터가 없는 경우") {

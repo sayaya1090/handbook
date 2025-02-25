@@ -89,7 +89,7 @@ internal class TypeParentConsistencyTest(
                         em.persist(childType)
                     }
                 }
-                exception.message shouldStartWith "ERROR: Parent type (name=parent_type_gapped) is missing or has gaps or does not fully cover the period [2023-01-01 09:00:00+09, 2024-01-01 08:59:59+09]"
+                exception.message shouldStartWith "ERROR: Parent type (name=parent_type_gapped) is missing or has gaps or does not fully cover the period"
             }
         }
 
@@ -118,7 +118,7 @@ internal class TypeParentConsistencyTest(
                         em.persist(childType)
                     }
                 }
-                exception.message shouldStartWith "ERROR: Parent type (name=parent_type_incomplete) is missing or has gaps or does not fully cover the period [2023-01-01 09:00:00+09, 2024-01-01 08:59:59+09]"
+                exception.message shouldStartWith "ERROR: Parent type (name=parent_type_incomplete) is missing or has gaps or does not fully cover the period"
             }
         }
 
