@@ -1,0 +1,26 @@
+name: 저장 모듈 테스트
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - persist/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      SUBMODULE: persist
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+      - name: Export schema
+        run: gradle entity:test --tests "dev.sayaya.handbook.ExportSchema"
+      - name: Test & Report
+        run: gradle $SUBMODULE:koverXmlReport
