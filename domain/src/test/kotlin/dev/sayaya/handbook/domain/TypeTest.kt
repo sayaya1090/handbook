@@ -8,11 +8,12 @@ import io.kotest.matchers.throwable.shouldHaveMessage
 import java.time.Instant
 
 class TypeTest : StringSpec({
+    val now = Instant.now()
     "Type은 부모와 자식 관계가 올바르게 설정된다" {
         val parentType = Type(
             id = "parent-type",
             version = "1.0",
-            effectDateTime = Instant.now(),
+            effectDateTime = now,
             expireDateTime = Instant.MAX,
             parent = null,
             description = "The parent type",
@@ -23,7 +24,7 @@ class TypeTest : StringSpec({
         val childType = Type(
             id = "child-type",
             version = "1.0",
-            effectDateTime = Instant.now(),
+            effectDateTime = now,
             expireDateTime = Instant.MAX,
             parent = parentType.id,
             description = "The child type",
@@ -41,7 +42,7 @@ class TypeTest : StringSpec({
             Type(
                 id = "",
                 version = "1.0",
-                effectDateTime = Instant.now(),
+                effectDateTime = now,
                 expireDateTime = Instant.MAX,
                 parent = null,
                 description = "Invalid blank id",
@@ -50,5 +51,34 @@ class TypeTest : StringSpec({
             )
         }
         exceptionForBlank shouldHaveMessage "Type id cannot be blank"
+    }
+    "Type은 종료일시가 시작일시보다 나중이어야 함" {
+        shouldThrow<IllegalArgumentException> {
+            Type(
+                id = "test-type",
+                version = "1.0",
+                effectDateTime = now.plusSeconds(3600),
+                expireDateTime = now,
+                parent = null,
+                description = "Invalid date time test",
+                attributes = emptyList(),
+                primitive = false
+            )
+        }.shouldHaveMessage("Expire date time must be after effect date time")
+    }
+
+    "Type은 같은 시작일시와 종료일시를 허용하지 않는다" {
+        shouldThrow<IllegalArgumentException> {
+            Type(
+                id = "test-type",
+                version = "1.0",
+                effectDateTime = now,
+                expireDateTime = now,  // 같은 시간
+                parent = null,
+                description = "Same date time test",
+                attributes = emptyList(),
+                primitive = false
+            )
+        }.shouldHaveMessage("Expire date time must be after effect date time")
     }
 })
