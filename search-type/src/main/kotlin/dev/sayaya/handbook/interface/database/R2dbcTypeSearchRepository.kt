@@ -49,9 +49,12 @@ class R2dbcTypeSearchRepository(private val template: R2dbcEntityTemplate, priva
         }
     }
     override fun R2dbcEntityTemplate.predicate(key: String, value: String): Criteria = when (key) {
-        "last" -> where("last").`is`(value.toBooleanStrict()).ignoreCase(true)
-        "date" -> where(value).between("effective_at", "expire_at")
-        else -> {
+        "last" -> where("last").`is`(value.toBooleanStrict())
+        "date" -> {
+            val date = value.toLongOrNull()?.let(Instant::ofEpochMilli)
+            if(date==null) Criteria.empty()
+            else where("effective_at").greaterThanOrEquals(date).and("expire_at").lessThan(date)
+        } else -> {
             val property = property(key)
             if(property==null) Criteria.empty()
             else where(property).`is`(value).ignoreCase(true)

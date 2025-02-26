@@ -27,20 +27,25 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
     beforeSpec {
         // 테스트 데이터 삽입
         databaseClient.sql("""
-            INSERT INTO public.type (id, name, created_at, effective_at, expire_at, last, description, version, parent, primitive) VALUES 
-            ('1ba494f9-387e-44a9-b211-8008299d7773', 'Type1', NOW(), '1970-01-01', '2999-12-31', true, 'Description1', 'v1', null, true),
-            ('94c220f1-7576-4d3b-96ff-6128be479f34', 'Type2', NOW(), '1970-01-01', '2999-12-31', true, 'Description2', 'v1', 'Type1', true);
+            INSERT INTO public."user" (id, last_modified_at, created_at, last_login_at, name) VALUES ('system', NOW(), NOW(), null, 'system');
+            
+            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('1ba494f9-387e-44a9-b211-8008299d7773', '2025-02-16 18:13:23.066000 +00:00', 'type_1', '1970-01-01 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_1', null, true, 't1-v1', 'system');
+            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('94c220f1-7576-4d3b-96ff-6128be479f34', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1970-01-01 00:00:00.000000 +00:00', '1999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v1', 'system');
+            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('d4cedd54-6423-45a6-86ca-821eae9b3573', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1999-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v2', 'system');
+            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('54aa4cd9-d12a-4015-886d-70c40fd0049b', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '1970-01-01 00:00:00.000000 +00:00', '2005-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v1', 'system');
+            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('cd569d16-1f50-4cd1-85eb-74a763c98b5d', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '2005-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v2', 'system');
+            
         """.trimIndent()).fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
     }
 
     should("검색 조건에 따라 Type 데이터를 반환한다") {
         // Given: 검색 파라미터 설정
         val param = Search(
-            filters = listOf("name" to "Type1"),
+            filters = listOf("name" to "type_1"),
             page = 0,
             limit = 10,
             asc = true,
-            sortBy = "created_at"
+            sortBy = "name"
         )
 
         // Mock: AttributeRepository 동작 설정
@@ -56,18 +61,16 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
         val result = repository.search(param)
 
         // Then: 검색 결과 검증
-        StepVerifier.create(result)
-            .assertNext { page ->
-                assert(page.content.size == 1)
-                val type = page.content.first()
-                assert(type.id == "Type1")
-                assert(type.parent == null)
-                assert(type.version == "v1")
-                assert(type.attributes.size == 1)
-                val attr1 = type.attributes.first() as? Attribute.Companion.ValueAttribute
-                assert(attr1 != null && attr1.name == "attr1" && attr1.description == "description1" && attr1.nullable)
-            }
-            .verifyComplete()
+        StepVerifier.create(result).assertNext { page ->
+            assert(page.content.size == 1)
+            val type = page.content.first()
+            assert(type.id == "type_1")
+            assert(type.parent == null)
+            assert(type.version == "t1-v1")
+            assert(type.attributes.size == 1)
+            val attr1 = type.attributes.first() as? Attribute.Companion.ValueAttribute
+            assert(attr1 != null && attr1.name == "attr1" && attr1.description == "description1" && attr1.nullable)
+        }.verifyComplete()
     }
 
     should("검색 결과가 없으면 빈 결과를 반환한다") {
@@ -77,7 +80,7 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
             page = 0,
             limit = 10,
             asc = true,
-            sortBy = "created_at"
+            sortBy = "name"
         )
 
         // Mock: AttributeRepository 없는 경우
@@ -87,8 +90,7 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
         val result = repository.search(param)
 
         // Then: 빈 결과 검증
-        StepVerifier.create(result)
-            .verifyComplete()
+        StepVerifier.create(result).verifyComplete()
     }
 
     should("필터가 없을 때 기본 동작으로 검색한다") {
@@ -98,7 +100,7 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
             page = 0,
             limit = 10,
             asc = true,
-            sortBy = "created_at"
+            sortBy = "name"
         )
 
         // Mock: AttributeRepository 동작 설정
@@ -114,15 +116,13 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
         val result = repository.search(param)
 
         // Then: 모든 Type 검색 결과 검증
-        StepVerifier.create(result)
-            .assertNext { page ->
-                assert(page.content.size == 2)
-                val type1 = page.content.first { it.id == "Type1" }
-                val type2 = page.content.first { it.id == "Type2" }
-                assert(type1.attributes.size == 1)
-                assert(type2.attributes.size == 1)
-            }
-            .verifyComplete()
+        StepVerifier.create(result).assertNext { page ->
+            assert(page.content.size == 2)
+            val type1 = page.content.first { it.id == "type_1" }
+            val type2 = page.content.first { it.id == "type_2" }
+            assert(type1.attributes.size == 1)
+            assert(type2.attributes.size == 1)
+        }.verifyComplete()
     }
 }) {
     companion object {
