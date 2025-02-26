@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.string.shouldContain
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 internal class JsonConfigTest : ShouldSpec({

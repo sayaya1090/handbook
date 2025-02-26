@@ -17,3 +17,15 @@ tasks {
         useJUnitPlatform()
     }
 }
+kover {
+    reports {
+        verify {
+            rule {
+                disabled = false
+                bound {
+                    minValue = 80
+                }
+            }
+        }
+    }
+}
