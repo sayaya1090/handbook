@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page
 import org.springframework.http.HttpHeaders.CACHE_CONTROL
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.HttpMessageWriter
-import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.HandlerResult
