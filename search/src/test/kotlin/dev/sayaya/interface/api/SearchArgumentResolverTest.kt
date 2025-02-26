@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.server.ServerWebExchange
 import reactor.test.StepVerifier
 
-class SearchArgumentResolverTest : ShouldSpec({
+internal class SearchArgumentResolverTest : ShouldSpec({
     val resolver = SearchArgumentResolver()
     context("supportsParameter 테스트") {
         should("Search 타입 파라미터를 지원해야 함") {

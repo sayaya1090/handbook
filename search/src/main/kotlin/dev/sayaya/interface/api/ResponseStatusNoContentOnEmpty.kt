@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.`interface`.api
+package dev.sayaya.`interface`.api
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
