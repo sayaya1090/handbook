@@ -34,11 +34,7 @@ class R2dbcTypeSearchRepository(private val template: R2dbcEntityTemplate, priva
         val sortOrder = param.asc?.let { if (it) Sort.Order.asc(sortBy) else Sort.Order.desc(sortBy) } ?: Sort.Order.desc(sortBy)
         return PageRequest.of(param.page, param.limit, Sort.by(sortOrder))
     }
-    private fun prepareFilters(filters: List<Pair<String, String>>): List<Pair<String, String>> {
-        val augmentedFilters = if (filters.none { (key, _) -> key == "date" }) filters + ("date" to Instant.now().toEpochMilli().toString())
-        else filters
-        return augmentedFilters + ("last" to "true")
-    }
+    private fun prepareFilters(filters: List<Pair<String, String>>): List<Pair<String, String>> = filters + ("last" to "true")
     private fun mapToTypes(page: Page<R2dbcTypeEntity>): Mono<Page<Type>> = page.content.map { it.id }.let { typeIds ->
         attributeRepo.findAllByTypeIds(typeIds).map { attributesMap ->
             val types = page.content.map { typeEntity ->
@@ -53,7 +49,7 @@ class R2dbcTypeSearchRepository(private val template: R2dbcEntityTemplate, priva
         "date" -> {
             val date = value.toLongOrNull()?.let(Instant::ofEpochMilli)
             if(date==null) Criteria.empty()
-            else where("effective_at").greaterThanOrEquals(date).and("expire_at").lessThan(date)
+            else where("effective_at").lessThanOrEquals(date).and("expire_at").greaterThan(date)
         } else -> {
             val property = property(key)
             if(property==null) Criteria.empty()

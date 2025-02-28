@@ -16,7 +16,10 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.util.*
 
-@DataR2dbcTest
+@DataR2dbcTest(properties = [
+    "logging.level.io.r2dbc.postgresql.QUERY=DEBUG",
+    "logging.level.io.r2dbc.postgresql.PARAM=DEBUG",
+])
 class R2dbcTypeSearchRepositoryTest @Autowired constructor(
     private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
@@ -105,10 +108,12 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
 
         // Mock: AttributeRepository 동작 설정
         val typeId1 = UUID.fromString("1ba494f9-387e-44a9-b211-8008299d7773")
-        val typeId2 = UUID.fromString("94c220f1-7576-4d3b-96ff-6128be479f34")
+        val typeId2 = UUID.fromString("d4cedd54-6423-45a6-86ca-821eae9b3573")
+        val typeId3 = UUID.fromString("cd569d16-1f50-4cd1-85eb-74a763c98b5d")
         val mockAttributes = mapOf(
             typeId1 to listOf(Attribute.Companion.ValueAttribute("attr1", "desc", true, false)),
-            typeId2 to listOf(Attribute.Companion.ValueAttribute("attr2", "desc", false, false))
+            typeId2 to listOf(Attribute.Companion.ValueAttribute("attr2", "desc", false, false)),
+            typeId3 to listOf(Attribute.Companion.ValueAttribute("attr3", "desc", false, false), Attribute.Companion.ValueAttribute("attr3-2", "desc", false, false)),
         )
         every { attributeRepo.findAllByTypeIds(any()) } returns Mono.just(mockAttributes)
 
@@ -117,11 +122,15 @@ class R2dbcTypeSearchRepositoryTest @Autowired constructor(
 
         // Then: 모든 Type 검색 결과 검증
         StepVerifier.create(result).assertNext { page ->
-            assert(page.content.size == 2)
-            val type1 = page.content.first { it.id == "type_1" }
-            val type2 = page.content.first { it.id == "type_2" }
+            assert(page.content.size == 5) { "Expected 5 types, but found ${page.content.size}" }
+            val typesById = page.content.associateBy { it.id }
+            val type1 = typesById["type_1"] ?: error("type_1 not found")
+            val type2 = typesById["type_2"] ?: error("type_2 not found")
+            val type3 = typesById["type_3"] ?: error("type_3 not found")
+
             assert(type1.attributes.size == 1)
             assert(type2.attributes.size == 1)
+            assert(type3.attributes.size == 2)
         }.verifyComplete()
     }
 }) {
