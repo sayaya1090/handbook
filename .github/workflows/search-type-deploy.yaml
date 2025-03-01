@@ -1,0 +1,39 @@
+name: 타입 검색 모듈 배포
+on:
+  push:
+    paths:
+      - search-type/**
+jobs:
+  test-and-deploy:
+    runs-on: ${{ github.ref == 'refs/heads/main' && 'handbook-search-type' || 'handbook-test-search-type' }}
+    env:
+      BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
+      SUBMODULE: search-type
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.13
+      - name: Export schema
+        run: gradle entity:test --tests "dev.sayaya.handbook.ExportSchema"
+      - name: Build
+        run: gradle $SUBMODULE:jar
+      - name: Test & Report
+        run: gradle $SUBMODULE:koverXmlReport
+      - name: Deploy
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            IMAGE="image-registry.openshift-image-registry.svc:5000/handbook/$SUBMODULE"
+          else
+            IMAGE="image-registry.openshift-image-registry.svc:5000/handbook-test/$SUBMODULE"
+          fi
+          echo "Deploying with IMAGE=$IMAGE"
+          oc registry login
+          gradle $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest

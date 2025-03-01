@@ -13,7 +13,8 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.DefaultTransactionDefinition
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption.*
+import java.nio.file.StandardOpenOption.CREATE
+import java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
 
 @DataJpaTest(properties = [
     "spring.jpa.show-sql=true",
