@@ -5,7 +5,7 @@ on:
       - persist/**
 jobs:
   test-and-deploy:
-    runs-on: ubi9
+    runs-on: ${{ github.ref == 'refs/heads/main' && 'handbook-persist' || 'handbook-test-persist' }}
     env:
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
       SUBMODULE: persist

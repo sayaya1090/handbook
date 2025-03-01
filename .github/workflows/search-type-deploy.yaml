@@ -5,7 +5,7 @@ on:
       - search-type/**
 jobs:
   test-and-deploy:
-    runs-on: ubi9
+    runs-on: ${{ github.ref == 'refs/heads/main' && 'handbook-search-type' || 'handbook-test-search-type' }}
     env:
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
       SUBMODULE: search-type
