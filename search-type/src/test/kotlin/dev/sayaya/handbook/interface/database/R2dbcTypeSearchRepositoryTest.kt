@@ -20,7 +20,7 @@ import java.util.*
     "logging.level.io.r2dbc.postgresql.QUERY=DEBUG",
     "logging.level.io.r2dbc.postgresql.PARAM=DEBUG",
 ])
-class R2dbcTypeSearchRepositoryTest @Autowired constructor(
+internal class R2dbcTypeSearchRepositoryTest @Autowired constructor(
     private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
