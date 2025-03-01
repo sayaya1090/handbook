@@ -1,0 +1,170 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: search-type
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: search-type
+data:
+  application.yaml: |
+    spring:
+      application.name: search-type
+      main:
+        web-application-type: reactive
+      threads.virtual.enabled: true
+      config:
+        import:
+          - classpath:postgresql.yaml
+    management:
+      endpoint:
+        health:
+          probes:
+            enabled: true
+   {{- if .Values.mode }}
+    logging:
+      level:
+        io:
+          r2dbc:
+            postgresql:
+              QUERY: DEBUG
+              PARAM: DEBUG
+    {{- end }}
+    server:
+      port: 8080
+
+---
+
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: search-type
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-type
+spec:
+  selector:
+    app: search-type
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/search-type'
+    configmap.reloader.stakater.com/reload: "search-type,postgresql-ro"
+    secret.reloader.stakater.com/reload: "postgresql-app"
+  name: search-type
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - foregroundDeletion
+  labels:
+    app: search-type
+    app.kubernetes.io/component: handbook
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/name: handbook
+    app.kubernetes.io/part-of: handbook
+    app.openshift.io/runtime: spring-boot
+    app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
+    app.openshift.io/runtime-version: latest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-type
+  template:
+    metadata:
+      labels:
+        app: search-type
+        version: 0.0.1
+        deployment: search-type
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: search-type
+            defaultMode: 420
+        - name: postgres-config
+          configMap:
+            name: postgresql-ro
+            defaultMode: 420
+      containers:
+        - name: search-type
+        {{- if index .Values "search-type" }}
+          image: {{ index .Values "search-type" "image" "name" }}:{{ index .Values "search-type" "image" "tag" }}
+        {{- else }}
+          image: image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type:latest
+        {{- end }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          env:
+            - name: postgres.username
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: postgresql-app
+            - name: postgres.password
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgresql-app
+            - name: TZ
+              value: Asia/Seoul
+          volumeMounts:
+            - name: config
+              mountPath: /app/resources/application.yaml
+              subPath: application.yaml
+            - name: postgres-config
+              mountPath: /app/resources/postgresql.yaml
+              subPath: postgresql.yaml
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 0
+  progressDeadlineSeconds: 600
+  paused: false

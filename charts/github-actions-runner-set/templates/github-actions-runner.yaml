@@ -13,6 +13,12 @@ spec:
       - prefix: handbook-login{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
         cache: handbook-login{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
         runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+      - prefix: handbook-persist{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
+        cache: handbook-persist{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
+        runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+      - prefix: handbook-search-type{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
+        cache: handbook-search-type{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
+        runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
   template:
     metadata:
       name: '{{`{{ prefix }}`}}-github-actions-runner'

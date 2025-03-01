@@ -20,7 +20,7 @@ import java.util.*
     "logging.level.io.r2dbc.postgresql.QUERY=DEBUG",
     "logging.level.io.r2dbc.postgresql.PARAM=DEBUG",
 ])
-class R2dbcAttributeRepositoryTest @Autowired constructor(
+internal class R2dbcAttributeRepositoryTest @Autowired constructor(
     private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
@@ -46,98 +46,55 @@ class R2dbcAttributeRepositoryTest @Autowired constructor(
         """.trimIndent()
         ).fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
     }
-    should("Type에 연결된 Attribute를 검색한다") {
-        // Given: 미리 정의된 Type ID
-        val type1Id = UUID.fromString("1ba494f9-387e-44a9-b211-8008299d7773")
-        val type2Id = UUID.fromString("94c220f1-7576-4d3b-96ff-6128be479f34")
-        val type3Id = UUID.fromString("54aa4cd9-d12a-4015-886d-70c40fd0049b")
-
-        // When: 특정 Type과 연관된 Attribute를 검색
-        val type1Result = repository.findByType(type1Id).collectList().map { list ->
-            list.sortedBy { it.name }
-        }.flatMapMany { Flux.fromIterable(it) }
-        val type2Result = repository.findByType(type2Id).collectList().map { list ->
-            list.sortedBy { it.name }
-        }.flatMapMany { Flux.fromIterable(it) }
-        val type3Result = repository.findByType(type3Id).collectList().map { list ->
-            list.sortedBy { it.name }
-        }.flatMapMany { Flux.fromIterable(it) }
-
-        // Then: 반환된 Attribute들을 검증
-        StepVerifier.create(type1Result).expectNextMatches { attr ->
-            attr is Attribute.Companion.ValueAttribute &&
-            attr.name == "common_attr" &&
-            attr.description == "Common Attribute in Root" &&
-            attr.nullable
-        }.verifyComplete()
-        StepVerifier.create(type2Result).expectNextMatches { attr ->
-            attr is Attribute.Companion.ValueAttribute &&
-            attr.name == "common_attr" &&
-            attr.description == "Overwritten Attribute in Child 1" &&
-            attr.nullable
-        }.expectNextMatches { attr ->
-            attr is Attribute.Companion.ArrayAttribute &&
-            attr.name == "unique_attr" &&
-            attr.description == "Unique Attribute in Child 1" &&
-            attr.nullable.not() &&
-            attr.valueType == AttributeType.Value
-        }.verifyComplete()
-        StepVerifier.create(type3Result).expectNextMatches { attr ->
-            attr is Attribute.Companion.DocumentAttribute &&
-            attr.name == "exclusive_attr" &&
-            attr.description == "Exclusive Attribute in Child 2" &&
-            attr.nullable.not() &&
-            attr.referenceType == "type_1"
-        }.verifyComplete()
-    }
-    should("save 메서드를 통해 Attribute를 삽입, 업데이트 및 삭제한다") {
-        // Given: 기존 Type과 연결된 Attribute들
-        val typeId = UUID.fromString("94c220f1-7576-4d3b-96ff-6128be479f34")
-        val type = mockk<R2dbcTypeEntity>().apply {
-            every { id } returns typeId
-        }
-
-        // 새로운 Attribute들 (삽입/업데이트/삭제 대상 포함)
-        val newAttributes = listOf(
-            Attribute.Companion.ValueAttribute("common_attr","Updated Attribute in Child 1",false, false), // 업데이트 대상
-            Attribute.Companion.FileAttribute("new_file_attr","New File Attribute", setOf("pdf", "docx"),false, false), // 삽입 대상
-            Attribute.Companion.DocumentAttribute("document_attr","Exclusive Attribute in Child 2","type_1", false, false) // 삽입 대상
+    should("검색 쿼리에 따라 데이터를 검색하고 매핑한다") {
+        // Given: 검색 파라미터와 Mock 데이터들
+        // Mock: AttributeRepository 동작 설정
+        val typeIds = listOf(
+            UUID.fromString("1ba494f9-387e-44a9-b211-8008299d7773"),
+            UUID.fromString("94c220f1-7576-4d3b-96ff-6128be479f34"),
+            UUID.fromString("cd569d16-1f50-4cd1-85eb-74a763c98b5d")
         )
 
-        // When: save 메서드를 호출하여 동기화 처리
-        val result = repository.save(type, newAttributes)
+        // When: 리포지토리 검색 수행
+        val result = repository.findAllByTypeIds(typeIds)
 
-        // Then: 삽입, 업데이트, 삭제된 Attribute를 검증
-        StepVerifier.create(result).consumeNextWith { savedAttributes ->
-            // 최종 저장된 Attribute를 검증
-            val savedAttributeNames = savedAttributes.map { it.name }
-            val updatedAttribute = savedAttributes.find { it.name == "common_attr" }
-            val newFileAttribute = savedAttributes.find { it.name == "new_file_attr" }
-            val newDocumentAttribute = savedAttributes.find { it.name == "document_attr" }
+        // Then: 반환된 결과 검증
+        StepVerifier.create(result)
+            .consumeNextWith { attributesMap ->
+                // 검증: 각 Type에 올바른 Attribute가 매핑되었는지 확인
+                val attributesForType1 = attributesMap[UUID.fromString("1ba494f9-387e-44a9-b211-8008299d7773")]
+                val attributesForType2 = attributesMap[UUID.fromString("94c220f1-7576-4d3b-96ff-6128be479f34")]
+                val attributesForType3 = attributesMap[UUID.fromString("cd569d16-1f50-4cd1-85eb-74a763c98b5d")]
 
-            // 검증: 최종 데이터에 포함된 Attribute
-            savedAttributeNames.contains("common_attr") // 업데이트된 속성 포함
-            savedAttributeNames.contains("new_file_attr") // 삽입된 속성 포함
-            savedAttributeNames.contains("document_attr") // 삽입된 속성 포함
+                requireNotNull(attributesForType1) { "Attributes for Type1 should not be null" }
+                requireNotNull(attributesForType2) { "Attributes for Type2 should not be null" }
+                requireNotNull(attributesForType3) { "Attributes for Type3 should not be null" }
 
-            // 검증: 업데이트된 Attribute
-            assert(
-                updatedAttribute is Attribute.Companion.ValueAttribute &&
-                updatedAttribute.description == "Updated Attribute in Child 1" &&
-                updatedAttribute.nullable.not()
-            )
+                // Type 1: 'Value' Attribute 존재 여부 확인
+                assert(attributesForType1.size == 1)
+                assert(attributesForType1.any { it is Attribute.Companion.ValueAttribute && it.name == "common_attr" })
 
-            // 검증: 삽입된 File Attribute
-            assert(newFileAttribute is Attribute.Companion.FileAttribute &&
-                   newFileAttribute.extensions.containsAll(listOf("pdf", "docx")))
+                // Type 2: 'Array'와 'Value' Attribute 체크
+                assert(attributesForType2.size == 2)
+                assert(attributesForType2.any { it is Attribute.Companion.ArrayAttribute && it.name == "unique_attr" })
+                assert(attributesForType2.any { it is Attribute.Companion.ValueAttribute && it.name == "common_attr" })
 
-            // 검증: 삽입된 Document Attribute
-            assert(newDocumentAttribute is Attribute.Companion.DocumentAttribute &&
-                   newDocumentAttribute.referenceType == "type_1")
+                // Type 3: 'Document'와 'Map' Attribute 체크
+                assert(attributesForType3.size == 3)
+                assert(attributesForType3.any { it is Attribute.Companion.DocumentAttribute && it.name == "exclusive_attr" })
+                assert(attributesForType3.any { it is Attribute.Companion.MapAttribute && it.name == "exclusive_attr2" })
+                assert(attributesForType3.any { it is Attribute.Companion.ValueAttribute && it.name == "common_attr" })
+            }.verifyComplete()
+    }
+    should("빈 ID 목록에 대해 빈 결과를 반환한다") {
+        // Given: 빈 Type ID 목록
+        val emptyTypeIds = emptyList<UUID>()
 
-            // 삭제된 Attribute 검증
-            assert(savedAttributeNames.indexOf("unique_attr") == -1) // "unique_attr"가 삭제되었는지 확인.
-        }.verifyComplete()
+        // When: findAllByTypeIds 호출
+        val result = repository.findAllByTypeIds(emptyTypeIds)
+
+        // Then: 빈 결과 검증
+        StepVerifier.create(result).assertNext { attributesMap -> assert(attributesMap.isEmpty()) }.verifyComplete()
     }
 }) {
     companion object {

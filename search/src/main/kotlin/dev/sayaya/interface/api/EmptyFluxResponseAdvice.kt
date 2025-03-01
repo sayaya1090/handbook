@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.`interface`.api
+package dev.sayaya.`interface`.api
 
 import org.springframework.core.ReactiveAdapterRegistry
 import org.springframework.http.HttpStatus
@@ -18,9 +18,7 @@ class EmptyFluxResponseAdvice (
     serverCodecConfigurer: ServerCodecConfigurer,
     contentTypeResolver: RequestedContentTypeResolver
 ) : ResponseBodyResultHandler(serverCodecConfigurer.writers, contentTypeResolver, reactiveAdapterRegistry) {
-    override fun supports(result: HandlerResult): Boolean {
-        return super.supports(result) && hasNoContentOnEmptyAnnotation(result)
-    }
+    override fun supports(result: HandlerResult): Boolean = super.supports(result) && hasNoContentOnEmptyAnnotation(result)
     private fun hasNoContentOnEmptyAnnotation(result: HandlerResult): Boolean {
         val handlerMethod = result.handler as? HandlerMethod
         return handlerMethod?.hasMethodAnnotation(ResponseStatusNoContentOnEmpty::class.java) == true
@@ -28,7 +26,7 @@ class EmptyFluxResponseAdvice (
     override fun handleResult(exchange: ServerWebExchange, result: HandlerResult): Mono<Void> = when (val body = result.returnValue) {
         is Mono<*> -> handleMonoBody(exchange, result, body)
         is Flux<*> -> handleFluxBody(exchange, result, body)
-        else -> super.handleResult(exchange, result)
+        else -> Mono.error(IllegalArgumentException("Only Mono and Flux types are supported"))
     }
     private fun handleMonoBody(exchange: ServerWebExchange, result: HandlerResult, body: Mono<*>): Mono<Void> = body.switchIfEmpty (
         Mono.defer {

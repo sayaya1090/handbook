@@ -1,12 +1,9 @@
 package dev.sayaya.handbook.entity.view
 
-import dev.sayaya.handbook.entity.*
+import dev.sayaya.handbook.entity.AttributeType
+import dev.sayaya.handbook.entity.Type
+import dev.sayaya.handbook.entity.User
 import dev.sayaya.handbook.entity.attributes.*
-import dev.sayaya.handbook.entity.attributes.ArrayAttribute
-import dev.sayaya.handbook.entity.attributes.DocumentAttribute
-import dev.sayaya.handbook.entity.attributes.FileAttribute
-import dev.sayaya.handbook.entity.attributes.MapAttribute
-import dev.sayaya.handbook.entity.attributes.ValueAttribute
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainAll
