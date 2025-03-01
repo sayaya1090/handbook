@@ -13,7 +13,6 @@ class TypeController(private val svc: TypeService) {
     @PutMapping(value = ["/types"])
     fun save(@RequestBody type: Type, principal: Principal): Mono<Void> = svc.save(type, principal).then()
 
-
     @ExceptionHandler(DuplicateKeyException::class)
     @ResponseStatus(HttpStatus.CONFLICT)
     fun handleDuplicateKeyException(ex: DuplicateKeyException): Mono<String> = Mono.justOrEmpty(ex.localizedMessage)
