@@ -7,18 +7,9 @@ spec:
   generators:
   - list:
       elements:
-      - prefix: handbook-shell{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
-        cache: handbook-shell{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
-        runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
-      - prefix: handbook-login{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
-        cache: handbook-login{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
-        runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
-      - prefix: handbook-persist{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
-        cache: handbook-persist{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
-        runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
-      - prefix: handbook-search-type{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}
-        cache: handbook-search-type{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-runner-cache
-        runner: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+      - prefix: handbook
+        cache: handbook-runner-cache
+        runner: handbook-actions-runner
   template:
     metadata:
       name: '{{`{{ prefix }}`}}-github-actions-runner'
@@ -48,7 +39,7 @@ spec:
               githubConfigUrl: https://github.com/sayaya1090/handbook
               githubConfigSecret: github-secret
               minRunners: 1
-              maxRunners: 2
+              maxRunners: 1
               template:
                 spec:
                   initContainers:
@@ -123,6 +114,7 @@ spec:
                     - name: cache
                       persistentVolumeClaim:
                         claimName: {{`{{ cache }}`}}
+                  serviceAccountName: arc
               controllerServiceAccount:
                 namespace: github-actions-runner
                 name: arc

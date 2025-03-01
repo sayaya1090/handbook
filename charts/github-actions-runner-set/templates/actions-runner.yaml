@@ -2,7 +2,7 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   namespace: {{ .Release.Namespace }}
-  name: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+  name: handbook-actions-runner
 spec:
   source:
     type: Dockerfile
@@ -114,11 +114,11 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner:latest'
+      name: 'handbook-actions-runner:latest'
 
 ---
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
-  name: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-actions-runner
+  name: handbook-actions-runner
   namespace: {{ .Release.Namespace }}
