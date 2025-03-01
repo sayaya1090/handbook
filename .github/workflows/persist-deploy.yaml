@@ -5,7 +5,7 @@ on:
       - persist/**
 jobs:
   test-and-deploy:
-    runs-on: ${{ github.ref == 'refs/heads/main' && 'handbook-persist' || 'handbook-test-persist' }}
+    runs-on: handbook
     env:
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
       SUBMODULE: persist
@@ -30,9 +30,9 @@ jobs:
       - name: Deploy
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            IMAGE="image-registry.openshift-image-registry.svc:5000/handbook/$SUBMODULE"
+            IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
           else
-            IMAGE="image-registry.openshift-image-registry.svc:5000/handbook-test/$SUBMODULE"
+            IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook-test/$SUBMODULE"
           fi
           echo "Deploying with IMAGE=$IMAGE"
           oc registry login

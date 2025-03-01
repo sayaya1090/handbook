@@ -1,7 +1,8 @@
+{{- if .Values.mode }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: handbook{{- if .Values.mode }}-{{ .Values.mode }}{{- end }}-github-actions-runner-set
+  name: handbook-github-actions-runner-set
   namespace: openshift-gitops
 spec:
   destination:
@@ -24,3 +25,4 @@ spec:
           value: {{ .Values.mode }}
         - name: revision
           value: {{ .Values.revision }}
+{{- end }}
