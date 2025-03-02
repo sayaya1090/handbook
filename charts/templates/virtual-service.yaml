@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: handbook
+  namespace: {{ .Release.Namespace }}
+spec:
+  gateways:
+    - gateway-https
+  hosts:
+    - {{ .Values.host }}
+  http:
+    - match:
+        - uri:
+            exact: /types
+      rewrite:
+        uri: /{{ .Values.bucket.name }}/static/type.html
+      route:
+        - destination:
+            host: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+            port:
+              number: 80
