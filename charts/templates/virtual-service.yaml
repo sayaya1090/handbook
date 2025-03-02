@@ -19,3 +19,25 @@ spec:
             host: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
             port:
               number: 80
+    - match:
+        - uri:
+            prefix: /css
+      rewrite:
+        uri: /{{ .Values.bucket.name }}/static/css
+      route:
+        - destination:
+            host: >-
+              rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /js
+      rewrite:
+        uri: /{{ .Values.bucket.name }}/static/js
+      route:
+        - destination:
+            host: >-
+              rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+            port:
+              number: 80
