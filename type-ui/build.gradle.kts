@@ -28,10 +28,6 @@ gwt {
     modules = listOf("dev.sayaya.handbook.Type")
     sourceLevel = "auto"
     war = file("src/main/webapp")
-    gwtTest {
-        sourceLevel = "auto"
-        runStyle = "HtmlUnit:Chrome"
-    }
 }
 tasks {
     withType<JavaCompile> {

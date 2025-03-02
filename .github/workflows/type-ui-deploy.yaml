@@ -27,6 +27,7 @@ jobs:
       - name: Unpack
         run: |
           unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.css" "*.html" -d static
+          mv static/type/* static/js/
       - name: Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.AWS_ACCESS_KEY_ID || secrets.AWS_ACCESS_KEY_ID_CANDIDATE }}
