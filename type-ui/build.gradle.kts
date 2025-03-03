@@ -5,6 +5,7 @@ plugins {
     id("war")
     id("org.docstr.gwt")
     id("com.adarshr.test-logger")
+    id("gwt-test")
 }
 dependencies {
     implementation(libs.bundles.sayaya.web)
