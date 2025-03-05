@@ -5,6 +5,6 @@
 	<inherits name="dagger.Dagger" />
 	<inherits name="dev.sayaya.UI"/>
 	<inherits name="dev.sayaya.Rx" />
-	<entry-point class="dev.sayaya.handbook.client.box.Application"/>
+	<entry-point class="dev.sayaya.handbook.client.canvas.Application"/>
 	<source path="client"/>
 </module>

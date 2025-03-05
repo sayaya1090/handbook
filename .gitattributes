@@ -1,1 +1,3 @@
-type-ui/src/main/webapp/js/bundle.js filter=lfs diff=lfs merge=lfs -text
+type-ui/src/main/webapp/js/sayaya-ui.js filter=lfs diff=lfs merge=lfs -text
+type-ui/src/main/webapp/js/language.en.json filter=lfs diff=lfs merge=lfs -text
+type-ui/src/main/webapp/js/language.ko.json filter=lfs diff=lfs merge=lfs -text

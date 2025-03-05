@@ -1,0 +1,12 @@
+.type-box {
+    border: 1px solid black;
+    padding: 1em;
+}
+
+.type-box[simple] {
+    border-color: red;
+}
+
+.type-box[detail] {
+    border-color: blue;
+}
