@@ -23,6 +23,8 @@ import static org.jboss.elemento.Elements.div;
 public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
     @Delegate  private final MenuElementBuilder.TopMenuElementBuilder menu = MenuElementBuilder.menu().positioning(MenuElementBuilder.Position.Popover);
     private final MenuElementBuilder.MenuItemElementBuilder<?> addType = menu.item().headline("Add Type");
+    private final MenuElementBuilder.MenuItemElementBuilder<?> undo = menu.item().headline("Undo");
+    private final MenuElementBuilder.MenuItemElementBuilder<?> redo = menu.item().headline("Redo");
     @Inject CanvasContextMenuElement(ActionManager actions, LanguagePackManager labels) {
         this(div(), actions, labels);
     }
@@ -33,13 +35,17 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
         on(EventType.click, Event::stopPropagation);        // Canvas의 Click 호출을 차단한다
 
         addType.on(EventType.click, evt->{
-            actions.addType(evt.clientX, evt.clientY);
-            container.element().parentElement.focus();
+            actions.addType(element().xOffset, element().yOffset);
+            if(container.element().parentElement!=null) container.element().parentElement.focus();
         });
+        undo.on(EventType.click, evt->actions.undo());
+        redo.on(EventType.click, evt->actions.redo());
         labels.subscribe(this::update);
     }
     private void update(Label labels) {
         updateLabel(addType, labels.addType());
+        updateLabel(undo, labels.undo());
+        updateLabel(redo, labels.redo());
     }
     private static void updateLabel(MenuElementBuilder.MenuItemElementBuilder<?> item, String label) {
         item.element().childNodes.asList().stream()

@@ -12,4 +12,6 @@ import lombok.experimental.Accessors;
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 public final class Label {
     private String addType;
+    private String undo;
+    private String redo;
 }

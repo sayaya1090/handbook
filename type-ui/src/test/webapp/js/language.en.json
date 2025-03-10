@@ -1,3 +1,5 @@
 {
-    "addType": "Add type"
+    "addType": "Add type",
+    "undo": "Undo",
+    "redo": "Redo"
 }

@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
-import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
+import dev.sayaya.handbook.client.usecase.action.CreateBoxAndPushOutOverlap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -13,11 +13,13 @@ public class ActionManager {
     private final LinkedList<Action> undo = new LinkedList<>();
     private final LinkedList<Action> redo = new LinkedList<>();
     private final BoxList boxList;
-    @Inject ActionManager(BoxList boxList) {
+    private final BoxElementList boxElementList;
+    @Inject ActionManager(BoxList boxList, BoxElementList boxElementList) {
         this.boxList = boxList;
+        this.boxElementList = boxElementList;
     }
     public void addType(double x, double y) {
-        var action = new CreateBoxAction(boxList, x, y);
+        var action = new CreateBoxAndPushOutOverlap(boxList, boxElementList, x, y);
         push(action);
         action.execute();
     }

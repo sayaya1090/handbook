@@ -54,7 +54,6 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
                 return true; // 제거 대상
             }
             return false; // 유지
-
         });
         // 2. 새로 추가할 요소만 추가
         for (Box domain : newSet) if (!prevSet.contains(domain)) {
