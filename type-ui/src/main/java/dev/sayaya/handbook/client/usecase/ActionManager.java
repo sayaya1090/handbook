@@ -2,12 +2,13 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
+import dev.sayaya.handbook.client.interfaces.BoxElement;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAndPushOutOverlap;
+import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.LinkedList;
-import java.util.UUID;
 
 @Singleton
 public class ActionManager {
@@ -23,6 +24,11 @@ public class ActionManager {
     public void addType(double x, double y) {
         var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(100).height(100).build();
         var action = new CreateBoxAndPushOutOverlap(boxList, boxElementList, box);
+        push(action);
+        action.execute();
+    }
+    public void move(BoxElement box, int deltaX, int deltaY) {
+        var action = new MoveBoxAction(box, deltaX, deltaY);
         push(action);
         action.execute();
     }

@@ -3,9 +3,8 @@ package dev.sayaya.handbook.client.interfaces;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.BoxDisplayMode;
 import dev.sayaya.ui.elements.CardElementBuilder;
-import elemental2.dom.CSSProperties;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLLabelElement;
+import elemental2.dom.*;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
 import java.util.Map;

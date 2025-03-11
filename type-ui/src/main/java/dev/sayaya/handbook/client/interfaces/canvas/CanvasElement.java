@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.canvas;
 
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.interfaces.BoxElement;
+import dev.sayaya.handbook.client.interfaces.DragShapeElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.BoxElementList;
 import dev.sayaya.handbook.client.usecase.CanvasMode;
@@ -22,20 +23,22 @@ import static org.jboss.elemento.Elements.div;
 
 @Singleton
 public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
-    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager, CanvasContextMenuElement contextElement) {
-        this(div(), elements, mode, actionManager, contextElement);
+    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager, CanvasContextMenuElement contextElement, DragShapeElement dragElement) {
+        this(div(), elements, mode, actionManager, contextElement, dragElement);
     }
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CanvasMode mode;
     private final ActionManager actionManager;
     private final CanvasContextMenuElement contextElement;
-    private CanvasElement(HTMLContainerBuilder<HTMLDivElement> container, BoxElementList elements, CanvasMode mode, ActionManager actionManager, CanvasContextMenuElement contextElement) {
+    private CanvasElement(HTMLContainerBuilder<HTMLDivElement> container,
+                          BoxElementList elements, CanvasMode mode, ActionManager actionManager,
+                          CanvasContextMenuElement contextElement, DragShapeElement dragElement) {
         super(container.element());
         this.container = container;
         this.mode = mode;
         this.actionManager = actionManager;
         this.contextElement = contextElement;
-        container.css("canvas").attr("tabindex", "0").add(contextElement);
+        container.css("canvas").attr("tabindex", "0").add(contextElement).add(dragElement);
         on(EventType.click, this::handleContext);
         on(EventType.contextmenu, this::handleContext);
         on(EventType.keypress, this::handleKeyPress);
