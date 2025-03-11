@@ -7,10 +7,10 @@ import dev.sayaya.handbook.client.usecase.BoxElementList;
 import dev.sayaya.handbook.client.usecase.BoxList;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CreateBoxAndPushOutOverlap extends ComplexAction {
-    private static final Random random = new Random();
     public CreateBoxAndPushOutOverlap(BoxList boxList, BoxElementList previous, Box box) {
         this(new CreateBoxAction(boxList, box), moveBox(box, previous));
     }
@@ -23,55 +23,57 @@ public class CreateBoxAndPushOutOverlap extends ComplexAction {
         int aBottom = boxA.y() + boxA.height();
         int bRight = boxB.x() + boxB.width();
         int bBottom = boxB.y() + boxB.height();
-
-        // 겹침 여부 판단
-        if (aRight <= boxB.x() || boxA.x() >= bRight || aBottom <= boxB.y() || boxA.y() >= bBottom) {
-            return new int[] {0, 0}; // 겹침 없음
-        }
-
-        // 겹치는 각 방향의 크기 계산
+        // X축 및 Y축 겹침 계산
+        boolean overlapX = !(aRight <= boxB.x() || boxA.x() >= bRight);
+        boolean overlapY = !(aBottom <= boxB.y() || boxA.y() >= bBottom);
+        if (!overlapX || !overlapY) return new int[]{0, 0};  // 겹침 여부 판단 (겹침이 없으면 바로 종료)
+        // 겹치는 범위의 크기 계산
         int overlapLeft = aRight - boxB.x();
         int overlapRight = bRight - boxA.x();
         int overlapTop = aBottom - boxB.y();
         int overlapBottom = bBottom - boxA.y();
-
-        // X축과 Y축의 이동 크기 결정 (10 ~ 20 사이의 마진 추가)
-        int margin = random.nextInt(11) + 10;
+        int margin = 10;             // 마진 추가
+        // 겹침 해소를 위한 이동 크기 계산
         int deltaX = (overlapLeft < overlapRight ? overlapLeft + margin : -overlapRight - margin);
         int deltaY = (overlapTop < overlapBottom ? overlapTop + margin : -overlapBottom - margin);
 
-        // X와 Y 중 더 작은 쪽으로만 이동
-        if (Math.abs(deltaX) > Math.abs(deltaY)) return new int[] {0, deltaY};
-        else return new int[] {deltaX, 0};
+        // 더 작은 이동량만 선택
+        return Math.abs(deltaX) > Math.abs(deltaY) ? new int[]{0, deltaY} : new int[]{deltaX, 0};
     }
 
     private static MoveBoxAction[] moveBox(Box box, BoxElementList boxList) {
-        return moveBox(box, new LinkedList<>(Arrays.asList(boxList.getValue())), new ArrayList<>(), new HashSet<>())
+        Map<BoxElement, Box> others = Arrays.stream(boxList.getValue()).collect(Collectors.toMap(e->e, BoxElement::toDomain));
+        return moveBox(box, others, new ArrayList<>())
                 .stream()
                 .toArray(MoveBoxAction[]::new);
     }
 
-    private static List<MoveBoxAction> moveBox(Box box, LinkedList<BoxElement> boxList, List<MoveBoxAction> actions, Set<Box> processedBoxes) {
-        // 이미 처리된 박스는 건너뜀
-        if (processedBoxes.contains(box)) return actions;
-        processedBoxes.add(box);
+    private static List<MoveBoxAction> moveBox(Box box, Map<BoxElement, Box> others, List<MoveBoxAction> actions) {
         Queue<Box> queue = new LinkedList<>();
         queue.add(box);
         while (!queue.isEmpty()) {
             Box currentBox = queue.poll();
-            for (BoxElement other : boxList) {
-                if (other.toDomain() == currentBox || processedBoxes.contains(other.toDomain())) continue; // 동일 객체 또는 이미 처리된 박스 건너뜀
-                int[] overlap = calculateOverlap(currentBox, other.toDomain());
+            for (Map.Entry<BoxElement, Box> entry : others.entrySet()) {
+                var otherBox = entry.getValue();
+                if (otherBox.equals(currentBox)) continue; // 동일 박스 건너뜀
+
+                var otherElement = entry.getKey();
+                int[] overlap = calculateOverlap(currentBox, otherBox);
                 if (overlap[0] != 0 || overlap[1] != 0) {
-                    var action = new MoveBoxAction(other, overlap[0], overlap[1]);
+                    var action = new MoveBoxAction(otherElement, overlap[0], overlap[1]);
                     actions.add(action);
-                    action.execute(); // 겹침 해결을 위해 실행
-                    // 새로운 박스를 큐에 추가하여 추후 처리
-                    queue.add(other.toDomain());
-                    processedBoxes.add(other.toDomain());
+                    var nextBox = translate(otherBox, overlap[0], overlap[1]);
+                    others.put(otherElement, nextBox);
+                    queue.add(nextBox); // 이동한 박스를 큐에 추가하여 추후 다른 충돌 검사
                 }
             }
         }
         return actions;
+    }
+    private static Box translate(Box origin, int dx, int dy) {
+        return origin.toBuilder()
+                .x(origin.x() + dx)
+                .y(origin.y() + dy)
+                .build();
     }
 }

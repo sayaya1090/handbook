@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.usecase.action.CreateBoxAndPushOutOverlap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.LinkedList;
+import java.util.UUID;
 
 @Singleton
 public class ActionManager {
@@ -20,7 +21,7 @@ public class ActionManager {
         this.boxElementList = boxElementList;
     }
     public void addType(double x, double y) {
-        var box = new Box("Untitle", null, (int)x, (int)y, 100, 100);
+        var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(100).height(100).build();
         var action = new CreateBoxAndPushOutOverlap(boxList, boxElementList, box);
         push(action);
         action.execute();

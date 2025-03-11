@@ -15,11 +15,6 @@ public class Application implements EntryPoint {
         components.boxElementList().subscribe(elements -> update(canvas.element(), elements));
         body().add(canvas);
 
-        components.boxList().next(new Box[] {
-                new Box("Box1", null, 1, 1, 100, 100 ),
-                new Box("Box1", null, 1, 1, 100, 100 ),
-                new Box("Box1", null, 1, 1, 100, 100 )
-        });
     }
     private void update(HTMLElement canvas, IsElement<?>[] elements) {
         while (canvas.firstChild != null) canvas.removeChild(canvas.firstChild);
