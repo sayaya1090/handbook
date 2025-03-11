@@ -5,15 +5,14 @@ import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.interfaces.BoxElement;
 import dev.sayaya.handbook.client.usecase.BoxElementList;
 import dev.sayaya.handbook.client.usecase.BoxList;
-import java.util.Random;
 
 import java.util.*;
 import java.util.stream.Stream;
 
 public class CreateBoxAndPushOutOverlap extends ComplexAction {
     private static final Random random = new Random();
-    public CreateBoxAndPushOutOverlap(BoxList boxList, BoxElementList previous, double x, double y) {
-        this(new CreateBoxAction(boxList, x, y), moveBox(new Box("", "", (int)x, (int)y, 100, 100), previous));
+    public CreateBoxAndPushOutOverlap(BoxList boxList, BoxElementList previous, Box box) {
+        this(new CreateBoxAction(boxList, box), moveBox(box, previous));
     }
     private CreateBoxAndPushOutOverlap(CreateBoxAction createAction, MoveBoxAction[] actions) {
         super(Stream.concat(Stream.of(createAction), Arrays.stream(actions)).toArray(Action[]::new));
@@ -66,7 +65,7 @@ public class CreateBoxAndPushOutOverlap extends ComplexAction {
                 if (overlap[0] != 0 || overlap[1] != 0) {
                     var action = new MoveBoxAction(other, overlap[0], overlap[1]);
                     actions.add(action);
-                    //action.execute(); // 겹침 해결을 위해 실행
+                    action.execute(); // 겹침 해결을 위해 실행
                     // 새로운 박스를 큐에 추가하여 추후 처리
                     queue.add(other.toDomain());
                     processedBoxes.add(other.toDomain());

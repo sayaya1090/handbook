@@ -10,6 +10,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 @Singleton
 public class BoxDisplayMode {
-    @Delegate private final BehaviorSubject<dev.sayaya.handbook.client.domain.BoxDisplayMode> elements = behavior(dev.sayaya.handbook.client.domain.BoxDisplayMode.SIMPLE);
+    @Delegate private final BehaviorSubject<dev.sayaya.handbook.client.domain.BoxDisplayMode> elements =
+            behavior(dev.sayaya.handbook.client.domain.BoxDisplayMode.DETAIL);
     @Inject BoxDisplayMode() {}
 }

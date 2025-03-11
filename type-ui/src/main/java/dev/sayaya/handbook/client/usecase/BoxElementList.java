@@ -19,7 +19,7 @@ public class BoxElementList {
                     .map(box -> Arrays.stream(elements.getValue())
                             .filter(element -> element.toDomain().equals(box))
                             .findFirst()
-                            .orElseGet(() -> new BoxElement(box, mode)))
+                            .orElseGet(() -> BoxElement.of(box, mode)))
                     .toArray(BoxElement[]::new);
             elements.next(next);
         });

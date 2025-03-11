@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
+import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAndPushOutOverlap;
 
 import javax.inject.Inject;
@@ -19,7 +20,8 @@ public class ActionManager {
         this.boxElementList = boxElementList;
     }
     public void addType(double x, double y) {
-        var action = new CreateBoxAndPushOutOverlap(boxList, boxElementList, x, y);
+        var box = new Box("Untitle", null, (int)x, (int)y, 100, 100);
+        var action = new CreateBoxAndPushOutOverlap(boxList, boxElementList, box);
         push(action);
         action.execute();
     }
