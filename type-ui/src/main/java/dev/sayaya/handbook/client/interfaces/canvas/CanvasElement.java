@@ -52,14 +52,13 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
             if (!newSet.contains(child.toDomain())) {
                 child.element().remove(); // DOM에서 제거
                 return true; // 제거 대상
-            }
-            return false; // 유지
+            } else return false; // 유지
         });
         // 2. 새로 추가할 요소만 추가
         for (Box domain : newSet) if (!prevSet.contains(domain)) {
-            BoxElement elem = newElementMap.get(domain); // BoxElement 가져옴
-            container.add(elem); // 컨테이너에 추가
-            children.add(elem);  // children에 추가
+            BoxElement elem = newElementMap.get(domain);
+            container.add(elem);
+            children.add(elem);
         }
     }
     private void handleContext(MouseEvent evt) {
