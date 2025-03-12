@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.box;
 
-import dev.sayaya.handbook.client.usecase.BoxElementList;
+import dev.sayaya.handbook.client.interfaces.BoxElementList;
 import dev.sayaya.handbook.client.usecase.BoxList;
 
 import javax.inject.Singleton;

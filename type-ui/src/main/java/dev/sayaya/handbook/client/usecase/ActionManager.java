@@ -2,9 +2,11 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.interfaces.BoxElement;
-import dev.sayaya.handbook.client.usecase.action.CreateBoxAndPushOutOverlap;
+import dev.sayaya.handbook.client.usecase.action.ComplexAction;
+import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
 import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
+import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
+import elemental2.dom.DomGlobal;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,19 +18,28 @@ public class ActionManager {
     private final LinkedList<Action> undo = new LinkedList<>();
     private final LinkedList<Action> redo = new LinkedList<>();
     private final BoxList boxList;
-    private final BoxElementList boxElementList;
-    @Inject ActionManager(BoxList boxList, BoxElementList boxElementList) {
+    private final UpdatableBoxList boxElementList;
+    @Inject ActionManager(BoxList boxList, UpdatableBoxList boxElementList) {
         this.boxList = boxList;
         this.boxElementList = boxElementList;
     }
     public void addType(double x, double y) {
         var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(100).height(100).build();
-        var action = new CreateBoxAndPushOutOverlap(boxList, boxElementList, box);
+        var action = new ComplexAction (
+                new CreateBoxAction(boxList, box),
+                new PushOutOverlapAction(box, boxElementList)
+        );
         push(action);
         action.execute();
     }
-    public void move(BoxElement box, int deltaX, int deltaY) {
-        var action = new MoveBoxAction(box, deltaX, deltaY);
+    public void move(UpdatableBox boxElement, int deltaX, int deltaY) {
+        var nextBox = boxElement.box().toBuilder()
+                .x(boxElement.box().x() + deltaX).y(boxElement.box().y() + deltaY)
+                .build();
+        var action = new ComplexAction(
+                new MoveBoxAction(boxElement, deltaX, deltaY),
+                new PushOutOverlapAction(nextBox, boxElementList)
+        );
         push(action);
         action.execute();
     }

@@ -4,11 +4,8 @@ import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.interfaces.BoxElement;
 import dev.sayaya.handbook.client.interfaces.DragShapeElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.handbook.client.usecase.BoxElementList;
-import dev.sayaya.handbook.client.usecase.CanvasMode;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.KeyboardEvent;
-import elemental2.dom.MouseEvent;
+import dev.sayaya.handbook.client.interfaces.BoxElementList;
+import elemental2.dom.*;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -39,20 +36,21 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
         this.actionManager = actionManager;
         this.contextElement = contextElement;
         container.css("canvas").attr("tabindex", "0").add(contextElement).add(dragElement);
-        on(EventType.click, this::handleContext);
         on(EventType.contextmenu, this::handleContext);
         on(EventType.keypress, this::handleKeyPress);
+        on(EventType.dragover, Event::preventDefault);  // Drag 시 X 출력 제거
+        dragElement.on(actionManager::move);
         elements.distinct().subscribe(this::update);
     }
     private final List<BoxElement> children = new LinkedList<>();
     private void update(BoxElement[] elems) {
         // 이전 상태와 새 상태를 Set으로 변환하여 비교
-        var newSet = Arrays.stream(elems).map(BoxElement::toDomain).collect(Collectors.toSet());
-        var newElementMap = Arrays.stream(elems).collect(Collectors.toMap(BoxElement::toDomain, elem -> elem));
-        var prevSet = children.stream().map(BoxElement::toDomain).collect(Collectors.toSet());
+        var newSet = Arrays.stream(elems).map(BoxElement::box).collect(Collectors.toSet());
+        var newElementMap = Arrays.stream(elems).collect(Collectors.toMap(BoxElement::box, elem -> elem));
+        var prevSet = children.stream().map(BoxElement::box).collect(Collectors.toSet());
         // 1. 이전 상태에서 없어진 요소 제거
         children.removeIf(child -> {
-            if (!newSet.contains(child.toDomain())) {
+            if (!newSet.contains(child.box())) {
                 child.element().remove(); // DOM에서 제거
                 return true; // 제거 대상
             } else return false; // 유지

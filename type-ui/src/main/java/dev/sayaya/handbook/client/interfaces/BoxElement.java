@@ -1,10 +1,9 @@
 package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.domain.BoxDisplayMode;
+import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.ui.elements.CardElementBuilder;
 import elemental2.dom.*;
-import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
 import java.util.Map;
@@ -19,20 +18,20 @@ import static org.jboss.elemento.Elements.label;
     SIMPLE: 이름만 출력
     DETAIL: 이름, 설명, 속성 출력
  */
-public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> {
+public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableBox {
     private static final Map<Box, BoxElement> cache = new ConcurrentHashMap<>(); // 생성된 Box 재사용
-    public static BoxElement of(Box box, dev.sayaya.handbook.client.usecase.BoxDisplayMode mode) {
+    public static BoxElement of(Box box, dev.sayaya.handbook.client.interfaces.BoxDisplayMode mode) {
         return cache.computeIfAbsent(box, b -> new BoxElement(box, mode));
     }
 
-    private BoxElement(Box box, dev.sayaya.handbook.client.usecase.BoxDisplayMode mode) {
+    private BoxElement(Box box, dev.sayaya.handbook.client.interfaces.BoxDisplayMode mode) {
         this(div(), box, mode);
     }
     private final Box box;
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CardElementBuilder<?, ?> card;
     private final HTMLContainerBuilder<HTMLLabelElement> title = label().css("label");
-    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Box box, dev.sayaya.handbook.client.usecase.BoxDisplayMode mode) {
+    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Box box, dev.sayaya.handbook.client.interfaces.BoxDisplayMode mode) {
         super(container.element());
         if (box == null) throw new IllegalArgumentException("Box must not be null.");
         this.box = box;
@@ -40,22 +39,24 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> {
         this.card = card().outlined().css("card");
         container.css("type-box")
                  .add(card.add(title));
-        paint();
+        update();
         mode.subscribe(this::changeMode);
     }
-    private void changeMode(BoxDisplayMode mode) {
-        if(mode == BoxDisplayMode.SIMPLE) {
+    private void changeMode(BoxDisplayState mode) {
+        if(mode == BoxDisplayState.SIMPLE) {
             container.attr("simple", true);
             container.element().removeAttribute("detail");
-        } else if(mode == BoxDisplayMode.DETAIL) {
+        } else if(mode == BoxDisplayState.DETAIL) {
             container.attr("detail", true);
             container.element().removeAttribute("simple");
         }
     }
-    public Box toDomain() {
+    @Override
+    public Box box() {
         return box;
     }
-    public void paint() {
+    @Override
+    public void update() {
         title.text(box.name());
         container.element().style.left = box.x() + "px";
         container.element().style.top = box.y() + "px";
