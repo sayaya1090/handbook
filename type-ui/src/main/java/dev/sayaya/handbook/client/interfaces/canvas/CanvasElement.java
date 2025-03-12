@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.interfaces.canvas;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.interfaces.BoxElement;
 import dev.sayaya.handbook.client.interfaces.DragShapeElement;
+import dev.sayaya.handbook.client.interfaces.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.interfaces.BoxElementList;
 import elemental2.dom.*;
@@ -20,8 +21,8 @@ import static org.jboss.elemento.Elements.div;
 
 @Singleton
 public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
-    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager, CanvasContextMenuElement contextElement, DragShapeElement dragElement) {
-        this(div(), elements, mode, actionManager, contextElement, dragElement);
+    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager, CanvasContextMenuElement contextElement, SelectedBoxElement selected, DragShapeElement dragElement) {
+        this(div(), elements, mode, actionManager, contextElement, selected, dragElement);
     }
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CanvasMode mode;
@@ -29,7 +30,7 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
     private final CanvasContextMenuElement contextElement;
     private CanvasElement(HTMLContainerBuilder<HTMLDivElement> container,
                           BoxElementList elements, CanvasMode mode, ActionManager actionManager,
-                          CanvasContextMenuElement contextElement, DragShapeElement dragElement) {
+                          CanvasContextMenuElement contextElement, SelectedBoxElement selected, DragShapeElement dragElement) {
         super(container.element());
         this.container = container;
         this.mode = mode;
@@ -40,6 +41,10 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
         on(EventType.keypress, this::handleKeyPress);
         on(EventType.dragover, Event::preventDefault);  // Drag 시 X 출력 제거
         dragElement.onDrop(actionManager::move);
+        on(EventType.click, evt->{
+            if(evt.currentTarget == element()) selected.next(null);
+            contextElement.close();
+        });
         elements.distinct().subscribe(this::update);
     }
     private final List<BoxElement> children = new LinkedList<>();

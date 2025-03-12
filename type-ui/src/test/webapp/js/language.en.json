@@ -1,5 +1,6 @@
 {
     "addType": "Add type",
+    "delType": "Remove type",
     "undo": "Undo",
     "redo": "Redo"
 }

@@ -6,6 +6,7 @@ import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
+import org.jboss.elemento.EventType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,23 +18,19 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 @Singleton
 public class BoxElementList implements UpdatableBoxList {
     @Delegate private final BehaviorSubject<BoxElement[]> elements = behavior(new BoxElement[0]);
-    @Inject BoxElementList(BoxList boxList, BoxDisplayMode mode, DragShapeElement dragShapeElement) {
+    @Inject BoxElementList(BoxList boxList, BoxDisplayMode mode, SelectedBoxElement selected, DragShapeElement dragShapeElement) {
         boxList.subscribe(boxes -> {
             var next = Arrays.stream(boxes)
-                    .map(box -> findOrCreate(box, mode, dragShapeElement))
+                    .map(box -> findOrCreate(box, mode, selected, dragShapeElement))
                     .toArray(BoxElement[]::new);
             elements.next(next);
         });
     }
-    private BoxElement findOrCreate(Box box, BoxDisplayMode mode, DragShapeElement dragShapeElement) {
+    private BoxElement findOrCreate(Box box, BoxDisplayMode mode, SelectedBoxElement selected, DragShapeElement dragShapeElement) {
         return Arrays.stream(elements.getValue())
                 .filter(element -> element.box().equals(box))
                 .findFirst()
-                .orElseGet(() -> {
-                    var element = BoxElement.of(box, mode);
-                    dragShapeElement.delegateDragAndDropHandler(element);
-                    return element;
-                });
+                .orElseGet(() -> BoxElement.of(box, selected, dragShapeElement, mode));
     }
     @Override
     public UpdatableBox[] values() {

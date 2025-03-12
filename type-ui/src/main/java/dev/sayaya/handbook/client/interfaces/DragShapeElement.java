@@ -16,14 +16,18 @@ import static org.jboss.elemento.Elements.div;
 // Box 클릭 시 드래그 이벤트를 발생하여 실행하고 활성화, release 시 비활성화
 @Singleton
 public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
-    @Inject DragShapeElement() {
-        this(div());
+    @Inject DragShapeElement(SelectedBoxElement selected) {
+        this(div(), selected);
     }
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final Set<DropEventHandler> handlers = new HashSet<>();
-    private DragShapeElement(HTMLContainerBuilder<HTMLDivElement> container) {
+    private final SelectedBoxElement selected;
+    private int dragOffsetX = 0;
+    private int dragOffsetY = 0;
+    private DragShapeElement(HTMLContainerBuilder<HTMLDivElement> container, SelectedBoxElement selected) {
         super(container.element());
         this.container = container;
+        this.selected = selected;
         container.attr("draggable", true).css("drag-shape");
         on(EventType.dragstart, this::dragStartEventHandler);
         on(EventType.drag, this::dragEventHandler);
@@ -31,14 +35,7 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         on(EventType.mouseup, evt->hide());
         hide();
     }
-    private int dragOffsetX = 0;
-    private int dragOffsetY = 0;
-    private BoxElement targetElement;
-    public void delegateDragAndDropHandler(BoxElement boxElement) {
-        boxElement.on(EventType.mousedown, evt-> triggerDragEvent(boxElement));
-    }
-    private void triggerDragEvent(BoxElement targetElement) {
-        this.targetElement = targetElement;
+    public void triggerDragEvent() {
         var param = DragEventInit.create();
         param.setBubbles(true);
         param.setCancelable(true);
@@ -46,9 +43,10 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         element().dispatchEvent(dragEvent);
     }
     private void dragStartEventHandler(MouseEvent evt) {
-        visible();
-        dragOffsetX = (int) (evt.clientX - targetElement.element().offsetLeft);
-        dragOffsetY = (int) (evt.clientY - targetElement.element().offsetTop);
+        var targetElement = selected.getValue().element();
+        visible(targetElement);
+        dragOffsetX = (int) (evt.clientX - targetElement.offsetLeft);
+        dragOffsetY = (int) (evt.clientY - targetElement.offsetTop);
     }
     private void dragEventHandler(MouseEvent evt) {
         evt.preventDefault();
@@ -59,19 +57,19 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         evt.preventDefault();
         evt.stopPropagation();
         hide();
+        var targetElement = selected.getValue();
         int newX = (int) (evt.clientX - dragOffsetX);
         int newY = (int) (evt.clientY - dragOffsetY);
         int deltaX = newX - targetElement.element().offsetLeft;
         int deltaY = newY - targetElement.element().offsetTop;
         for(var handler: handlers) handler.onInvoke(targetElement, deltaX, deltaY);
-        targetElement = null;
     }
-    private void visible() {
+    private void visible(HTMLElement element) {
+        container.element().style.left = (element.offsetLeft-2) + "px";
+        container.element().style.top = (element.offsetTop-2) + "px";
+        container.element().style.width = CSSProperties.WidthUnionType.of(element.offsetWidth + "px");
+        container.element().style.height = CSSProperties.HeightUnionType.of(element.offsetHeight + "px");
         container.element().style.display = "block";
-        container.element().style.left = (targetElement.element().offsetLeft-2) + "px";
-        container.element().style.top = (targetElement.element().offsetTop-2) + "px";
-        container.element().style.width = CSSProperties.WidthUnionType.of(targetElement.element().offsetWidth + "px");
-        container.element().style.height = CSSProperties.HeightUnionType.of(targetElement.element().offsetHeight + "px");
     }
     private void move(MouseEvent evt) {
         int newX = (int) (evt.clientX - dragOffsetX -2);

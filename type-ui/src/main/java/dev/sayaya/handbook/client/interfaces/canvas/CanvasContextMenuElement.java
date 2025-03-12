@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
 import dev.sayaya.handbook.client.domain.Label;
+import dev.sayaya.handbook.client.interfaces.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.language.LanguagePackManager;
 import dev.sayaya.ui.dom.MdMenuElement;
@@ -17,19 +18,28 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static dev.sayaya.ui.elements.DividerElementBuilder.divider;
 import static org.jboss.elemento.Elements.div;
 
 @Singleton
 public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
     @Delegate  private final MenuElementBuilder.TopMenuElementBuilder menu = MenuElementBuilder.menu().positioning(MenuElementBuilder.Position.Popover);
-    private final MenuElementBuilder.MenuItemElementBuilder<?> addType = menu.item().headline("Add Type");
-    private final MenuElementBuilder.MenuItemElementBuilder<?> undo = menu.item().headline("Undo");
-    private final MenuElementBuilder.MenuItemElementBuilder<?> redo = menu.item().headline("Redo");
-    @Inject CanvasContextMenuElement(ActionManager actions, LanguagePackManager labels) {
-        this(div(), actions, labels);
+    private final SelectedBoxElement selected;
+    private final MenuElementBuilder.MenuItemElementBuilder<?> addType;
+    private final MenuElementBuilder.MenuItemElementBuilder<?> delType;
+    private final MenuElementBuilder.MenuItemElementBuilder<?> undo;
+    private final MenuElementBuilder.MenuItemElementBuilder<?> redo;
+    @Inject CanvasContextMenuElement(ActionManager actions, SelectedBoxElement selected, LanguagePackManager labels) {
+        this(div(), actions, selected, labels);
     }
-    private CanvasContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, LanguagePackManager labels) {
+    private CanvasContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, SelectedBoxElement selected, LanguagePackManager labels) {
         container.add(menu.anchorElement(container));
+        this.selected = selected;
+        addType = menu.item().headline("Add Type");
+        delType = menu.item().headline("Delete Type");
+        menu.add(divider());
+        undo = menu.item().headline("Undo");
+        redo = menu.item().headline("Redo");
         menu.element().stayOpenOnFocusout = true;
         menu.element().stayOpenOnOutsideClick = true;
         on(EventType.click, Event::stopPropagation);        // Canvas의 Click 호출을 차단한다
@@ -40,10 +50,19 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
         });
         undo.on(EventType.click, evt->actions.undo());
         redo.on(EventType.click, evt->actions.redo());
+
+        selected.subscribe(box->{
+            if(box==null) {
+                delType.element().style.display = "none";
+            } else {
+                delType.element().style.display = null;
+            }
+        });
         labels.subscribe(this::update);
     }
     private void update(Label labels) {
         updateLabel(addType, labels.addType());
+        updateLabel(delType, labels.delType());
         updateLabel(undo, labels.undo());
         updateLabel(redo, labels.redo());
     }
