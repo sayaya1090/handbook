@@ -6,7 +6,6 @@ import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
 import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
-import elemental2.dom.DomGlobal;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

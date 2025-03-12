@@ -1,8 +1,5 @@
 package dev.sayaya.handbook.client.interfaces;
 
-import com.google.gwt.event.shared.HandlerRegistration;
-import dev.sayaya.handbook.client.usecase.DropEventHandler;
-import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import elemental2.dom.*;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
@@ -15,33 +12,32 @@ import java.util.Set;
 
 import static org.jboss.elemento.Elements.div;
 
+// BoxElement 의 Drag&Drop 기능을 부여함
+// Box 클릭 시 드래그 이벤트를 발생하여 실행하고 활성화, release 시 비활성화
 @Singleton
 public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
     @Inject DragShapeElement() {
         this(div());
     }
     private final HTMLContainerBuilder<HTMLDivElement> container;
+    private final Set<DropEventHandler> handlers = new HashSet<>();
     private DragShapeElement(HTMLContainerBuilder<HTMLDivElement> container) {
         super(container.element());
         this.container = container;
-        container.attr("draggable", true).css("drag-shape").style("""
-            display: none;
-            position: absolute;
-            border: 3px dotted #A9A9A9;
-            z-index: 100;
-           """);
+        container.attr("draggable", true).css("drag-shape");
         on(EventType.dragstart, this::dragStartEventHandler);
         on(EventType.drag, this::dragEventHandler);
         on(EventType.dragend, this::dropEventHandler);
         on(EventType.mouseup, evt->hide());
+        hide();
     }
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
     private BoxElement targetElement;
     public void delegateDragAndDropHandler(BoxElement boxElement) {
-        boxElement.on(EventType.mousedown, evt-> triggerDragEvent(evt, boxElement));
+        boxElement.on(EventType.mousedown, evt-> triggerDragEvent(boxElement));
     }
-    private void triggerDragEvent(MouseEvent evt, BoxElement targetElement) {
+    private void triggerDragEvent(BoxElement targetElement) {
         this.targetElement = targetElement;
         var param = DragEventInit.create();
         param.setBubbles(true);
@@ -86,9 +82,7 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
     private void hide() {
         container.element().style.display = "none";
     }
-    private final Set<DropEventHandler> handlers = new HashSet<>();
-    public HandlerRegistration on(DropEventHandler handler) {
+    public void onDrop(DropEventHandler handler) {
         handlers.add(handler);
-        return ()->handlers.remove(handler);
     }
 }

@@ -39,7 +39,7 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
         on(EventType.contextmenu, this::handleContext);
         on(EventType.keypress, this::handleKeyPress);
         on(EventType.dragover, Event::preventDefault);  // Drag 시 X 출력 제거
-        dragElement.on(actionManager::move);
+        dragElement.onDrop(actionManager::move);
         elements.distinct().subscribe(this::update);
     }
     private final List<BoxElement> children = new LinkedList<>();

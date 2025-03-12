@@ -13,3 +13,8 @@
     border: 1px solid black;
     padding: 1em;
 }
+.drag-shape {
+    position: absolute;
+    border: 3px dotted #A9A9A9;
+    z-index: 100;
+}
