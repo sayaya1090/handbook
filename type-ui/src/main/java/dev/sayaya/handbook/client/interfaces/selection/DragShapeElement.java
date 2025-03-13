@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.interfaces;
+package dev.sayaya.handbook.client.interfaces.selection;
 
 import elemental2.dom.*;
 import org.jboss.elemento.EventType;
@@ -6,7 +6,6 @@ import org.jboss.elemento.HTMLContainerBuilder;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import java.util.HashSet;
 import java.util.Set;
 

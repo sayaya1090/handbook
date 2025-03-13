@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.interfaces;
+package dev.sayaya.handbook.client.interfaces.selection;
 
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 

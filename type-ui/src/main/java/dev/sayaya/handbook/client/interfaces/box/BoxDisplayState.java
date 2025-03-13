@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.interfaces;
+package dev.sayaya.handbook.client.interfaces.box;
 
 public enum BoxDisplayState {
     SIMPLE, DETAIL

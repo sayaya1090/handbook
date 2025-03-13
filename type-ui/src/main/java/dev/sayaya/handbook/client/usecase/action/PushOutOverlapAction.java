@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class PushOutOverlapAction extends ComplexAction {
-    // previous 영역에서 box의 이동 후 오버랩되는 box를 적절히 밀어낸다. ignores에 해당하는 박스는 겹침 확인을 무시한다.
+    // previous 영역에서 box의 이동 후 오버랩되는 box를 적절히 밀어낸다.
     public PushOutOverlapAction(Box box, UpdatableBoxList previous) {
         this(calculate(box, Arrays.stream(previous.values()).collect(Collectors.toMap(e->e, UpdatableBox::box)), new ArrayList<>()));
     }

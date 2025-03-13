@@ -2,10 +2,7 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.usecase.action.ComplexAction;
-import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
-import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
-import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
+import dev.sayaya.handbook.client.usecase.action.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,17 +14,22 @@ public class ActionManager {
     private final LinkedList<Action> undo = new LinkedList<>();
     private final LinkedList<Action> redo = new LinkedList<>();
     private final BoxList boxList;
-    private final UpdatableBoxList boxElementList;
-    @Inject ActionManager(BoxList boxList, UpdatableBoxList boxElementList) {
+    private UpdatableBoxList boxElementList;
+    @Inject ActionManager(BoxList boxList, UpdatableBoxListObserver boxElementList) {
         this.boxList = boxList;
-        this.boxElementList = boxElementList;
+        boxElementList.subscribe(list -> this.boxElementList = list);
     }
     public void addType(double x, double y) {
-        var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(100).height(100).build();
+        var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(200).height(200).build();
         var action = new ComplexAction (
                 new CreateBoxAction(boxList, box),
                 new PushOutOverlapAction(box, boxElementList)
         );
+        push(action);
+        action.execute();
+    }
+    public void delType(Box box) {
+        var action = new DeleteBoxAction(boxList, box);
         push(action);
         action.execute();
     }

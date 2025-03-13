@@ -1,11 +1,11 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
-import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.interfaces.BoxElement;
-import dev.sayaya.handbook.client.interfaces.DragShapeElement;
-import dev.sayaya.handbook.client.interfaces.SelectedBoxElement;
+import dev.sayaya.handbook.client.interfaces.box.BoxContextMenuElement;
+import dev.sayaya.handbook.client.interfaces.box.BoxElement;
+import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
+import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
+import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.handbook.client.interfaces.BoxElementList;
 import elemental2.dom.*;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
@@ -21,60 +21,84 @@ import static org.jboss.elemento.Elements.div;
 
 @Singleton
 public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
-    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager, CanvasContextMenuElement contextElement, SelectedBoxElement selected, DragShapeElement dragElement) {
-        this(div(), elements, mode, actionManager, contextElement, selected, dragElement);
+    private static final String KEY_Z = "KeyZ";
+
+    @Inject CanvasElement(BoxElementList elements,
+                          CanvasMode mode,
+                          ActionManager actionManager,
+                          CanvasContextMenuElement contextElement,
+                          BoxContextMenuElement boxContextMenuElement,
+                          SelectedBoxElement selected, DragShapeElement dragElement) {
+        this(div(), elements, mode, actionManager, contextElement, boxContextMenuElement, selected, dragElement);
     }
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CanvasMode mode;
     private final ActionManager actionManager;
     private final CanvasContextMenuElement contextElement;
+    private final BoxContextMenuElement boxContextMenuElement;
+    private final List<BoxElement> children = new LinkedList<>();
+
     private CanvasElement(HTMLContainerBuilder<HTMLDivElement> container,
                           BoxElementList elements, CanvasMode mode, ActionManager actionManager,
-                          CanvasContextMenuElement contextElement, SelectedBoxElement selected, DragShapeElement dragElement) {
+                          CanvasContextMenuElement contextElement,
+                          BoxContextMenuElement boxContextMenuElement,
+                          SelectedBoxElement selected, DragShapeElement dragElement) {
         super(container.element());
         this.container = container;
         this.mode = mode;
         this.actionManager = actionManager;
         this.contextElement = contextElement;
-        container.css("canvas").attr("tabindex", "0").add(contextElement).add(dragElement);
+        this.boxContextMenuElement = boxContextMenuElement;
+        init(container, elements, dragElement, selected);
+    }
+    private void init(HTMLContainerBuilder<HTMLDivElement> container,
+                      BoxElementList elements,
+                      DragShapeElement dragElement,
+                      SelectedBoxElement selected) {
+        container.css("canvas").attr("tabindex", "0").add(contextElement).add(dragElement).add(boxContextMenuElement);
+        initEventHandlers(selected);
+        dragElement.onDrop(actionManager::move);
+        elements.distinct().subscribe(this::update);
+    }
+    private void initEventHandlers(SelectedBoxElement selected) {
         on(EventType.contextmenu, this::handleContext);
         on(EventType.keypress, this::handleKeyPress);
         on(EventType.dragover, Event::preventDefault);  // Drag 시 X 출력 제거
-        dragElement.onDrop(actionManager::move);
         on(EventType.click, evt->{
             if(evt.currentTarget == element()) selected.next(null);
             contextElement.close();
+            boxContextMenuElement.close();
         });
-        elements.distinct().subscribe(this::update);
+        contextElement.on(EventType.click, evt->element().focus());
+        boxContextMenuElement.on(EventType.click, evt->element().focus());
     }
-    private final List<BoxElement> children = new LinkedList<>();
+
     private void update(BoxElement[] elems) {
-        // 이전 상태와 새 상태를 Set으로 변환하여 비교
-        var newSet = Arrays.stream(elems).map(BoxElement::box).collect(Collectors.toSet());
-        var newElementMap = Arrays.stream(elems).collect(Collectors.toMap(BoxElement::box, elem -> elem));
-        var prevSet = children.stream().map(BoxElement::box).collect(Collectors.toSet());
+        var newElementMap = Arrays.stream(elems).collect(Collectors.toMap(e->e.box(), elem -> elem));
         // 1. 이전 상태에서 없어진 요소 제거
         children.removeIf(child -> {
-            if (!newSet.contains(child.box())) {
-                child.element().remove(); // DOM에서 제거
-                return true; // 제거 대상
+            if (!newElementMap.containsKey(child.box())) {
+                child.element().remove();
+                return true;
             } else return false; // 유지
         });
         // 2. 새로 추가할 요소만 추가
-        for (Box domain : newSet) if (!prevSet.contains(domain)) {
-            BoxElement elem = newElementMap.get(domain);
-            container.add(elem);
-            children.add(elem);
-        }
+        newElementMap.forEach((domain, elem) -> {
+            if (children.stream().noneMatch(child -> child.box().equals(domain))) {
+                container.add(elem);
+                children.add(elem);
+            }
+        });
     }
     private void handleContext(MouseEvent evt) {
         evt.preventDefault();
         contextElement.offset((int) evt.clientX, (int)(evt.clientY));
         contextElement.toggle();
+        boxContextMenuElement.close();
     }
     private void handleKeyPress(KeyboardEvent evt) {
         if(evt.ctrlKey) {
-            if(evt.code.equals("KeyZ")) {
+            if(evt.code.equals(KEY_Z)) {
                 if (evt.shiftKey) actionManager.redo();
                 else actionManager.undo();
             }

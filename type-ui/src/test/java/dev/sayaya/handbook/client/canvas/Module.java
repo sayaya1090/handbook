@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.canvas;
 
 import dagger.Binds;
-import dev.sayaya.handbook.client.interfaces.BoxElementList;
+import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
 import dev.sayaya.handbook.client.repository.LanguageRepository;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
 import dev.sayaya.handbook.client.usecase.language.LanguageProvider;

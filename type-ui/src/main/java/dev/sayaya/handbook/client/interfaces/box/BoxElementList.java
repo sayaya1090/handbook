@@ -1,12 +1,12 @@
-package dev.sayaya.handbook.client.interfaces;
+package dev.sayaya.handbook.client.interfaces.box;
 
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.usecase.BoxList;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
+import dev.sayaya.handbook.client.usecase.UpdatableBoxListObserver;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
-import org.jboss.elemento.EventType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,19 +18,20 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 @Singleton
 public class BoxElementList implements UpdatableBoxList {
     @Delegate private final BehaviorSubject<BoxElement[]> elements = behavior(new BoxElement[0]);
-    @Inject BoxElementList(BoxList boxList, BoxDisplayMode mode, SelectedBoxElement selected, DragShapeElement dragShapeElement) {
+    private final BoxElementFactory factory;
+    @Inject BoxElementList(BoxList boxList, BoxElementFactory factory, UpdatableBoxListObserver observer) {
+        this.factory = factory;
         boxList.subscribe(boxes -> {
-            var next = Arrays.stream(boxes)
-                    .map(box -> findOrCreate(box, mode, selected, dragShapeElement))
-                    .toArray(BoxElement[]::new);
+            var next = Arrays.stream(boxes).map(this::findOrCreate).toArray(BoxElement[]::new);
             elements.next(next);
         });
+        observer.next(this);
     }
-    private BoxElement findOrCreate(Box box, BoxDisplayMode mode, SelectedBoxElement selected, DragShapeElement dragShapeElement) {
+    private BoxElement findOrCreate(Box box) {
         return Arrays.stream(elements.getValue())
                 .filter(element -> element.box().equals(box))
                 .findFirst()
-                .orElseGet(() -> BoxElement.of(box, selected, dragShapeElement, mode));
+                .orElseGet(() -> factory.create(box));
     }
     @Override
     public UpdatableBox[] values() {
