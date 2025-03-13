@@ -9,15 +9,15 @@ import java.util.stream.Collectors;
 
 public class PushOutOverlapAction extends ComplexAction {
     // previous 영역에서 box의 이동 후 오버랩되는 box를 적절히 밀어낸다.
-    public PushOutOverlapAction(Box box, UpdatableBoxList previous) {
-        this(calculate(box, Arrays.stream(previous.values()).collect(Collectors.toMap(e->e, UpdatableBox::box)), new ArrayList<>()));
+    public PushOutOverlapAction(Box[] boxes, UpdatableBoxList previous) {
+        this(calculate(boxes, Arrays.stream(previous.values()).collect(Collectors.toMap(e->e, UpdatableBox::box)), new ArrayList<>()));
     }
     private PushOutOverlapAction(MoveBoxAction[] moves) {
         super(moves);
     }
-    private static MoveBoxAction[] calculate(Box box, Map<UpdatableBox, Box> others, List<MoveBoxAction> actions) {
+    private static MoveBoxAction[] calculate(Box[] boxes, Map<UpdatableBox, Box> others, List<MoveBoxAction> actions) {
         Queue<Box> queue = new LinkedList<>();
-        queue.add(box);
+        Collections.addAll(queue, boxes);
         Set<Box> processed = new HashSet<>();
         while (!queue.isEmpty()) {
             Box currentBox = queue.poll();

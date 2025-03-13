@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.jboss.elemento.Elements.div;
@@ -65,7 +66,7 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
         on(EventType.keypress, this::handleKeyPress);
         on(EventType.dragover, Event::preventDefault);  // Drag 시 X 출력 제거
         on(EventType.click, evt->{
-            if(evt.currentTarget == element()) selected.next(null);
+            if(evt.currentTarget == element()) selected.next(Set.of());
             contextElement.close();
             boxContextMenuElement.close();
         });

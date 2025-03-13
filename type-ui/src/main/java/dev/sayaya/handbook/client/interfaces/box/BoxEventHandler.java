@@ -12,6 +12,9 @@ import elemental2.dom.MouseEvent;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class BoxEventHandler {
     private final SelectedBoxElement selected;
     private final DragShapeElement dragShapeElement;
@@ -31,30 +34,39 @@ public class BoxEventHandler {
         container.on(EventType.click, evt -> handleClick(evt, boxElement));
         container.on(EventType.contextmenu, evt -> handleContextMenu(evt, boxElement));
         container.on(EventType.mousedown, evt -> handleMouseDown(boxElement));
-        container.on(EventType.mouseup, this::handleMouseUp);
+        container.on(EventType.mouseup, this::clearDragStartTimer);
+        container.on(EventType.mousemove, this::clearDragStartTimer);
         container.on(EventType.keydown, evt->handleKeyPress(evt, actionManager, boxElement));
     }
     private void handleClick(MouseEvent evt, BoxElement boxElement) {
         evt.stopPropagation();
-        selected.next(boxElement);
+        DomGlobal.console.log("Box Clicked for Box: " + boxElement.box().name());
+        handleSelect(boxElement, evt.ctrlKey);
         context.close();
+    }
+    private void handleSelect(BoxElement boxElement, boolean shouldMultiple) {
+        if(shouldMultiple) {
+            var nextSelectedBoxes = new HashSet<>(selected.getValue());
+            if(nextSelectedBoxes.contains(boxElement)) nextSelectedBoxes.remove(boxElement);
+            else nextSelectedBoxes.add(boxElement);
+            selected.next(nextSelectedBoxes);
+        } else selected.next(Set.of(boxElement));
     }
 
     private void handleContextMenu(MouseEvent evt, BoxElement boxElement) {
         evt.stopPropagation();
-        selected.next(boxElement);
+        handleSelect(boxElement, evt.ctrlKey);
         context.offset((int) evt.clientX, (int)(evt.clientY));
         context.toggle();
         canvasContext.close();
     }
-
     private void handleMouseDown(BoxElement boxElement) {
         dragStartTimer = DomGlobal.setTimeout(v -> {
-            selected.next(boxElement);
+            handleSelect(boxElement, false);
             dragShapeElement.triggerDragEvent();
-        }, 500);
+        }, 200);
     }
-    private void handleMouseUp(MouseEvent evt) {
+    private void clearDragStartTimer(MouseEvent evt) {
         if (dragStartTimer != 0) DomGlobal.clearTimeout(dragStartTimer);
     }
     private void handleKeyPress(KeyboardEvent evt, ActionManager actionManager, BoxElement boxElement) {
@@ -64,7 +76,7 @@ public class BoxEventHandler {
         if("ArrowDown".equalsIgnoreCase(evt.key)) dy = 1;
         if("ArrowLeft".equalsIgnoreCase(evt.key)) dx = -1;
         if("ArrowRight".equalsIgnoreCase(evt.key)) dx = 1;
-        actionManager.move(boxElement, dx, dy);
+        actionManager.move(dx, dy, selected.getValue().stream().toArray(BoxElement[]::new));
     }
     public void attachUiEventHandlers(ActionManager actionManager, BoxUi ui, Box box) {
         ui.attachAddButtonHandler(EventType.click, evt -> {

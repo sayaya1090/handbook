@@ -1,12 +1,15 @@
 package dev.sayaya.handbook.client.usecase;
 
+import dagger.Lazy;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.usecase.action.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.stream.Stream;
 
 @Singleton
 public class ActionManager {
@@ -14,33 +17,36 @@ public class ActionManager {
     private final LinkedList<Action> undo = new LinkedList<>();
     private final LinkedList<Action> redo = new LinkedList<>();
     private final BoxList boxList;
-    private UpdatableBoxList boxElementList;
-    @Inject ActionManager(BoxList boxList, UpdatableBoxListObserver boxElementList) {
+    private final Lazy<UpdatableBoxList> boxElementList;
+    @Inject ActionManager(BoxList boxList, Lazy<UpdatableBoxList> boxElementList) {
         this.boxList = boxList;
-        boxElementList.subscribe(list -> this.boxElementList = list);
+        this.boxElementList = boxElementList;
     }
     public void addType(double x, double y) {
         var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(200).height(200).build();
         var action = new ComplexAction (
                 new CreateBoxAction(boxList, box),
-                new PushOutOverlapAction(box, boxElementList)
+                new PushOutOverlapAction(new Box[] { box }, boxElementList.get())
         );
         push(action);
         action.execute();
     }
-    public void delType(Box box) {
-        var action = new DeleteBoxAction(boxList, box);
+    public void delType(Box... boxes) {
+        var action = new DeleteBoxAction(boxList, boxes);
         push(action);
         action.execute();
     }
-    public void move(UpdatableBox boxElement, int deltaX, int deltaY) {
-        var nextBox = boxElement.box().toBuilder()
+    public void move(int deltaX, int deltaY, UpdatableBox... boxElements) {
+        var updateBoxes = Arrays.stream(boxElements).map(boxElement -> boxElement.box().toBuilder()
                 .x(boxElement.box().x() + deltaX).y(boxElement.box().y() + deltaY)
-                .build();
-        var action = new ComplexAction(
-                new MoveBoxAction(boxElement, deltaX, deltaY),
-                new PushOutOverlapAction(nextBox, boxElementList)
-        );
+                .build()
+        ).toArray(Box[]::new);
+        var pushOutAction = new PushOutOverlapAction(updateBoxes, boxElementList.get());
+        var actions = Stream.concat(
+                Arrays.stream(boxElements).map(boxElement -> new MoveBoxAction(boxElement, deltaX, deltaY)),
+                Stream.of(pushOutAction)
+        ).toArray(Action[]::new);
+        var action = new ComplexAction(actions);
         push(action);
         action.execute();
     }

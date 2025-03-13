@@ -7,10 +7,13 @@ import lombok.experimental.Delegate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 @Singleton
 public class SelectedBoxElement {
-    @Delegate private final BehaviorSubject<BoxElement> elements = behavior(null);
+    @Delegate private final BehaviorSubject<Set<BoxElement>> elements = behavior(Set.of());
     @Inject SelectedBoxElement() {}
 }

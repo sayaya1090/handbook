@@ -4,7 +4,6 @@ import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.usecase.BoxList;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
-import dev.sayaya.handbook.client.usecase.UpdatableBoxListObserver;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -19,13 +18,12 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class BoxElementList implements UpdatableBoxList {
     @Delegate private final BehaviorSubject<BoxElement[]> elements = behavior(new BoxElement[0]);
     private final BoxElementFactory factory;
-    @Inject BoxElementList(BoxList boxList, BoxElementFactory factory, UpdatableBoxListObserver observer) {
+    @Inject BoxElementList(BoxList boxList, BoxElementFactory factory) {
         this.factory = factory;
         boxList.subscribe(boxes -> {
             var next = Arrays.stream(boxes).map(this::findOrCreate).toArray(BoxElement[]::new);
             elements.next(next);
         });
-        observer.next(this);
     }
     private BoxElement findOrCreate(Box box) {
         return Arrays.stream(elements.getValue())

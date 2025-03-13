@@ -26,7 +26,7 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         this.ui = ui;
         ui.update(box);
         mode.subscribe(ui::setMode);
-        selected.subscribe(selectedBox -> ui.setSelected(selectedBox == this));
+        selected.subscribe(selectedBox -> ui.setSelected(selectedBox.contains(this)));
 
         BoxEventHandler eventHandler = new BoxEventHandler(selected, dragShapeElement, context, canvasContext);
         eventHandler.attachEventHandlers(ui.getContainerElement(), this, actionManager);

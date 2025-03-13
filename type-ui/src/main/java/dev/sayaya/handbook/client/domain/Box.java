@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 // 도메인 객체
 @Data
@@ -18,8 +20,9 @@ public final class Box {
     private int y;
     private int width;
     private int height;
+    private LinkedList<Value> values;
 
-    private Box(String id, String name, String description, int x, int y, int width, int height) {
+    private Box(String id, String name, String description, int x, int y, int width, int height, LinkedList<Value> values) {
         this.id         = id != null ? id : generateUniqueString();
         this.name       = validateNotNullOrEmpty(name, "Name must not be null or empty");
         this.description= description;
@@ -27,6 +30,7 @@ public final class Box {
         this.y          = validateGreaterThanZero(y, "Y must be greater than 0");
         this.width      = validateGreaterThanZero(width, "Width must be greater than 0");
         this.height     = validateGreaterThanZero(height, "Height must be greater than 0");
+        this.values     = values;
     }
     private static String validateNotNullOrEmpty(String value, String message) {
         if (value == null || value.isEmpty()) throw new IllegalArgumentException(message);
