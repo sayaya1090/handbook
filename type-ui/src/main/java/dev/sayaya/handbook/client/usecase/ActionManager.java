@@ -5,8 +5,6 @@ import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Value;
 import dev.sayaya.handbook.client.usecase.action.*;
-import elemental2.dom.DomGlobal;
-import lombok.val;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -80,7 +78,6 @@ public class ActionManager {
         nextBox.height(boxElementList.get().estimateBoxHeight(nextBox));
         var add = new AddAttributeAction(boxElement, value);
         var resize = new ResizeBoxAction(boxElement, nextBox.width(), nextBox.height());
-        DomGlobal.console.log(nextBox.height());
         var pushOutAction = new PushOutOverlapAction(new Box[] { nextBox }, boxElementList.get());
         var action = new ComplexAction(add, resize, pushOutAction);
         push(action);

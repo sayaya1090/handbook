@@ -3,16 +3,16 @@ package dev.sayaya.handbook.client.interfaces.box;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Value;
 import dev.sayaya.handbook.client.domain.value.ValueListElement;
-import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.CardElementBuilder;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.CSSProperties;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLLabelElement;
-import org.jboss.elemento.*;
+import org.jboss.elemento.ElementEventMethods;
+import org.jboss.elemento.EventCallbackFn;
+import org.jboss.elemento.EventType;
+import org.jboss.elemento.HTMLContainerBuilder;
 
 import java.util.List;
 
@@ -22,7 +22,6 @@ import static dev.sayaya.ui.elements.CardElementBuilder.card;
 import static dev.sayaya.ui.elements.IconElementBuilder.icon;
 import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.label;
 
 /*
   mode에 따라 다르게 출력한다.
@@ -52,11 +51,6 @@ public class BoxUi {
         card.element().style.width = CSSProperties.WidthUnionType.of(box.width() + "px");
         card.element().style.height = CSSProperties.HeightUnionType.of(box.height() + "px");
         values.next(box.values());
-
-        /*DomGlobal.setTimeout(e->{
-            box.height((int)card.element().getBoundingClientRect().height);
-            card.element().style.height = CSSProperties.HeightUnionType.of(box.height() + "px");
-        }, 100);*/
     }
     public void setMode(BoxDisplayState mode) {
         if (mode == BoxDisplayState.SIMPLE) {

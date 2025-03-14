@@ -6,7 +6,10 @@ import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import elemental2.dom.*;
+import elemental2.dom.Event;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.KeyboardEvent;
+import elemental2.dom.MouseEvent;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -63,7 +66,7 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
     }
     private void initEventHandlers(SelectedBoxElement selected) {
         on(EventType.contextmenu, this::handleContext);
-        on(EventType.keypress, this::handleKeyPress);
+        on(EventType.keydown, this::handleKeyPress);
         on(EventType.dragover, Event::preventDefault);  // Drag 시 X 출력 제거
         on(EventType.click, evt->{
             if(evt.currentTarget == element()) selected.next(Set.of());
@@ -102,6 +105,7 @@ public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
             if(evt.code.equals(KEY_Z)) {
                 if (evt.shiftKey) actionManager.redo();
                 else actionManager.undo();
+                element().focus();
             }
         }
     }

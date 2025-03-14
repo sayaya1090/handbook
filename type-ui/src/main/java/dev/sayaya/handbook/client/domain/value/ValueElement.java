@@ -5,7 +5,6 @@ import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLSelectElement;
 import org.jboss.elemento.HTMLContainerBuilder;
 
 import static dev.sayaya.ui.elements.SelectElementBuilder.select;

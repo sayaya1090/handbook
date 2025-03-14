@@ -6,8 +6,6 @@ import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import java.util.HashSet;
 import java.util.Set;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;

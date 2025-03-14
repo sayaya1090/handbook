@@ -16,8 +16,6 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import java.util.Arrays;
-
 import static org.jboss.elemento.Elements.div;
 
 @Singleton

@@ -1,12 +1,10 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import com.google.gwt.event.dom.client.ChangeEvent;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.ui.dom.MdTextFieldElement;
 import elemental2.dom.*;
 import jsinterop.base.Js;
 import org.jboss.elemento.EventType;

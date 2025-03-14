@@ -49,7 +49,6 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         dragOffsetY = (int) (evt.clientY - target.element().offsetTop);
     }
     private void dragEventHandler(MouseEvent evt) {
-        DomGlobal.console.log("dragEventHandler");
         evt.preventDefault();
         evt.stopPropagation();
         move(evt);
