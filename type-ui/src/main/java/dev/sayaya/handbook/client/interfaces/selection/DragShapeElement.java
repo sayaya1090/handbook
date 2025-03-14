@@ -35,7 +35,6 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         hide();
     }
     public void triggerDragEvent() {
-        DomGlobal.console.log("triggerDragEvent");
         var param = DragEventInit.create();
         param.setBubbles(true);
         param.setCancelable(true);
@@ -43,10 +42,11 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         element().dispatchEvent(dragEvent);
     }
     private void dragStartEventHandler(MouseEvent evt) {
-        //var targetElement = selected.getValue().element();
-        //visible(targetElement);
-        //dragOffsetX = (int) (evt.clientX - targetElement.offsetLeft);
-        //dragOffsetY = (int) (evt.clientY - targetElement.offsetTop);
+        var target = selected.getValue().stream().findFirst().orElse(null);
+        if(target==null) return;
+        visible(target.element());
+        dragOffsetX = (int) (evt.clientX - target.element().offsetLeft);
+        dragOffsetY = (int) (evt.clientY - target.element().offsetTop);
     }
     private void dragEventHandler(MouseEvent evt) {
         DomGlobal.console.log("dragEventHandler");
@@ -58,12 +58,13 @@ public class DragShapeElement extends HTMLContainerBuilder<HTMLDivElement> {
         evt.preventDefault();
         evt.stopPropagation();
         hide();
-        var targetElement = selected.getValue();
+        var target = selected.getValue().stream().findFirst().orElse(null);
+        if(target==null) return;
         int newX = (int) (evt.clientX - dragOffsetX);
         int newY = (int) (evt.clientY - dragOffsetY);
-        //int deltaX = newX - targetElement.element().offsetLeft;
-        //int deltaY = newY - targetElement.element().offsetTop;
-        //for(var handler: handlers) handler.onInvoke(targetElement, deltaX, deltaY);
+        int deltaX = newX - target.element().offsetLeft;
+        int deltaY = newY - target.element().offsetTop;
+        for(var handler: handlers) handler.onInvoke(deltaX, deltaY, target);
     }
     private void visible(HTMLElement element) {
         container.element().style.left = (element.offsetLeft-2) + "px";

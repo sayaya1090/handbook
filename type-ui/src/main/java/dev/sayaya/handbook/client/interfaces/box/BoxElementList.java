@@ -35,4 +35,9 @@ public class BoxElementList implements UpdatableBoxList {
     public UpdatableBox[] values() {
         return getValue();
     }
+
+    @Override
+    public int estimateBoxHeight(Box box) {
+        return 100 + box.values().size()*57;
+    }
 }

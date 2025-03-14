@@ -13,7 +13,9 @@
 .type-box .card {
     border-radius: 0.5em;
     box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
-    transition: box-shadow 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1);
+    transition: box-shadow 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
+                height 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1);
+
 }
 
 
@@ -26,9 +28,51 @@
 }
 
 .type-box[simple] .label {
+    text-align: center;
+    --_outline-width: 0;
+    --_leading-space: 5px;
+    --_trailing-space: 5px;
+    --_top-space: 5px;
+    --_bottom-space: 5px;
     margin: auto;
+    width: 8rem;
 }
 
 .type-box[detail] .label {
+    text-align: center;
+    --_outline-width: 0;
+    --_leading-space: 5px;
+    --_trailing-space: 5px;
+    --_top-space: 5px;
+    --_bottom-space: 5px;
     margin: 0.5rem auto;
+    width: 8rem;
+}
+
+.type-box .property {
+    height: fit-content;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-top: 1px dotted #A9A9A9;
+}
+
+.type-box .property .label {
+    text-align: left;
+    --_outline-width: 0;
+    --_leading-space: 5px;
+    --_trailing-space: 5px;
+    --_top-space: 5px;
+    --_bottom-space: 5px;
+    margin: 0;
+    min-width: 6rem;
+    --_input-text-size: 0.8rem;
+}
+
+.type-box .property .type {
+    text-align: left;
+    margin: 0;
+    min-width: 6rem;
+    --_text-field-input-text-size: 0.8rem;
+    --_text-field-outline-width: 0;
 }

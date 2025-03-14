@@ -1,14 +1,14 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.KeyboardEvent;
-import elemental2.dom.MouseEvent;
+import dev.sayaya.ui.dom.MdTextFieldElement;
+import elemental2.dom.*;
+import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -32,17 +32,26 @@ public class BoxEventHandler {
 
     public void attachEventHandlers(HTMLContainerBuilder<HTMLDivElement> container, BoxElement boxElement, ActionManager actionManager) {
         container.on(EventType.click, evt -> handleClick(evt, boxElement));
+        container.on(EventType.focus, evt-> handleFocus(evt, boxElement));
         container.on(EventType.contextmenu, evt -> handleContextMenu(evt, boxElement));
-        container.on(EventType.mousedown, evt -> handleMouseDown(boxElement));
+        container.on(EventType.mousedown, evt -> handleMouseDown(evt, boxElement));
         container.on(EventType.mouseup, this::clearDragStartTimer);
         container.on(EventType.mousemove, this::clearDragStartTimer);
-        container.on(EventType.keydown, evt->handleKeyPress(evt, actionManager, boxElement));
+        container.on(EventType.keydown, evt->handleKeyPress(evt, actionManager));
     }
     private void handleClick(MouseEvent evt, BoxElement boxElement) {
+        var element = (HTMLElement) evt.target;
         evt.stopPropagation();
-        DomGlobal.console.log("Box Clicked for Box: " + boxElement.box().name());
         handleSelect(boxElement, evt.ctrlKey);
         context.close();
+        if(element != null && element!=DomGlobal.document.activeElement && !element.contains(DomGlobal.document.activeElement)) {
+            DomGlobal.document.activeElement.blur();
+            element.focus();
+        }
+    }
+    private void handleFocus(FocusEvent evt, BoxElement boxElement) {
+        if(selected.getValue().contains(boxElement)) return;
+        else handleSelect(boxElement, false);
     }
     private void handleSelect(BoxElement boxElement, boolean shouldMultiple) {
         if(shouldMultiple) {
@@ -52,24 +61,26 @@ public class BoxEventHandler {
             selected.next(nextSelectedBoxes);
         } else selected.next(Set.of(boxElement));
     }
-
     private void handleContextMenu(MouseEvent evt, BoxElement boxElement) {
+        evt.preventDefault();
         evt.stopPropagation();
         handleSelect(boxElement, evt.ctrlKey);
         context.offset((int) evt.clientX, (int)(evt.clientY));
         context.toggle();
         canvasContext.close();
     }
-    private void handleMouseDown(BoxElement boxElement) {
+    private void handleMouseDown(MouseEvent evt, BoxElement boxElement) {
         dragStartTimer = DomGlobal.setTimeout(v -> {
-            handleSelect(boxElement, false);
+            handleSelect(boxElement, evt.ctrlKey);
             dragShapeElement.triggerDragEvent();
         }, 200);
     }
     private void clearDragStartTimer(MouseEvent evt) {
         if (dragStartTimer != 0) DomGlobal.clearTimeout(dragStartTimer);
     }
-    private void handleKeyPress(KeyboardEvent evt, ActionManager actionManager, BoxElement boxElement) {
+    private void handleKeyPress(KeyboardEvent evt, ActionManager actionManager) {
+        var element = (HTMLElement) evt.target;
+        if(!element.classList.contains("card")) return;
         int dx = 0;
         int dy = 0;
         if("ArrowUp".equalsIgnoreCase(evt.key)) dy = -1;
@@ -78,12 +89,13 @@ public class BoxEventHandler {
         if("ArrowRight".equalsIgnoreCase(evt.key)) dx = 1;
         actionManager.move(dx, dy, selected.getValue().stream().toArray(BoxElement[]::new));
     }
-    public void attachUiEventHandlers(ActionManager actionManager, BoxUi ui, Box box) {
-        ui.attachAddButtonHandler(EventType.click, evt -> {
-            DomGlobal.console.log("Add Button Clicked for Box: " + box.name());
+    public void attachUiEventHandlers(BoxElement boxElement, ActionManager actionManager, BoxUi ui, Box box) {
+        ui.attachTitleHandler(EventType.change, evt -> {
+            var ipt = Js.asPropertyMap(evt.target);
+            actionManager.title(boxElement, ipt.get("value").toString());
         });
-        ui.attachTitleHandler(EventType.click, evt -> {
-            DomGlobal.console.log("Title Clicked for Box: " + box.name());
+        ui.attachAddButtonHandler(EventType.click, evt -> {
+            actionManager.addValue(boxElement);
         });
     }
 

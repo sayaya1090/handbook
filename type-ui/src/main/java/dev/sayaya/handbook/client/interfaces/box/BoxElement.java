@@ -30,7 +30,7 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
 
         BoxEventHandler eventHandler = new BoxEventHandler(selected, dragShapeElement, context, canvasContext);
         eventHandler.attachEventHandlers(ui.getContainerElement(), this, actionManager);
-        eventHandler.attachUiEventHandlers(actionManager, ui, box);
+        eventHandler.attachUiEventHandlers(this, actionManager, ui, box);
     }
 
     @Override

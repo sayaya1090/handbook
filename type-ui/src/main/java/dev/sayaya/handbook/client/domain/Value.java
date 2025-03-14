@@ -10,5 +10,6 @@ import lombok.experimental.Accessors;
 public final class Value {
     private String id;
     private String name;
+    private String type;
     private Box refer;
 }
