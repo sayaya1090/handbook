@@ -3,10 +3,10 @@ package dev.sayaya.handbook.client.usecase.action;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 
-public class MoveBoxAction implements Action {
+class MoveBoxAction implements Action {
     private final UpdatableBox element;
     private final int originX, originY, nextX, nextY;
-    public MoveBoxAction(UpdatableBox element, int deltaX, int deltaY) {
+    MoveBoxAction(UpdatableBox element, int deltaX, int deltaY) {
         this.element = element;
         var box = element.box();
         this.originX = box.x();

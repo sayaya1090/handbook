@@ -9,11 +9,15 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-// 도메인 객체
+/*
+ Type은 현재 저장된 불변 데이터이다.
+ Box는 현재 저장될 다음 Type의 데이터를 관리하는 가변 데이터이다. Type이 null이면 신규 생성 타입이다.
+ */
 @Data
 @Accessors(fluent = true)
 @Builder(toBuilder = true)
 public final class Box {
+    private Type type;
     private String id;
     private String name;
     private String description;
@@ -24,32 +28,31 @@ public final class Box {
     @Singular("addValue")
     private List<Value> values;
 
-    private Box(String id, String name, String description, int x, int y, int width, int height, List<Value> values) {
-        this.id         = id != null ? id : generateUniqueString();
-        this.name       = validateNotNullOrEmpty(name, "Name must not be null or empty");
-        this.description= description;
+    private Box(Type type, String id, String name, String description, int x, int y, int width, int height, List<Value> values) {
+        this.id         = id!=null? id : (type!=null? type.id() : generateUniqueString());
+        this.type       = type;
         this.x          = validateGreaterThanZero(x, "X must be greater than 0");
         this.y          = validateGreaterThanZero(y, "Y must be greater than 0");
         this.width      = validateGreaterThanZero(width, "Width must be greater than 0");
         this.height     = validateGreaterThanZero(height, "Height must be greater than 0");
-        this.values     = values!=null?values:new LinkedList<>();
+        this.name       = name!=null? name: (type!=null? type.id() : "");
+        this.description= description!=null? description : (type!=null? type.description() : "");
+        this.values     = values!=null ? values: new LinkedList<>();
     }
-    private static String validateNotNullOrEmpty(String value, String message) {
-        if (value == null || value.isEmpty()) throw new IllegalArgumentException(message);
-        return value;
+    private static void require(boolean condition, String message) {
+        if (!condition) throw new IllegalArgumentException(message);
     }
     private static int validateGreaterThanZero(int value, String message) {
-        if (value <= 0) throw new IllegalArgumentException(message);
+        require(value > 0, message);
         return value;
     }
     @Override public boolean equals(Object other) {
-        if (this == other) return true;
-        if(!(other instanceof Box box)) return false;
-        return id.equals(box.id);
+        return this == other || (other instanceof Box box && id.equals(box.id));
     }
     @Override public int hashCode() {
         return id.hashCode();
     }
+
     private static String generateUniqueString() {
         long timestamp = new Date().getTime(); // 현재 시간 (밀리초)
         String randomPortion = Double.toString(Math.random()).substring(2, 8); // 랜덤 숫자 (문자열)

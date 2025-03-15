@@ -1,5 +1,8 @@
 package dev.sayaya.handbook.client.usecase.action;
 
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
@@ -9,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class PushOutOverlapAction extends ComplexAction {
     // previous 영역에서 box의 이동 후 오버랩되는 box를 적절히 밀어낸다.
-    public PushOutOverlapAction(Box[] boxes, UpdatableBoxList previous) {
+    @AssistedInject PushOutOverlapAction(UpdatableBoxList previous, @Assisted Box... boxes) {
         this(calculate(boxes, Arrays.stream(previous.values()).collect(Collectors.toMap(e->e, UpdatableBox::box)), new ArrayList<>()));
     }
     private PushOutOverlapAction(MoveBoxAction[] moves) {
@@ -69,5 +72,9 @@ public class PushOutOverlapAction extends ComplexAction {
 
         // 더 작은 이동량만 선택
         return Math.abs(deltaX) > Math.abs(deltaY) ? new int[]{0, deltaY} : new int[]{deltaX, 0};
+    }
+    @AssistedFactory
+    interface PushOutOverlapActionFactory {
+        PushOutOverlapAction pushOutOverlap(Box... boxes);
     }
 }

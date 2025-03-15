@@ -1,5 +1,8 @@
 package dev.sayaya.handbook.client.domain.value;
 
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Value;
 import dev.sayaya.rx.subject.Subject;
 import elemental2.dom.HTMLDivElement;
@@ -12,29 +15,29 @@ import static dev.sayaya.rx.subject.Subject.subject;
 import static org.jboss.elemento.Elements.div;
 
 public class ValueListElement extends HTMLContainerBuilder<HTMLDivElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> container;
-    public ValueListElement(Subject<List<Value>> values) {
-        this(div(), values);
+    @AssistedInject ValueListElement(@Assisted Subject<List<Value>> values, ValueElement.ValueElementFactory elementFactory) {
+        this(div(), values, elementFactory);
     }
-    private ValueListElement(HTMLContainerBuilder<HTMLDivElement> div, Subject<List<Value>> values) {
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> container;
+    private final ValueElement.ValueElementFactory elementFactory;
+    private ValueListElement(HTMLContainerBuilder<HTMLDivElement> div, Subject<List<Value>> values, ValueElement.ValueElementFactory elementFactory) {
         super(div.element());
         this.container = div;
-        container.style("""
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                align-items: stretch;
-                padding: 0 1rem;
-                """);
+        this.elementFactory = elementFactory;
+        container.css("properties");
         values.subscribe(this::update);
     }
     private void update(List<Value> values) {
         container.element().innerHTML = "";
         for(var value: values) {
             Subject<Value> valueSubject = subject(Value.class);
-            var elem = new ValueElement(valueSubject);
+            var elem = elementFactory.valueElement(valueSubject);
             valueSubject.next(value);
             container.add(elem);
         }
+    }
+    @AssistedFactory
+    public interface ValueListElementFactory {
+        ValueListElement valueList(Subject<List<Value>> values);
     }
 }

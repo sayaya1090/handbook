@@ -6,11 +6,11 @@ import dev.sayaya.handbook.client.usecase.UpdatableBox;
 
 import java.util.LinkedList;
 
-public class AddAttributeAction implements Action {
+class AddAttributeAction implements Action {
     private final LinkedList<Value> before;
     private final LinkedList<Value> after;
     private final UpdatableBox element;
-    public AddAttributeAction(UpdatableBox element, Value value) {
+    AddAttributeAction(UpdatableBox element, Value value) {
         this.element = element;
         this.before = new LinkedList<>(element.box().values());
         this.after = new LinkedList<>(before);

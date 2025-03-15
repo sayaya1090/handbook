@@ -17,8 +17,8 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 @Singleton
 public class BoxElementList implements UpdatableBoxList {
     @Delegate private final BehaviorSubject<BoxElement[]> elements = behavior(new BoxElement[0]);
-    private final BoxElementFactory factory;
-    @Inject BoxElementList(BoxList boxList, BoxElementFactory factory) {
+    private final BoxElementCache factory;
+    @Inject BoxElementList(BoxList boxList, BoxElementCache factory) {
         this.factory = factory;
         boxList.subscribe(boxes -> {
             var next = Arrays.stream(boxes).map(this::findOrCreate).toArray(BoxElement[]::new);
@@ -29,7 +29,7 @@ public class BoxElementList implements UpdatableBoxList {
         return Arrays.stream(elements.getValue())
                 .filter(element -> element.box().equals(box))
                 .findFirst()
-                .orElseGet(() -> factory.create(box));
+                .orElseGet(() -> factory.getOrCreate(box));
     }
     @Override
     public UpdatableBox[] values() {

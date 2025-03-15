@@ -1,10 +1,11 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dagger.Lazy;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Value;
-import dev.sayaya.handbook.client.usecase.action.*;
+import dev.sayaya.handbook.client.usecase.action.ActionFactory;
+import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
+import dev.sayaya.handbook.client.usecase.action.ResizeBoxAction;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,24 +18,24 @@ public class ActionManager {
     private static final int MAX_STACK_SIZE = 100;
     private final LinkedList<Action> undo = new LinkedList<>();
     private final LinkedList<Action> redo = new LinkedList<>();
-    private final BoxList boxList;
-    private final Lazy<UpdatableBoxList> boxElementList;
-    @Inject ActionManager(BoxList boxList, Lazy<UpdatableBoxList> boxElementList) {
-        this.boxList = boxList;
-        this.boxElementList = boxElementList;
+    private final ActionFactory factory;
+    private final BoxTailor tailor;
+    @Inject ActionManager(ActionFactory factory, BoxTailor tailor) {
+        this.factory = factory;
+        this.tailor = tailor;
     }
     public void addType(double x, double y) {
         var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(300).height(1).build();
-        box.height(boxElementList.get().estimateBoxHeight(box));
-        var action = new ComplexAction (
-                new CreateBoxAction(boxList, box),
-                new PushOutOverlapAction(new Box[] { box }, boxElementList.get())
+        box.height(tailor.estimateBoxHeight(box));
+        var action = factory.complex (
+                factory.createBox(box),
+                factory.pushOutOverlap(box)
         );
         push(action);
         action.execute();
     }
     public void delType(Box... boxes) {
-        var action = new DeleteBoxAction(boxList, boxes);
+        var action = factory.deleteBox(boxes);
         push(action);
         action.execute();
     }
@@ -43,12 +44,12 @@ public class ActionManager {
                 .x(boxElement.box().x() + deltaX).y(boxElement.box().y() + deltaY)
                 .build()
         ).toArray(Box[]::new);
-        var pushOutAction = new PushOutOverlapAction(updateBoxes, boxElementList.get());
+        var pushOutAction = factory.pushOutOverlap(updateBoxes);
         var actions = Stream.concat(
-                Arrays.stream(boxElements).map(boxElement -> new MoveBoxAction(boxElement, deltaX, deltaY)),
+                Arrays.stream(boxElements).map(boxElement -> factory.move(boxElement, deltaX, deltaY)),
                 Stream.of(pushOutAction)
         ).toArray(Action[]::new);
-        var action = new ComplexAction(actions);
+        var action = factory.complex(actions);
         push(action);
         action.execute();
     }
@@ -57,12 +58,12 @@ public class ActionManager {
                 .width(width).height(height)
                 .build()
         ).toArray(Box[]::new);
-        var pushOutAction = new PushOutOverlapAction(updateBoxes, boxElementList.get());
+        var pushOutAction = factory.pushOutOverlap(updateBoxes);
         var actions = Stream.concat(
                 Arrays.stream(boxElements).map(boxElement -> new ResizeBoxAction(boxElement, width, height)),
                 Stream.of(pushOutAction)
         ).toArray(Action[]::new);
-        var action = new ComplexAction(actions);
+        var action = factory.complex(actions);
         push(action);
         action.execute();
     }
@@ -75,11 +76,11 @@ public class ActionManager {
     public void addValue(UpdatableBox boxElement) {
         var value = Value.builder().name("property").build();
         var nextBox = boxElement.box().toBuilder().addValue(value).build();
-        nextBox.height(boxElementList.get().estimateBoxHeight(nextBox));
-        var add = new AddAttributeAction(boxElement, value);
+        nextBox.height(tailor.estimateBoxHeight(nextBox));
+        var add = factory.addAttribute(boxElement, value);
         var resize = new ResizeBoxAction(boxElement, nextBox.width(), nextBox.height());
-        var pushOutAction = new PushOutOverlapAction(new Box[] { nextBox }, boxElementList.get());
-        var action = new ComplexAction(add, resize, pushOutAction);
+        var pushOutAction = factory.pushOutOverlap(nextBox);
+        var action = factory.complex(add, resize, pushOutAction);
         push(action);
         action.execute();
     }
