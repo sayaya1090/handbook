@@ -49,6 +49,23 @@ dependencyResolutionManagement {
             library("testcontainers-postgresql", "org.testcontainers", "postgresql").withoutVersion()
             library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").version { require("2.0.2") }
             bundle("test-containers", listOf("testcontainers-junit", "kotest-extensions-testcontainers"))
+
+            library("elemento-core", "org.jboss.elemento", "elemento-core").version { require("1.7.0") }
+            library("elemental2-svg", "com.google.elemental2", "elemental2-svg").version { require("1.2.3") }
+            library("gwt-user", "org.gwtproject", "gwt-user").version { require("2.12.2") }
+            library("gwt-dev", "org.gwtproject", "gwt-dev").version { require("2.12.2") }
+            library("sayaya-ui", "dev.sayaya", "ui").version { require("material3-2.2.0") }
+            library("sayaya-rx", "dev.sayaya", "rx").version { require("2.1") }
+            library("lombok", "org.projectlombok", "lombok").version { require("1.18.36") }
+            bundle("sayaya-web", listOf("elemento-core", "elemental2-svg", "gwt-user", "dagger-gwt", "dagger-compiler", "sayaya-ui", "sayaya-rx", "lombok"))
+
+            bundle("gwt", listOf("elemento-core", "elemental2-svg", "gwt-user"))
+
+            library("dagger-gwt", "com.google.dagger", "dagger-gwt").version { require("2.55") }
+            library("dagger-compiler", "com.google.dagger", "dagger-compiler").version { require("2.55") }
+            library("junit5", "org.junit.jupiter", "junit-jupiter").version { require("5.12.0") }
+            library("selenium", "org.seleniumhq.selenium", "selenium-java").version { require("4.29.0") }
+            bundle("test-web", listOf("kotest-runner", "selenium", "mockk", "junit5"))
         }
     }
 }
@@ -58,3 +75,4 @@ include("persist")
 include("testcontainer")
 include("search")
 include("search-type")
+include("type-ui")
