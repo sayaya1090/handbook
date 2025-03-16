@@ -1,9 +1,2 @@
-type-ui/src/main/webapp/js/sayaya-ui.js filter=lfs diff=lfs merge=lfs -text
-type-ui/src/main/webapp/js/rxjs.umd.min.js filter=lfs diff=lfs merge=lfs -text
-type-ui/src/main/webapp/js/language.en.json filter=lfs diff=lfs merge=lfs -text
-type-ui/src/main/webapp/js/language.ko.json filter=lfs diff=lfs merge=lfs -text
-
-type-ui/src/test/webapp/js/sayaya-ui.js filter=lfs diff=lfs merge=lfs -text
-type-ui/src/test/webapp/js/rxjs.umd.min.js filter=lfs diff=lfs merge=lfs -text
-type-ui/src/test/webapp/js/language.en.json filter=lfs diff=lfs merge=lfs -text
-type-ui/src/test/webapp/js/language.ko.json filter=lfs diff=lfs merge=lfs -text
+type-ui/src/main/webapp/js/* filter=lfs diff=lfs merge=lfs -text
+type-ui/src/test/webapp/js/* filter=lfs diff=lfs merge=lfs -text
