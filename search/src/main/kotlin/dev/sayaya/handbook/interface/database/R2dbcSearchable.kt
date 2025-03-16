@@ -1,6 +1,6 @@
-package dev.sayaya.`interface`.database
+package dev.sayaya.handbook.`interface`.database
 
-import dev.sayaya.usecase.Searchable
+import dev.sayaya.handbook.usecase.Searchable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable

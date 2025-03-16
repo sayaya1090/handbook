@@ -1,4 +1,4 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor

@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.`interface`.api
 
-import dev.sayaya.domain.Search
+import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.usecase.TypeSearchService
 import org.springframework.data.domain.Page

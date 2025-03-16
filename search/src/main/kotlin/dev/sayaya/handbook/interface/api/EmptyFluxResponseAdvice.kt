@@ -1,4 +1,4 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
 import org.springframework.core.ReactiveAdapterRegistry
 import org.springframework.http.HttpStatus

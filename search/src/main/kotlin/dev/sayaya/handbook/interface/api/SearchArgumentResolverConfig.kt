@@ -1,4 +1,4 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.config.WebFluxConfigurer

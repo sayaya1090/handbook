@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.api;
+package dev.sayaya.handbook.client.domain;
 
 import lombok.Builder;
 

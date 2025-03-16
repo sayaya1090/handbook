@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain.value;
+package dev.sayaya.handbook.client.interfaces.value;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;

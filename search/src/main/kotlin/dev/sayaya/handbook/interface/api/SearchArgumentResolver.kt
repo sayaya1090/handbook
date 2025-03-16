@@ -1,6 +1,6 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
-import dev.sayaya.domain.Search
+import dev.sayaya.handbook.domain.Search
 import org.springframework.core.MethodParameter
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.BindingContext

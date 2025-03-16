@@ -1,10 +1,12 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.ReactiveAdapterRegistry
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpHeaders.CACHE_CONTROL
 import org.springframework.http.HttpStatus
 import org.springframework.http.codec.HttpMessageWriter
+import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.HandlerResult
@@ -14,7 +16,7 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 @Component
-class PageResponseAdvice(
+class PageResponseAdvice (
     reactiveAdapterRegistry: ReactiveAdapterRegistry,
     writers: List<HttpMessageWriter<*>>,
     contentTypeResolver: RequestedContentTypeResolver
@@ -23,6 +25,11 @@ class PageResponseAdvice(
         const val HEADER_TOTAL_COUNT = "Total-Count"
         const val HEADER_TOTAL_PAGES = "Total-Pages"
     }
+    @Autowired
+    constructor(reactiveAdapterRegistry: ReactiveAdapterRegistry,
+                serverCodecConfigurer: ServerCodecConfigurer,
+                contentTypeResolver: RequestedContentTypeResolver): this(reactiveAdapterRegistry, serverCodecConfigurer.writers, contentTypeResolver)
+
     override fun supports(result: HandlerResult): Boolean {
         val returnType = result.returnType
         return if (returnType.hasGenerics() && returnType.rawClass == Mono::class.java) {

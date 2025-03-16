@@ -1,4 +1,4 @@
-package dev.sayaya.domain
+package dev.sayaya.handbook.domain
 
 @JvmRecord
 data class Search (

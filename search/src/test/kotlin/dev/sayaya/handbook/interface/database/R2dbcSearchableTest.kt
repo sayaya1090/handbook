@@ -1,6 +1,6 @@
 package dev.sayaya.`interface`.database
 
-import dev.sayaya.domain.Search
+import dev.sayaya.handbook.domain.Search
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe

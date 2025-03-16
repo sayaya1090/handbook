@@ -1,5 +1,6 @@
 package dev.sayaya.`interface`.api
 
+import dev.sayaya.handbook.`interface`.api.PageResponseAdvice
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.boot.test.context.SpringBootTest

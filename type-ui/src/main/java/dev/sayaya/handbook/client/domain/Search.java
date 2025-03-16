@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.api;
+package dev.sayaya.handbook.client.domain;
 
 import lombok.Builder;
 
@@ -15,11 +15,8 @@ public record Search(
         Boolean asc,
         Map<String, String> filters
 ) {
-    private static final int DEFAULT_PAGE = 0;
-    private static final int DEFAULT_LIMIT = 30;
-    private static final int MAX_LIMIT = 100;
-    private static final List<String> INVALID_KEYS = List.of("page", "limit", "sort_by", "asc");
     public Search {
+        final int MAX_LIMIT = 100;
         require(page >= 0, "Page must be a non-negative integer. Given: " + page);
         require(limit >= 1 && limit <= MAX_LIMIT, "Limit must be greater than 0, and less than or equal to " + MAX_LIMIT + ". Given: " + limit);
         require(asc == null || sortBy != null, "If 'asc' is not null, 'sortBy' must also be provided. Given: asc=" + asc + ", sortBy=" + sortBy);
@@ -44,9 +41,12 @@ public record Search(
     }
     // 필터 키 검증 로직
     private static void validateFilterKey(String key) {
+        List<String> INVALID_KEYS = List.of("page", "limit", "sort_by", "asc");
         require(!INVALID_KEYS.contains(key), "'" + key + "' cannot be used as a filter key");
     }
     public static Search.SearchBuilder builder() {
+        final int DEFAULT_PAGE = 0;
+        final int DEFAULT_LIMIT = 30;
         return new SearchBuilder()
                 .page(DEFAULT_PAGE)
                 .limit(DEFAULT_LIMIT)
