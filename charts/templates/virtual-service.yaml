@@ -9,9 +9,31 @@ spec:
   hosts:
     - {{ .Values.host }}
   http:
+      - match:
+          - uri:
+              prefix: /types
+            method: GET
+        route:
+          - destination:
+              host: search-type
+              port:
+                number: 80
+      - match:
+          - uri:
+              prefix: /types
+            method:
+              - PUT
+              - POST
+              - DELETE
+              - PATCH
+        route:
+          - destination:
+              host: persist
+              port:
+                number: 80
     - match:
         - uri:
-            exact: /types
+            exact: /type
       rewrite:
         uri: /{{ .Values.bucket.name }}/static/type.html
       route:
