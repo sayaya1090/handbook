@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -26,7 +28,7 @@ jobs:
         run: gradle $SUBMODULE:build
       - name: Unpack
         run: |
-          unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.css" "*.html" -d static
+          unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.json" "**/*.css" "*.html" -d static
           mv static/type/* static/js/
           sed -i 's|"type/type.nocache.js"|"js/type.nocache.js"|g' static/type.html
       - name: Deploy
