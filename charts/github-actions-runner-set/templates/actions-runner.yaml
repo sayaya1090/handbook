@@ -13,7 +13,6 @@ spec:
       LABEL org.opencontainers.image.description "A RedHat UBI 9 based runner image for GitHub Actions"
 
       # Arguments
-      ARG TARGETPLATFORM=linux/x64
       ARG RUNNER_VERSION=2.322.0
       ARG RUNNER_CONTAINER_HOOKS_VERSION=0.6.2
 
@@ -38,8 +37,7 @@ spec:
       WORKDIR $WORKDIR
 
       # Runner download supports amd64 as x64
-      RUN export ARCH=$(echo ${TARGETPLATFORM} | cut -d / -f2) && \
-      curl -L -o runner.tar.gz https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${ARCH}-${RUNNER_VERSION}.tar.gz && \
+      RUN curl -L -o runner.tar.gz https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
       tar xzf ./runner.tar.gz && rm runner.tar.gz && \
       ./bin/installdependencies.sh && \
 
@@ -60,7 +58,7 @@ spec:
       # Install software
       dnf update -y && \
       dnf install dnf-plugins-core -y && \
-      dnf install -y git jq krb5-libs libicu libyaml-devel lttng-ust zsh net-tools openssl-libs wget rsync && \
+      dnf install -y git git-lfs jq krb5-libs libicu libyaml-devel lttng-ust zsh net-tools openssl-libs wget rsync && \
 
       # Change default shell
       /usr/bin/sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"# && \
@@ -94,7 +92,7 @@ spec:
       ./aws/install && \
 
       # Setup default locale to KoKr
-      dnf install -y https://dl.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/Packages/g/glibc-langpack-ko-2.34-125.el9_5.1.x86_64.rpm && \
+      dnf install -y https://dl.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/Packages/g/glibc-langpack-ko-2.34-125.el9_5.3.x86_64.rpm && \
       dnf clean all && \
 
       # Set the working directory
