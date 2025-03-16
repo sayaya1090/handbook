@@ -1,10 +1,9 @@
 package dev.sayaya.handbook.`interface`.database
 
-import dev.sayaya.domain.Search
 import dev.sayaya.handbook.domain.Attribute
+import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.usecase.TypeSearchRepository
-import dev.sayaya.`interface`.database.R2dbcSearchable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest

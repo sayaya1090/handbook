@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.api;
 
+import dev.sayaya.handbook.client.domain.Page;
+import dev.sayaya.handbook.client.domain.Search;
 import elemental2.dom.Response;
 import elemental2.dom.URLSearchParams;
 import elemental2.promise.Promise;
