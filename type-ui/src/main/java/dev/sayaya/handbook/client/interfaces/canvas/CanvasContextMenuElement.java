@@ -26,6 +26,7 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
     private final MenuElementBuilder.MenuItemElementBuilder<?> addType;
     private final MenuElementBuilder.MenuItemElementBuilder<?> undo;
     private final MenuElementBuilder.MenuItemElementBuilder<?> redo;
+    private final MenuElementBuilder.MenuItemElementBuilder<?> search;
     @Inject CanvasContextMenuElement(ActionManager actions, LanguagePackManager labels) {
         this(div(), actions, labels);
     }
@@ -35,6 +36,7 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
         menu.add(divider());
         undo = menu.item().headline("Undo");
         redo = menu.item().headline("Redo");
+        search = menu.item().headline("Search");
         menu.element().stayOpenOnFocusout = true;
         menu.element().stayOpenOnOutsideClick = true;
         on(EventType.click, Event::stopPropagation);        // Canvas의 Click 호출을 차단한다
@@ -42,6 +44,7 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
         addType.on(EventType.click, evt->actions.addType(element().xOffset, element().yOffset));
         undo.on(EventType.click, evt->actions.undo());
         redo.on(EventType.click, evt->actions.redo());
+        search.on(EventType.click, evt->actions.search());
 
         labels.subscribe(this::update);
     }
