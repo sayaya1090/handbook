@@ -24,7 +24,8 @@ dependencyResolutionManagement {
             library("kotlin-coroutines-reactor", "org.jetbrains.kotlinx", "kotlinx-coroutines-reactor").withoutVersion()
             library("kotlin-jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").withoutVersion()
             library("spring-actuator", "org.springframework.boot", "spring-boot-starter-actuator").withoutVersion()
-            bundle("kotlin-webflux", listOf("spring-webflux", "kotlin-reactor", "kotlin-coroutines-reactor", "kotlin-jackson", "spring-actuator"))
+            library("prometheus", "io.micrometer", "micrometer-registry-prometheus").withoutVersion()
+            bundle("kotlin-webflux", listOf("spring-webflux", "kotlin-reactor", "kotlin-coroutines-reactor", "kotlin-jackson", "spring-actuator", "prometheus"))
 
             library("spring-gateway", "org.springframework.cloud", "spring-cloud-starter-gateway").withoutVersion()
             library("spring-discovery", "org.springframework.cloud", "spring-cloud-starter-zookeeper-discovery").withoutVersion()
