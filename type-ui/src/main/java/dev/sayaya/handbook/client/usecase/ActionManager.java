@@ -25,7 +25,7 @@ public class ActionManager {
         this.tailor = tailor;
     }
     public void addType(double x, double y) {
-        var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(300).height(1).build();
+        var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(250).height(1).build();
         box.height(tailor.estimateBoxHeight(box));
         var action = factory.complex (
                 factory.createBox(box),
