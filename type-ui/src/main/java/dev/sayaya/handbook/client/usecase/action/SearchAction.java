@@ -5,39 +5,44 @@ import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Type;
-import dev.sayaya.handbook.client.usecase.BoxList;
-import dev.sayaya.handbook.client.usecase.SearchProvider;
-import dev.sayaya.handbook.client.usecase.TypeRepository;
-import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
+import dev.sayaya.handbook.client.usecase.*;
 
 import java.util.Arrays;
 
 public class SearchAction extends ComplexAction {
-    @AssistedInject SearchAction(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, UpdatableBoxList updatableBoxList) {
-        super(pipeline(searchProvider, typeRepository, boxList, updatableBoxList));
+    @AssistedInject SearchAction(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor, UpdatableBoxList updatableBoxList) {
+        super(pipeline(searchProvider, typeRepository, boxList, tailor, updatableBoxList));
     }
-    private static Action[] pipeline(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, UpdatableBoxList updatableBoxList) {
+    private static Action[] pipeline(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor, UpdatableBoxList updatableBoxList) {
         return new Action[] {
-                clear(boxList), search(searchProvider, typeRepository, boxList, updatableBoxList)
+                clear(boxList), search(searchProvider, typeRepository, boxList, tailor, updatableBoxList)
         };
     }
     private static Action clear(BoxList boxList) {
         return new DeleteBoxAction(boxList, boxList.getValue());
     }
-    private static Action search(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, UpdatableBoxList updatableBoxList) {
+    private static Action search(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor, UpdatableBoxList updatableBoxList) {
         return new Action() {
+            private CreateBoxAction[] creates;
+            private PushOutOverlapAction pushOutOverlap;
             @Override
             public void execute() {
                 var param = searchProvider.getValue();
                 typeRepository.search(param).subscribe(page->{
-                    var boxes = Arrays.stream(page.content()).map(SearchAction::map).toArray(Box[]::new);
-                    Arrays.stream(boxes).map(box->new CreateBoxAction(boxList, box)).forEach(Action::execute);
-                    new PushOutOverlapAction(updatableBoxList).execute();
+                    var boxes = Arrays.stream(page.content())
+                            .map(SearchAction::map)
+                            .map(box->box.height(tailor.estimateBoxHeight(box)))
+                            .toArray(Box[]::new);
+                    creates = Arrays.stream(boxes).map(box->new CreateBoxAction(boxList, box)).toArray(CreateBoxAction[]::new);
+                    for(var create:creates) create.execute();
+                    pushOutOverlap = new PushOutOverlapAction(updatableBoxList);
+                    pushOutOverlap.execute();
                 });
             }
             @Override
             public void rollback() {
-
+                pushOutOverlap.rollback();
+                for(var create:creates) create.rollback();
             }
         };
     }

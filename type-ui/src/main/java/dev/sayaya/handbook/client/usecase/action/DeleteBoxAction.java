@@ -7,23 +7,30 @@ import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.usecase.BoxList;
 
-public class DeleteBoxAction implements Action {
-    private final CreateBoxAction reverseAction;
-    @AssistedInject DeleteBoxAction(BoxList boxList, @Assisted Box... box) {
-        reverseAction = new CreateBoxAction(boxList, box[0]);
-    }
-    @Override
-    public void execute() {
-        reverseAction.rollback();
-    }
+import java.util.Arrays;
 
-    @Override
-    public void rollback() {
-        reverseAction.execute();
+public class DeleteBoxAction extends ComplexAction {
+    @AssistedInject DeleteBoxAction(BoxList boxList, @Assisted Box... box) {
+        super(pipeline(boxList, box));
+    }
+    private static Action[] pipeline(BoxList boxList, Box... boxes) {
+        return Arrays.stream(boxes).map(box->new CreateBoxAction(boxList, box)).map(ReverseAction::new).toArray(Action[]::new);
     }
 
     @AssistedFactory
     interface DeleteActionFactory {
         DeleteBoxAction deleteBox(Box... box);
     }
+
+    private record ReverseAction(Action action) implements Action {
+        @Override
+            public void execute() {
+                action.rollback();
+            }
+
+            @Override
+            public void rollback() {
+                action.execute();
+            }
+        }
 }
