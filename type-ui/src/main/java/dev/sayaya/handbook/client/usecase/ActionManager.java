@@ -84,8 +84,8 @@ public class ActionManager {
         push(action);
         action.execute();
     }
-    public void search() {
-        var action = factory.search();
+    public void load() {
+        var action = factory.load();
         push(action);
         action.execute();
     }

@@ -23,32 +23,33 @@ import static org.jboss.elemento.Elements.div;
 @Singleton
 public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
     @Delegate  private final MenuElementBuilder.TopMenuElementBuilder menu = MenuElementBuilder.menu().positioning(MenuElementBuilder.Position.Popover);
+    private final MenuElementBuilder.MenuItemElementBuilder<?> load;
     private final MenuElementBuilder.MenuItemElementBuilder<?> addType;
     private final MenuElementBuilder.MenuItemElementBuilder<?> undo;
     private final MenuElementBuilder.MenuItemElementBuilder<?> redo;
-    private final MenuElementBuilder.MenuItemElementBuilder<?> search;
     @Inject CanvasContextMenuElement(ActionManager actions, LanguagePackManager labels) {
         this(div(), actions, labels);
     }
     private CanvasContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, LanguagePackManager labels) {
         container.add(menu.anchorElement(container));
+        load = menu.item().headline("Load");
         addType = menu.item().headline("Add Type");
         menu.add(divider());
         undo = menu.item().headline("Undo");
         redo = menu.item().headline("Redo");
-        search = menu.item().headline("Search");
         menu.element().stayOpenOnFocusout = true;
         menu.element().stayOpenOnOutsideClick = true;
         on(EventType.click, Event::stopPropagation);        // Canvas의 Click 호출을 차단한다
 
+        load.on(EventType.click, evt->actions.load());
         addType.on(EventType.click, evt->actions.addType(element().xOffset, element().yOffset));
         undo.on(EventType.click, evt->actions.undo());
         redo.on(EventType.click, evt->actions.redo());
-        search.on(EventType.click, evt->actions.search());
 
         labels.subscribe(this::update);
     }
     private void update(Label labels) {
+        updateLabel(load, labels.load());
         updateLabel(addType, labels.addType());
         updateLabel(undo, labels.undo());
         updateLabel(redo, labels.redo());

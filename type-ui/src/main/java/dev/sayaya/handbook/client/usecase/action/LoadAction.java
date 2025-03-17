@@ -9,8 +9,8 @@ import dev.sayaya.handbook.client.usecase.*;
 
 import java.util.Arrays;
 
-public class SearchAction extends ComplexAction {
-    @AssistedInject SearchAction(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
+public class LoadAction extends ComplexAction {
+    @AssistedInject LoadAction(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
         super(pipeline(searchProvider, typeRepository, boxList, tailor));
     }
     private static Action[] pipeline(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
@@ -48,7 +48,7 @@ public class SearchAction extends ComplexAction {
         return box.height(tailor.estimateBoxHeight(box));
     }
     @AssistedFactory
-    interface SearchActionFactory {
-        SearchAction search();
+    interface LoadActionFactory {
+        LoadAction load();
     }
 }
