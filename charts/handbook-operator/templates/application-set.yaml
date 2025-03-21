@@ -30,7 +30,10 @@ spec:
         server: 'https://kubernetes.default.svc'
       project: handbook
       sources:
-        - helm:
+        - path: charts/handbook
+          repoURL: 'https://github.com/sayaya1090/handbook.git'
+          targetRevision: HEAD
+          helm:
             parameters:
               - name: host
                 value: '{{`{{ host }}`}}'
@@ -46,9 +49,6 @@ spec:
               - forceString: true
                 name: search-type.image.name
                 value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'
-          path: charts/handbook
-          repoURL: 'https://github.com/sayaya1090/handbook.git'
-          targetRevision: HEAD
       syncPolicy:
         syncOptions:
           - CreateNamespace=true

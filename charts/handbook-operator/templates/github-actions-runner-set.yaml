@@ -1,4 +1,3 @@
-{{- if .Values.mode }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -18,11 +17,4 @@ spec:
   source:
     path: charts/handbook-operator/github-actions-runner-set
     repoURL: 'https://github.com/sayaya1090/handbook.git'
-    targetRevision: {{ .Values.revision }}
-    helm:
-      parameters:
-        - name: mode
-          value: {{ .Values.mode }}
-        - name: revision
-          value: {{ .Values.revision }}
-{{- end }}
+    targetRevision: HEAD

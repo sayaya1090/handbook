@@ -5,8 +5,10 @@ on:
       - persist/**
 jobs:
   test-and-deploy:
-    runs-on: handbook
+    runs-on: handbook-operator
     env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
       SUBMODULE: persist
     steps:

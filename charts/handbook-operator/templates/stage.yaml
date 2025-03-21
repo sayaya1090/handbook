@@ -2,7 +2,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: persist-test
-  namespace: {{ .Release.Namespace }}
+  namespace: handbook-test
 spec:
   promotionTemplate:
     spec:
@@ -21,5 +21,33 @@ spec:
     - origin:
         kind: Warehouse
         name: persist
+      sources:
+        direct: true
+
+---
+
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: search-type-test
+  namespace: handbook-test
+spec:
+  promotionTemplate:
+    spec:
+      steps:
+        - config:
+            apps:
+              - name: handbook-test
+                sources:
+                  - helm:
+                      images:
+                        - key: search-type.image.tag
+                          value: {{`${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/search-type", warehouse("search-type")).Tag }}@${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/search-type", warehouse("search-type")).Digest }}`}}
+                    repoURL: 'https://github.com/sayaya1090/handbook.git'
+          uses: argocd-update
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: search-type
       sources:
         direct: true
