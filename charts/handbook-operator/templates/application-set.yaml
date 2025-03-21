@@ -23,10 +23,10 @@ spec:
     metadata:
       annotations:
         kargo.akuity.io/authorized-stage: handbook:persist-{{`{{ stage }}`}}
-      name: {{`{{ name }}`}}
+      name: '{{`{{ name }}`}}'
     spec:
       destination:
-        namespace: {{`{{ name }}`}}
+        namespace: '{{`{{ name }}`}}'
         server: 'https://kubernetes.default.svc'
       project: handbook
       sources:
@@ -42,10 +42,10 @@ spec:
                 value: {{`{{ database }}`}}
               - forceString: true
                 name: persist.image.name
-                value: 'image-registry.openshift-image-registry.svc:5000/handbook-operator/persist'
+                value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
               - forceString: true
                 name: search-type.image.name
-                value: 'image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type'
+                value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'
           path: charts/handbook
           repoURL: 'https://github.com/sayaya1090/handbook.git'
           targetRevision: HEAD
