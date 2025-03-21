@@ -33,13 +33,13 @@ spec:
         - helm:
             parameters:
               - name: host
-                value: {{`{{ host }}`}}
+                value: '{{`{{ host }}`}}'
               - name: mode
-                value: {{`{{ mode }}`}}
+                value: '{{`{{ mode }}`}}'
               - name: bucket.name
-                value: {{`{{ bucket }}`}}
+                value: '{{`{{ bucket }}`}}'
               - name: database.ip
-                value: {{`{{ database }}`}}
+                value: '{{`{{ database }}`}}'
               - forceString: true
                 name: persist.image.name
                 value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
