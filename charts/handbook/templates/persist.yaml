@@ -34,17 +34,6 @@ data:
 
 ---
 
-kind: ImageStream
-apiVersion: image.openshift.io/v1
-metadata:
-  name: persist
-  namespace: {{ .Release.Namespace }}
-spec:
-  lookupPolicy:
-    local: false
-
----
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -105,11 +94,7 @@ spec:
             defaultMode: 420
       containers:
         - name: persist
-        {{- if index .Values "persist" }}
-          image: {{ index .Values "persist" "image" "name" }}:{{ index .Values "persist" "image" "tag" }}
-        {{- else }}
-          image: image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist:latest
-        {{- end }}
+          image: {{ index .Values "persist" "image" "name" }}:{{ index .Values "persist" "image" "tag" | default "latest" }}
           ports:
             - containerPort: 8080
               protocol: TCP
