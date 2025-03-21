@@ -1,9 +1,8 @@
 annotations:
-  charts.openshift.io/name: github-actions-runner
+  charts.openshift.io/name: handbook-github-actions-runner-set
 apiVersion: v2
-appVersion: 1.14.0
 kubeVersion: '>= 1.20.0-0'
-name: github-actions-runner
+name: handbook-github-actions-runner-set
 version: 0.1.0
 dependencies:
   - name: gha-runner-scale-set

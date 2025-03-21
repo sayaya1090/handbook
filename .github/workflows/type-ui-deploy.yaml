@@ -5,7 +5,7 @@ on:
       - type-ui/**
 jobs:
   test-and-deploy:
-    runs-on: handbook
+    runs-on: handbook-operator
     env:
       SUBMODULE: type-ui
       GITHUB_USERNAME: ${{ secrets._GITHUB_USER }}

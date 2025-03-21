@@ -5,8 +5,10 @@ on:
       - persist/**
 jobs:
   test-and-deploy:
-    runs-on: handbook
+    runs-on: handbook-operator
     env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
       SUBMODULE: persist
     steps:
@@ -29,11 +31,7 @@ jobs:
         run: gradle $SUBMODULE:koverXmlReport
       - name: Deploy
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
-          else
-            IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook-test/$SUBMODULE"
-          fi
+          IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook-operator/$SUBMODULE"
           echo "Deploying with IMAGE=$IMAGE"
           oc registry login
           gradle $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest
