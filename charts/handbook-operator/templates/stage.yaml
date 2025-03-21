@@ -1,0 +1,25 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: persist-test
+  namespace: handbook
+spec:
+  promotionTemplate:
+    spec:
+      steps:
+        - config:
+            apps:
+              - name: handbook-test
+                sources:
+                  - helm:
+                      images:
+                        - key: persist.image.tag
+                          value: '${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist", warehouse("persist")).Tag }}@${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist", warehouse("persist")).Digest }}'
+                    repoURL: 'https://github.com/sayaya1090/handbook.git'
+          uses: argocd-update
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: persist
+      sources:
+        direct: true

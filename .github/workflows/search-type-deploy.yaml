@@ -29,11 +29,7 @@ jobs:
         run: gradle $SUBMODULE:koverXmlReport
       - name: Deploy
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
-          else
-            IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook-test/$SUBMODULE"
-          fi
+          IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook-operator/$SUBMODULE"
           echo "Deploying with IMAGE=$IMAGE"
           oc registry login
           gradle $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest -Djib.allowInsecureRegistries=true

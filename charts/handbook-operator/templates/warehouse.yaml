@@ -1,0 +1,33 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: persist
+  namespace: handbook
+spec:
+  freightCreationPolicy: Automatic
+  interval: 5m0s
+  subscriptions:
+    - image:
+        discoveryLimit: 20
+        imageSelectionStrategy: Lexical
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/handbook/persist'
+        strictSemvers: true
+
+---
+
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: search-type
+  namespace: handbook
+spec:
+  freightCreationPolicy: Automatic
+  interval: 5m0s
+  subscriptions:
+    - image:
+        discoveryLimit: 20
+        imageSelectionStrategy: Lexical
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/handbook/search-type'
+        strictSemvers: true
