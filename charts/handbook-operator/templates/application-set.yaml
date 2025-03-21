@@ -42,10 +42,10 @@ spec:
                 value: '{{database}}'
               - forceString: true
                 name: persist.image.name
-                value: 'image-registry.openshift-image-registry.svc:5000/handbook/persist'
+                value: 'image-registry.openshift-image-registry.svc:5000/handbook-operator/persist'
               - forceString: true
                 name: search-type.image.name
-                value: 'image-registry.openshift-image-registry.svc:5000/handbook/search-type'
+                value: 'image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type'
           path: charts/handbook
           repoURL: 'https://github.com/sayaya1090/handbook.git'
           targetRevision: HEAD

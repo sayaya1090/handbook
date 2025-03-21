@@ -2,7 +2,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
   name: persist
-  namespace: handbook
+  namespace: {{ .Release.Namespace }}
 spec:
   freightCreationPolicy: Automatic
   interval: 5m0s
@@ -20,7 +20,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
   name: search-type
-  namespace: handbook
+  namespace: {{ .Release.Namespace }}
 spec:
   freightCreationPolicy: Automatic
   interval: 5m0s
