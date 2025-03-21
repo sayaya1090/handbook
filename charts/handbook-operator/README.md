@@ -1,0 +1,76 @@
+# 기준정보관리 시스템 CI/CD 헬름 차트
+
+```shell
+oc create token deployer -n handbook-operator --duration=4294967296s
+```
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: handbook
+  namespace: openshift-gitops
+spec:
+  generators:
+    - list:
+        elements:
+          - bucket: handbook-test
+            database: 192.168.1.211
+            host: handbook.sayaya.cloud
+            mode: test
+            name: handbook-test
+            stage: test
+          - bucket: handbook
+            database: 192.168.1.210
+            host: handbook.sayaya.dev
+            mode: ''
+            name: handbook
+            stage: prod
+  template:
+    metadata:
+      annotations:
+        kargo.akuity.io/authorized-stage: handbook-operator:handbook-{{`{{ stage }}`}}
+      name: '{{`{{ name }}`}}'
+    spec:
+      destination:
+        namespace: '{{`{{ name }}`}}'
+        server: 'https://kubernetes.default.svc'
+      project: handbook
+      sources:
+        - path: charts/handbook
+          repoURL: 'https://github.com/sayaya1090/handbook.git'
+          targetRevision: HEAD
+          helm:
+            parameters:
+              - name: host
+                value: '{{`{{ host }}`}}'
+              - name: mode
+                value: '{{`{{ mode }}`}}'
+              - name: bucket.name
+                value: '{{`{{ bucket }}`}}'
+              - name: database.ip
+                value: '{{`{{ database }}`}}'
+              - forceString: true
+                name: persist.image.name
+                value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
+              - forceString: true
+                name: search-type.image.name
+                value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+```
+```yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: image-registry-secret
+  namespace: handbook-operator
+  labels:
+    kargo.akuity.io/cred-type: image
+data:
+  repoURL: ^image-registry\.openshift-image-registry\.svc
+  repoURLIsRegex: true
+  username: deployer
+  password: <TOKEN>
+type: Opaque
+```

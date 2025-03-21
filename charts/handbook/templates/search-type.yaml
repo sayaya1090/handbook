@@ -34,17 +34,6 @@ data:
 
 ---
 
-kind: ImageStream
-apiVersion: image.openshift.io/v1
-metadata:
-  name: search-type
-  namespace: {{ .Release.Namespace }}
-spec:
-  lookupPolicy:
-    local: false
-
----
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -105,11 +94,7 @@ spec:
             defaultMode: 420
       containers:
         - name: search-type
-        {{- if index .Values "search-type" }}
-          image: {{ index .Values "search-type" "image" "name" }}:{{ index .Values "search-type" "image" "tag" }}
-        {{- else }}
-          image: image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type:latest
-        {{- end }}
+          image: {{ index .Values "search-type" "image" "name" }}:{{ index .Values "search-type" "image" "tag" | default "latest" }}
           ports:
             - containerPort: 8080
               protocol: TCP
