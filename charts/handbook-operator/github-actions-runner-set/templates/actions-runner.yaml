@@ -4,6 +4,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: handbook-actions-runner
 spec:
+  resources:
+    limits:
+      cpu: '2'
+      memory: 4Gi
+    requests:
+      cpu: '2'
+      memory: 4Gi
   source:
     type: Dockerfile
     dockerfile: |
