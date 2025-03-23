@@ -1,33 +1,52 @@
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
-  name: persist
+  name: handbook-test
   namespace: {{ .Release.Namespace }}
 spec:
   freightCreationPolicy: Automatic
-  interval: 5m0s
+  interval: 1m0s
   subscriptions:
     - image:
-        discoveryLimit: 20
-        imageSelectionStrategy: Lexical
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
         insecureSkipTLSVerify: true
         repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
         strictSemvers: true
-
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'
+        strictSemvers: true
+    - git:
+        repoURL: https://github.com/sayaya1090/handbook.git
+        branch: main
+        includePaths:
+          - persist
+          - search-type
+        commitSelectionStrategy: NewestFromBranch
+        discoveryLimit: 5
+        strictSemvers: true
 ---
-
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
-  name: search-type
+  name: handbook-prod
   namespace: {{ .Release.Namespace }}
 spec:
   freightCreationPolicy: Automatic
   interval: 5m0s
   subscriptions:
     - image:
-        discoveryLimit: 20
-        imageSelectionStrategy: Lexical
+        imageSelectionStrategy: SemVer
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
+        strictSemvers: true
+        discoveryLimit: 2
+    - image:
+        imageSelectionStrategy: SemVer
         insecureSkipTLSVerify: true
         repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'
         strictSemvers: true
+        discoveryLimit: 2

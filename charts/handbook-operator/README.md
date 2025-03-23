@@ -74,3 +74,35 @@ data:
   password: <TOKEN>
 type: Opaque
 ```
+
+
+```shell
+curl -k -X GET \
+  -H "Authorization: Bearer sha256~" \
+  -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+  https://image-registry.openshift-image-registry.svc:5000/v2/handbook-operator/persist/manifests/latest > manifest.json
+
+curl -k -X PUT \
+  -H "Authorization: Bearer sha256~" \
+  -H "Content-Type: application/vnd.docker.distribution.manifest.v2+json" \
+  -d @manifest.json \
+  https://image-registry.openshift-image-registry.svc:5000/v2/handbook-operator/persist/manifests/test
+
+```
+
+test:
+- 자동으로 올라옴
+- warehouse 별도 관리
+
+candidate:
+- test에서 freight를 승급
+- 매뉴얼 프로모트
+    - freight에서 모듈 검출
+    - github actions로 모듈명, 이미지 태그 전달
+    - github actions에서 소스코드와 이미지에 태깅
+        - 전달된 모듈명을 사용하여 소스코드에 모듈명@날짜 태그
+        - 전될된 이미지 정보를 사용하여 이미지에 날짜 태그
+
+prod
+- 모듈별 날짜 태그로 자동 승급
+- warehouse 별도 관리

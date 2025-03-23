@@ -1,0 +1,105 @@
+name: 릴리즈
+on:
+  repository_dispatch:
+    types: [release]
+jobs:
+  add-release-tag:
+    name: Add release tag
+    runs-on: handbook-operator
+    env:
+      PAYLOAD: ${{ toJson(github.event) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+      - name: Extract module names from changed files
+        id: extract-modules
+        run: |
+          # 현재 날짜 가져오기 (YYYY.MM.DD 형식)
+          current_date=$(date +%Y.%m.%d)
+          echo "current_date: $current_date"
+          echo "current_date=$current_date" >> $GITHUB_ENV
+          
+          # PAYLOAD에서 github.sha 추출
+          REPO=$(echo "$PAYLOAD" | jq -r '.client_payload.commit.repoURL')
+          BRANCH=$(echo "$PAYLOAD" | jq -r '.client_payload.commit.branch')
+          GITHUB_SHA=$(echo "$PAYLOAD" | jq -r '.client_payload.commit.id')
+          echo "Extracted GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_SHA=$GITHUB_SHA" >> $GITHUB_ENV
+          
+          # 변경된 파일 목록 가져오기
+          changed_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA^ $GITHUB_SHA)
+          
+          # 모듈 이름 필터링 (중복 제거 포함)
+          declare -A unique_modules=()
+          while IFS= read -r file; do
+            module_name="${file%%/*}"
+            case "$module_name" in (persist|search-type)
+                unique_modules["$module_name"]=1
+                ;;
+            esac
+          done <<< "$changed_files"
+          
+          # 배열로 변환 후 JSON 형식으로 출력
+          module_names=("${!unique_modules[@]}")
+          module_names=$(IFS=','; echo "${module_names[*]}")
+          echo "MODULES=$module_names"
+          echo "MODULES=$module_names" >> $GITHUB_ENV
+      - name: Tag each module with commit hash and date
+        run: |
+          echo "Modules to tag: $MODULES"
+          IFS=',' read -ra module_names <<< "$MODULES"
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          
+          # 각 모듈 이름으로 태그 생성 및 푸시
+          for module in "${module_names[@]}"; do
+            tag_name="${module}@${current_date}"
+            # 태그 존재 여부 확인
+            if git rev-parse "refs/tags/$tag_name" >/dev/null 2>&1; then
+              echo "Tag $tag_name already exists. Skipping tagging."
+            else
+              echo "Creating and pushing new tag: $tag_name for commit: $GITHUB_SHA"
+              git tag -a "$tag_name" "$GITHUB_SHA" -m "Tag for module $module on $current_date"
+              git push origin "$tag_name"
+            fi
+          done
+      - name: Tag image in OpenShift
+        run: |
+          # PAYLOAD에서 이미지 정보 추출
+          IMAGES=$(echo "$PAYLOAD" | jq -c '.client_payload.images[]')
+          
+          # OpenShift 클러스터 로그인
+          echo "Logging into OpenShift cluster..."
+          oc registry login
+      
+          # 이미지 목록 순회
+          echo "$IMAGES" | while IFS= read -r image; do
+            # 이미지 정보 추출
+            REPO_URL=$(echo "$image" | jq -r '.repoURL')
+            TAG=$(echo "$image" | jq -r '.tag')
+            DIGEST=$(echo "$image" | jq -r '.digest')
+            
+            # 새로운 태그 이름 설정
+            NEW_TAG="${current_date}"
+            
+            # 이미지 스트림 이름 추출 (레포지토리 URL 마지막 부분)
+            IMAGESTREAM=$(basename "$REPO_URL")
+          
+            # 태그 존재 여부 확인 및 조건부 태깅
+            echo "Checking if tag $NEW_TAG exists for image stream $IMAGESTREAM..."
+            if oc get istag "$IMAGESTREAM:$NEW_TAG" > /dev/null 2>&1; then
+              echo "Tag $NEW_TAG already exists for image stream $IMAGESTREAM. Skipping."
+            else
+              echo "Tag $NEW_TAG does not exist for image stream $IMAGESTREAM. Creating new tag..."
+              oc tag --source=docker "${REPO_URL}@${DIGEST}" "${IMAGESTREAM}:${NEW_TAG}"
+              
+              # 결과 출력
+              if [[ $? -eq 0 ]]; then
+                echo "Successfully tagged $REPO_URL -> $IMAGESTREAM:$NEW_TAG"
+              else
+                echo "Failed to tag $REPO_URL -> $IMAGESTREAM:$NEW_TAG"
+              fi
+            fi
+          done
