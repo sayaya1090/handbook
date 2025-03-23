@@ -6,32 +6,36 @@ metadata:
   annotations:
      kargo.akuity.io/color: amber
 spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: handbook
+      sources:
+        direct: true
   promotionTemplate:
     spec:
       steps:
-        - config:
+        - uses: compose-output
+          as: persist-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist") }}` }}
+        - uses: compose-output
+          as: search-type-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type") }}` }}
+        - uses: argocd-update
+          as: sync
+          config:
             apps:
               - name: handbook-test
                 sources:
                   - helm:
                       images:
                         - key: persist.image.tag
-                          value: {{`${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/persist", warehouse("persist")).Tag }}@${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/persist", warehouse("persist")).Digest }}`}}
+                          value: {{ `${{ outputs['persist-image'].img.tag }}@${{ outputs['persist-image'].img.digest }}` }}
                         - key: search-type.image.tag
-                          value: {{`${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/search-type", warehouse("search-type")).Tag }}@${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/search-type", warehouse("search-type")).Digest }}`}}
-                    repoURL: 'https://github.com/sayaya1090/handbook.git'
-          uses: argocd-update
-  requestedFreight:
-    - origin:
-        kind: Warehouse
-        name: persist
-      sources:
-        direct: true
-    - origin:
-        kind: Warehouse
-        name: search-type
-      sources:
-        direct: true
+                          value: {{ `${{ outputs['search-type-image'].img.tag }}@${{ outputs['search-type-image'].img.digest }}` }}
+                    repoURL: https://github.com/sayaya1090/handbook.git
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -39,35 +43,38 @@ metadata:
   name: handbook-prod
   namespace: {{ .Release.Namespace }}
   annotations:
-     kargo.akuity.io/color: green
+    kargo.akuity.io/color: blue
 spec:
-  promotionTemplate:
-    spec:
-      steps:
-        - config:
-            apps:
-              - name: handbook
-                sources:
-                  - helm:
-                      images:
-                        - key: persist.image.tag
-                          value: {{`${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/persist", warehouse("persist")).Tag }}@${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/persist", warehouse("persist")).Digest }}`}}
-                        - key: search-type.image.tag
-                          value: {{`${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/search-type", warehouse("search-type")).Tag }}@${{ imageFrom("image-registry.openshift-image-registry.svc:5000/`}}{{ .Release.Namespace }}{{`/search-type", warehouse("search-type")).Digest }}`}}
-                    repoURL: 'https://github.com/sayaya1090/handbook.git'
-          uses: argocd-update
   requestedFreight:
     - origin:
         kind: Warehouse
-        name: persist
+        name: handbook
       sources:
         direct: false
         stages:
           - handbook-test
-    - origin:
-        kind: Warehouse
-        name: search-type
-      sources:
-        direct: false
-        stages:
-          - handbook-test
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: http
+          as: add-tag
+          config:
+              url: https://api.github.com/repos/sayaya1090/handbook/dispatches
+              method: POST
+              headers:
+                - name: Authorization
+                  value: token {{`${{ secrets.github.token }}`}}
+                - name: Accept
+                  value: application/vnd.github.v3+json
+              body: |
+                {{`${{ quote({
+                  "event_type": "release",
+                  "client_payload": {
+                    "ctx": ctx,
+                    "images": [
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type")
+                    ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")
+                  }
+                }) }}`}}
+              successExpression: response.status == 204

@@ -35,6 +35,13 @@ spec:
                   volumeMounts:
                     - name: dind-externals
                       mountPath: /home/runner/tmpDir
+                  resources:
+                    limits:
+                      cpu: "1"
+                      memory: 500Mi
+                    requests:
+                      cpu: "1"
+                      memory: 500Mi
               containers:
                 - name: runner
                   image: image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/handbook-actions-runner:latest
@@ -46,6 +53,9 @@ spec:
                     requests:
                       cpu: "1"
                       memory: 500Mi
+                    limits:
+                      cpu: "2"
+                      memory: 4Gi
                   env:
                     - name: DOCKER_HOST
                       value: unix:///var/run/docker.sock
@@ -89,6 +99,13 @@ spec:
                       mountPath: /etc/docker/daemon.json
                       subPath: daemon.json
                       readOnly: true
+                  resources:
+                    requests:
+                      cpu: "1"
+                      memory: 500Mi
+                    limits:
+                      cpu: "2"
+                      memory: 4Gi
               volumes:
                 - name: dind-sock
                   emptyDir: { }
