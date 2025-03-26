@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.`interface`.database
 
-import dev.sayaya.domain.Search
 import dev.sayaya.handbook.domain.Attribute
+import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.ShouldSpec
 import io.mockk.every

@@ -23,7 +23,7 @@ public class LanguagePackManager {
                 Label label = Js.cast(json);
                 labels.next(label);
                 return null;
-            }); else update("en");
+            }); else if(!"en".equalsIgnoreCase(lang)) update("en");
             return null;
         });
     }

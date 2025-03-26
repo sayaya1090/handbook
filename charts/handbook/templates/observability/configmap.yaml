@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: observability
+  namespace: {{ .Release.Namespace }}
+data:
+  observability.yaml: |
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus
+      endpoint:
+        health:
+          show-details: always
+      prometheus:
+        metrics:
+          export:
+            enabled: true

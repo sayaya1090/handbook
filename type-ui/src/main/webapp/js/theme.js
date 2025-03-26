@@ -1,6 +1,3 @@
-const applyTheme = () => {
-    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('color-theme', theme);
-};
-applyTheme();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+version https://git-lfs.github.com/spec/v1
+oid sha256:0825ae267701ad1d4881ae2310565e757dd9664de036f18765ecb25387bcc55b
+size 299

@@ -15,6 +15,7 @@ data:
       config:
         import:
           - classpath:postgresql.yaml
+          - classpath:observability.yaml
     management:
       endpoint:
         health:
@@ -56,7 +57,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/search-type'
-    configmap.reloader.stakater.com/reload: "search-type,postgresql-ro"
+    configmap.reloader.stakater.com/reload: "search-type,postgresql-ro,observability"
     secret.reloader.stakater.com/reload: "postgresql-app"
   name: search-type
   namespace: {{ .Release.Namespace }}
@@ -92,6 +93,10 @@ spec:
           configMap:
             name: postgresql-ro
             defaultMode: 420
+        - name: observability-config
+          configMap:
+            name: observability
+            defaultMode: 420
       containers:
         - name: search-type
           image: {{ index .Values "search-type" "image" "name" }}:{{ index .Values "search-type" "image" "tag" | default "latest" }}
@@ -121,6 +126,9 @@ spec:
             - name: postgres-config
               mountPath: /app/resources/postgresql.yaml
               subPath: postgresql.yaml
+            - name: observability-config
+              mountPath: /app/resources/observability.yaml
+              subPath: observability.yaml
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

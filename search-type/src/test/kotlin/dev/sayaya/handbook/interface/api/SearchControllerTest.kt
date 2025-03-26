@@ -1,21 +1,18 @@
 package dev.sayaya.handbook.`interface`.api
 
-import dev.sayaya.domain.Search
+import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.usecase.TypeSearchService
-import dev.sayaya.`interface`.api.SearchArgumentResolver
+import io.kotest.core.spec.style.ShouldSpec
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
-import io.kotest.core.spec.style.ShouldSpec
-import org.springframework.http.MediaType
 import java.time.Instant
 
 @ExtendWith(SpringExtension::class)
