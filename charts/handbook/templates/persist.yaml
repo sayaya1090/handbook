@@ -118,6 +118,13 @@ spec:
                   name: postgresql-app
             - name: TZ
               value: Asia/Seoul
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
           volumeMounts:
             - name: config
               mountPath: /app/resources/application.yaml

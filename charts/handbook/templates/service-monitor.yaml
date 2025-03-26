@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: spring-boot-prometheus
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+    - interval: 30s
+      targetPort: 8080
+      path: /actuator/prometheus
+  selector:
+    matchLabels:
+      app.openshift.io/runtime: spring-boot
