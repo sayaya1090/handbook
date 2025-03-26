@@ -1,0 +1,25 @@
+{{- if not .Values.mode }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: persist
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: persist
+{{- end }}
+---
+{{- if not .Values.mode }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: search-type
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: search-type
+{{- end }}

@@ -1,0 +1,23 @@
+kind: LimitRange
+apiVersion: v1
+metadata:
+  name: {{ .Release.Namespace }}
+spec:
+  limits:
+    - type: Pod
+      max:
+        cpu: '1'
+        memory: 2Gi
+      min:
+        cpu: 100m
+        memory: 50Mi
+    - type: Container
+      max:
+        cpu: '1'
+        memory: 2Gi
+      min:
+        cpu: 100m
+        memory: 50Mi
+      default:
+        cpu: 200m
+        memory: 100Mi

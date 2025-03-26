@@ -73,7 +73,6 @@ metadata:
     app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
     app.openshift.io/runtime-version: latest
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: search-type
