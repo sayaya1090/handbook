@@ -73,7 +73,6 @@ metadata:
     app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
     app.openshift.io/runtime-version: latest
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: search-type
@@ -83,6 +82,9 @@ spec:
         app: search-type
         version: 0.0.1
         deployment: search-type
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
     spec:
       volumes:
         - name: config
@@ -119,6 +121,13 @@ spec:
                   name: postgresql-app
             - name: TZ
               value: Asia/Seoul
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
           volumeMounts:
             - name: config
               mountPath: /app/resources/application.yaml
