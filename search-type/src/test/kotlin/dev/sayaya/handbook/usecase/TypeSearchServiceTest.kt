@@ -1,11 +1,11 @@
 package dev.sayaya.handbook.usecase
 
-import dev.sayaya.domain.Search
+import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.domain.Type
-import io.mockk.every
-import io.mockk.mockk
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import reactor.core.publisher.Mono
