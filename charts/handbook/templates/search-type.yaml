@@ -21,15 +21,6 @@ data:
         health:
           probes:
             enabled: true
-   {{- if .Values.mode }}
-    logging:
-      level:
-        io:
-          r2dbc:
-            postgresql:
-              QUERY: DEBUG
-              PARAM: DEBUG
-    {{- end }}
     server:
       port: 8080
 
