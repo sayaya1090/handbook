@@ -97,5 +97,4 @@ spec:
                     name: search-type-test
                 - name: test-output
                   emptyDir: {}
-              restartPolicy: Never
             backoffLimit: 1
