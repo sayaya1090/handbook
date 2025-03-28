@@ -78,3 +78,6 @@ spec:
                   }
                 }) }}`}}
               successExpression: response.status == 204
+  verification:
+    analysisTemplates:
+      - name: search-type-test

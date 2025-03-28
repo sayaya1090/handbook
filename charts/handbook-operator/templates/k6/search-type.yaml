@@ -1,0 +1,101 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: search-type-test
+  namespace: {{ .Release.Namespace }}
+immutable: false
+data:
+  test.js: |-
+    import http from 'k6/http';
+    import { sleep, check } from 'k6';
+
+    export const options = {
+        scenarios: {
+            constant_load: {
+                executor: 'constant-arrival-rate',
+                rate: 1000,          // 1000 TPS 목표
+                timeUnit: '1s',
+                duration: '30s',
+                preAllocatedVUs: 10,
+                maxVUs: 500
+            }
+        },
+        thresholds: {
+            http_req_duration: ['p(95)<500'],  // 95% 요청이 500ms 이내
+            http_req_failed: ['rate<0.05'],    // 5% 미만의 실패율
+            'http_reqs{status:204}': ['count>0']
+        },
+        discardResponseBodies: true,
+        noConnectionReuse: false,
+        userAgent: 'K6HighLoadTest/1.0'
+    };
+    export default function() {
+        // 스프링부트 서비스 엔드포인트 URL
+        const baseUrl = 'https://handbook.sayaya.cloud';
+        const params = {
+            tags: { endpoint: 'types' }
+        };
+
+        // GET 요청 테스트 - 페이지/limit 값 무작위화 (캐싱 회피)
+        const page = getRandomInt(0, 10);
+        const limit = getRandomInt(10, 100);
+        const getResponse = http.get(`${baseUrl}/types?page=${page}&limit=${limit}`, params);
+
+        // 응답 검증
+        check(getResponse, {
+            'GET 상태 코드는 204': (r) => r.status === 204,
+            'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
+        });
+        sleep(0.1);
+    }
+
+    export function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // 초기화 함수 - 커넥션 풀 최적화
+    export function setup() {
+        console.log('부하 테스트 시작: 목표 1000 TPS');
+    }
+
+    // 종료 함수 - 결과 요약
+    export function teardown() {
+        console.log('부하 테스트 완료');
+    }
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: search-type-test
+  namespace: {{ .Release.Namespace }}
+spec:
+  metrics:
+    - name: performance-test
+      provider:
+        job:
+          spec:
+            template:
+              spec:
+                containers:
+                - name: k6
+                  image: loadimpact/k6:latest
+                  args:
+                    - run
+                    - /tests/test.js  # 실행할 테스트 스크립트 선택
+                    - --out
+                    - json=/output/result.json  # 결과를 JSON으로 저장
+                  env:
+                    - name: K6_STATSD_ENABLE_TAGS
+                      value: "true"  # 태그를 사용하여 메트릭 세분화
+                  volumeMounts:
+                    - name: test-scripts
+                      mountPath: /tests
+                    - name: test-output
+                      mountPath: /output
+              volumes:
+                - name: test-scripts
+                  configMap:
+                    name: search-type-test
+                - name: test-output
+                  emptyDir: {}
+              restartPolicy: Never
+            backoffLimit: 1
