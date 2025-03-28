@@ -10,6 +10,11 @@ data:
         url: r2dbc:postgresql://postgresql-rw:5432/handbook
         username: ${postgres.username}
         password: ${postgres.password}
+        pool:
+          initial-size: 5
+          max-size: 20
+          max-idle-time: 30m
+          validation-query: SELECT 1
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -23,3 +28,8 @@ data:
         url: r2dbc:postgresql://postgresql-ro:5432/handbook
         username: ${postgres.username}
         password: ${postgres.password}
+        pool:
+          initial-size: 5
+          max-size: 20
+          max-idle-time: 30m
+          validation-query: SELECT 1
