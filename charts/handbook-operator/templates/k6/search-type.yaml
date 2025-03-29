@@ -69,7 +69,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   metrics:
-    - name: search-type-test
+    - name: performance-test
       provider:
         job:
           spec:
@@ -80,7 +80,7 @@ spec:
                     image: 'loadimpact/k6:latest'
                     args:
                       - run
-                      - /tests/basic-test.js
+                      - /tests/test.js
                       - '--out'
                       - json=/output/result.json
                     env:
@@ -97,4 +97,34 @@ spec:
                       name: search-type-test
                   - name: test-output
                     emptyDir: {}
+                restartPolicy: Never
             backoffLimit: 1
+    - name: success-rate
+      initialDelay: 1m
+      provider:
+        prometheus:
+          address: {{ `{{ args.prometheus-url }}` }}
+          headers:
+            - key: Authorization
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
+          insecure: true
+          query: >
+            sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types", status=~"2.."}[1m])) /
+            sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types"}[1m])) * 100
+      successCondition: result[0] >= 0.995
+    - name: p95-response-time
+      initialDelay: 1m
+      provider:
+        prometheus:
+          address: {{ `{{ args.prometheus-url }}` }}
+          headers:
+            - key: Authorization
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
+          insecure: true
+          query: >
+            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
+              reporter="destination",
+              destination_workload_namespace="handbook-test",
+              destination_app="search-type"
+            }[1m])) by (le))
+      successCondition: result[0] <= 100
