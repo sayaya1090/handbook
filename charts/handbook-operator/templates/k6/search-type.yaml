@@ -114,9 +114,9 @@ spec:
           address: {{ `'{{ args.prometheus-url }}'` }}
           headers:
             - key: Authorization
-              value: Bearer {{ `'{{ args.prometheus-token }}'` }}
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
-          query: |
+          query: >
             sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types", status=~"2.."}[1m])) /
             sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types"}[1m])) * 100
       successCondition: result[0] >= 0.995
@@ -127,9 +127,9 @@ spec:
           address: {{ `'{{ args.prometheus-url }}'` }}
           headers:
             - key: Authorization
-              value: Bearer {{ `'{{ args.prometheus-token }}'` }}
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
-          query: |
+          query: >
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
