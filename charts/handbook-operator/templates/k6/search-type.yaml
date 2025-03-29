@@ -76,25 +76,25 @@ spec:
             template:
               spec:
                 containers:
-                - name: k6
-                  image: loadimpact/k6:latest
-                  args:
-                    - run
-                    - /tests/test.js  # 실행할 테스트 스크립트 선택
-                    - --out
-                    - json=/output/result.json  # 결과를 JSON으로 저장
-                  env:
-                    - name: K6_STATSD_ENABLE_TAGS
-                      value: "true"  # 태그를 사용하여 메트릭 세분화
-                  volumeMounts:
-                    - name: test-scripts
-                      mountPath: /tests
-                    - name: test-output
-                      mountPath: /output
-              volumes:
-                - name: test-scripts
-                  configMap:
-                    name: search-type-test
-                - name: test-output
-                  emptyDir: {}
+                  - name: k6
+                    image: 'loadimpact/k6:latest'
+                    args:
+                      - run
+                      - /tests/basic-test.js
+                      - '--out'
+                      - json=/output/result.json
+                    env:
+                      - name: K6_STATSD_ENABLE_TAGS
+                        value: 'true'
+                    volumeMounts:
+                      - name: test-scripts
+                        mountPath: /tests
+                      - name: test-output
+                        mountPath: /output
+                volumes:
+                  - name: test-scripts
+                    configMap:
+                      name: search-type-test
+                  - name: test-output
+                    emptyDir: {}
             backoffLimit: 1
