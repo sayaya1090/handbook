@@ -68,6 +68,14 @@ metadata:
   name: search-type-test
   namespace: {{ .Release.Namespace }}
 spec:
+  args:
+    - name: prometheus-url
+      value: 'https://thanos-querier.openshift-monitoring.svc:9091'
+    - name: prometheus-token
+      valueFrom:
+        secretKeyRef:
+          key: token
+          name: prometheus
   metrics:
     - name: performance-test
       provider:
@@ -108,7 +116,7 @@ spec:
             - key: Authorization
               value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
-          query: >
+          query: |
             sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types", status=~"2.."}[1m])) /
             sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types"}[1m])) * 100
       successCondition: result[0] >= 0.995
@@ -121,7 +129,7 @@ spec:
             - key: Authorization
               value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
-          query: >
+          query: |
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
