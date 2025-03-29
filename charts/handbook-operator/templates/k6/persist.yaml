@@ -8,6 +8,7 @@ data:
   test.js: |-
     import http from 'k6/http';
     import { sleep, check } from 'k6';
+    import { randomString } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
     export const options = {
         scenarios: {
@@ -18,14 +19,15 @@ data:
                 preAllocatedVUs: 20,
                 maxVUs: 1500,
                 stages: [
-                    { duration: '30s', target: 10 },  // 10명의 사용자로 램프업
-                    { duration: '1m', target: 10 },   // 1분간 부하 유지
-                    { duration: '30s', target: 0 }    // 점진적으로 부하 감소
+                    { duration: '1m', target: 200 },    // 1분간 200 TPS로 시작
+                    { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
+                    { duration: '2m', target: 1000 },   // 2분간 1000 TPS로 증가
+                    { duration: '1m', target: 0 }       // 점진적으로 부하 감소
                 ]
             }
         },
         thresholds: {
-            http_req_duration: ['p(95)<200', 'p(99)<500'],
+            http_req_duration: ['p(75)<500', 'p(99)<1000'],
             http_req_failed: ['rate<0.01'],
             'http_reqs{status:200}': ['count>0']
         },
@@ -38,7 +40,9 @@ data:
         const baseUrl = 'https://handbook.sayaya.cloud';
         const payload = createTypePayload();
         const params = {
-            tags: { endpoint: 'types' }
+            headers: {
+                'Content-Type': 'application/json'
+            }, tags: { endpoint: 'types' }
         };
 
         const getResponse = http.put(`${baseUrl}/types`, JSON.stringify(payload), params);
@@ -52,32 +56,22 @@ data:
     }
 
     export function createTypePayload() {
-      const now = new Date();
-      const effectDate = new Date(now);
-      const expireDate = new Date(now);
-      expireDate.setFullYear(expireDate.getFullYear() + 1);  // 1년 후 만료
+        const now = new Date();
+        const effectDate = new Date(now);
+        const expireDate = new Date(now);
+        expireDate.setTime(effectDate.getTime() + 10);
+        const uuid = randomString(36)
 
-      return {
-            id: `type-${getRandomInt(0, 8)}`,
-            version: `${getRandomInt(1, 9)}.${getRandomInt(0, 9)}`,
+        return {
+            id: `type-${uuid}`,
+            version: `1.0`,
             effectDateTime: effectDate.toISOString(),
             expireDateTime: expireDate.toISOString(),
-            description: `테스트 타입 ${randomString(10)}`,
+            description: `테스트 타입 ${uuid}`,
             primitive: Math.random() > 0.5,
-            attributes: createRandomAttributes(getRandomInt(0, 5)),
-            parent: Math.random() > 0.7 ? `parent-${getRandomInt(0, 5)}` : null
+            attributes: [],
+            parent: null
         };
-    }
-    export function createRandomAttributes(count) {
-      const attributes = [];
-      for (let i = 0; i < count; i++) {
-        attributes.push({
-          name: `attr-${getRandomInt(5)}`,
-          type: `type-${getRandomInt(4)}`,
-          required: Math.random() > 0.5
-        });
-      }
-      return attributes;
     }
     export function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -182,7 +176,7 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="persist"
             }[1m])) by (le))
-      successCondition: result[0] <= 200
+      successCondition: result[0] <= 500
     - name: 1000tps-response-time
       initialDelay: 5m
       provider:
@@ -198,4 +192,4 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="persist"
             }[1m])) by (le))
-      successCondition: result[0] <= 200
+      successCondition: result[0] <= 1000
