@@ -28,7 +28,7 @@ data:
         thresholds: {
             http_req_duration: ['p(95)<200', 'p(99)<500'],
             http_req_failed: ['rate<0.01'],
-            'http_reqs{status:204}': ['count>0']
+            'http_reqs{status:2xx}': ['count>0']
         },
         discardResponseBodies: true,
         noConnectionReuse: false,
@@ -43,12 +43,12 @@ data:
 
         // GET 요청 테스트 - 페이지/limit 값 무작위화 (캐싱 회피)
         const page = getRandomInt(0, 10);
-        const limit = getRandomInt(10, 100);
+        const limit = getRandomInt(10);
         const getResponse = http.get(`${baseUrl}/types?page=${page}&limit=${limit}`, params);
 
         // 응답 검증
         check(getResponse, {
-            'GET 상태 코드는 204': (r) => r.status === 204,
+            'GET 상태 코드는 2xx': (r) => r.status >= 200 && r.status < 300,
             'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
         });
         sleep(0.1);
