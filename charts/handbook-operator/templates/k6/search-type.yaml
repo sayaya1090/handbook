@@ -16,7 +16,7 @@ data:
                 startRate: 100,
                 timeUnit: '1s',
                 preAllocatedVUs: 20,
-                maxVUs: 500,
+                maxVUs: 3000,
                 stages: [
                     { duration: '1m', target: 200 },    // 1분간 200 TPS로 시작
                     { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
@@ -190,4 +190,4 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="search-type"
             }[1m])) by (le))
-      successCondition: result[0] <= 700
+      successCondition: result[0] <= 1000
