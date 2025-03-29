@@ -69,7 +69,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   metrics:
-    - name: performance-test
+    - name: search-type-test
       provider:
         job:
           spec:
