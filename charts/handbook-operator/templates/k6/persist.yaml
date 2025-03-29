@@ -49,7 +49,7 @@ data:
 
         // 응답 검증
         check(getResponse, {
-            'GET 상태 코드는 204': (r) => r.status === 204,
+            'GET 상태 코드는 200': (r) => r.status === 200,
             'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
         });
         sleep(0.1);
