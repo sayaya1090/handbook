@@ -36,6 +36,9 @@ spec:
                         - key: search-type.image.tag
                           value: {{ `${{ outputs['search-type-image'].img.tag }}@${{ outputs['search-type-image'].img.digest }}` }}
                     repoURL: https://github.com/sayaya1090/handbook.git
+  verification:
+    analysisTemplates:
+      - name: search-type-test
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -78,6 +81,3 @@ spec:
                   }
                 }) }}`}}
               successExpression: response.status == 204
-  verification:
-    analysisTemplates:
-      - name: search-type-test
