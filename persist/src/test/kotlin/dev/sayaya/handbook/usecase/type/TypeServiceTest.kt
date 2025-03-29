@@ -20,7 +20,6 @@ class TypeServiceTest: ShouldSpec({
         clearMocks(repo, eventHandler)
     }
     // Given
-    val principal = mockk<Principal>()
     val type = Type(
         id = "test",
         version = "1.0",
@@ -34,21 +33,21 @@ class TypeServiceTest: ShouldSpec({
 
     should("타입 저장에 성공하면 이벤트핸들러에 저장된 타입을 전달") {
         every { repo.save(type) } returns Mono.just(type)
-        every { eventHandler.publish(type, principal) } returns Mono.empty()
+        every { eventHandler.publish(type) } returns Mono.empty()
 
         // When & Then
-        service.save(type, principal).let(StepVerifier::create).verifyComplete()
+        service.save(type).let(StepVerifier::create).verifyComplete()
         verify(exactly = 1) { repo.save(type) }
-        verify(exactly = 1) { eventHandler.publish(type, principal) }
+        verify(exactly = 1) { eventHandler.publish(type) }
     }
 
     should("타입 저장에 실패하면 이벤트핸들러에 저장된 타입을 전달하지 않음") {
         every { repo.save(type) } returns Mono.error(RuntimeException("DB 에러"))
-        every { eventHandler.publish(type, principal) } returns Mono.empty()
+        every { eventHandler.publish(type) } returns Mono.empty()
 
         // When & Then
-        service.save(type, principal).let(StepVerifier::create).verifyError(RuntimeException::class.java)
+        service.save(type).let(StepVerifier::create).verifyError(RuntimeException::class.java)
         verify(exactly = 1) { repo.save(type) }
-        verify(exactly = 0) { eventHandler.publish(type, principal) }
+        verify(exactly = 0) { eventHandler.publish(type) }
     }
 })
