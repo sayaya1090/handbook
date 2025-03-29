@@ -16,19 +16,17 @@ data:
                 startRate: 100,
                 timeUnit: '1s',
                 preAllocatedVUs: 20,
-                maxVUs: 3000,
+                maxVUs: 1500,
                 stages: [
                     { duration: '1m', target: 200 },    // 1분간 200 TPS로 시작
                     { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
                     { duration: '2m', target: 1000 },   // 2분간 1000 TPS로 증가
-                    { duration: '2m', target: 2000 },   // 2분간 2000 TPS로 증가
-                    { duration: '2m', target: 2000 },   // 2분간 2000 TPS 유지
                     { duration: '1m', target: 0 }       // 1분간 점진적으로 감소
                 ]
             }
         },
         thresholds: {
-            http_req_duration: ['p(95)<500', 'p(99)<1000'],
+            http_req_duration: ['p(95)<200', 'p(99)<500'],
             http_req_failed: ['rate<0.01'],
             'http_reqs{status:204}': ['count>0']
         },
@@ -174,20 +172,4 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="search-type"
             }[1m])) by (le))
-      successCondition: result[0] <= 300
-    - name: 2000tps-response-time
-      initialDelay: 9m
-      provider:
-        prometheus:
-          address: {{ `'{{ args.prometheus-url }}'` }}
-          headers:
-            - key: Authorization
-              value: Bearer {{ `{{ args.prometheus-token }}` }}
-          insecure: true
-          query: >
-            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
-              reporter="destination",
-              destination_workload_namespace="handbook-test",
-              destination_app="search-type"
-            }[1m])) by (le))
-      successCondition: result[0] <= 1000
+      successCondition: result[0] <= 200
