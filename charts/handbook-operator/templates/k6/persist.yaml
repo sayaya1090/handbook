@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: search-type-test
+  name: persist-test
   namespace: {{ .Release.Namespace }}
 immutable: false
 data:
@@ -18,17 +18,16 @@ data:
                 preAllocatedVUs: 20,
                 maxVUs: 1500,
                 stages: [
-                    { duration: '1m', target: 200 },    // 1분간 200 TPS로 시작
-                    { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
-                    { duration: '2m', target: 1000 },   // 2분간 1000 TPS로 증가
-                    { duration: '1m', target: 0 }       // 1분간 점진적으로 감소
+                    { duration: '30s', target: 10 },  // 10명의 사용자로 램프업
+                    { duration: '1m', target: 10 },   // 1분간 부하 유지
+                    { duration: '30s', target: 0 }    // 점진적으로 부하 감소
                 ]
             }
         },
         thresholds: {
             http_req_duration: ['p(95)<200', 'p(99)<500'],
             http_req_failed: ['rate<0.01'],
-            'http_reqs{status:204}': ['count>0']
+            'http_reqs{status:200}': ['count>0']
         },
         discardResponseBodies: true,
         noConnectionReuse: false,
@@ -37,14 +36,12 @@ data:
     export default function() {
         // 스프링부트 서비스 엔드포인트 URL
         const baseUrl = 'https://handbook.sayaya.cloud';
+        const payload = createTypePayload();
         const params = {
             tags: { endpoint: 'types' }
         };
 
-        // GET 요청 테스트 - 페이지/limit 값 무작위화 (캐싱 회피)
-        const page = getRandomInt(0, 10);
-        const limit = getRandomInt(10, 100);
-        const getResponse = http.get(`${baseUrl}/types?page=${page}&limit=${limit}`, params);
+        const getResponse = http.put(`${baseUrl}/types`, JSON.stringify(payload), params);
 
         // 응답 검증
         check(getResponse, {
@@ -54,23 +51,52 @@ data:
         sleep(0.1);
     }
 
-    export function getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+    export function createTypePayload() {
+      const now = new Date();
+      const effectDate = new Date(now);
+      const expireDate = new Date(now);
+      expireDate.setFullYear(expireDate.getFullYear() + 1);  // 1년 후 만료
+
+      return {
+            id: `type-${getRandomInt(0, 8)}`,
+            version: `${getRandomInt(1, 9)}.${getRandomInt(0, 9)}`,
+            effectDateTime: effectDate.toISOString(),
+            expireDateTime: expireDate.toISOString(),
+            description: `테스트 타입 ${randomString(10)}`,
+            primitive: Math.random() > 0.5,
+            attributes: createRandomAttributes(getRandomInt(0, 5)),
+            parent: Math.random() > 0.7 ? `parent-${getRandomInt(0, 5)}` : null
+        };
     }
+    export function createRandomAttributes(count) {
+      const attributes = [];
+      for (let i = 0; i < count; i++) {
+        attributes.push({
+          name: `attr-${getRandomInt(5)}`,
+          type: `type-${getRandomInt(4)}`,
+          required: Math.random() > 0.5
+        });
+      }
+      return attributes;
+    }
+    export function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     // 초기화 함수 - 커넥션 풀 최적화
     export function setup() {
-        console.log('부하 테스트 시작: 목표 1000 TPS');
+      console.log('부하 테스트 시작: 목표 1000 TPS');
     }
 
     // 종료 함수 - 결과 요약
     export function teardown() {
-        console.log('부하 테스트 완료');
+      console.log('부하 테스트 완료');
     }
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: search-type-test
+  name: persist-test
   namespace: {{ .Release.Namespace }}
 spec:
   args:
@@ -107,7 +133,7 @@ spec:
                 volumes:
                   - name: test-scripts
                     configMap:
-                      name: search-type-test
+                      name: persist-test
                   - name: test-output
                     emptyDir: {}
                 restartPolicy: Never
@@ -122,8 +148,8 @@ spec:
               value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
           query: >
-            sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types", status=~"2.."}[6m])) /
-            sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="search-type", uri="/types"}[6m])) * 100
+            sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="persist", uri="/types", status=~"2.."}[6m])) /
+            sum(irate(http_server_requests_seconds_count{namespace="handbook-test",	app="persist", uri="/types"}[6m])) * 100
       successCondition: result[0] >= 0.99
     - name: 200tps-response-time
       initialDelay: 1m
@@ -138,7 +164,7 @@ spec:
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
-              destination_app="search-type"
+              destination_app="persist"
             }[1m])) by (le))
       successCondition: result[0] <= 100
     - name: 500tps-response-time
@@ -154,7 +180,7 @@ spec:
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
-              destination_app="search-type"
+              destination_app="persist"
             }[1m])) by (le))
       successCondition: result[0] <= 200
     - name: 1000tps-response-time
@@ -170,6 +196,6 @@ spec:
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
-              destination_app="search-type"
+              destination_app="persist"
             }[1m])) by (le))
       successCondition: result[0] <= 200
