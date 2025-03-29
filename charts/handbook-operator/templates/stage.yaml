@@ -38,6 +38,7 @@ spec:
                     repoURL: https://github.com/sayaya1090/handbook.git
   verification:
     analysisTemplates:
+    - name: persist-test
     - name: search-type-test
 ---
 apiVersion: kargo.akuity.io/v1alpha1
