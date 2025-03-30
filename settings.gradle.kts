@@ -38,7 +38,8 @@ dependencyResolutionManagement {
 
             library("r2dbc", "org.springframework.boot", "spring-boot-starter-data-r2dbc").withoutVersion()
             library("r2dbc-postgres", "org.postgresql", "r2dbc-postgresql").withoutVersion()
-            bundle("r2dbc-postgres", listOf("r2dbc", "r2dbc-postgres"))
+            library("r2dbc-pool", "io.r2dbc", "r2dbc-pool").withoutVersion()
+            bundle("r2dbc-postgres", listOf("r2dbc", "r2dbc-postgres", "r2dbc-pool"))
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("5.9.1") }

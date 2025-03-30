@@ -5,13 +5,12 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.util.retry.Retry
-import java.security.Principal
 import java.time.Duration
 
 @Service
 class ExternalServiceHandler(private val externals: List<ExternalService>) {
-    fun publish(type: Type, principal: Principal): Mono<ExternalPublishResult> = Flux.fromIterable(externals).flatMap {
-        it.publish(type, principal)
+    fun publish(type: Type): Mono<ExternalPublishResult> = Flux.fromIterable(externals).flatMap {
+        it.publish(type)
             .retryWhen(Retry.backoff(3, Duration.ofSeconds(1))) // 최대 3회, 1초 간격
         .onErrorResume { ex ->
             // 실패한 외부 서비스 처리 (로그 기록 또는 무시 가능)
