@@ -61,10 +61,11 @@ data:
         const expireDate = new Date(now);
         expireDate.setTime(effectDate.getTime() + 10);
         const uuid = randomString(36)
+        const id = getRandomInt(1, 100)
 
         return {
-            id: `type-${uuid}`,
-            version: `1.0`,
+            id: `type-${id}`,
+            version: `${uuid}`,
             effectDateTime: effectDate.toISOString(),
             expireDateTime: expireDate.toISOString(),
             description: `테스트 타입 ${uuid}`,
