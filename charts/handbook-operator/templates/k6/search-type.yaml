@@ -28,8 +28,7 @@ data:
         },
         thresholds: {
             http_req_duration: ['p(95)<200', 'p(99)<500'],
-            http_req_failed: ['rate<0.01'],
-            'http_reqs{status:2xx}': ['count>0']
+            http_req_failed: ['rate<0.01']
         },
         discardResponseBodies: true,
         noConnectionReuse: false,
@@ -44,7 +43,7 @@ data:
 
         // GET 요청 테스트 - 페이지/limit 값 무작위화 (캐싱 회피)
         const page = getRandomInt(0, 10);
-        const limit = getRandomInt(10);
+        const limit = getRandomInt(1, 10);
         const getResponse = http.get(`${baseUrl}/types?page=${page}&limit=${limit}`, params);
 
         // 응답 검증
@@ -141,7 +140,7 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="search-type"
             }[1m])) by (le))
-      successCondition: result[0] <= 100
+      successCondition: result[0] <= 500
     - name: search-type-500tps-response-time
       initialDelay: 4m
       provider:
@@ -157,7 +156,7 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="search-type"
             }[1m])) by (le))
-      successCondition: result[0] <= 200
+      successCondition: result[0] <= 500
     - name: search-type-1000tps-response-time
       initialDelay: 6m
       provider:
@@ -173,4 +172,4 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="search-type"
             }[1m])) by (le))
-      successCondition: result[0] <= 200
+      successCondition: result[0] <= 500

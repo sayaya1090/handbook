@@ -11,7 +11,7 @@ data:
         username: ${postgres.username}
         password: ${postgres.password}
         pool:
-          initial-size: 100
+          initial-size: 10
           max-size: 500
           max-idle-time: 30m
           validation-query: SELECT 1
@@ -29,7 +29,7 @@ data:
         username: ${postgres.username}
         password: ${postgres.password}
         pool:
-          initial-size: 100
-          max-size: 500
+          initial-size: 10
+          max-size: 300
           max-idle-time: 30m
           validation-query: SELECT 1
