@@ -32,6 +32,7 @@ spec:
     {{- end }}
   postgresql:
     parameters:
+      max_connections: "500"
       timezone: "Asia/Seoul"
   superuserSecret:
     name: postgres
