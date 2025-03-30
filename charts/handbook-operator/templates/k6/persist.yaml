@@ -104,6 +104,7 @@ spec:
           name: prometheus
   metrics:
     - name: persist-performance
+      initialDelay: 8m
       provider:
         job:
           spec:
@@ -134,7 +135,7 @@ spec:
                 restartPolicy: Never
             backoffLimit: 1
     - name: persist-success-rate
-      initialDelay: 6m
+      initialDelay: 14m
       provider:
         prometheus:
           address: {{ `'{{ args.prometheus-url }}'` }}
@@ -147,7 +148,7 @@ spec:
             sum(irate(http_server_requests_seconds_count{namespace="handbook-test", app="persist", uri="/types"}[6m])) * 100
       successCondition: result[0] >= 0.99
     - name: persist-200tps-response-time
-      initialDelay: 1m
+      initialDelay: 9m
       provider:
         prometheus:
           address: {{ `'{{ args.prometheus-url }}'` }}
@@ -163,7 +164,7 @@ spec:
             }[1m])) by (le))
       successCondition: result[0] <= 100
     - name: persist-500tps-response-time
-      initialDelay: 3m
+      initialDelay: 11m
       provider:
         prometheus:
           address: {{ `'{{ args.prometheus-url }}'` }}
@@ -179,7 +180,7 @@ spec:
             }[1m])) by (le))
       successCondition: result[0] <= 500
     - name: persist-1000tps-response-time
-      initialDelay: 5m
+      initialDelay: 13m
       provider:
         prometheus:
           address: {{ `'{{ args.prometheus-url }}'` }}
