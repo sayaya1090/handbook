@@ -5,7 +5,7 @@ BEGIN
     -- 기존 데이터의 last를 false로 업데이트
     UPDATE type
     SET last = false
-    WHERE name=NEW.name AND version=NEW.version AND last=true;
+    WHERE workspace=NEW.workspace AND name=NEW.name AND version=NEW.version AND last=true;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -22,7 +22,7 @@ $$
 BEGIN
     IF (NEW.last = TRUE) THEN
         IF EXISTS (
-            SELECT 1 FROM type WHERE id <> NEW.id AND name = NEW.name AND version=NEW.version AND last = TRUE
+            SELECT 1 FROM type WHERE workspace = NEW.workspace AND id <> NEW.id AND name = NEW.name AND version=NEW.version AND last = TRUE
         ) THEN
             RAISE EXCEPTION 'Duplicate version: (%, %)', NEW.name, NEW.version;
         END IF;
@@ -46,7 +46,8 @@ BEGIN
         IF EXISTS (
             SELECT 1
             FROM type
-            WHERE name = NEW.name
+            WHERE workspace = NEW.workspace
+              AND name = NEW.name
               AND last = TRUE
               AND id <> NEW.id -- 자기 자신 제외
               AND (NEW.effective_at, NEW.expire_at) OVERLAPS (effective_at, expire_at) -- 기간 중복 확인
@@ -79,7 +80,8 @@ BEGIN
         IF NOT EXISTS (
             SELECT 1
             FROM type
-            WHERE name = NEW.parent
+            WHERE workspace = NEW.workspace
+              AND name = NEW.parent
               AND last = TRUE
               AND (effective_at, expire_at) OVERLAPS (NEW.effective_at, NEW.expire_at)
         ) THEN
@@ -100,7 +102,8 @@ BEGIN
                                   expire_at,
                                   LAG(expire_at) OVER (ORDER BY effective_at) AS previous_expire_at
                               FROM type
-                              WHERE name = NEW.parent
+                              WHERE workspace = NEW.workspace
+                                AND name = NEW.parent
                                 AND last = TRUE
                                 AND (effective_at, expire_at) OVERLAPS (NEW.effective_at, NEW.expire_at)
                           ) parent_subquery
@@ -135,7 +138,8 @@ BEGIN
         IF EXISTS (
             SELECT 1
             FROM type AS child
-            WHERE child.parent = OLD.name
+            WHERE workspace = OLD.workspace
+              AND child.parent = OLD.name
               AND child.last = TRUE
               AND (child.effective_at, child.expire_at) OVERLAPS (OLD.effective_at, OLD.expire_at)
         ) THEN
@@ -167,7 +171,8 @@ BEGIN
         SELECT *
         INTO prev_record
         FROM type
-        WHERE name = NEW.name
+        WHERE workspace = NEW.workspace
+          AND name = NEW.name
           AND version = NEW.version
           AND id<>NEW.id
         ORDER BY created_at DESC
@@ -184,7 +189,8 @@ BEGIN
         IF EXISTS (
             SELECT 1
             FROM type AS child
-            WHERE child.parent = prev_record.name
+            WHERE child.workspace = prev_record.workspace
+              AND child.parent = prev_record.name
               AND child.last = TRUE
               AND (child.effective_at, child.expire_at) OVERLAPS (prev_record.effective_at, prev_record.expire_at)
               AND (

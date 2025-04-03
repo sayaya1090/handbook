@@ -16,35 +16,40 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.DefaultTransactionDefinition
 import java.sql.SQLException
 import java.time.Instant
+import java.util.*
 
 @SpringBootTest(properties = [
     "spring.jpa.show-sql=true",
-    "spring.jpa.hibernate.ddl-auto=update"
+    "spring.jpa.hibernate.ddl-auto=update",
+    "spring.sql.init.schema-locations=classpath:createTable.sql",
+    "spring.sql.init.mode=always"
 ])
 internal class TypeVersionOverlapTest(
     private val tx: PlatformTransactionManager,
     @PersistenceContext private val em: EntityManager
 ) : BehaviorSpec({
-    Given("DB 초기화와 트리거 설정") {
-        val user = User().apply {
-            id = "system"
-            name = "system"
-            createDateTime = Instant.now()
-            lastModifyDateTime = Instant.now()
-        }
+    val user = User().apply {
+        id = "system"
+        name = "system"
+        createDateTime = Instant.now()
+        lastModifyDateTime = Instant.now()
+    }
 
-        tx.transactional {
-            ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성
-            ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
-            em.merge(user)
-        }
-        @Suppress("UNCHECKED_CAST")
-        fun dumpType(): List<String> {
-            val result: List<Type> = em.createNativeQuery("SELECT * FROM type t", Type::class.java).resultList as List<Type>
-            return result.map { "${ it.id } ${ it.name } ${ it.version } -> ${ it.effectDateTime } ~ ${ it.expireDateTime } ${ it.last }" }
-        }
+    tx.transactional {
+        ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성
+        ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
+        em.merge(user)
+    }
+    @Suppress("UNCHECKED_CAST")
+    fun dumpType(): List<String> {
+        val result: List<Type> = em.createNativeQuery("SELECT * FROM type t", Type::class.java).resultList as List<Type>
+        return result.map { "${ it.id } ${ it.name } ${ it.version } -> ${ it.effectDateTime } ~ ${ it.expireDateTime } ${ it.last }" }
+    }
+    Given("단일 워크스페이스에서") {
+        val workspace = UUID.randomUUID()
         When("겹치지 않는 기간의 데이터가 삽입되면") {
             val typeVersion1 = Type.of(
+                workspace = workspace,
                 user = user,
                 type = "type_1", parent=null,
                 version = "1.0",
@@ -52,6 +57,7 @@ internal class TypeVersionOverlapTest(
                 expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
             )
             val typeVersion2 = Type.of(
+                workspace = workspace,
                 user = user,
                 type = "type_1", parent=null,
                 version = "2.0",
@@ -65,7 +71,7 @@ internal class TypeVersionOverlapTest(
             }
 
             Then("두 데이터가 정상 저장된다") {
-                val results = em.createQuery ("SELECT t FROM Type t WHERE t.name = :type AND t.last = true", Type::class.java)
+                val results = em.createNativeQuery ("SELECT * FROM Type t WHERE workspace='$workspace'::uuid AND t.name = :type AND t.last = true", Type::class.java)
                     .setParameter("type", "type_1")
                     .resultList
                 results.size shouldBe 2
@@ -75,6 +81,7 @@ internal class TypeVersionOverlapTest(
 
         When("겹치는 기간의 데이터를 삽입하면") {
             val overlappingTypeVersion = Type.of(
+                workspace = workspace,
                 user = user,
                 type = "type_1", parent=null,
                 version = "3.0",

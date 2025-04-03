@@ -4,6 +4,7 @@ import java.time.Instant
 
 @JvmRecord
 data class Type (
+    val workspace: String,
     val id: String,
     val version: String,
     val effectDateTime: Instant,

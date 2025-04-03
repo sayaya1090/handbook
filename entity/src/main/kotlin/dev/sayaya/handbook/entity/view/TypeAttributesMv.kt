@@ -3,6 +3,7 @@ package dev.sayaya.handbook.entity.view
 import jakarta.persistence.*
 import java.io.Serializable
 import java.time.Instant
+import java.util.*
 
 /*@Table(name = "type_attributes", indexes=[
     Index(columnList = "type, name"),
@@ -10,6 +11,8 @@ import java.time.Instant
 ]) @Entity --MV */
 @IdClass(TypeAttributesMv.Companion.TypeAttributesMvId::class)
 data class TypeAttributesMv(
+    @Id @Column(nullable = false)
+    val workspace: UUID,
     @Id @Column(nullable = false)
     val type: String,
     val version: String,
@@ -27,6 +30,7 @@ data class TypeAttributesMv(
     companion object {
         @JvmRecord
         data class TypeAttributesMvId (
+            val workspace: UUID = UUID.randomUUID(),
             val type: String = "",
             val name: String = ""
         ) : Serializable

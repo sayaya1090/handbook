@@ -12,8 +12,8 @@ internal class FileAttribute: Attribute() {
     @Column(name="file_extensions", columnDefinition = "text") var fileExtensions: String? = null
     companion object {
         fun of(type: Type, name: String, fileExtensions: String? = null) = FileAttribute().apply {
-            this.type = type
-            this.name = name
+            this.type(type)
+            this.name(name)
             this.fileExtensions = fileExtensions
         }
     }

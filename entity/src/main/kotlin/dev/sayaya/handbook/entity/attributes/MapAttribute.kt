@@ -19,8 +19,8 @@ internal class MapAttribute: Attribute() {
         fun of(type: Type, name: String,
                keyType: AttributeType, valueType: AttributeType,
                keyValidators: Serializable? = null, valueValidators: Serializable? = null) = MapAttribute().apply {
-            this.type = type
-            this.name = name
+            this.type(type)
+            this.name(name)
             this.keyType = keyType
             this.valueType = valueType
             this.keyValidators = keyValidators

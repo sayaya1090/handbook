@@ -3,17 +3,21 @@ package dev.sayaya.handbook.entity
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
+import java.io.Serializable
 import java.time.Instant
 import java.util.*
 
 // 같은 Type, version에 대해서는 last=true인 데이터가 유일해야 한다
+// 이 테이블은 파티션이 적용되어 있어 createTable.sql로 초기화한다
 @Table(name = "type", indexes=[
     Index(columnList = "name, version, last"),
     Index(columnList = "name, last, effective_at, expire_at"),
     Index(columnList = "last, effective_at, expire_at, created_at DESC"),
 ]) @Entity
+@IdClass(Type.Companion.TypeId::class) // 복합 키 클래스 설정
 internal class Type {
-    @Id lateinit var id: UUID
+    @Id @Column(name = "workspace") lateinit var workspace: UUID
+    @Id @Column(name = "id") lateinit var id: UUID
     @Column(length = 64) lateinit var name: String
     lateinit var version: String
     @Column(length = 64) var parent: String? = null
@@ -25,7 +29,12 @@ internal class Type {
     @Column(nullable = false) var primitive: Boolean = false
     @Column(name="\"last\"", nullable = false, columnDefinition = "boolean DEFAULT true") var last: Boolean = true
     companion object {
-        fun of(id: UUID=UUID.randomUUID(), user: User, type: String, version: String, parent: String?, effectDateTime: Instant, expireDateTime: Instant) = Type().apply {
+        data class TypeId (
+            val workspace: UUID = UUID.randomUUID(),
+            val id: UUID = UUID.randomUUID(),
+        ) : Serializable
+        fun of(workspace: UUID, id: UUID=UUID.randomUUID(), user: User, type: String, version: String, parent: String?, effectDateTime: Instant, expireDateTime: Instant) = Type().apply {
+            this.workspace = workspace
             this.id = id
             this.name = type
             this.version = version
