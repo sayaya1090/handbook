@@ -47,24 +47,24 @@ internal class TypeChildConsistencyTest(
                 user = user,
                 type = "conflict_parent",
                 version = "1.0", parent = null,
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-06-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
             )
             val parentType2 = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "conflict_parent",
                 version = "2.0", parent = null,
-                effectDateTime = Instant.parse("2023-06-30T23:59:59Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-06-30T23:59:59Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             val childType = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "conflict_child",
                 version = "1.0", parent = "conflict_parent",
-                effectDateTime = Instant.parse("2023-03-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-08-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-08-30T23:59:59Z")
             )
             tx.transactional {
                 em.persist(parentType)
@@ -87,24 +87,24 @@ internal class TypeChildConsistencyTest(
                 user = user,
                 type = "parent",
                 version = "1.0", parent = null,
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-06-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
             )
             val childType = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "child",
                 version = "1.0", parent = "parent",
-                effectDateTime = Instant.parse("2023-03-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-05-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-05-30T23:59:59Z")
             )
             val parentTypeNonOverlap = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "parent",
                 version = "2.0", parent = null,
-                effectDateTime = Instant.parse("2023-06-30T23:59:59Z"),
-                expireDateTime = Instant.parse("2023-07-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-06-30T23:59:59Z"),
+                expireDateTime = Instant.parse("2025-07-30T23:59:59Z")
             )
             tx.transactional {
                 em.persist(parentType)
@@ -132,16 +132,16 @@ internal class TypeChildConsistencyTest(
                 user = user,
                 type = "update_parent",
                 version = "1.0", parent = null,
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             val childType = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "update_child",
                 version = "1.0", parent = "update_parent",
-                effectDateTime = Instant.parse("2023-03-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-08-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-08-31T23:59:59Z")
             )
 
             tx.transactional {
@@ -150,12 +150,12 @@ internal class TypeChildConsistencyTest(
             }
 
             Then("부모의 새 유효기간이 자식과의 겹치는 구간을 완전히 포함하지 않으면 예외 발생") {
-                // 자식과 겹치는 구간(2023-03-01 ~ 2023-08-31)을 벗어나는 업데이트 시도
+                // 자식과 겹치는 구간(2025-03-01 ~ 2025-08-31)을 벗어나는 업데이트 시도
                 val exception = shouldThrow<SQLException> {
                     tx.transactional { em.createNativeQuery("""
                     UPDATE type 
-                    SET effective_at = '2023-03-01T00:00:00Z',
-                        expire_at = '2023-07-31T23:59:59Z'
+                    SET effective_at = '2025-03-01T00:00:00Z',
+                        expire_at = '2025-07-31T23:59:59Z'
                     WHERE name = 'update_parent' AND version = '1.0'
                 """.trimIndent()).executeUpdate()
                     }
@@ -167,8 +167,8 @@ internal class TypeChildConsistencyTest(
                 tx.transactional {
                     val result = em.createNativeQuery("""
                 UPDATE type 
-                SET effective_at = '2023-02-01T00:00:00Z',
-                    expire_at = '2023-09-30T23:59:59Z'
+                SET effective_at = '2025-02-01T00:00:00Z',
+                    expire_at = '2025-09-30T23:59:59Z'
                 WHERE name = 'update_parent' AND version = '1.0'
             """.trimIndent()).executeUpdate()
 

@@ -47,8 +47,8 @@ internal class TypeParentConsistencyTest(
                 user = user,
                 type = "child_type_1", parent = "nonexistent_parent",
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             Then("예외가 발생해야 한다") {
                 val exception = shouldThrow<SQLException> {
@@ -66,24 +66,24 @@ internal class TypeParentConsistencyTest(
                 user = user,
                 type = "parent_type_gapped", parent = null,
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-06-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
             )
             val parentType2 = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "parent_type_gapped", parent = null,
                 version = "2.0",
-                effectDateTime = Instant.parse("2023-07-15T00:00:00Z"), // 기간 중간에 gap이 존재
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-07-15T00:00:00Z"), // 기간 중간에 gap이 존재
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             val childType = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "child_type_2", parent = "parent_type_gapped",
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             tx.transactional {
                 em.persist(parentType1)
@@ -106,16 +106,16 @@ internal class TypeParentConsistencyTest(
                 user = user,
                 type = "parent_type_incomplete", parent = null,
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-06-30T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
             )
             val childType = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "child_type_3", parent = "parent_type_incomplete",
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z") // 자식이 부모 기간을 초과함
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z") // 자식이 부모 기간을 초과함
             )
             tx.transactional {
                 em.persist(parentType)
@@ -137,16 +137,16 @@ internal class TypeParentConsistencyTest(
                 user = user,
                 type = "parent_type_valid", parent = null,
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             val validChildType = Type.of(
                 workspace = workspace,
                 user = user,
                 type = "child_type_4", parent = "parent_type_valid",
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             tx.transactional {
                 em.persist(validParentType)

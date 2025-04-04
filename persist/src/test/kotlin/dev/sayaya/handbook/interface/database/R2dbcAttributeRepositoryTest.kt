@@ -14,6 +14,7 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
+import java.time.Instant
 import java.util.*
 
 @DataR2dbcTest(properties = [
@@ -28,24 +29,25 @@ class R2dbcAttributeRepositoryTest @Autowired constructor(
     beforeSpec {
         databaseClient.sql("""
             INSERT INTO public."user" (id, last_modified_at, created_at, last_login_at, name) VALUES ('system', NOW(), NOW(), null, 'system');
-            
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('1ba494f9-387e-44a9-b211-8008299d7773', '2025-02-16 18:13:23.066000 +00:00', 'type_1', '1970-01-01 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_1', null, true, 't1-v1', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('94c220f1-7576-4d3b-96ff-6128be479f34', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1970-01-01 00:00:00.000000 +00:00', '1999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v1', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('d4cedd54-6423-45a6-86ca-821eae9b3573', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1999-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v2', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('54aa4cd9-d12a-4015-886d-70c40fd0049b', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '1970-01-01 00:00:00.000000 +00:00', '2005-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v1', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('cd569d16-1f50-4cd1-85eb-74a763c98b5d', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '2005-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v2', 'system');
-            
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Value', 'common_attr', 'Common Attribute in Root', true, null, null, null, null, null, null, '1ba494f9-387e-44a9-b211-8008299d7773');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Value', 'common_attr', 'Overwritten Attribute in Child 1', true, null, null, null, null, null, null, '94c220f1-7576-4d3b-96ff-6128be479f34');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Array', 'unique_attr', 'Unique Attribute in Child 1', false, null, 'Value', null, null, null, null, '94c220f1-7576-4d3b-96ff-6128be479f34');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Document', 'exclusive_attr', 'Exclusive Attribute in Child 2', false, null, null, 'type_1', null, null, null, '54aa4cd9-d12a-4015-886d-70c40fd0049b');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Value', 'unique_attr', 'Changed Attribute in Child 1', false, null, 'Value', null, null, null, null, 'd4cedd54-6423-45a6-86ca-821eae9b3573');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Document', 'exclusive_attr', 'Exclusive Attribute in Child 2', false, null, null, 'type_1', null, null, null, 'cd569d16-1f50-4cd1-85eb-74a763c98b5d');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Map', 'exclusive_attr2', 'Added Attribute in Child 2', false, null, 'Value', 'type_1', null, 'Value', null, 'cd569d16-1f50-4cd1-85eb-74a763c98b5d');
-            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, type) VALUES ('Value', 'common_attr', 'Overwritten Attribute in Child 2', true, null, null, null, null, null, null, 'cd569d16-1f50-4cd1-85eb-74a763c98b5d');
+
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', '1ba494f9-387e-44a9-b211-8008299d7773', '2025-02-16 18:13:23.066000 +00:00', 'type_1', '1970-01-01 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_1', null, true, 't1-v1', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', '94c220f1-7576-4d3b-96ff-6128be479f34', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1970-01-01 00:00:00.000000 +00:00', '1999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v1', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', 'd4cedd54-6423-45a6-86ca-821eae9b3573', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1999-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v2', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', '54aa4cd9-d12a-4015-886d-70c40fd0049b', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '1970-01-01 00:00:00.000000 +00:00', '2005-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v1', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', 'cd569d16-1f50-4cd1-85eb-74a763c98b5d', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '2005-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v2', 'system');
+
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Value', 'common_attr', 'Common Attribute in Root', true, null, null, null, null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', '1ba494f9-387e-44a9-b211-8008299d7773');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Value', 'common_attr', 'Overwritten Attribute in Child 1', true, null, null, null, null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', '94c220f1-7576-4d3b-96ff-6128be479f34');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Array', 'unique_attr', 'Unique Attribute in Child 1', false, null, 'Value', null, null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', '94c220f1-7576-4d3b-96ff-6128be479f34');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Document', 'exclusive_attr', 'Exclusive Attribute in Child 2', false, null, null, 'type_1', null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', '54aa4cd9-d12a-4015-886d-70c40fd0049b');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Value', 'unique_attr', 'Changed Attribute in Child 1', false, null, 'Value', null, null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', 'd4cedd54-6423-45a6-86ca-821eae9b3573');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Document', 'exclusive_attr', 'Exclusive Attribute in Child 2', false, null, null, 'type_1', null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', 'cd569d16-1f50-4cd1-85eb-74a763c98b5d');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Map', 'exclusive_attr2', 'Added Attribute in Child 2', false, null, 'Value', 'type_1', null, 'Value', null, '398f6038-2192-417b-914a-f74e4bf52451', 'cd569d16-1f50-4cd1-85eb-74a763c98b5d');
+            INSERT INTO public.attribute (attribute_type, name, description, nullable, value_validators, value_type, reference_type, file_extensions, key_type, key_validators, workspace, type) VALUES ('Value', 'common_attr', 'Overwritten Attribute in Child 2', true, null, null, null, null, null, null, '398f6038-2192-417b-914a-f74e4bf52451', 'cd569d16-1f50-4cd1-85eb-74a763c98b5d');
         """.trimIndent()
         ).fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
     }
+    val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     should("Type에 연결된 Attribute를 검색한다") {
         // Given: 미리 정의된 Type ID
         val type1Id = UUID.fromString("1ba494f9-387e-44a9-b211-8008299d7773")
@@ -53,13 +55,13 @@ class R2dbcAttributeRepositoryTest @Autowired constructor(
         val type3Id = UUID.fromString("54aa4cd9-d12a-4015-886d-70c40fd0049b")
 
         // When: 특정 Type과 연관된 Attribute를 검색
-        val type1Result = repository.findByType(type1Id).collectList().map { list ->
+        val type1Result = repository.findByType(workspace, type1Id).collectList().map { list ->
             list.sortedBy { it.name }
         }.flatMapMany { Flux.fromIterable(it) }
-        val type2Result = repository.findByType(type2Id).collectList().map { list ->
+        val type2Result = repository.findByType(workspace, type2Id).collectList().map { list ->
             list.sortedBy { it.name }
         }.flatMapMany { Flux.fromIterable(it) }
-        val type3Result = repository.findByType(type3Id).collectList().map { list ->
+        val type3Result = repository.findByType(workspace, type3Id).collectList().map { list ->
             list.sortedBy { it.name }
         }.flatMapMany { Flux.fromIterable(it) }
 
@@ -93,9 +95,14 @@ class R2dbcAttributeRepositoryTest @Autowired constructor(
     should("save 메서드를 통해 Attribute를 삽입, 업데이트 및 삭제한다") {
         // Given: 기존 Type과 연결된 Attribute들
         val typeId = UUID.fromString("94c220f1-7576-4d3b-96ff-6128be479f34")
-        val type = mockk<R2dbcTypeEntity>().apply {
-            every { id } returns typeId
-        }
+        val type = R2dbcTypeEntity (
+            workspace = workspace,
+            id = typeId,
+            name = "Type",
+            version = "version",
+            effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-12-31T23:59:59Z"),
+        )
 
         // 새로운 Attribute들 (삽입/업데이트/삭제 대상 포함)
         val newAttributes = listOf(

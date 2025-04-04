@@ -53,8 +53,8 @@ internal class TypeVersionOverlapTest(
                 user = user,
                 type = "type_1", parent=null,
                 version = "1.0",
-                effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-31T23:59:59Z")
+                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
             val typeVersion2 = Type.of(
                 workspace = workspace,
@@ -85,8 +85,8 @@ internal class TypeVersionOverlapTest(
                 user = user,
                 type = "type_1", parent=null,
                 version = "3.0",
-                effectDateTime = Instant.parse("2023-06-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2023-12-01T23:59:59Z")
+                effectDateTime = Instant.parse("2025-06-01T00:00:00Z"),
+                expireDateTime = Instant.parse("2025-12-01T23:59:59Z")
             )
             Then("트리거에 의해 예외가 발생해야 한다") {
                 val exception = shouldThrow<SQLException> {
@@ -106,8 +106,8 @@ internal class TypeVersionOverlapTest(
                             .setParameter("type", "type_1")
                             .setParameter("version", "2.0")
                             .singleResult
-                        typeVersionToUpdate.effectDateTime = Instant.parse("2023-06-01T00:00:00Z")
-                        typeVersionToUpdate.expireDateTime = Instant.parse("2023-12-01T23:59:59Z")
+                        typeVersionToUpdate.effectDateTime = Instant.parse("2025-06-01T00:00:00Z")
+                        typeVersionToUpdate.expireDateTime = Instant.parse("2025-12-01T23:59:59Z")
                         em.merge(typeVersionToUpdate)  // 기간이 오버랩되도록 데이터 변경
                     }
                 }

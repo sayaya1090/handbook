@@ -9,6 +9,7 @@ import java.util.*
 
 @Table("attribute")
 data class R2dbcAttributeEntity (
+    val workspace: UUID,
     val type: UUID,
     val name: String,
     val attributeType: AttributeType,
@@ -19,9 +20,9 @@ data class R2dbcAttributeEntity (
     var description: String?,
     var nullable: Boolean,
 ) {
-    @Transient @Id val id: R2dbcAttributeId = R2dbcAttributeId(type, name)
+    @Transient @Id val id: R2dbcAttributeId = R2dbcAttributeId(workspace, type, name)
 
     companion object {
-        data class R2dbcAttributeId (val type: UUID, val name: String) : Serializable
+        data class R2dbcAttributeId (val workspace: UUID, val type: UUID, val name: String) : Serializable
     }
 }
