@@ -10,17 +10,17 @@ import org.springframework.data.relational.core.query.Query
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import reactor.core.publisher.Mono
 
-interface R2dbcSearchable<E, T>: Searchable<T> {
-    fun R2dbcEntityTemplate.predicates(filters: List<Pair<String, String>>): Criteria {
+interface R2dbcSearchable<E: EntityPageable, T>: Searchable<T> {
+    fun R2dbcEntityTemplate.predicates(filters: List<Pair<String, Any?>>): Criteria {
         if(filters.isEmpty()) return Criteria.empty()
         return filters.map { (key, value) -> predicate(key, value) }.reduce(Criteria::and)
     }
-    fun R2dbcEntityTemplate.predicate(key: String, value: String): Criteria
-    fun R2dbcEntityTemplate.search(from: SqlIdentifier, filters: List<Pair<String, String>>, clazz: Class<E>,  pageable: Pageable): Mono<Page<E>> {
-        val predicates = predicates(filters)
-        val count = count(Query.query(predicates), clazz)
-        val query = Query.query(predicates).with(pageable)
-        val data = select(clazz).from(from).matching(query).all().collectList()
-        return count.zipWith(data).map { PageImpl(it.t2, pageable, it.t1) }
-    }
+    fun R2dbcEntityTemplate.predicate(key: String, value: Any?): Criteria
+    fun R2dbcEntityTemplate.search(from: SqlIdentifier, filters: List<Pair<String, Any?>>, clazz: Class<E>,  pageable: Pageable): Mono<Page<E>> = predicates(filters)
+        .let(Query::query).with(pageable).columns("*, count(*) OVER() as count").let { query ->
+            select(clazz).from(from).`as`(clazz).matching(query)
+        }.all().collectList().map { list ->
+            if (list.isEmpty()) PageImpl(emptyList<E>(), pageable, 0)
+            else PageImpl(list, pageable, list.first().count)
+        }
 }

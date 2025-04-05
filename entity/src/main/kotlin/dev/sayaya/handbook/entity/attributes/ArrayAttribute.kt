@@ -15,8 +15,8 @@ internal class ArrayAttribute: Attribute() {
     @JdbcTypeCode(SqlTypes.JSON) @Column(name="value_validators", columnDefinition = "jsonb") var validators: Serializable? = null
     companion object {
         fun of(type: Type, name: String, valueType: AttributeType, validators: Serializable? = null) = ArrayAttribute().apply {
-            this.type = type
-            this.name = name
+            this.type(type)
+            this.name(name)
             this.valueType = valueType
             this.validators = validators
         }

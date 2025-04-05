@@ -21,6 +21,7 @@ import org.springframework.test.context.DynamicPropertySource
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.Instant
+import java.util.*
 
 @DataR2dbcTest(properties = [
     "logging.level.io.r2dbc.postgresql.QUERY=DEBUG",
@@ -34,6 +35,7 @@ class R2dbcTypeRepositoryTest(
         every { save(any(), any()) } answers { Mono.just(secondArg()) }
     }
     val repository = R2dbcTypeRepository(template, childRepo)
+    val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     beforeSpec {
         databaseClient.sql("""
             INSERT INTO "user" (id, last_modified_at, created_at, last_login_at, name) 
@@ -54,22 +56,22 @@ class R2dbcTypeRepositoryTest(
             id = "update_parent",
             version = "1.0",
             parent = null,
-            effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2023-12-31T23:59:59Z"),
+            effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-12-31T23:59:59Z"),
             description = "", primitive = false, attributes = emptyList()
         )
         val childType = Type(
             id = "update_child",
             version = "1.0",
             parent = "update_parent",
-            effectDateTime = Instant.parse("2023-03-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2023-08-31T23:59:59Z"),
+            effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-08-31T23:59:59Z"),
             description = "", primitive = false, attributes = emptyList()
         )
 
         // When: 부모와 자식 데이터 저장
-        repository.save(parentType)
-            .then(repository.save(childType))
+        repository.save(workspace, parentType)
+            .then(repository.save(workspace, childType))
             .let(StepVerifier::create)
             .expectNextCount(1)
             .verifyComplete()
@@ -77,10 +79,10 @@ class R2dbcTypeRepositoryTest(
         clearMocks(childRepo, recordedCalls = true, answers = false)
         // Then: 부모의 유효기간을 자식과의 겹치는 구간보다 짧게 업데이트 시도
         val updatedParentType = parentType.copy(
-            effectDateTime = Instant.parse("2023-03-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2023-07-31T23:59:59Z")
+            effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-07-31T23:59:59Z")
         )
-        repository.save(updatedParentType)
+        repository.save(workspace, updatedParentType)
             .let(StepVerifier::create)
             .verifyError(RuntimeException::class.java)
 
@@ -92,32 +94,32 @@ class R2dbcTypeRepositoryTest(
             id = "update_parent",
             version = "1.0",
             parent = null,
-            effectDateTime = Instant.parse("2023-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2023-12-31T23:59:59Z"),
+            effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-12-31T23:59:59Z"),
             description = "", primitive = false, attributes = emptyList()
         )
         val childType = Type(
             id = "update_child",
             version = "1.0",
             parent = "update_parent",
-            effectDateTime = Instant.parse("2023-03-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2023-08-31T23:59:59Z"),
+            effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-08-31T23:59:59Z"),
             description = "", primitive = false, attributes = emptyList()
         )
         // When: 부모와 자식 데이터 저장
-        repository.save(parentType)
-            .then(repository.save(childType))
+        repository.save(workspace, parentType)
+            .then(repository.save(workspace, childType))
             .let(StepVerifier::create)
             .expectNextCount(1)
             .verifyComplete()
 
         // Then: 부모의 유효기간을 자식과의 겹치는 구간을 포함하도록 업데이트
         val updatedParentType = parentType.copy(
-            effectDateTime = Instant.parse("2023-02-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2023-09-30T23:59:59Z")
+            effectDateTime = Instant.parse("2025-02-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2025-09-30T23:59:59Z")
         )
         clearMocks(childRepo, recordedCalls = true, answers = false)
-        repository.save(updatedParentType)
+        repository.save(workspace, updatedParentType)
             .let(StepVerifier::create)
             .expectNextCount(1)
             .verifyComplete()

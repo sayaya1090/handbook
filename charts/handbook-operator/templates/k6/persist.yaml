@@ -39,13 +39,14 @@ data:
         // 스프링부트 서비스 엔드포인트 URL
         const baseUrl = 'https://handbook.sayaya.cloud';
         const payload = createTypePayload();
+        const workspace = generateUUID();
         const params = {
             headers: {
                 'Content-Type': 'application/json'
             }, tags: { endpoint: 'types' }
         };
 
-        const getResponse = http.put(`${baseUrl}/types`, JSON.stringify(payload), params);
+        const getResponse = http.put(`${baseUrl}/workspace/${workspace}/types`, JSON.stringify(payload), params);
 
         // 응답 검증
         check(getResponse, {
@@ -53,6 +54,14 @@ data:
             'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
         });
         sleep(0.1);
+    }
+    export function generateUUID() {
+      // 랜덤 16진수 문자열 생성
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+      }
+      // 8-4-4-4-12 형태로 UUID 조합
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 
     export function createTypePayload() {

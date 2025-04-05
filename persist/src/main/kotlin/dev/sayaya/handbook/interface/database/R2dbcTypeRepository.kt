@@ -10,14 +10,16 @@ import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
 import reactor.util.function.Tuple2
 import reactor.util.function.Tuples
+import java.util.*
 
 @Repository
 class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val childRepo: R2dbcAttributeRepository): TypeRepository {
     @Transactional
-    override fun save(type: Type): Mono<Type> = insert(type).flatMap { entity ->
+    override fun save(workspace: UUID, type: Type): Mono<Type> = insert(workspace, type).flatMap { entity ->
         persistAttributes(entity, type).map(this::toDomain)
     }
-    private fun insert(type: Type): Mono<R2dbcTypeEntity> = R2dbcTypeEntity.of(
+    private fun insert(workspace: UUID, type: Type): Mono<R2dbcTypeEntity> = R2dbcTypeEntity.of(
+        workspace = workspace,
         id = Ulid.fast().toUuid(),
         name = type.id, version = type.version, parent = type.parent,
         effectiveDateTime = type.effectDateTime, expiryDateTime =  type.expireDateTime,

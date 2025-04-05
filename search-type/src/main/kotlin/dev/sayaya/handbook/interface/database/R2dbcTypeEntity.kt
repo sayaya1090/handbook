@@ -6,7 +6,8 @@ import java.time.Instant
 import java.util.*
 
 @Table("type")
-data class R2dbcTypeEntity (
+class R2dbcTypeEntity (
+    val workspace: UUID,
     val id: UUID,
     val name: String,
     val version: String,
@@ -16,5 +17,6 @@ data class R2dbcTypeEntity (
     val description: String = "",
     val primitive: Boolean = false,
     @Column("created_at") val createDateTime: Instant,
-    @Column("created_by") val createBy: String
-)
+    @Column("created_by") val createBy: String,
+    override val count: Long = -1
+): EntityPageable

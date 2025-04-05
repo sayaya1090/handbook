@@ -14,6 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import java.time.Instant
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 internal class SearchControllerTest : ShouldSpec({
@@ -22,7 +23,7 @@ internal class SearchControllerTest : ShouldSpec({
     val webTestClient = WebTestClient.bindToController(controller).argumentResolvers { resolvers ->
         resolvers.addCustomResolver(SearchArgumentResolver())
     }.build()
-
+    val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     should("올바른 검색 요청 시 올바른 결과를 반환해야 한다") {
         // Given: Mock된 서비스 응답 정의
         val searchParam = Search(
@@ -46,11 +47,11 @@ internal class SearchControllerTest : ShouldSpec({
         )
         val expectedPage = PageImpl(expectedTypes, PageRequest.of(0, 10), 1)
 
-        every { mockService.search(searchParam) } returns Mono.just(expectedPage)
+        every { mockService.search(workspace, searchParam) } returns Mono.just(expectedPage)
 
         // When: API 호출
         webTestClient.get().uri { builder ->
-            builder.path("/types")
+            builder.path("/workspace/$workspace/types")
                 .queryParam("name", "Name1")
                 .queryParam("page", "0")
                 .queryParam("limit", "10")
@@ -67,11 +68,11 @@ internal class SearchControllerTest : ShouldSpec({
 
     should("잘못된 요청이 들어오면 400 BAD_REQUEST를 반환해야 한다") {
         // Given: Mock된 서비스에서 IllegalArgumentException이 발생하도록 설정
-        every { mockService.search(any()) } throws IllegalArgumentException("Invalid query parameter")
+        every { mockService.search(workspace, any()) } throws IllegalArgumentException("Invalid query parameter")
 
         // When: API 호출
         webTestClient.get().uri { builder ->
-            builder.path("/types")
+            builder.path("/workspace/$workspace/types")
                 .queryParam("name", "invalid name")
                 .queryParam("page", "0")
                 .queryParam("limit", "10")

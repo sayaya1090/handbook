@@ -1,7 +1,6 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import dev.sayaya.handbook.`interface`.api.JsonConfig
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.string.shouldContain
 import java.time.Instant

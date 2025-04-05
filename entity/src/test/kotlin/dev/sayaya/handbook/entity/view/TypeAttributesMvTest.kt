@@ -27,14 +27,20 @@ import java.util.*
   Type 추가, 변경, 삭제 시 자식 Type이 부모 Type의 Attribute를 상속하는지 검증한다
  */
 @SpringBootTest(properties = [
-    "spring.jpa.show-sql=true",
-    "spring.jpa.hibernate.ddl-auto=update"
+    "spring.jpa.hibernate.ddl-auto=update",
+    "logging.level.org.hibernate.SQL=DEBUG",
+    "logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE",
+    "logging.level.org.hibernate.type.descriptor.sql.BasicExtractor=TRACE",
+    "spring.jpa.properties.hibernate.format_sql=true",
+    "spring.sql.init.schema-locations=classpath:createTable.sql",
+    "spring.sql.init.mode=always"
 ])
 internal class TypeAttributesMvTest(
     val tx: PlatformTransactionManager,
     @PersistenceContext private val em: EntityManager,
 ) : BehaviorSpec({
     Given("DB 초기화") {
+        val workspace = UUID.fromString("9398611a-00cb-4dfb-8218-1cf6489674b8")
         var type1Version1: Type? = null
         var type2Version1: Type? = null
         var type2Version2: Type? = null
@@ -53,20 +59,20 @@ internal class TypeAttributesMvTest(
                 createDateTime = Instant.now()
                 lastModifyDateTime = Instant.now()
             })
-            type1Version1 = em.merge(Type.of(UUID.randomUUID(), user,"type_1", "t1-v1", null, dateMin, dateMax))
-            type2Version1 = em.merge(Type.of(UUID.randomUUID(), user,"type_2", "t2-v1", "type_1", dateMin2, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()))
-            type2Version2 = em.merge(Type.of(UUID.randomUUID(), user,"type_2", "t2-v2", "type_1", type2Version1!!.expireDateTime, dateMax))
-            type3Version1 = em.merge(Type.of(UUID.randomUUID(), user,"type_3", "t3-v1", "type_2", dateMin2, type2Version1!!.expireDateTime))
-            type3Version2 = em.merge(Type.of(UUID.randomUUID(), user,"type_3", "t3-v2", "type_2", type3Version1!!.expireDateTime, dateMax))
-
+            type1Version1 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_1", "t1-v1", null, dateMin, dateMax))
+            type2Version1 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_2", "t2-v1", "type_1", dateMin2, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()))
+            type2Version2 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_2", "t2-v2", "type_1", type2Version1!!.expireDateTime, dateMax))
+            type3Version1 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_3", "t3-v1", "type_2", dateMin2, type2Version1!!.expireDateTime))
+            type3Version2 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_3", "t3-v2", "type_2", type3Version1!!.expireDateTime, dateMax))
+            println(type1Version1)
         }
         When("계층 구조를 가진 데이터에 Attribute를 저장하고 MV를 업데이트하면") {
             tx.transactional {
-                val type1Def = em.find(Type::class.java, type1Version1!!.id)
-                val type2Def = em.find(Type::class.java, type2Version1!!.id)
-                val type2Def2 = em.find(Type::class.java, type2Version2!!.id)
-                val type3Def = em.find(Type::class.java, type3Version1!!.id)
-                val type3Def2 = em.find(Type::class.java, type3Version2!!.id)
+                val type1Def = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type1Version1!!.id))
+                val type2Def = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type2Version1!!.id))
+                val type2Def2 = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type2Version2!!.id))
+                val type3Def = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type3Version1!!.id))
+                val type3Def2 = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type3Version2!!.id))
                 val type1DefAttr1 = ValueAttribute.of(type1Def, "common_attr").apply {
                     description = "Common Attribute in Type1"
                 }
