@@ -35,10 +35,110 @@ data:
         noConnectionReuse: false,
         userAgent: 'K6LoadTest/1.0'
     };
+    export const workspaces = [
+      "5e1b1c26-3f46-4c0a-a21c-2b2f3b8f3cb1",
+      "b3fd6761-49f2-4e64-bf39-2de39fcafcd3",
+      "d441b66f-9428-47c2-9d33-dc18052d1537",
+      "f185fd68-2c1b-4a19-b922-f57d04e1ea43",
+      "c9025ed4-9c6a-4f65-985e-2791f2e6b0c3",
+      "cb4562b3-b214-4044-a404-77fa9e2ab366",
+      "982b2484-9f33-48fd-a73a-69bbbd6f9bc5",
+      "a765eaec-60f6-4190-8048-1577d7e6de4a",
+      "9f97bbd3-4a98-46e2-b1c2-84560fbb22cd",
+      "72a2a364-49c1-4e8e-9e20-0895a0bc9f89",
+      "5fc1b150-bb29-4ed4-8a62-8d92dc01f7e7",
+      "626660c3-11fd-4ac0-8023-1b5a6d3efb2d",
+      "df1e7611-4c74-4a9d-b8b2-e7ea983849df",
+      "621879a4-b344-4a99-9820-67951a75578d",
+      "0cd107db-0015-4ec9-9aa9-52910194a6aa",
+      "4cc0d39c-8d95-40df-8f80-f2b1018cf83a",
+      "b7890134-8eb4-4903-8ef9-3cb55e9581c6",
+      "04fdd0a1-9cf9-4608-b2ad-70e1747998df",
+      "f5f478ab-098e-49c6-95f2-66392d55a650",
+      "ca6588aa-c986-48d8-b942-2db8e76c8d6f",
+      "8613b01f-5a9a-4ad6-b5b0-36a5cb5a2d18",
+      "4b75fa56-73bb-4c08-8f37-4b6bc16791c9",
+      "9dfcb9b0-b42b-4ea8-92cd-59016d8f2cd3",
+      "1e3c7600-2c38-4b64-9b33-753b49c0d479",
+      "84276d04-016b-4652-b53e-6e30601e3c9e",
+      "6d83867c-e4f3-4c14-a49d-dfbc86e12f20",
+      "298048d3-efc6-44a6-8e42-982f2693fa30",
+      "b9e725fc-8049-44df-a3dc-4c22fa429cd2",
+      "c82627ec-8c98-4b40-a5e6-cba46dd15172",
+      "ec5b51a9-6946-4ab2-a66f-785f8dbf6582",
+      "1794f176-34e5-46e7-9612-c413b6b2c422",
+      "71a1c640-1b7f-49c5-9055-40b9814f9149",
+      "1ce9a1f9-1733-4d88-b5ef-b7c78cd1bc34",
+      "1942e361-6f0f-4397-a3f0-1f01f2b78bc6",
+      "0b14adcb-f205-4b96-974f-9eeb905113ac",
+      "64eaa51e-9429-4c18-984a-57e1348fbe9c",
+      "fda3a22f-2ed9-4493-bd2d-cdbb8e7d9ff4",
+      "9b3bbccd-ea8e-4d73-97b6-fc91b8714f8d",
+      "b26e7a2d-2f8e-49c0-a98a-0fdf84e1d41a",
+      "88836a03-1ea1-4d36-8a48-2ce4d99b7707",
+      "e2e34e49-f2ff-4b7a-a093-cb91fdfde26f",
+      "5f507fe4-f7d8-4abf-9a90-88e11f414bd6",
+      "f6a7b1c3-2412-45f7-9173-8f8db21a6469",
+      "40ff6be7-0ebf-4f2c-b9e0-12e6b25bb338",
+      "b4f21084-f94b-4292-bc3a-44590e4d4981",
+      "29e78b8e-0d4d-41c5-925b-c93de3ee69fc",
+      "4b1a3ff6-c745-4d11-a2cd-4fc69e788c4a",
+      "efb382be-91c7-4ad7-b20e-d0c7fa4ee91c",
+      "e64bb33b-69a7-4e4c-b9d6-4a5377a4fbe4",
+      "5b616a9b-34c1-4c21-8b3c-dba93cc88be3",
+      "9836211e-3691-4e4a-acc4-8670cbf3d1e6",
+      "f23b05b2-60d4-4c4d-b183-e049ec15a6a5",
+      "cb5ff8f2-cc1e-48c5-a7c1-bc9677fd9b08",
+      "07e0e1f1-f8ea-4f4b-8cf1-e15f345bb93c",
+      "39583dd8-d237-4e45-b0ec-e8e038cbb1b5",
+      "8e84a10c-844f-480b-a73a-4265b3de1ad9",
+      "6b9e960e-9a9f-4c25-b8b8-987cdb9e4c95",
+      "4a0fa84f-3ed0-4875-82cc-9cb3d0e59bc9",
+      "a6dd4c79-e3d0-4f20-b236-98d73b6c3a64",
+      "43852fc8-095f-4e53-890e-07f5d594b69f",
+      "1f1e7320-09f7-4cf3-b364-405f4e7fe8fd",
+      "9b43b253-bc4a-41f1-b558-e4ed2c5ab8bb",
+      "25a9cf4a-9a7b-4b93-82e0-f30054bcb30d",
+      "e3f3c0b3-2fe5-4640-9648-42b9b40be93e",
+      "a35b50b6-ef18-44b0-9855-712f8b7c35ef",
+      "1e964b93-6d88-4fef-bc67-4aef7e104589",
+      "6b92fd72-776e-4602-a7f1-505f3d8db00a",
+      "08976557-3482-4561-b108-2fd1b7c64e07",
+      "bc9d4e7d-d41b-406c-88ea-b8a8b29db52c",
+      "2d6a16a7-8fd4-47e6-bbb4-6ed1cc64e5e7",
+      "d69e8f8e-bfe4-4e7d-b065-643aa3079dff",
+      "469a5f80-103e-45d3-91b3-1046c249660f",
+      "d0098b77-0043-49c0-a5f2-c1b4fd847503",
+      "9c294d4d-d342-4726-a7a0-5b032632b157",
+      "aa462276-7df1-4e82-b36f-84ce2bc15e45",
+      "13df6403-f089-4c48-8799-fdfc9f7121c8",
+      "337f79f2-00f8-4a3e-83db-c0c95bd58b7d",
+      "c64b1c16-e376-4b4c-8cf4-cd8c839269c0",
+      "e6d32a7e-10d1-4d2b-910c-3101e8a8570a",
+      "f06db9c7-3612-460a-bb80-bc4a9b89d409",
+      "72b3df88-dc89-45aa-b196-f7c4f01c2490",
+      "8fcbffef-9f9c-403e-9518-3d3c7f1e98c0",
+      "61fd1b6f-8ef9-4634-b4c5-cc3e0c11b384",
+      "cbe0c994-02dc-4cb7-9305-3c9ea857dd94",
+      "ee517841-9b52-4907-90cc-bc5ed173e6b7",
+      "cb7eacaf-f83d-47db-bb83-27305b6a42b5",
+      "c1ffb04b-8612-4d35-9b8a-96445cf4d14b",
+      "6bb270e3-46f2-4c24-a539-50bdb8e98ff1",
+      "77c8ef53-8ef5-4352-960c-3be9b5b66796",
+      "e5dbbde6-79ae-4c4e-b1bc-5907fd043e9f",
+      "02a2a710-4e44-4a0f-a80f-59cfecc0e9bc",
+      "0216c9b5-ea3f-49d3-97d4-df16892720c0",
+      "3425e234-3520-4f7b-9f32-84892722e8d4",
+      "158ef71a-ec17-4174-9b18-cba7d5b5b5b0",
+      "94b3a573-b9d2-4172-b3e3-34e2d1c2b389",
+      "c9c9ce20-18d1-42c3-b75a-e1f64c9d17aa"
+    ];
+
     export default function() {
         // 스프링부트 서비스 엔드포인트 URL
         const baseUrl = 'https://handbook.sayaya.cloud';
-        const workspace = generateUUID();
+        const randomIndex = Math.floor(Math.random() * workspaces.length);
+        const workspace = workspaces[randomIndex];
         const params = {
             tags: { endpoint: 'types' }
         };
@@ -54,14 +154,6 @@ data:
             'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
         });
         sleep(0.1);
-    }
-    export function generateUUID() {
-      // 랜덤 16진수 문자열 생성
-      function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-      }
-      // 8-4-4-4-12 형태로 UUID 조합
-      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
     export function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
