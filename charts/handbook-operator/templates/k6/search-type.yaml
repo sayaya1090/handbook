@@ -37,6 +37,7 @@ data:
     export default function() {
         // 스프링부트 서비스 엔드포인트 URL
         const baseUrl = 'https://handbook.sayaya.cloud';
+        const workspace = generateUUID();
         const params = {
             tags: { endpoint: 'types' }
         };
@@ -44,7 +45,7 @@ data:
         // GET 요청 테스트 - 페이지/limit 값 무작위화 (캐싱 회피)
         const page = getRandomInt(0, 10);
         const limit = getRandomInt(1, 10);
-        const getResponse = http.get(`${baseUrl}/types?page=${page}&limit=${limit}`, params);
+        const getResponse = http.get(`${baseUrl}/workspace/${workspace}/types?page=${page}&limit=${limit}`, params);
 
         // 응답 검증
         check(getResponse, {
@@ -53,7 +54,14 @@ data:
         });
         sleep(0.1);
     }
-
+    export function generateUUID() {
+      // 랜덤 16진수 문자열 생성
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+      }
+      // 8-4-4-4-12 형태로 UUID 조합
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+    }
     export function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
