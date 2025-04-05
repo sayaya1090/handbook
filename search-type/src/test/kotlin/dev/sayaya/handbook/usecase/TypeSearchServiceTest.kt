@@ -11,10 +11,12 @@ import org.springframework.data.domain.PageRequest
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.Instant
+import java.util.*
 
 internal class TypeSearchServiceTest : ShouldSpec({
     val mockRepository = mockk<TypeSearchRepository>()
     val service = TypeSearchService(mockRepository)
+    val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     should("date 필터가 주어지지 않으면 필터에 추가되어 검색 조건이 전달되고 결과를 반환해야 한다") {
         // Given: Date 필터가 없는 검색 조건을 설정
         val searchParam = Search(
@@ -39,12 +41,12 @@ internal class TypeSearchServiceTest : ShouldSpec({
         val expectedPage = PageImpl(expectedTypes, PageRequest.of(0, 10), 1)
 
         // Date 필터 추가를 확인하기 위해 매칭 조건 설정
-        every { mockRepository.search(match { param ->
+        every { mockRepository.search(workspace, match { param ->
             param.filters.any { it.first == "date" } && param.filters.contains("name" to "Name1") })
         } returns Mono.just(expectedPage)
 
         // When: 서비스 메서드 호출
-        val result = service.search(searchParam)
+        val result = service.search(workspace, searchParam)
 
         // Then: 검증
         StepVerifier.create(result).assertNext { page ->
@@ -79,12 +81,12 @@ internal class TypeSearchServiceTest : ShouldSpec({
         val expectedPage = PageImpl(expectedTypes, PageRequest.of(0, 10), 1)
 
         // Date 필터가 수정되었는지 확인 (기존 값 유지)
-        every { mockRepository.search(match { param ->
+        every { mockRepository.search(workspace, match { param ->
             param.filters.contains("name" to "Name1") && param.filters.contains("date" to existingDate) })
         } returns Mono.just(expectedPage)
 
         // When: 서비스 메서드 호출
-        val result = service.search(searchParam)
+        val result = service.search(workspace, searchParam)
 
         // Then: 검증
         StepVerifier.create(result).assertNext { page ->

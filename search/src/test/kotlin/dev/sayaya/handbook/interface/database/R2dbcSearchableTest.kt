@@ -1,11 +1,15 @@
-package dev.sayaya.`interface`.database
+package dev.sayaya.handbook.`interface`.database
 
 import dev.sayaya.handbook.domain.Search
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
-import io.mockk.*
-import org.springframework.data.domain.*
+import io.mockk.every
+import io.mockk.mockk
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
@@ -21,11 +25,10 @@ internal class R2dbcSearchableTest : ShouldSpec({
             val template = mockk<R2dbcEntityTemplate>()
             val searchable = TestR2dbcSearchable(template)
             // Mock count and data
-            every { template.count(any<Query>(), clazz) } returns Mono.just(100L)
-            every { template.select(clazz).from(from).matching(any<Query>()).all().collectList() } returns Mono.just(
+            every { template.select(clazz).from(from).`as`(clazz).matching(any<Query>()).all().collectList() } returns Mono.just(
                 listOf(
-                    TestEntity(1, "data1"),
-                    TestEntity(2, "data2")
+                    TestEntity(1, "data1", 2),
+                    TestEntity(2, "data2", 2)
                 )
             )
             // Run search
@@ -33,24 +36,19 @@ internal class R2dbcSearchableTest : ShouldSpec({
 
             // Assert
             searchable.search(search).let(StepVerifier::create).assertNext { page ->
-                page.totalElements shouldBe 100
+                page.totalElements shouldBe 2
                 page.content shouldBe listOf(
-                    TestEntity(1, "data1"),
-                    TestEntity(2, "data2")
+                    TestEntity(1, "data1", 2),
+                    TestEntity(2, "data2", 2)
                 )
             }.verifyComplete()
-
-            // Verify interactions
-            verify { template.count(any<Query>(), clazz) }
-            verify { template.select(clazz).from(from).matching(any<Query>()).all() }
         }
 
         should("검색 결과가 없는 경우 아무것도 반환하지 않는다") {
             val template: R2dbcEntityTemplate = mockk()
             val searchable = TestR2dbcSearchable(template)
             // Mock count and data
-            every { template.count(any<Query>(), clazz) } returns Mono.just(0L)
-            every { template.select(clazz).from(from).matching(any<Query>()).all().collectList() } returns Mono.just(
+            every { template.select(clazz).from(from).`as`(clazz).matching(any<Query>()).all().collectList() } returns Mono.just(
                 emptyList()
             )
             // Run search
@@ -58,22 +56,18 @@ internal class R2dbcSearchableTest : ShouldSpec({
 
             // Assert
             searchable.search(search).let(StepVerifier::create).verifyComplete()
-
-            // Verify interactions
-            verify { template.count(any<Query>(), clazz) }
-            verify { template.select(clazz).from(from).matching(any<Query>()).all() }
         }
     }
 }) {
     companion object {
-        data class TestEntity(val id: Int, val data: String)
+        data class TestEntity(val id: Int, val data: String, override val count: Long=-1): EntityPageable
         val from: SqlIdentifier = SqlIdentifier.unquoted("test_table")
         val clazz = TestEntity::class.java
         val filters = listOf("key1" to "value1", "key2" to "value2")
 
         class TestR2dbcSearchable(private val template: R2dbcEntityTemplate) : R2dbcSearchable<TestEntity, TestEntity> {
-            override fun R2dbcEntityTemplate.predicate(key: String, value: String): Criteria {
-                return Criteria.where(key).`is`(value)
+            override fun R2dbcEntityTemplate.predicate(key: String, value: Any?): Criteria {
+                return if(value!=null) Criteria.where(key).`is`(value) else Criteria.where(key).isNull()
             }
             override fun search(param: Search): Mono<Page<TestEntity>> {
                 val pageNumber = param.page

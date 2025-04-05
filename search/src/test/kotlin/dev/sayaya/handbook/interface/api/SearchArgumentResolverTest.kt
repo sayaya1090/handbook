@@ -1,7 +1,6 @@
-package dev.sayaya.`interface`.api
+package dev.sayaya.handbook.`interface`.api
 
 import dev.sayaya.handbook.domain.Search
-import dev.sayaya.handbook.`interface`.api.SearchArgumentResolver
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe

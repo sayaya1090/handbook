@@ -26,18 +26,17 @@ internal class R2dbcTypeSearchRepositoryTest @Autowired constructor(
 ) : ShouldSpec({
     val attributeRepo = mockk<R2dbcAttributeRepository>()
     val repository = R2dbcTypeSearchRepository(template, attributeRepo)
-
+    val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     beforeSpec {
         // 테스트 데이터 삽입
         databaseClient.sql("""
             INSERT INTO public."user" (id, last_modified_at, created_at, last_login_at, name) VALUES ('system', NOW(), NOW(), null, 'system');
             
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('1ba494f9-387e-44a9-b211-8008299d7773', '2025-02-16 18:13:23.066000 +00:00', 'type_1', '1970-01-01 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_1', null, true, 't1-v1', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('94c220f1-7576-4d3b-96ff-6128be479f34', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1970-01-01 00:00:00.000000 +00:00', '1999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v1', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('d4cedd54-6423-45a6-86ca-821eae9b3573', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1999-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v2', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('54aa4cd9-d12a-4015-886d-70c40fd0049b', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '1970-01-01 00:00:00.000000 +00:00', '2005-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v1', 'system');
-            INSERT INTO public.type (id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('cd569d16-1f50-4cd1-85eb-74a763c98b5d', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '2005-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v2', 'system');
-            
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', '1ba494f9-387e-44a9-b211-8008299d7773', '2025-02-16 18:13:23.066000 +00:00', 'type_1', '1970-01-01 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_1', null, true, 't1-v1', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', '94c220f1-7576-4d3b-96ff-6128be479f34', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1970-01-01 00:00:00.000000 +00:00', '1999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v1', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', 'd4cedd54-6423-45a6-86ca-821eae9b3573', '2025-02-16 18:13:23.066000 +00:00', 'type_2', '1999-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_2', 'type_1', true, 't2-v2', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', '54aa4cd9-d12a-4015-886d-70c40fd0049b', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '1970-01-01 00:00:00.000000 +00:00', '2005-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v1', 'system');
+            INSERT INTO public.type (workspace, id, created_at, description, effective_at, expire_at, last, name, parent, primitive, version, created_by) VALUES ('398f6038-2192-417b-914a-f74e4bf52451', 'cd569d16-1f50-4cd1-85eb-74a763c98b5d', '2025-02-16 18:13:23.066000 +00:00', 'type_3', '2005-12-31 00:00:00.000000 +00:00', '2999-12-31 00:00:00.000000 +00:00', true, 'type_3', 'type_2', true, 't3-v2', 'system');
         """.trimIndent()).fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
     }
 
@@ -58,10 +57,10 @@ internal class R2dbcTypeSearchRepositoryTest @Autowired constructor(
                 Attribute.Companion.ValueAttribute("attr1", "description1", true, false)
             )
         )
-        every { attributeRepo.findAllByTypeIds(any()) } returns Mono.just(mockAttributes)
+        every { attributeRepo.findAllByTypeIds(workspace, any()) } returns Mono.just(mockAttributes)
 
         // When: search() 호출
-        val result = repository.search(param)
+        val result = repository.search(workspace, param)
 
         // Then: 검색 결과 검증
         StepVerifier.create(result).assertNext { page ->
@@ -87,10 +86,10 @@ internal class R2dbcTypeSearchRepositoryTest @Autowired constructor(
         )
 
         // Mock: AttributeRepository 없는 경우
-        every { attributeRepo.findAllByTypeIds(any()) } returns Mono.just(emptyMap())
+        every { attributeRepo.findAllByTypeIds(workspace, any()) } returns Mono.just(emptyMap())
 
         // When: search() 호출
-        val result = repository.search(param)
+        val result = repository.search(workspace, param)
 
         // Then: 빈 결과 검증
         StepVerifier.create(result).verifyComplete()
@@ -115,10 +114,10 @@ internal class R2dbcTypeSearchRepositoryTest @Autowired constructor(
             typeId2 to listOf(Attribute.Companion.ValueAttribute("attr2", "desc", false, false)),
             typeId3 to listOf(Attribute.Companion.ValueAttribute("attr3", "desc", false, false), Attribute.Companion.ValueAttribute("attr3-2", "desc", false, false)),
         )
-        every { attributeRepo.findAllByTypeIds(any()) } returns Mono.just(mockAttributes)
+        every { attributeRepo.findAllByTypeIds(workspace, any()) } returns Mono.just(mockAttributes)
 
         // When: search() 호출
-        val result = repository.search(param)
+        val result = repository.search(workspace, param)
 
         // Then: 모든 Type 검색 결과 검증
         StepVerifier.create(result).assertNext { page ->
