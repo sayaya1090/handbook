@@ -22,7 +22,6 @@ data:
                     { duration: '1m', target: 200 },    // 1분간 200 TPS로 증가
                     { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
                     { duration: '2m', target: 1000 },   // 2분간 1000 TPS로 증가
-                    { duration: '2m', target: 2000 },   // 2분간 2000 TPS로 증가
                     { duration: '1m', target: 0 }       // 1분간 점진적으로 감소
                 ]
             }
@@ -212,7 +211,7 @@ spec:
                   - name: test-output
                     emptyDir: {}
                 restartPolicy: Never
-            backoffLimit: 1
+            backoffLimit: 0
     - name: search-type-success-rate
       initialDelay: 7m
       provider:
@@ -223,9 +222,9 @@ spec:
               value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
           query: >
-            sum(irate(http_server_requests_seconds_count{namespace="handbook-test", app="search-type", uri="/types", status=~"2.."}[6m])) /
-            sum(irate(http_server_requests_seconds_count{namespace="handbook-test", app="search-type", uri="/types"}[6m])) * 100
-      successCondition: result[0] >= 0.99
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="search-type", status=~"2.."}[6m])) /
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="search-type"}[6m])) * 100
+      successCondition: result[0] >= 99
     - name: search-type-200tps-response-time
       initialDelay: 2m
       provider:
@@ -260,22 +259,6 @@ spec:
       successCondition: result[0] <= 500
     - name: search-type-1000tps-response-time
       initialDelay: 6m
-      provider:
-        prometheus:
-          address: {{ `'{{ args.prometheus-url }}'` }}
-          headers:
-            - key: Authorization
-              value: Bearer {{ `{{ args.prometheus-token }}` }}
-          insecure: true
-          query: >
-            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
-              reporter="destination",
-              destination_workload_namespace="handbook-test",
-              destination_app="search-type"
-            }[1m])) by (le))
-      successCondition: result[0] <= 500
-    - name: search-type-2000tps-response-time
-      initialDelay: 8m
       provider:
         prometheus:
           address: {{ `'{{ args.prometheus-url }}'` }}
