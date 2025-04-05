@@ -9,6 +9,7 @@ import io.mockk.verify
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.Instant
+import java.util.*
 
 class TypeServiceTest: ShouldSpec({
     val repo = mockk<TypeRepository>()
@@ -19,6 +20,7 @@ class TypeServiceTest: ShouldSpec({
         clearMocks(repo, eventHandler)
     }
     // Given
+    val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     val type = Type(
         id = "test",
         version = "1.0",
@@ -31,22 +33,22 @@ class TypeServiceTest: ShouldSpec({
     )
 
     should("타입 저장에 성공하면 이벤트핸들러에 저장된 타입을 전달") {
-        every { repo.save(type) } returns Mono.just(type)
-        every { eventHandler.publish(type) } returns Mono.empty()
+        every { repo.save(workspace, type) } returns Mono.just(type)
+        every { eventHandler.publish(workspace, type) } returns Mono.empty()
 
         // When & Then
-        service.save(type).let(StepVerifier::create).verifyComplete()
-        verify(exactly = 1) { repo.save(type) }
-        verify(exactly = 1) { eventHandler.publish(type) }
+        service.save(workspace, type).let(StepVerifier::create).verifyComplete()
+        verify(exactly = 1) { repo.save(workspace, type) }
+        verify(exactly = 1) { eventHandler.publish(workspace, type) }
     }
 
     should("타입 저장에 실패하면 이벤트핸들러에 저장된 타입을 전달하지 않음") {
-        every { repo.save(type) } returns Mono.error(RuntimeException("DB 에러"))
-        every { eventHandler.publish(type) } returns Mono.empty()
+        every { repo.save(workspace, type) } returns Mono.error(RuntimeException("DB 에러"))
+        every { eventHandler.publish(workspace, type) } returns Mono.empty()
 
         // When & Then
-        service.save(type).let(StepVerifier::create).verifyError(RuntimeException::class.java)
-        verify(exactly = 1) { repo.save(type) }
-        verify(exactly = 0) { eventHandler.publish(type) }
+        service.save(workspace, type).let(StepVerifier::create).verifyError(RuntimeException::class.java)
+        verify(exactly = 1) { repo.save(workspace, type) }
+        verify(exactly = 0) { eventHandler.publish(workspace, type) }
     }
 })

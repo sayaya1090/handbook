@@ -15,8 +15,8 @@ import java.util.*
 
 @Repository
 class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
-    fun findByType(type: UUID): Flux<Attribute> = findAllByTypeId(type).map(::toDomain)
-    private fun findAllByTypeId(type: UUID): Flux<R2dbcAttributeEntity> = template.select(query(where("type").`is`(type)), R2dbcAttributeEntity::class.java)
+    fun findByType(workspace: UUID, type: UUID): Flux<Attribute> = findAllByTypeId(workspace, type).map(::toDomain)     // 테스트를 위해 open
+    private fun findAllByTypeId(workspace: UUID, type: UUID): Flux<R2dbcAttributeEntity> = template.select(query(where("workspace").`is`(workspace).and("type").`is`(type)), R2dbcAttributeEntity::class.java)
     private fun toDomain(entity: R2dbcAttributeEntity): Attribute = when(entity.attributeType) {
         AttributeType.Value -> Attribute.Companion.ValueAttribute(
             name=entity.id.name,
@@ -56,7 +56,7 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
         else -> throw IllegalArgumentException("Unsupported AttributeType: '${entity.attributeType}'")
     }
     @Transactional
-    fun save(type: R2dbcTypeEntity, attributes: List<Attribute>): Mono<List<Attribute>> = findAllByTypeId(type.id)  // Step 1: 기존 데이터 조회
+    fun save(type: R2dbcTypeEntity, attributes: List<Attribute>): Mono<List<Attribute>> = findAllByTypeId(type.workspace, type.id)  // Step 1: 기존 데이터 조회
         .collectList()
         .flatMap { currentAttributes ->
             val attributesToInsert = attributes.filter { incoming ->
@@ -74,10 +74,11 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
             val deleteFlux = Flux.fromIterable(attributesToDelete).flatMap(::delete)
 
             // Step 3: 모든 작업 실행 후 최종 데이터 반환
-            Flux.concat(insertFlux, updateFlux, deleteFlux).thenMany(findByType(type.id)).collectList()
+            Flux.concat(insertFlux, updateFlux, deleteFlux).thenMany(findByType(type.workspace, type.id)).collectList()
         }
     private fun Attribute.toEntity(type: R2dbcTypeEntity): R2dbcAttributeEntity = when(this) {
         is Attribute.Companion.ValueAttribute   -> R2dbcAttributeEntity(
+            workspace = type.workspace,
             type = type.id,
             name = name,
             attributeType = AttributeType.Value,
@@ -89,6 +90,7 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
             nullable = nullable
         )
         is Attribute.Companion.ArrayAttribute   -> R2dbcAttributeEntity(
+            workspace = type.workspace,
             type = type.id,
             name = name,
             attributeType = AttributeType.Array,
@@ -100,6 +102,7 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
             nullable = nullable
         )
         is Attribute.Companion.MapAttribute     -> R2dbcAttributeEntity(
+            workspace = type.workspace,
             type = type.id,
             name = name,
             attributeType = AttributeType.Map,
@@ -111,6 +114,7 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
             nullable = nullable
         )
         is Attribute.Companion.DocumentAttribute-> R2dbcAttributeEntity(
+            workspace = type.workspace,
             type = type.id,
             name = name,
             attributeType = AttributeType.Document,
@@ -122,6 +126,7 @@ class R2dbcAttributeRepository(private val template: R2dbcEntityTemplate) {
             nullable = nullable
         )
         is Attribute.Companion.FileAttribute    -> R2dbcAttributeEntity(
+            workspace = type.workspace,
             type = type.id,
             name = name,
             attributeType = AttributeType.File,

@@ -6,7 +6,7 @@ data class Search (
     val limit: Int,
     val sortBy: String?,
     val asc: Boolean?,
-    val filters: List<Pair<String, String>> = emptyList()
+    val filters: List<Pair<String, Any?>> = emptyList()
 ) {
     init {
         require(page >= 0) { "Page must be a non-negative integer. Given: $page" }

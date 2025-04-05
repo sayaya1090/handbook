@@ -16,26 +16,28 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
 import java.time.Instant
+import java.util.*
 
 @Repository
-class R2dbcTypeSearchRepository(private val template: R2dbcEntityTemplate, private val attributeRepo: R2dbcAttributeRepository): TypeSearchRepository, R2dbcSearchable<R2dbcTypeEntity, Type> {
+class R2dbcTypeSearchRepository(private val template: R2dbcEntityTemplate, private val attributeRepo: R2dbcAttributeRepository): TypeSearchRepository, R2dbcSearchable<R2dbcTypeEntity, R2dbcTypeEntity> {
     @Transactional(readOnly = true)
-    override fun search(param: Search): Mono<Page<Type>> {
+    override fun search(workspace: UUID, param: Search): Mono<Page<Type>> = param.copy(
+        filters = param.filters + ("last" to true) + ("workspace" to workspace)
+    ).let(::search).flatMap { page ->
+        if (page.content.isEmpty()) Mono.empty()
+        else mapToTypes(workspace, page)
+    }
+    override fun search(param: Search): Mono<Page<R2dbcTypeEntity>> {
         val pageable = createPageRequest(param)
-        val filters = prepareFilters(param.filters)
-        return template.search(SqlIdentifier.unquoted("type"), filters, R2dbcTypeEntity::class.java, pageable).flatMap { page ->
-            if (page.content.isEmpty()) Mono.empty()
-            else mapToTypes(page)
-        }
+        return template.search(SqlIdentifier.unquoted("type"), param.filters, R2dbcTypeEntity::class.java, pageable)
     }
     private fun createPageRequest(param: Search): PageRequest {
         val sortBy = param.sortBy?.let(::property) ?: "created_at"
         val sortOrder = param.asc?.let { if (it) Sort.Order.asc(sortBy) else Sort.Order.desc(sortBy) } ?: Sort.Order.desc(sortBy)
         return PageRequest.of(param.page, param.limit, Sort.by(sortOrder))
     }
-    private fun prepareFilters(filters: List<Pair<String, String>>): List<Pair<String, String>> = filters + ("last" to "true")
-    private fun mapToTypes(page: Page<R2dbcTypeEntity>): Mono<Page<Type>> = page.content.map { it.id }.let { typeIds ->
-        attributeRepo.findAllByTypeIds(typeIds).map { attributesMap ->
+    private fun mapToTypes(workspace: UUID, page: Page<R2dbcTypeEntity>): Mono<Page<Type>> = page.content.map { it.id }.let { typeIds ->
+        attributeRepo.findAllByTypeIds(workspace, typeIds).map { attributesMap ->
             val types = page.content.map { typeEntity ->
                 val attributes = attributesMap[typeEntity.id] ?: emptyList()
                 toDomain(typeEntity, attributes)
@@ -43,12 +45,20 @@ class R2dbcTypeSearchRepository(private val template: R2dbcEntityTemplate, priva
             PageImpl(types, page.pageable, page.totalElements)
         }
     }
-    override fun R2dbcEntityTemplate.predicate(key: String, value: String): Criteria = when (key) {
-        "last" -> where("last").`is`(value.toBooleanStrict())
-        "date" -> {
-            val date = value.toLongOrNull()?.let(Instant::ofEpochMilli)
-            if(date==null) Criteria.empty()
-            else where("effective_at").lessThanOrEquals(date).and("expire_at").greaterThan(date)
+    override fun R2dbcEntityTemplate.predicate(key: String, value: Any?): Criteria = when (key) {
+        "workspace" -> if (value is UUID) where("workspace").`is`(value) else Criteria.empty()
+        "last" -> if (value is Boolean) { where("last").`is`(value) } else Criteria.empty()
+        "date" -> when (value) {
+            is String -> try {
+                val date = value.toLong().let(Instant::ofEpochMilli)
+                where("effective_at").lessThanOrEquals(date).and("expire_at").greaterThan(date)
+            } catch (e: NumberFormatException) {
+                Criteria.empty()
+            }
+            is Long -> {
+                val date = Instant.ofEpochMilli(value)
+                where("effective_at").lessThanOrEquals(date).and("expire_at").greaterThan(date)
+            } else -> Criteria.empty()
         } else -> {
             val property = property(key)
             if(property==null) Criteria.empty()

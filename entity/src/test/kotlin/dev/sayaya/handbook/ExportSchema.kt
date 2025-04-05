@@ -18,7 +18,9 @@ import java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
 
 @DataJpaTest(properties = [
     "spring.jpa.show-sql=true",
-    "spring.jpa.hibernate.ddl-auto=update"
+    "spring.jpa.hibernate.ddl-auto=update",
+    "spring.sql.init.schema-locations=classpath:createTable.sql",
+    "spring.sql.init.mode=always"
 ])
 internal class ExportSchema(
     private val tx: PlatformTransactionManager,

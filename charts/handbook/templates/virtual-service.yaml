@@ -11,7 +11,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /types
+            regex: ^/workspace/[0-9a-fA-F\-]{36}/types
           method:
             exact: GET
       route:
@@ -21,7 +21,7 @@ spec:
               number: 80
     - match:
         - uri:
-            prefix: /types
+            regex: ^/workspace/[0-9a-fA-F\-]{36}/types
           method:
             regex: ^(PUT|POST|DELETE|PATCH)$
       route:
