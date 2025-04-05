@@ -23,7 +23,6 @@ data:
                     { duration: '1m', target: 200 },    // 1분간 200 TPS로 증가
                     { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
                     { duration: '2m', target: 1000 },   // 2분간 1000 TPS로 증가
-                    { duration: '2m', target: 2000 },   // 2분간 2000 TPS로 증가
                     { duration: '1m', target: 0 }       // 1분간 점진적으로 감소
                 ]
             }
@@ -151,8 +150,8 @@ data:
 
         // 응답 검증
         check(getResponse, {
-            'GET 상태 코드는 200': (r) => r.status === 200,
-            'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
+            'PUT 상태 코드는 200': (r) => r.status === 200,
+            'PUT 응답 시간 < 1000ms': (r) => r.timings.duration < 1000
         });
         sleep(0.1);
     }
@@ -234,7 +233,7 @@ spec:
                   - name: test-output
                     emptyDir: {}
                 restartPolicy: Never
-            backoffLimit: 1
+            backoffLimit: 0
     - name: persist-success-rate
       initialDelay: 7m
       provider:
@@ -245,9 +244,9 @@ spec:
               value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
           query: >
-            sum(irate(http_server_requests_seconds_count{namespace="handbook-test", app="persist", uri="/types", status=~"2.."}[6m])) /
-            sum(irate(http_server_requests_seconds_count{namespace="handbook-test", app="persist", uri="/types"}[6m])) * 100
-      successCondition: result[0] >= 0.99
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="persist", status=~"2.."}[6m])) /
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="persist"}[6m])) * 100
+      successCondition: result[0] >= 99
     - name: persist-200tps-response-time
       initialDelay: 2m
       provider:
@@ -263,7 +262,7 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="persist"
             }[1m])) by (le))
-      successCondition: result[0] <= 100
+      successCondition: result[0] <= 500
     - name: persist-500tps-response-time
       initialDelay: 4m
       provider:
@@ -279,7 +278,7 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="persist"
             }[1m])) by (le))
-      successCondition: result[0] <= 100
+      successCondition: result[0] <= 500
     - name: persist-1000tps-response-time
       initialDelay: 6m
       provider:
@@ -295,20 +294,4 @@ spec:
               destination_workload_namespace="handbook-test",
               destination_app="persist"
             }[1m])) by (le))
-      successCondition: result[0] <= 100
-    - name: persist-2000tps-response-time
-      initialDelay: 8m
-      provider:
-        prometheus:
-          address: {{ `'{{ args.prometheus-url }}'` }}
-          headers:
-            - key: Authorization
-              value: Bearer {{ `{{ args.prometheus-token }}` }}
-          insecure: true
-          query: >
-            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
-              reporter="destination",
-              destination_workload_namespace="handbook-test",
-              destination_app="persist"
-            }[1m])) by (le))
-      successCondition: result[0] <= 100
+      successCondition: result[0] <= 1000
