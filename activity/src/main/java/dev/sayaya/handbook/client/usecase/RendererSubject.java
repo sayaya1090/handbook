@@ -6,5 +6,5 @@ import lombok.experimental.Delegate;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 public class RendererSubject {
-    @Delegate private final BehaviorSubject<Render> subject = behavior(null);
+    @Delegate final BehaviorSubject<Render> subject = behavior(null);
 }

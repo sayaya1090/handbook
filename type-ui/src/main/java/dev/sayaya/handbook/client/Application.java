@@ -11,10 +11,10 @@ public class Application implements EntryPoint {
     public void onModuleLoad() {
         body().add(components.canvas())
                 .add(dev.sayaya.ui.elements.CheckboxElementBuilder.checkbox());
-        components.uri().subscribe(uri ->{
+        components.uri().subscribe(uri -> {
             DomGlobal.console.log("uri: "+uri);
         });
-        components.renderer().next(elem->{
+        components.renderer().next(elem-> {
             elem.append("Hello");
             return true;
         });
