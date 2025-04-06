@@ -1,11 +1,9 @@
 plugins {
-    kotlin("jvm")
+    id("java")
     id("war")
     id("dev.sayaya.gwt")
-    id("com.adarshr.test-logger")
 }
 dependencies {
-    implementation(project(":activity"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
@@ -15,15 +13,11 @@ dependencies {
 }
 gwt {
     gwtVersion = "2.12.2"
-    modules = listOf("dev.sayaya.handbook.Type")
     sourceLevel = "auto"
     war = file("src/main/webapp")
     devMode {
         modules = listOf(
-            "dev.sayaya.handbook.Type",
-            "dev.sayaya.handbook.Canvas",
-            "dev.sayaya.handbook.Action",
-            "dev.sayaya.handbook.TypeBox"
+            "dev.sayaya.handbook.ActivityTest"
         )
         war = file("src/test/webapp")
     }
@@ -32,15 +26,8 @@ gwt {
         strict = true
     }
 }
-tasks.register<Copy>("copyResources") {
-    from(project(":ui-asset").file("src/main/webapp"))
-    into("src/main/webapp")
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-tasks.named("processResources") {
-    dependsOn("copyResources")
-}
-tasks.named("war", War::class) {
-    archiveFileName.set("type-ui.war")
+tasks.jar {
+    enabled = true
+    from(sourceSets.main.get().allSource)
     duplicatesStrategy = DuplicatesStrategy.WARN
 }

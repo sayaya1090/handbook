@@ -5,6 +5,7 @@ plugins {
     id("com.adarshr.test-logger")
 }
 dependencies {
+    implementation(project(":activity"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
