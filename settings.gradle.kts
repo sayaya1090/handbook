@@ -76,6 +76,7 @@ dependencyResolutionManagement {
 }
 include("domain")
 include("entity")
+include("ui-asset")
 include("shell-ui")
 include("persist")
 include("testcontainer")

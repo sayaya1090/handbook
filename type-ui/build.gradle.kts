@@ -31,6 +31,14 @@ gwt {
         strict = true
     }
 }
+tasks.register<Copy>("copyResources") {
+    from(project(":ui-asset").file("src/main/webapp"))
+    into("src/main/webapp")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+tasks.named("processResources") {
+    dependsOn("copyResources")
+}
 tasks.named("war", War::class) {
     archiveFileName.set("type-ui.war")
     duplicatesStrategy = DuplicatesStrategy.WARN
