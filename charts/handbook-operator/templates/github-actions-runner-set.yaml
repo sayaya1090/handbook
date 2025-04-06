@@ -14,6 +14,15 @@ spec:
       - RespectIgnoreDifferences=true
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: rbac.authorization.k8s.io
+      jsonPointers:
+        - /metadata/finalizers
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      jsonPointers:
+        - /metadata/finalizers
+      kind: RoleBinding
   source:
     path: charts/handbook-operator/github-actions-runner-set
     repoURL: 'https://github.com/sayaya1090/handbook.git'
