@@ -14,8 +14,12 @@ public final class Menu {
     public String icon;
     @JsProperty(name="trailing_text")
     public String trailingText;
+    public String script;   // 임포트할 스크립트
+    public String uri;      // 쉘에 전달할 초기 URL(페이지 식별자)
+    @JsProperty(name="uri_regex")
+    public String uriRegex;    // 해당 페이지로 간주할 URL 정규표현식
     public String order;
-    public Page[] children;
+    public Tool[] tools;
     public Boolean bottom;
     @Override @JsOverlay @JsIgnore
     public boolean equals(Object o) {

@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client;
+package dev.sayaya.handbook.client.drawer;
 
 import com.google.gwt.core.client.EntryPoint;
 
@@ -8,7 +8,6 @@ public class Application implements EntryPoint {
     private final Component components = DaggerComponent.create();
     @Override
     public void onModuleLoad() {
-        body().add(components.progressElement())
-              .add(components.contentElement());
+        body().style("display: flex; height: -webkit-fill-available; inset: 0;").add(components.drawer());
     }
 }

@@ -6,3 +6,8 @@ ui-asset/src/main/webapp/js/theme.js filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/css/fontawesome.min.css filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/css/sharp-light.min.css filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/css/sharp-solid.min.css filter=lfs diff=lfs merge=lfs -text
+shell-ui/src/main/webapp/css/shell.css filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/css/global.css filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/js/fontawesome.min.js filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/js/sharp-light.min.js filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/js/sharp-solid.min.js filter=lfs diff=lfs merge=lfs -text

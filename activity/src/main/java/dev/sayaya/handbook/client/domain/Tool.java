@@ -1,15 +1,14 @@
 package dev.sayaya.handbook.client.domain;
 
+import dev.sayaya.handbook.client.usecase.ToolFunction;
 import jsinterop.annotations.*;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.Objects;
-
 @JsType(isNative=true, namespace= JsPackage.GLOBAL, name="Object")
 @Setter(onMethod_ = { @JsOverlay, @JsIgnore } )
 @Accessors(fluent = true)
-public final class Page {
+public final class Tool {
     public String icon;
     @JsProperty(name="icon_type")
     public String iconType;
@@ -19,15 +18,5 @@ public final class Page {
     @JsProperty(name="uri_regex")
     public String uriRegex;    // 해당 페이지로 간주할 URL 정규표현식
     public String order;
-    @Override @JsOverlay @JsIgnore
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Page page = (Page) o;
-        return Objects.equals(uri, page.uri) && Objects.equals(script, page.script);
-    }
-    @Override @JsOverlay @JsIgnore
-    public int hashCode() {
-        return Objects.hash(uri, script);
-    }
+    public ToolFunction onClick;
 }

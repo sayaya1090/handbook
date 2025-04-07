@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<inherits name="com.google.gwt.user.User"/>
+	<inherits name="org.jboss.elemento.Core"/>
+	<inherits name="dagger.Dagger" />
+	<inherits name="dev.sayaya.UI"/>
+	<inherits name="dev.sayaya.Rx" />
+	<entry-point class="dev.sayaya.handbook.client.drawer.Application"/>
+	<source path="client"/>
+</module>

@@ -9,8 +9,7 @@ public class Application implements EntryPoint {
     private final Component components = DaggerComponent.create();
     @Override
     public void onModuleLoad() {
-        body().add(components.canvas())
-                .add(dev.sayaya.ui.elements.CheckboxElementBuilder.checkbox());
+        body().add(components.canvas());
         components.uri().subscribe(uri -> {
             DomGlobal.console.log("uri: "+uri);
         });
