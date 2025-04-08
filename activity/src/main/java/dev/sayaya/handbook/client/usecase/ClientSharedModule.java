@@ -2,8 +2,8 @@ package dev.sayaya.handbook.client.usecase;
 
 import dagger.Module;
 import dagger.Provides;
-import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.handbook.client.domain.Progress;
+import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 

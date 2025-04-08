@@ -18,5 +18,10 @@ public final class Tool {
     @JsProperty(name="uri_regex")
     public String uriRegex;    // 해당 페이지로 간주할 URL 정규표현식
     public String order;
-    public ToolFunction onClick;
+    public ToolFunction function;
+
+    @JsOverlay @JsIgnore
+    public void exec() {
+        if(function !=null) function.exec();
+    }
 }

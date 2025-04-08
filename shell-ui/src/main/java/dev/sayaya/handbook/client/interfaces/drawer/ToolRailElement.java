@@ -4,7 +4,9 @@ import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.handbook.client.domain.ToolRailState;
 import dev.sayaya.handbook.client.usecase.ToolList;
 import dev.sayaya.handbook.client.usecase.ToolRailMode;
+import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -23,16 +25,17 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
     private final ToolRailItemFactory factory;
     private final List<ToolRailItemElement> children = new LinkedList<>();
     private final CloseToolRailButton close;
-    @Inject ToolRailElement(ToolList list, ToolRailMode mode, ToolRailItemFactory factory, CloseToolRailButton close) {
+    @Inject ToolRailElement(ToolList list, ToolRailMode mode, MenuHoverElementProvider parent, ToolRailItemFactory factory, CloseToolRailButton close) {
         this.factory = factory;
         this.close = close;
+        parent.distinctUntilChanged().subscribe(this::offset);
         list.distinctUntilChanged().subscribe(this::update);
         mode.distinctUntilChanged().subscribe(this::mode);
     }
     private void update(List<Tool> tools) {
         clear();
-        if(tools ==null) return;
-        tools.stream().sorted(nullsLast(comparing((Tool i) -> i.order))).map(this::createItem) .forEach(this::add);
+        if(tools ==null || tools.size() <=1) return;
+        tools.stream().sorted(nullsLast(comparing((Tool i) -> i.order))).map(this::createItem).forEach(this::add);
     }
     private ToolRailItemElement createItem(Tool tool) {
         var child = factory.item(tool);
@@ -51,8 +54,16 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
                 close.element().remove();
             } case COLLAPSE -> {
                 collapse();
-                if(close.element().parentElement==null) add(close);
+                add(close);
             } case HIDE -> hide();
         }
+    }
+    private void offset(MenuRailItemElement parent) {
+        if(parent==null) return;
+        var delta = parent.element().offsetTop - ((HTMLElement)parent.element().parentElement).offsetTop;
+        var height = children.stream().mapToInt(i -> i.element().offsetHeight).sum();
+        var bottom = element().clientHeight;
+        if(height + delta > bottom) delta = bottom - height;
+        element().style.paddingTop = CSSProperties.PaddingTopUnionType.of(delta + "px");
     }
 }

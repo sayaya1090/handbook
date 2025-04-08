@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.domain.ToolRailState;
 import dev.sayaya.handbook.client.domain.MenuRailState;
-import dev.sayaya.handbook.client.usecase.ToolRailMode;
+import dev.sayaya.handbook.client.domain.ToolRailState;
 import dev.sayaya.handbook.client.usecase.MenuRailMode;
+import dev.sayaya.handbook.client.usecase.ToolRailMode;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.CSSProperties;
 import elemental2.dom.Event;
@@ -19,7 +19,7 @@ public class CloseToolRailButton extends NavigationRailItemElement {
     @Inject CloseToolRailButton(MenuRailMode menu, ToolRailMode tools) {
         this.menu = menu;
         this.tools = tools;
-
+        this.element().id = "close-tool-rail";
         icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-left"))
                 .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-left"));
         element().style.marginTop = CSSProperties.MarginTopUnionType.of("auto");

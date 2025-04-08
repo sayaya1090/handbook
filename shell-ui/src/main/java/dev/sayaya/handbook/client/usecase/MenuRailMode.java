@@ -21,7 +21,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class MenuRailMode {
     @Delegate private final BehaviorSubject<MenuRailState> _this = behavior(HIDE);
     @Inject MenuRailMode(DrawerMode drawerMode, ToolList toolList) {
-        drawerMode.subscribe(drawerState -> update(drawerState, toolList.getValue().isEmpty()));
+        drawerMode.subscribe(drawerState -> update(drawerState, toolList.getValue().size() <= 1));
     }
     private void update(DrawerState drawerState, boolean hasNoChildren) {
         switch (drawerState) {

@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.drawer;
 
 import dagger.Provides;
-import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.handbook.client.domain.Menu;
+import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 
 import javax.inject.Singleton;
@@ -18,22 +18,22 @@ public class DrawerMock {
             menu1.title = "Menu 1";
             menu1.supportingText = "Supporting text 1";
             menu1.trailingText = "Trailing text 1";
-            menu1.order = "C";
-            menu1.icon = "fa-pen";
+            menu1.order = "B";
+            menu1.icon = "fa-circle";
             menu1.iconType = "sharp";
-            var tool1 = new Tool().title("menu1-tool1").uri("menu1-tool1").uriRegex("menu1-tool1").order("AA").icon("fa-pen").iconType("sharp").script("js/scene1.js");
-            var tool2 = new Tool().title("menu1-tool2").uri("menu1-tool2").uriRegex("menu1-tool2").order("AB").icon("fa-user").iconType("sharp").script("js/scene1.js");
-            menu1.tools = new Tool[] { tool1, tool2 };
+            var tool1 = new Tool().title("menu1-tool1").uri("menu1-tool1").uriRegex("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").script("js/scene1.js");;
+            menu1.tools = new Tool[] { tool1 };
         }
         var menu2 = new Menu(); {
             menu2.title = "Menu 2";
             menu2.supportingText = "Supporting text 2";
             menu2.trailingText = "Trailing text 2";
-            menu2.order = "B";
-            menu2.icon = "fa-circle";
+            menu2.order = "C";
+            menu2.icon = "fa-pen";
             menu2.iconType = "sharp";
-            var tool1 = new Tool().title("menu2-tool1").uri("menu2-tool1").uriRegex("menu2-tool1").order("BA").icon("fa-circle").iconType("sharp").script("js/scene2.js");;
-            menu2.tools = new Tool[] { tool1 };
+            var tool1 = new Tool().title("menu2-tool1").uri("menu2-tool1").uriRegex("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").script("js/scene2.js");
+            var tool2 = new Tool().title("menu2-tool2").uri("menu2-tool2").uriRegex("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").script("js/scene2.js");
+            menu2.tools = new Tool[] { tool1, tool2 };
         }
         var menu3 = new Menu(); {
             menu3.title = "Menu 3";
@@ -54,7 +54,7 @@ public class DrawerMock {
             var tool1 = new Tool().title("menu4-tool1").uri("menu4-tool1").uriRegex("menu4-tool1").order("0A").icon("fa-user").iconType("sharp");
             menu4.tools = new Tool[] { tool1 };
         }
-        menu = new Menu[] { menu2, menu1, menu3, menu4 };
+        menu = new Menu[] { menu1, menu2, menu3, menu4 };
     }
     @Provides @Singleton MenuRepository provideMenuRepository() {
         return ()-> behavior(List.of(menu));
