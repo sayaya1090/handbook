@@ -21,7 +21,8 @@ public class DrawerMock {
             menu1.order = "B";
             menu1.icon = "fa-circle";
             menu1.iconType = "sharp";
-            var tool1 = new Tool().title("menu1-tool1").uri("menu1-tool1").uriRegex("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").script("js/scene1.js");;
+            menu1.script = "js/scene1.js";
+            var tool1 = new Tool().title("menu1-tool1").uri("menu1-tool1").uriRegex("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp");
             menu1.tools = new Tool[] { tool1 };
         }
         var menu2 = new Menu(); {
@@ -31,8 +32,9 @@ public class DrawerMock {
             menu2.order = "C";
             menu2.icon = "fa-pen";
             menu2.iconType = "sharp";
-            var tool1 = new Tool().title("menu2-tool1").uri("menu2-tool1").uriRegex("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").script("js/scene2.js");
-            var tool2 = new Tool().title("menu2-tool2").uri("menu2-tool2").uriRegex("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").script("js/scene2.js");
+            menu2.script = "js/scene2.js";
+            var tool1 = new Tool().title("menu2-tool1").uri("menu2-tool1").uriRegex("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp");
+            var tool2 = new Tool().title("menu2-tool2").uri("menu2-tool2").uriRegex("menu2-tool2").order("AB").icon("fa-user").iconType("sharp");
             menu2.tools = new Tool[] { tool1, tool2 };
         }
         var menu3 = new Menu(); {

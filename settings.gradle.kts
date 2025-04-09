@@ -70,7 +70,8 @@ dependencyResolutionManagement {
             library("dagger-compiler", "com.google.dagger", "dagger-compiler").version { require("2.56.1") }
             library("junit5", "org.junit.jupiter", "junit-jupiter").version { require("5.12.1") }
             library("selenium", "org.seleniumhq.selenium", "selenium-java").version { require("4.31.0") }
-            bundle("test-web", listOf("kotest-runner", "selenium", "mockk", "junit5"))
+            library("selenium-driver", "org.seleniumhq.selenium", "selenium-chrome-driver").version { require("4.31.0") }
+            bundle("test-web", listOf("kotest-runner", "selenium", "selenium-driver", "mockk", "junit5"))
         }
     }
 }

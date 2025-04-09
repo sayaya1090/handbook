@@ -112,7 +112,7 @@ internal class DrawerTest: BehaviorSpec({
                         val tool1st = toolRail.findElements(By.className("item"))[0]
                         tool1st.click()
                         Then("툴에 정의된 함수가 실행된다") {
-                            document shouldContainLog("Menu2 Tool1 Clicked")
+                            document shouldContainLog "Menu2 Tool1 Clicked"
                         }
                         Then("두번째 메뉴가 선택 상태로 변경된다") {
                             menu2nd.getDomAttribute("selected") shouldBe "true"

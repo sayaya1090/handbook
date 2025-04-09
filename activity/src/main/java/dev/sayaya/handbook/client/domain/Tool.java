@@ -19,9 +19,4 @@ public final class Tool {
     public String uriRegex;    // 해당 페이지로 간주할 URL 정규표현식
     public String order;
     public ToolFunction function;
-
-    @JsOverlay @JsIgnore
-    public void exec() {
-        if(function !=null) function.exec();
-    }
 }
