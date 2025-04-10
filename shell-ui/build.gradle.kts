@@ -15,15 +15,14 @@ dependencies {
 }
 gwt {
     gwtVersion = "2.12.2"
-    modules = listOf("dev.sayaya.handbook.Type")
+    modules = listOf("dev.sayaya.handbook.Shell")
     sourceLevel = "auto"
     war = file("src/main/webapp")
     devMode {
         modules = listOf(
-            "dev.sayaya.handbook.Type",
-            "dev.sayaya.handbook.Canvas",
-            "dev.sayaya.handbook.Action",
-            "dev.sayaya.handbook.TypeBox"
+            "dev.sayaya.handbook.WorkspaceTest",
+            "dev.sayaya.handbook.DrawerTest",
+            "dev.sayaya.handbook.FrameTest"
         )
         war = file("src/test/webapp")
     }
@@ -40,7 +39,16 @@ tasks.register<Copy>("copyResources") {
 tasks.named("processResources") {
     dependsOn("copyResources")
 }
+tasks.register<Copy>("copyTestResources") {
+    dependsOn("copyResources")
+    from("src/main/webapp")
+    into("src/test/webapp")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+tasks.named("compileTestJava") {
+    dependsOn("copyTestResources")
+}
 tasks.named("war", War::class) {
-    archiveFileName.set("type-ui.war")
+    archiveFileName.set("shell-ui.war")
     duplicatesStrategy = DuplicatesStrategy.WARN
 }
