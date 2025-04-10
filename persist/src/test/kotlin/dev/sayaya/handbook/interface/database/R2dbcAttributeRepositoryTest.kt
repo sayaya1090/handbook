@@ -4,8 +4,6 @@ import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.ShouldSpec
-import io.mockk.every
-import io.mockk.mockk
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
