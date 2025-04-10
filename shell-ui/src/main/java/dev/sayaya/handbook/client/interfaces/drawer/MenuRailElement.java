@@ -31,7 +31,7 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
         list.distinctUntilChanged().subscribe(this::update);
         mode.distinctUntilChanged().subscribe(this::mode);
     }
-    private static final Comparator<Menu> MENU_COMPARATOR = nullsLast(comparing((Menu i) -> TRUE.equals(i.bottom)).thenComparing(i -> i.order));
+    private static final Comparator<Menu> MENU_COMPARATOR = nullsLast(comparing((Menu i) -> TRUE.equals(i.bottom())).thenComparing(Menu::order));
     private void update(List<Menu> menu) {
         clear();
         if(menu==null) return;
@@ -40,7 +40,7 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     }
     private MenuRailItemElement createItem(Menu menu, AtomicBoolean bottom) {
         var child = factory.item(menu);
-        if(TRUE.equals(menu.bottom) && !bottom.getAndSet(true)) child.element().style.marginTop = CSSProperties.MarginTopUnionType.of("auto");
+        if(TRUE.equals(menu.bottom()) && !bottom.getAndSet(true)) child.element().style.marginTop = CSSProperties.MarginTopUnionType.of("auto");
         children.add(child);
         return child;
     }

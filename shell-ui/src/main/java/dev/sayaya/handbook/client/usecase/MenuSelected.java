@@ -15,7 +15,7 @@ public class MenuSelected {
     @Delegate private final BehaviorSubject<Menu> _this = behavior(null);
     @Inject MenuSelected(ToolSelected tool) {
         _this.distinctUntilChanged().subscribe(selected->{
-            if(selected!=null && selected.tools!=null && selected.tools.length==1) tool.next(selected.tools[0]);
+            if(selected!=null && selected.tools()!=null && selected.tools().length==1) tool.next(selected.tools()[0]);
         });
     }
 }

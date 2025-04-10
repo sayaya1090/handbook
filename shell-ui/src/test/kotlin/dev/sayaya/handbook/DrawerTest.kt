@@ -45,7 +45,7 @@ internal class DrawerTest: BehaviorSpec({
                 menuRail.findElements(By.className("item")).size shouldBe DrawerMock.menu.size
             }
             Then("Bottom으로 표시된 메뉴 항목들은 하단에 모여 정렬된다") {
-                val bottoms = DrawerMock.menu.filter { it.bottom == true }
+                val bottoms = DrawerMock.menu.filter { it.bottom() == true }
                 // Margin-top이 주어진 항목과 그 이하는 모두 하단 정렬로 간주
                 menuRail.findElements(By.className("item")).count { i -> i.getCssValue("margin-top") != "0px" } shouldBe 1
                 menuRail.findElements(By.className("item")).dropWhile { it.getCssValue("margin-top") == "0px"  }.count() shouldBe bottoms.size
@@ -64,10 +64,10 @@ internal class DrawerTest: BehaviorSpec({
         drawer.getDomAttribute("open") shouldBe "true"
 
         Then("첫번째 메뉴는 Tool이 1개 이하이다") {
-            DrawerMock.menu[0].tools.size shouldBeLessThanOrEqual 1
+            DrawerMock.menu[0].tools().size shouldBeLessThanOrEqual 1
         }
         Then("두번째 메뉴는 Tool이 1개보다 많다") {
-            DrawerMock.menu[1].tools.size shouldBeGreaterThan 1
+            DrawerMock.menu[1].tools().size shouldBeGreaterThan 1
         }
         When("첫번째 메뉴에 마우스 호버하면") {
             val menu1st = menuRail.findElements(By.className("item"))[0]
@@ -77,6 +77,7 @@ internal class DrawerTest: BehaviorSpec({
             }
             And("첫번째 메뉴를 클릭하면") {
                 menu1st.click()
+                Thread.sleep(500)
                 Then("첫번째 메뉴의 첫번째 툴에 정의된 함수가 실행된다") {
                     document shouldContainLog "Menu1 Tool1 Clicked"
                 }
@@ -111,6 +112,7 @@ internal class DrawerTest: BehaviorSpec({
                         Thread.sleep(100)
                         val tool1st = toolRail.findElements(By.className("item"))[0]
                         tool1st.click()
+                        Thread.sleep(500)
                         Then("툴에 정의된 함수가 실행된다") {
                             document shouldContainLog "Menu2 Tool1 Clicked"
                         }
@@ -139,6 +141,7 @@ internal class DrawerTest: BehaviorSpec({
             And("두번째 Tool을 클릭하면") {
                 val tool2nd = toolRail.findElements(By.className("item"))[1]
                 tool2nd.click()
+                Thread.sleep(500)
                 Then("Tool 레일이 Collapse 상태로 전환된다") {
                     toolRail.getDomAttribute("collapse") shouldBe "true"
                 }
@@ -154,6 +157,7 @@ internal class DrawerTest: BehaviorSpec({
                 And("첫번째 Tool을 클릭하면") {
                     val tool1st = toolRail.findElements(By.className("item"))[0]
                     tool1st.click()
+                    Thread.sleep(500)
                     Then("Tool 레일이 Collapse 상태로 유지된다") {
                         toolRail.getDomAttribute("collapse") shouldBe "true"
                     }

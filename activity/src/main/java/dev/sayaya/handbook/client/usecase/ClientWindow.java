@@ -7,7 +7,7 @@ import jsinterop.annotations.JsType;
 @JsType(isNative=true, namespace= JsPackage.GLOBAL, name="window")
 public final class ClientWindow {
     public static ProgressSubject progress;     // 모듈에서 발행, 쉘에서 구독
-    public static UriSubject uri;               // (쉘 or 모듈)에서 발행, 모듈에서 구독
+    public static UriSubject uri;               // 모듈에서 발행, 쉘에서 구독
     public static RendererSubject renderer;     // 모듈에서 발행, 쉘에서 구독
-    public static ToolSubject tools;    // 쉘에서 발행, 모듈에서 구독
+    public static ToolSubject tools;            // 쉘에서 발행, 모듈에서 구독
 }

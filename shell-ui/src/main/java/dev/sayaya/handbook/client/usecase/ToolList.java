@@ -31,8 +31,8 @@ public class ToolList {
     private void update(Menu menu) {
         if(menu==null) next(List.of());
         else {
-            var tools = menu.tools;
-            List<Tool> list = tools != null ? Arrays.stream(tools).sorted(nullsLast(comparing(i -> i.order))).collect(Collectors.toList()) : List.of();
+            var tools = menu.tools();
+            List<Tool> list = tools != null ? Arrays.stream(tools).sorted(nullsLast(comparing(Tool::order))).collect(Collectors.toList()) : List.of();
             next(list);
         }
     }

@@ -10,11 +10,11 @@ import org.jboss.elemento.EventType;
 
 public class MenuRailItemElement extends NavigationRailItemElement {
     @AssistedInject MenuRailItemElement(@Assisted Menu menu, MenuSelected selected, MenuHover hover, MenuHoverElementProvider hoverElement) {
-        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon))
-                .headline(menu.title);
-        if(menu.supportingText!=null) supportingText(menu.supportingText);
-        if(menu.tools !=null && menu.tools.length > 1) trailingSupportingText("▶");
+        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon()))
+                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon()))
+                .headline(menu.title());
+        if(menu.supportingText()!=null) supportingText(menu.supportingText());
+        if(menu.tools() !=null && menu.tools().length > 1) trailingSupportingText("▶");
         initEventHandlers(menu, selected, hover, hoverElement);
         selected.subscribe(select->select(menu.equals(select)));
     }

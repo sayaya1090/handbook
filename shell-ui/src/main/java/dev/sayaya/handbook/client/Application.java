@@ -8,6 +8,9 @@ public class Application implements EntryPoint {
     private final Component components = DaggerComponent.create();
     @Override
     public void onModuleLoad() {
+        components.historyManager().initialize();
+        components.urlBasedToolResolver().initialize();
+        components.toolBasedMenuResolver().initialize();
         body().add(components.scriptElement())
               .add(components.progressElement())
               .add(components.contentElement());

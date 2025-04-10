@@ -2,8 +2,10 @@ package dev.sayaya.handbook.client.drawer;
 
 import dev.sayaya.handbook.client.interfaces.ModuleScriptElement;
 import dev.sayaya.handbook.client.interfaces.drawer.DrawerElement;
+import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.HostSharedModule;
-import dev.sayaya.handbook.client.usecase.ToolExecutionManager;
+import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
+import dev.sayaya.handbook.client.usecase.UrlBasedToolResolver;
 
 import javax.inject.Singleton;
 
@@ -12,5 +14,7 @@ import javax.inject.Singleton;
 public interface Component {
     DrawerElement drawer();
     ModuleScriptElement script();
-    ToolExecutionManager toolExecutionManager();
+    HistoryManager historyManager();
+    UrlBasedToolResolver urlBasedToolResolver();
+    ToolBasedMenuResolver toolBasedMenuResolver();
 }

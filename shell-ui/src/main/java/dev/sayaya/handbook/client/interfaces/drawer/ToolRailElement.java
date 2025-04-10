@@ -35,7 +35,7 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
     private void update(List<Tool> tools) {
         clear();
         if(tools ==null || tools.size() <=1) return;
-        tools.stream().sorted(nullsLast(comparing((Tool i) -> i.order))).map(this::createItem).forEach(this::add);
+        tools.stream().sorted(nullsLast(comparing(Tool::order))).map(this::createItem).forEach(this::add);
     }
     private ToolRailItemElement createItem(Tool tool) {
         var child = factory.item(tool);

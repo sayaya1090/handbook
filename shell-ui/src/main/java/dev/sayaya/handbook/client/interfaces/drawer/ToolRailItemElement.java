@@ -9,9 +9,9 @@ import org.jboss.elemento.EventType;
 
 public class ToolRailItemElement extends NavigationRailItemElement {
     @AssistedInject ToolRailItemElement(@Assisted Tool tool, ToolSelected selected) {
-        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon))
-                .headline(tool.title);
+        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon()))
+                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon()))
+                .headline(tool.title());
         initEventHandlers(tool, selected);
         selected.subscribe(select->select(tool.equals(select)));
     }

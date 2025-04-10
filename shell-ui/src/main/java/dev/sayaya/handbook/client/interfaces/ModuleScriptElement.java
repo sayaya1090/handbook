@@ -13,8 +13,7 @@ import javax.inject.Singleton;
 import static org.jboss.elemento.Elements.script;
 
 /*
- * 메뉴 선택 -> 스크립트 주입 -> 툴 초기화
- *                         -> 프레임 생성
+ * 메뉴 선택 -> 스크립트 주입 -> 툴 초기화 -> 프레임 생성
  */
 @Singleton
 public class ModuleScriptElement implements IsElement<HTMLScriptElement> {
@@ -25,6 +24,6 @@ public class ModuleScriptElement implements IsElement<HTMLScriptElement> {
     }
     private void update(Menu menu) {
         if(menu==null) return;
-        element().src = menu.script;
+        element().src = menu.script();
     }
 }
