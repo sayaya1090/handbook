@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.client.usecase.ClientWindow;
 import elemental2.dom.DomGlobal;
 
 public class Application implements EntryPoint {
@@ -9,16 +8,15 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         DomGlobal.console.log("Application started");
-        DomGlobal.console.log("Components: " + components);
-        DomGlobal.console.log("Canvas: " + components.canvas());
-        DomGlobal.console.log("Shared: " + ClientWindow.renderer);
-        DomGlobal.console.log("Renderer: " + components.renderer());
-        DomGlobal.console.log("Tools: " + components.tools());
-        DomGlobal.console.log("Progress: " + components.progress());
-        DomGlobal.console.log("Uri: " + components.uri());
+        DomGlobal.console.log(components);
+        DomGlobal.console.log(components.canvas());
+        DomGlobal.console.log(components.renderer());
+        DomGlobal.console.log(components.tools());
+        DomGlobal.console.log(components.progress());
+        DomGlobal.console.log(components.uri());
 
         components.renderer().next(frame-> {
-            DomGlobal.console.log("Frame: " + frame);
+            DomGlobal.console.log(frame);
             frame.append(components.canvas().element());
             return true;
         });

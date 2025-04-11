@@ -1,26 +1,34 @@
 package dev.sayaya.handbook.client.usecase;
 
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import dev.sayaya.handbook.client.domain.Progress;
 import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
+import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
 import java.util.List;
 
-@Module
-public class HostSharedModule {
-    static {
-        ClientWindow.progress = new ProgressSubject();
-        ClientWindow.uri = new UriSubject();
-        ClientWindow.renderer = new RendererSubject();
-        ClientWindow.tools = new ToolSubject();
-    }
-    @Provides @Singleton static Observable<Progress> progress() { return ClientWindow.progress.subject.asObservable(); }
-    @Provides @Singleton static Observable<String> uri() { return ClientWindow.uri.subject.asObservable(); }
-    @Provides @Singleton static Observable<Render> render() { return ClientWindow.renderer.subject.asObservable(); }
-    @Provides @Singleton static Observer<List<Tool>> tools() { return ClientWindow.tools.subject; }
+import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
+import static elemental2.dom.DomGlobal.window;
 
+@Module
+public abstract class HostSharedModule {
+    static {
+        ClientWindow.progress = behavior(new Progress());
+        ClientWindow.uri = behavior(window.location.href);
+        ClientWindow.renderer = behavior(null);
+        ClientWindow.tools = behavior(List.of());
+    }
+    @Provides @Singleton static BehaviorSubject<Progress> progress() { return ClientWindow.progress; }
+    @Provides @Singleton static BehaviorSubject<String> uri() { return ClientWindow.uri; }
+    @Provides @Singleton static Observable<Render> render() { return ClientWindow.renderer.asObservable(); }
+    @Provides @Singleton static Observer<List<Tool>> tools() { return ClientWindow.tools; }
+    @Binds abstract Observable<Progress> progressObservableProvider(BehaviorSubject<Progress> impl);
+    @Binds abstract Observer<Progress> progressObserverProvider(BehaviorSubject<Progress> impl);
+    @Binds abstract Observable<String> uriObservableProvider(BehaviorSubject<String> impl);
+    @Binds abstract Observer<String> uriObserverProvider(BehaviorSubject<String> impl);
 }

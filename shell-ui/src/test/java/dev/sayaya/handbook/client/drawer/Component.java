@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.interfaces.ModuleScriptElement;
 import dev.sayaya.handbook.client.interfaces.drawer.DrawerElement;
 import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
 import java.util.List;
@@ -18,5 +19,6 @@ public interface Component {
     UrlBasedToolResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
 
+    BehaviorSubject<String> uri();
     Observable<List<Tool>> tools();
 }
