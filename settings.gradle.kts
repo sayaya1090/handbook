@@ -36,7 +36,7 @@ dependencyResolutionManagement {
             library("spring-cloud-bom", "org.springframework.cloud", "spring-cloud-dependencies").version { require("2024.0.1") }
             library("spring-log4j2", "org.springframework.boot", "spring-boot-starter-log4j2").withoutVersion()
             // library("spring-security", "org.springframework.boot", "spring-boot-starter-security").withoutVersion()
-            // library("spring-kubernetes-client", "org.springframework.cloud", "spring-cloud-starter-kubernetes-fabric8").withoutVersion()
+            library("spring-kubernetes-client", "org.springframework.cloud", "spring-cloud-starter-kubernetes-fabric8").withoutVersion()
             bundle("spring-client", listOf("spring-log4j2"/*, "spring-security"*/))
 
             library("r2dbc", "org.springframework.boot", "spring-boot-starter-data-r2dbc").withoutVersion()
@@ -49,6 +49,8 @@ dependencyResolutionManagement {
             library("mockk", "io.mockk", "mockk").version { require("1.13.17") }
             library("kotest-extensions-spring", "io.kotest.extensions", "kotest-extensions-spring").version { require("1.3.0") }
             library("spring-boot-test", "org.springframework.boot", "spring-boot-starter-test").withoutVersion()
+            library("kubernetes-mock", "io.fabric8", "kubernetes-server-mock").version { require("7.1.0") }
+            library("kubernetes-mockserver", "io.fabric8", "mockwebserver").version { require("7.1.0") }
             bundle("test-api", listOf("reactor-test", "kotest-runner", "mockk", "kotest-extensions-spring", "spring-boot-test"))
             library("testcontainers-junit", "org.testcontainers", "junit-jupiter").withoutVersion()
             library("testcontainers-postgresql", "org.testcontainers", "postgresql").withoutVersion()
@@ -80,6 +82,7 @@ include("entity")
 include("activity")
 include("ui-asset")
 include("shell-ui")
+include("gateway")
 include("persist")
 include("testcontainer")
 include("search")
