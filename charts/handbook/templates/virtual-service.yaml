@@ -11,6 +11,16 @@ spec:
   http:
     - match:
         - uri:
+            regex: ^/menus
+          method:
+            exact: GET
+      route:
+        - destination:
+            host: service-gateway
+            port:
+              number: 80
+    - match:
+        - uri:
             regex: ^/workspace/[0-9a-fA-F\-]{36}/types
           method:
             exact: GET
