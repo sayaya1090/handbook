@@ -15,17 +15,17 @@ public class Application implements EntryPoint {
         DomGlobal.console.log(components.progress());
         DomGlobal.console.log(components.uri());
 
-        /*components.renderer().next(frame-> {
+        components.renderer().next(frame-> {
             DomGlobal.console.log(frame);
             frame.append(components.canvas().element());
             return true;
-        });*/
-        components.tools().subscribe(tools ->{
+        });
+        /*components.tools().subscribe(tools ->{
             DomGlobal.console.log(tools);
             tools.stream().filter(tool->tool.title().equals("reload")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Reload")));
             tools.stream().filter(tool->tool.title().equals("save")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Save")));
             tools.stream().filter(tool->tool.title().equals("undo")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Undo")));
             tools.stream().filter(tool->tool.title().equals("redo")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Redo")));
-        });
+        });*/
     }
 }
