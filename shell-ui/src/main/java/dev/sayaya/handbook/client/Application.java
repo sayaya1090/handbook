@@ -11,6 +11,7 @@ public class Application implements EntryPoint {
         components.historyManager().initialize();
         components.urlBasedToolResolver().initialize();
         components.toolBasedMenuResolver().initialize();
+        components.frameUpdater().initialize();
         body().add(components.scriptElement())
               .add(components.progressElement())
               .add(components.contentElement());

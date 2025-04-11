@@ -2,9 +2,9 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Menu;
 import dev.sayaya.handbook.client.domain.Progress;
-import dev.sayaya.handbook.client.usecase.ClientWindow;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
@@ -18,13 +18,15 @@ import java.util.List;
 @Singleton
 public class MenuApi implements MenuRepository {
     private final FetchApi fetchApi;
-    @Inject MenuApi(FetchApi fetchApi) {
+    private final Observer<Progress> progress;
+    @Inject MenuApi(FetchApi fetchApi, Observer<Progress> progress) {
         this.fetchApi = fetchApi;
+        this.progress = progress;
     }
 
     @Override
     public Observable<List<Menu>> findAll() {
-        ClientWindow.progress.next(Progress.builder().enabled(true).intermediate(true).build());
+        progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
         request.setHeaders(new String[][] {
                 new String[] {"Accept", "application/vnd.sayaya.handbook.v1+json"}
@@ -33,7 +35,7 @@ public class MenuApi implements MenuRepository {
                 .then(this::handleResponse)
                 .then(this::parse)
                 .finally_(()-> {
-                    ClientWindow.progress.next(Progress.builder().enabled(false).build());
+                    progress.next(Progress.builder().enabled(false).build());
                 }).catch_(this::handleException);
         return AsyncSubject.await(promise);
     }

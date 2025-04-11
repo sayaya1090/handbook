@@ -32,7 +32,7 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
     }
     private CanvasContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, LanguagePackManager labels) {
         container.add(menu.anchorElement(container));
-        load = menu.item().headline("Load");
+        load = menu.item().headline("Reload");
         addType = menu.item().headline("Add Type");
         menu.add(divider());
         undo = menu.item().headline("Undo");

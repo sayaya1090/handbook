@@ -20,13 +20,12 @@ import static java.util.Comparator.nullsLast;
 @Singleton
 public class ToolList {
     @Delegate private final BehaviorSubject<List<Tool>> _this = behavior(List.of());
-    @Inject ToolList(Observer<List<Tool>> delegate, MenuSelected menu, MenuHover hover) {
+    @Inject ToolList(Observer<Tool[]> delegate, MenuSelected menu, MenuHover hover) {
         Observable.merge(
             menu.asObservable(),
             hover.asObservable()
         ).distinctUntilChanged().subscribe(this::update);
-        _this.subscribe(delegate);
-
+        _this.map(list->list.stream().toArray(Tool[]::new)).subscribe(delegate);
     }
     private void update(Menu menu) {
         if(menu==null) next(List.of());

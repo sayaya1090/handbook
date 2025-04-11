@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.interfaces.ContentElement;
 import dev.sayaya.handbook.client.interfaces.ModuleScriptElement;
 import dev.sayaya.handbook.client.interfaces.ProgressElement;
 import dev.sayaya.handbook.client.interfaces.api.ApiModule;
+import dev.sayaya.handbook.client.interfaces.frame.FrameUpdater;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.HostSharedModule;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
@@ -18,6 +19,7 @@ public interface Component {
     ProgressElement progressElement();
     ContentElement contentElement();
     HistoryManager historyManager();
+    FrameUpdater frameUpdater();
     UrlBasedToolResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
 }

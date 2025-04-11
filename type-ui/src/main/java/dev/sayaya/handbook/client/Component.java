@@ -12,7 +12,6 @@ import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 
 import javax.inject.Singleton;
-import java.util.List;
 
 @Singleton
 @dagger.Component(modules = { BoxElementModule.class, LanguageRepositoryModule.class, ApiModule.class, ClientSharedModule.class })
@@ -21,5 +20,5 @@ public interface Component {
     Observer<String> uri();
     Observer<Progress> progress();
     Observer<Render> renderer();
-    Observable<List<Tool>> tools();
+    Observable<Tool[]> tools();
 }

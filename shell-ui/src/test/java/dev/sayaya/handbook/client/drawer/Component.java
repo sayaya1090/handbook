@@ -5,9 +5,9 @@ import dev.sayaya.handbook.client.interfaces.ModuleScriptElement;
 import dev.sayaya.handbook.client.interfaces.drawer.DrawerElement;
 import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
-import java.util.List;
 
 @Singleton
 @dagger.Component(modules = { HostSharedModule.class, ClientSharedModule.class, DrawerMock.class })
@@ -18,5 +18,6 @@ public interface Component {
     UrlBasedToolResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
 
-    Observable<List<Tool>> tools();
+    BehaviorSubject<String> uri();
+    Observable<Tool[]> tools();
 }
