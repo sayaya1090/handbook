@@ -1,20 +1,25 @@
 package dev.sayaya.handbook.client;
 
 import dev.sayaya.handbook.client.api.ApiModule;
+import dev.sayaya.handbook.client.domain.Progress;
+import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementModule;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.repository.LanguageRepositoryModule;
 import dev.sayaya.handbook.client.usecase.ClientSharedModule;
 import dev.sayaya.handbook.client.usecase.Render;
-import dev.sayaya.handbook.client.usecase.UriSubject;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 
 import javax.inject.Singleton;
+import java.util.List;
 
 @Singleton
 @dagger.Component(modules = { BoxElementModule.class, LanguageRepositoryModule.class, ApiModule.class, ClientSharedModule.class })
 public interface Component {
     CanvasElement canvas();
-    UriSubject uri();
+    Observer<String> uri();
+    Observer<Progress> progress();
     Observer<Render> renderer();
+    Observable<List<Tool>> tools();
 }

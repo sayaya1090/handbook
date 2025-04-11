@@ -25,7 +25,7 @@ public class Application implements EntryPoint {
                         .add(button("URL 2").id("url3")
                                 .on(EventType.click, evt-> ClientWindow.uri.next("menu3-tool2")))
                 );
-        ClientWindow.tools.asObservable().subscribe(tools->{
+        components.tools().subscribe(tools->{
             tools.stream().filter(tool->tool.title().equals("menu1-tool1")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Menu1 Tool1 Clicked")));
             tools.stream().filter(tool->tool.title().equals("menu2-tool1")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Menu2 Tool1 Clicked")));
             tools.stream().filter(tool->tool.title().equals("menu2-tool2")).findFirst().ifPresent(tool->tool.function(()-> DomGlobal.console.log("Menu2 Tool2 Clicked")));
