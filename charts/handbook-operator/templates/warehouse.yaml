@@ -11,6 +11,12 @@ spec:
         discoveryLimit: 2
         imageSelectionStrategy: NewestBuild
         insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/gateway'
+        strictSemvers: true
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
         repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
         strictSemvers: true
     - image:
@@ -23,6 +29,7 @@ spec:
         repoURL: https://github.com/sayaya1090/handbook.git
         branch: main
         includePaths:
+          - gateway
           - persist
           - search-type
         commitSelectionStrategy: NewestFromBranch
