@@ -18,9 +18,9 @@ public class HostSharedModule {
         ClientWindow.renderer = new RendererSubject();
         ClientWindow.tools = new ToolSubject();
     }
-    @Provides @Singleton static Observable<Progress> progress() { return ClientWindow.progress.asObservable(); }
+    @Provides @Singleton static Observable<Progress> progress() { return ClientWindow.progress.subject.asObservable(); }
     @Provides @Singleton static Observable<String> uri() { return ClientWindow.uri.subject.asObservable(); }
-    @Provides @Singleton static Observable<Render> render() { return ClientWindow.renderer.asObservable(); }
+    @Provides @Singleton static Observable<Render> render() { return ClientWindow.renderer.subject.asObservable(); }
     @Provides @Singleton static Observer<List<Tool>> tools() { return ClientWindow.tools.subject; }
 
 }

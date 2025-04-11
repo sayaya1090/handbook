@@ -2,10 +2,11 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Progress;
 import dev.sayaya.rx.subject.BehaviorSubject;
-import lombok.experimental.Delegate;
+import jsinterop.annotations.JsType;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
+@JsType
 public class ProgressSubject {
-    @Delegate final BehaviorSubject<Progress> subject = behavior(new Progress());
+    final BehaviorSubject<Progress> subject = behavior(new Progress());
 }
