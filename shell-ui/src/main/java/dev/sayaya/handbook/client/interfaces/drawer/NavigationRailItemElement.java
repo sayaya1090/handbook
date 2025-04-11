@@ -85,29 +85,29 @@ public abstract class NavigationRailItemElement implements IsElement<HTMLElement
     public <V extends Event> void on(EventType<V, ?> type, EventCallbackFn<V> callback) {
         _this.on(type, callback);
     }
-    private final static String ICON_CSS = "" +
-            ".icon {" +
-            "    font-size: var(--md-icon-size, 24px);\n" +
-            "    width: var(--md-icon-size, 24px);\n" +
-            "    height: var(--md-icon-size, 24px);\n" +
-            "    color: inherit;\n" +
-            "    font-variation-settings: inherit;\n" +
-            "    font-weight: 400;\n" +
-            "    font-family: var(--md-icon-font, Material Symbols Outlined);\n" +
-            "    display: inline-flex;\n" +
-            "    font-style: normal;\n" +
-            "    place-items: center;\n" +
-            "    place-content: center;\n" +
-            "    line-height: 1;\n" +
-            "    overflow: hidden;\n" +
-            "    letter-spacing: normal;\n" +
-            "    text-transform: none;\n" +
-            "    user-select: none;\n" +
-            "    white-space: nowrap;\n" +
-            "    word-wrap: normal;\n" +
-            "    flex-shrink: 0;\n" +
-            "    -webkit-font-smoothing: antialiased;\n" +
-            "    text-rendering: optimizeLegibility;\n" +
-            "    -moz-osx-font-smoothing: grayscale;" +
-            "}";
+    private final static String ICON_CSS = """
+        .icon {
+            font-size: var(--md-icon-size, 24px);
+            width: var(--md-icon-size, 24px);
+            height: var(--md-icon-size, 24px);
+            color: inherit;
+            font-variation-settings: inherit;
+            font-weight: 400;
+            font-family: var(--md-icon-font, Material Symbols Outlined);
+            display: inline-flex;
+            font-style: normal;
+            place-items: center;
+            place-content: center;
+            line-height: 1;
+            overflow: hidden;
+            letter-spacing: normal;
+            text-transform: none;
+            user-select: none;
+            white-space: nowrap;
+            word-wrap: normal;
+            flex-shrink: 0;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+        }""";
 }

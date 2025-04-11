@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.18.3")
     testImplementation(libs.bundles.test.web)
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
