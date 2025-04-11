@@ -15,8 +15,14 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class FrameUpdater {
     @Delegate private final BehaviorSubject<FrameElement> frame = behavior(null);
     private final FrameContainer parent;
+    private final FrameFactory factory;
+    private final Observable<Render> render;
     @Inject FrameUpdater(FrameContainer parent, FrameFactory factory, Observable<Render> render) {
         this.parent = parent;
+        this.factory = factory;
+        this.render = render;
+    }
+    public void initialize() {
         render.distinctUntilChanged().subscribe(r -> {
             var frame = factory.frame();
             r.onInvoke(frame.element());

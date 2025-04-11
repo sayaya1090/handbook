@@ -18,6 +18,7 @@ public interface Component {
     ProgressElement progressElement();
     ContentElement contentElement();
     HistoryManager historyManager();
+    FrameUpdater frameUpdater();
     UrlBasedToolResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
 }
