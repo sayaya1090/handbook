@@ -16,6 +16,10 @@ spec:
     spec:
       steps:
         - uses: compose-output
+          as: gateway-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/gateway") }}` }}
+        - uses: compose-output
           as: persist-image
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist") }}` }}
@@ -31,6 +35,8 @@ spec:
                 sources:
                   - helm:
                       images:
+                        - key: gateway.image.tag
+                          value: {{ `${{ outputs['gateway-image'].img.tag }}@${{ outputs['gateway-image'].img.digest }}` }}
                         - key: persist.image.tag
                           value: {{ `${{ outputs['persist-image'].img.tag }}@${{ outputs['persist-image'].img.digest }}` }}
                         - key: search-type.image.tag
@@ -38,6 +44,7 @@ spec:
                     repoURL: https://github.com/sayaya1090/handbook.git
   verification:
     analysisTemplates:
+    - name: gateway-test
     - name: persist-test
     - name: search-type-test
 ---
@@ -76,6 +83,7 @@ spec:
                   "client_payload": {
                     "ctx": ctx,
                     "images": [
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/gateway"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type")
                     ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")

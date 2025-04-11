@@ -1,0 +1,173 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: gateway-test
+  namespace: {{ .Release.Namespace }}
+immutable: false
+data:
+  test.js: |-
+    import http from 'k6/http';
+    import { sleep, check } from 'k6';
+
+    export const options = {
+        scenarios: {
+            ramp_up: {
+                executor: 'ramping-arrival-rate',
+                startRate: 100,
+                timeUnit: '1s',
+                preAllocatedVUs: 20,
+                maxVUs: 1500,
+                stages: [
+                    { duration: '1m', target: 50 },     // 1분간 50 TPS로 시작
+                    { duration: '1m', target: 200 },    // 1분간 200 TPS로 증가
+                    { duration: '2m', target: 500 },    // 2분간 500 TPS로 증가
+                    { duration: '2m', target: 1000 },   // 2분간 1000 TPS로 증가
+                    { duration: '1m', target: 0 }       // 1분간 점진적으로 감소
+                ]
+            }
+        },
+        thresholds: {
+            http_req_duration: ['p(95)<200', 'p(99)<500'],
+            http_req_failed: ['rate<0.01']
+        },
+        discardResponseBodies: true,
+        noConnectionReuse: false,
+        userAgent: 'K6LoadTest/1.0'
+    };
+
+    export default function() {
+        // 스프링부트 서비스 엔드포인트 URL
+        const baseUrl = 'https://handbook.sayaya.cloud';
+        const params = {
+            tags: { endpoint: 'menus' }
+        };
+
+        // GET 요청 테스트
+        const getResponse = http.get(`${baseUrl}/menus`, params);
+
+        // 응답 검증
+        check(getResponse, {
+            'GET 상태 코드는 2xx': (r) => r.status >= 200 && r.status < 300,
+            'GET 응답 시간 < 500ms': (r) => r.timings.duration < 500
+        });
+        sleep(0.1);
+    }
+    export function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // 초기화 함수 - 커넥션 풀 최적화
+    export function setup() {
+        console.log('부하 테스트 시작: 목표 1000 TPS');
+    }
+
+    // 종료 함수 - 결과 요약
+    export function teardown() {
+        console.log('부하 테스트 완료');
+    }
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: gateway-test
+  namespace: {{ .Release.Namespace }}
+spec:
+  args:
+    - name: prometheus-url
+      value: 'https://thanos-querier.openshift-monitoring.svc:9091'
+    - name: prometheus-token
+      valueFrom:
+        secretKeyRef:
+          key: token
+          name: prometheus
+  metrics:
+    - name: gateway-performance
+      provider:
+        job:
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: k6
+                    image: 'loadimpact/k6:latest'
+                    args:
+                      - run
+                      - /tests/test.js
+                      - '--out'
+                      - json=/output/result.json
+                    env:
+                      - name: K6_STATSD_ENABLE_TAGS
+                        value: 'true'
+                    volumeMounts:
+                      - name: test-scripts
+                        mountPath: /tests
+                      - name: test-output
+                        mountPath: /output
+                volumes:
+                  - name: test-scripts
+                    configMap:
+                      name: gateway-test
+                  - name: test-output
+                    emptyDir: {}
+                restartPolicy: Never
+            backoffLimit: 0
+    - name: gateway-success-rate
+      initialDelay: 7m
+      provider:
+        prometheus:
+          address: {{ `'{{ args.prometheus-url }}'` }}
+          headers:
+            - key: Authorization
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
+          insecure: true
+          query: >
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="gateway", status=~"2.."}[6m])) /
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="gateway"}[6m])) * 100
+      successCondition: result[0] >= 99
+    - name: gateway-200tps-response-time
+      initialDelay: 2m
+      provider:
+        prometheus:
+          address: {{ `'{{ args.prometheus-url }}'` }}
+          headers:
+            - key: Authorization
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
+          insecure: true
+          query: >
+            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
+              reporter="destination",
+              destination_workload_namespace="handbook-test",
+              destination_app="gateway"
+            }[1m])) by (le))
+      successCondition: result[0] <= 500
+    - name: gateway-500tps-response-time
+      initialDelay: 4m
+      provider:
+        prometheus:
+          address: {{ `'{{ args.prometheus-url }}'` }}
+          headers:
+            - key: Authorization
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
+          insecure: true
+          query: >
+            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
+              reporter="destination",
+              destination_workload_namespace="handbook-test",
+              destination_app="gateway"
+            }[1m])) by (le))
+      successCondition: result[0] <= 500
+    - name: gateway-1000tps-response-time
+      initialDelay: 6m
+      provider:
+        prometheus:
+          address: {{ `'{{ args.prometheus-url }}'` }}
+          headers:
+            - key: Authorization
+              value: Bearer {{ `{{ args.prometheus-token }}` }}
+          insecure: true
+          query: >
+            histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
+              reporter="destination",
+              destination_workload_namespace="handbook-test",
+              destination_app="gateway"
+            }[1m])) by (le))
+      successCondition: result[0] <= 500
