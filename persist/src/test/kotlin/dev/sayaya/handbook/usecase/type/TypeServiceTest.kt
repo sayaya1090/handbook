@@ -11,7 +11,7 @@ import reactor.test.StepVerifier
 import java.time.Instant
 import java.util.*
 
-class TypeServiceTest: ShouldSpec({
+internal class TypeServiceTest: ShouldSpec({
     val repo = mockk<TypeRepository>()
     val eventHandler = mockk<ExternalServiceHandler>()
     val service = TypeService(repo, eventHandler)
