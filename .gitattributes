@@ -1,7 +1,5 @@
 ui-asset/src/main/webapp/js/sayaya-ui.js filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/js/rxjs.umd.min.js filter=lfs diff=lfs merge=lfs -text
-ui-asset/src/main/webapp/js/language.en.json filter=lfs diff=lfs merge=lfs -text
-ui-asset/src/main/webapp/js/language.ko.json filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/js/theme.js filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/css/fontawesome.min.css filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/css/sharp-light.min.css filter=lfs diff=lfs merge=lfs -text
