@@ -20,6 +20,10 @@ spec:
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/gateway") }}` }}
         - uses: compose-output
+          as: login-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/login") }}` }}
+        - uses: compose-output
           as: persist-image
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist") }}` }}
@@ -37,6 +41,8 @@ spec:
                       images:
                         - key: gateway.image.tag
                           value: {{ `${{ outputs['gateway-image'].img.tag }}@${{ outputs['gateway-image'].img.digest }}` }}
+                        - key: login.image.tag
+                          value: {{ `${{ outputs['login-image'].img.tag }}@${{ outputs['login-image'].img.digest }}` }}
                         - key: persist.image.tag
                           value: {{ `${{ outputs['persist-image'].img.tag }}@${{ outputs['persist-image'].img.digest }}` }}
                         - key: search-type.image.tag
@@ -84,6 +90,7 @@ spec:
                     "ctx": ctx,
                     "images": [
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/gateway"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/login"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type")
                     ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")
