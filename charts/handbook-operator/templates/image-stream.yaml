@@ -6,6 +6,15 @@ metadata:
 spec:
   lookupPolicy:
     local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: login
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
 
 ---
 kind: ImageStream
