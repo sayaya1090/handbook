@@ -20,6 +20,8 @@ gwt {
     war = file("src/main/webapp")
     devMode {
         modules = listOf(
+            "dev.sayaya.handbook.Shell",
+
             "dev.sayaya.handbook.WorkspaceTest",
             "dev.sayaya.handbook.DrawerTest",
             "dev.sayaya.handbook.FrameTest"

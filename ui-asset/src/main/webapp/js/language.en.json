@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8776ae2605c6905d758f7e8805a0369e92912771b94ad1201effe210dc81a9ed
-size 133
+{
+    "fontUrl": "https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat|JetBrains+Mono|Material+Icons|Material+Symbols+Outlined&display=swap",
+    "mdRefTypefacePlain": "JetBrains Mono, monospace",
+    "mdSysTypescaleHeadline": "Montserrat, serif",
+    "mdSysTypescaleLabel": "Montserrat, serif",
+    "mdSysTypescaleBody": "JetBrains Mono, monospace",
+
+    "types": "Type Definition",
+    "reload": "Fetch Data",
+    "addType": "Add Type",
+    "delType": "Remove Type",
+    "undo": "Undo",
+    "redo": "Redo",
+    "save": "Save",
+
+    "defineTypesPropertiesAndRelations": "Types, props, and relations"
+}

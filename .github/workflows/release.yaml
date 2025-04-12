@@ -35,7 +35,7 @@ jobs:
           declare -A unique_modules=()
           while IFS= read -r file; do
             module_name="${file%%/*}"
-            case "$module_name" in (persist|search-type)
+            case "$module_name" in (gateway|persist|search-type)
                 unique_modules["$module_name"]=1
                 ;;
             esac

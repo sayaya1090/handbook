@@ -131,7 +131,7 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         dragStartTimer = DomGlobal.setTimeout(v -> {
             handleSelect(boxElement, evt.ctrlKey);
             dragShapeElement.triggerDragEvent();
-        }, 200);
+        }, 150);
     }
     private void clearDragStartTimer(MouseEvent evt) {
         if (dragStartTimer != 0) DomGlobal.clearTimeout(dragStartTimer);

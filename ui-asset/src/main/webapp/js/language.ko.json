@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8081875d0aa8587c40afb7baa57a96d4fa8914b022e77f251d5199a57030fd78
-size 170
+{
+    "fontUrl": "https://fonts.googleapis.com/css?family=Major+Mono+Display|Noto+Sans+KR|Nanum+Gothic+Coding|Material+Icons|Material+Symbols+Outlined&display=swap",
+    "mdRefTypefacePlain": "'Nanum Gothic Coding', monospace",
+    "mdSysTypescaleHeadline": "'Noto Sans KR', serif",
+    "mdSysTypescaleLabel": "'Noto Sans KR', serif",
+    "mdSysTypescaleBody": "'Nanum Gothic Coding', monospace",
+
+    "types": "데이터 형식 정의",
+    "reload": "데이터 가져오기",
+    "addType": "타입 추가",
+    "delType": "타입 삭제",
+    "undo": "실행 취소",
+    "redo": "다시 실행",
+    "save": "저장",
+
+    "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다"
+}

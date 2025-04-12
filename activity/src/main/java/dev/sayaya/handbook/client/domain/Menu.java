@@ -1,12 +1,14 @@
 package dev.sayaya.handbook.client.domain;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jsinterop.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.Objects;
+import java.util.*;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
@@ -54,9 +56,20 @@ public final class Menu {
         private String trailingText;
         private String script;
         private String order;
-        private Tool[] tools;
+        private List<Tool> tools = new LinkedList<>();
         private Boolean bottom;
         private MenuBuilder() {}
+        public MenuBuilder tool(Tool tool) {
+            this.tools.add(tool);
+            return this;
+        }
+        public MenuBuilder tools(Collection<Tool> tools) {
+            this.tools.addAll(tools);
+            return this;
+        }
+        public MenuBuilder tools(Tool... tools) {
+            return tools(Arrays.asList(tools));
+        }
         public Menu build() {
             var menu = new Menu();
             menu.title = this.title;
@@ -66,7 +79,7 @@ public final class Menu {
             menu.trailingText = this.trailingText;
             menu.script = this.script;
             menu.order = this.order;
-            menu.tools = this.tools;
+            menu.tools = this.tools.stream().toArray(Tool[]::new);
             menu.bottom = this.bottom;
             return menu;
         }

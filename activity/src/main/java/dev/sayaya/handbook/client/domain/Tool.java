@@ -1,11 +1,13 @@
 package dev.sayaya.handbook.client.domain;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import dev.sayaya.handbook.client.usecase.ToolFunction;
 import jsinterop.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)

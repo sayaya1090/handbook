@@ -49,7 +49,7 @@ internal class UriTest: BehaviorSpec({
             Then("첫번째 메뉴가 활성화된다") {
                 val menu1st = menuRail.findElements(By.className("item"))[0]
                 menu1st.getDomAttribute("selected") shouldBe "true"
-                menu1st.getDomProperty("innerHTML") shouldContain "Menu 1"
+                menu1st.getDomProperty("innerHTML") shouldContain "MENU 1"
             }
             And("세번째 메뉴 첫번째 Tool에 배정된 URL로 변경 요청을 하면") {
                 frame.findElement(By.id("url2")).click()
