@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.subject.BehaviorSubject;
 import elemental2.dom.DomGlobal;
 
 import javax.inject.Inject;
@@ -12,14 +12,14 @@ import static elemental2.dom.DomGlobal.window;
 @Singleton
 public class HistoryManager {
     private static final Logger logger = Logger.getLogger(HistoryManager.class.getName());
-    private final Observable<String> uri;
-    @Inject HistoryManager(Observable<String> uri) {
+    private final BehaviorSubject<String> uri;
+    @Inject HistoryManager(BehaviorSubject<String> uri) {
         this.uri = uri;
     }
     public void initialize() {
         uri.subscribe(this::update);
         window.onpopstate = evt->{
-            ClientWindow.uri.next(window.location.href);
+            uri.next(window.location.href);
             return null;
         };
     }

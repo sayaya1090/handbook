@@ -17,9 +17,8 @@ import static org.jboss.elemento.Elements.script;
  */
 @Singleton
 public class ModuleScriptElement implements IsElement<HTMLScriptElement> {
-    @Delegate private final HTMLElementBuilder<HTMLScriptElement> _this = script().attr("type", "text/javascript").attr("async", "true");
+    @Delegate private final HTMLElementBuilder<HTMLScriptElement> _this = script().attr("type", "text/javascript").id("module-script").attr("async", "true");
     @Inject ModuleScriptElement(MenuSelected menu) {
-        element().id = "module-script";
         menu.subscribe(this::update);
     }
     private void update(Menu menu) {
