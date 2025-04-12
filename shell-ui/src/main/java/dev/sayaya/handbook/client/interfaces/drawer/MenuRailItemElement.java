@@ -9,7 +9,6 @@ import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
@@ -31,13 +30,8 @@ public class MenuRailItemElement extends NavigationRailItemElement {
         selected.subscribe(select->select(menu.equals(select)));
     }
     private void update(Label label) {
-        printLabelOrDefault(label, menu.title(), headline.element());
-        printLabelOrDefault(label, menu.supportingText(), supportingText.element());
-    }
-    private void printLabelOrDefault(Label label, String key, HTMLElement element) {
-        String labelText = findLabelOrDefault(label, key);
-        if(labelText!=null) element.innerHTML = labelText;
-        else element.innerHTML = key;
+        headline.element().innerHTML = findLabelOrDefault(label, menu.title()).toUpperCase();
+        supportingText.element().innerHTML = findLabelOrDefault(label, menu.supportingText());
     }
     private String findLabelOrDefault(Label label, String key) {
         if(label==null) return key;

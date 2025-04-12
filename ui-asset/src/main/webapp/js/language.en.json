@@ -5,7 +5,7 @@
     "mdSysTypescaleLabel": "Montserrat, serif",
     "mdSysTypescaleBody": "JetBrains Mono, monospace",
 
-    "types": "Define Data Format",
+    "types": "Type Definition",
     "reload": "Fetch Data",
     "addType": "Add Type",
     "delType": "Remove Type",
@@ -13,5 +13,5 @@
     "redo": "Redo",
     "save": "Save",
 
-    "defineTypesPropertiesAndRelations": "Define types, properties, and relations"
+    "defineTypesPropertiesAndRelations": "Types, props, and relations"
 }
