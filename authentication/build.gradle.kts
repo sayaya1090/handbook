@@ -11,6 +11,7 @@ dependencies {
     api(libs.bouncycastle.bcprov)
     api(libs.jjwt.api)
     runtimeOnly(libs.bundles.jjwt.runtime)
+    testImplementation(libs.bundles.test.api)
 }
 tasks.test {
     useJUnitPlatform()

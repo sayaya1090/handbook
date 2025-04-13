@@ -23,6 +23,7 @@ class JwtAuthenticationManager (keyPair: KeyPair): ReactiveAuthenticationManager
                 Mono.just(it)
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             Mono.error(BadCredentialsException("Invalid token"))
         }
     }
