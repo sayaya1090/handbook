@@ -9,9 +9,9 @@ plugins {
 }
 dependencies {
     implementation(project(":domain"))
+    implementation(project(":authentication"))
     implementation(libs.bundles.spring.client)
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-    implementation("org.springframework.security:spring-security-oauth2-core:6.4.4")
     implementation(libs.bouncycastle.bcprov)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.bundles.jjwt.runtime)

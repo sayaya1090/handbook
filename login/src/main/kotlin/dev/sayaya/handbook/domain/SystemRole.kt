@@ -1,5 +1,5 @@
 package dev.sayaya.handbook.domain
 
-enum class SystemRole {
+enum class SystemRole: Role {
     ADMIN, USER
 }
