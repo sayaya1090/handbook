@@ -12,7 +12,7 @@ import java.security.spec.X509EncodedKeySpec
 import java.util.regex.Pattern
 
 @Component
-class KeyPair(config: TokenConfig) {
+class Pem(config: TokenConfig) {
     private val pem = Pattern.compile("-----BEGIN (.*)-----(.*)-----END (.*)-----", Pattern.DOTALL)
     val public: PublicKey = pemToPublicKey(config.secret)
     private fun pemToPublicKey(pemData: String): PublicKey {

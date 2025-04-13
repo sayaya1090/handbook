@@ -1,7 +1,8 @@
 package dev.sayaya.handbook.interfaces.authentication
 
-import dev.sayaya.handbook.domain.KeyPair
+import dev.sayaya.handbook.domain.Pem
 import dev.sayaya.handbook.usecase.authentication.UserAuthentication
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import org.springframework.security.authentication.BadCredentialsException
@@ -11,8 +12,8 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
-class JwtAuthenticationManager (keyPair: KeyPair): ReactiveAuthenticationManager {
-    private val parser: JwtParser = Jwts.parser().verifyWith(keyPair.public).build()
+class JwtAuthenticationManager (pem: Pem): ReactiveAuthenticationManager {
+    private val parser: JwtParser = Jwts.parser().verifyWith(pem.public).build()
     override fun authenticate(authentication: Authentication?): Mono<Authentication> {
         if(authentication==null) return Mono.empty()
         val token = authentication.credentials as String
@@ -22,6 +23,8 @@ class JwtAuthenticationManager (keyPair: KeyPair): ReactiveAuthenticationManager
                 it.isAuthenticated = true
                 Mono.just(it)
             }
+        } catch (e: ExpiredJwtException) {
+            Mono.empty()
         } catch (e: Exception) {
             e.printStackTrace()
             Mono.error(BadCredentialsException("Invalid token"))

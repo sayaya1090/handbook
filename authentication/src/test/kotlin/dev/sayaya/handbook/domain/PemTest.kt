@@ -8,26 +8,26 @@ import java.security.PrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.*
 
-internal class KeyPairTest : ShouldSpec({
-    context("RSA 키 테스트") {
+internal class PemTest : ShouldSpec({
+    context("PEM 포맷의 RSA 키 테스트") {
         val rsaKeyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
         val privateKey = rsaKeyPair.private // PrivateKey 가져오기
         val publicKey = (rsaKeyPair.public as RSAPublicKey) // RSAPublicKey 가져오기
 
         should("PEM 포맷의 Private 키에서 Public 키를 올바르게 생성해야 한다") {
             val tokenConfig = TokenConfig().apply { secret = privateKey.pemKey() }
-            val keyPair = KeyPair(tokenConfig)
+            val pem = Pem(tokenConfig)
 
-            val generatedPublicKey = keyPair.public as RSAPublicKey
+            val generatedPublicKey = pem.public as RSAPublicKey
             generatedPublicKey.modulus shouldBe publicKey.modulus
             generatedPublicKey.publicExponent shouldBe publicKey.publicExponent
         }
 
         should("PEM 포맷의 Public 키에서 Public 키를 올바르게 반환해야 한다") {
             val tokenConfig = TokenConfig().apply { secret = publicKey.pemKey() }
-            val keyPair = KeyPair(tokenConfig)
+            val pem = Pem(tokenConfig)
 
-            val generatedPublicKey = keyPair.public as RSAPublicKey
+            val generatedPublicKey = pem.public as RSAPublicKey
             generatedPublicKey.modulus shouldBe publicKey.modulus
             generatedPublicKey.publicExponent shouldBe publicKey.publicExponent
         }
@@ -40,7 +40,7 @@ internal class KeyPairTest : ShouldSpec({
             """.trimIndent()
             val tokenConfig = TokenConfig().apply { secret = invalidPem }
             val exception = shouldThrow<IllegalArgumentException> {
-                KeyPair(tokenConfig)
+                Pem(tokenConfig)
             }
             exception.message shouldBe "INVALID KEY is not a supported format"
         }

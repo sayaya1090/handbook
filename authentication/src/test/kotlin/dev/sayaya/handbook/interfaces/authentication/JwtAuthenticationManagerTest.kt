@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.interfaces.authentication
 
-import dev.sayaya.handbook.domain.KeyPair
+import dev.sayaya.handbook.domain.Pem
 import dev.sayaya.handbook.domain.TokenConfig
 import dev.sayaya.handbook.usecase.authentication.UserAuthentication
 import io.jsonwebtoken.JwtBuilder
@@ -21,8 +21,8 @@ internal class JwtAuthenticationManagerTest: ShouldSpec({
     context("RSA 키페어를 사용한 토큰 인증") {
         val rsaKeyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
         val tokenConfig = TokenConfig().apply { secret = (rsaKeyPair.public as RSAPublicKey).pemKey() }
-        val keyPair = KeyPair(tokenConfig)
-        val jwtManager = JwtAuthenticationManager(keyPair)
+        val pem = Pem(tokenConfig)
+        val jwtManager = JwtAuthenticationManager(pem)
 
         val claims = mapOf(
             "jti" to "test-id",
