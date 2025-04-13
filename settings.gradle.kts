@@ -35,14 +35,20 @@ dependencyResolutionManagement {
 
             library("spring-cloud-bom", "org.springframework.cloud", "spring-cloud-dependencies").version { require("2024.0.1") }
             library("spring-log4j2", "org.springframework.boot", "spring-boot-starter-log4j2").withoutVersion()
-            // library("spring-security", "org.springframework.boot", "spring-boot-starter-security").withoutVersion()
+            library("spring-security", "org.springframework.boot", "spring-boot-starter-security").withoutVersion()
             library("spring-kubernetes-client", "org.springframework.cloud", "spring-cloud-starter-kubernetes-fabric8").withoutVersion()
-            bundle("spring-client", listOf("spring-log4j2"/*, "spring-security"*/))
+            bundle("spring-client", listOf("spring-log4j2", "spring-security"))
 
             library("r2dbc", "org.springframework.boot", "spring-boot-starter-data-r2dbc").withoutVersion()
             library("r2dbc-postgres", "org.postgresql", "r2dbc-postgresql").withoutVersion()
             library("r2dbc-pool", "io.r2dbc", "r2dbc-pool").withoutVersion()
             bundle("r2dbc-postgres", listOf("r2dbc", "r2dbc-postgres", "r2dbc-pool"))
+
+            library("jjwt-api", "io.jsonwebtoken", "jjwt-api").version { require("0.12.6") }
+            library("jjwt-impl", "io.jsonwebtoken", "jjwt-impl").version { require("0.12.6") }
+            library("jjwt-jackson", "io.jsonwebtoken", "jjwt-jackson").version { require("0.12.6") }
+            library("bouncycastle-bcprov", "org.bouncycastle", "bcprov-jdk18on").version { require("1.80") }
+            bundle("jjwt-runtime", listOf("jjwt-impl", "jjwt-jackson"))
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("5.9.1") }
@@ -79,6 +85,7 @@ dependencyResolutionManagement {
 }
 include("domain")
 include("entity")
+include("authentication")
 include("activity")
 include("ui-asset")
 include("shell-ui")
