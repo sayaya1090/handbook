@@ -43,7 +43,7 @@ spec:
         - uri:
             prefix: /login/
         - uri:
-            prefix: /oauth2/logout
+            prefix: /oauth2/
       route:
         - destination:
             host: login

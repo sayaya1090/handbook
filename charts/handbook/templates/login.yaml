@@ -23,13 +23,13 @@ data:
               google:
                 client-id: ${google.client-id}
                 client-secret: ${google.client-secret}
-                redirect-uri: https://{{ .Values.host }}/access.html
+                redirect-uri: https://{{ .Values.host }}/login/oauth2/code/google
                 scope:
                   - email
               github:
                 client-id: ${github.client-id}
                 client-secret: ${github.client-secret}
-                redirect-uri: https://{{ .Values.host }}/access.html
+                redirect-uri: https://{{ .Values.host }}/login/oauth2/code/github
                 scope:
                   - email
         authentication:
@@ -75,7 +75,7 @@ metadata:
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/login'
     configmap.reloader.stakater.com/reload: "login,postgresql-ro,observability"
-    secret.reloader.stakater.com/reload: "postgresql-app,handbook-token-keypair,oauth-google-client,oauth-github-client"
+    secret.reloader.stakater.com/reload: "postgresql-app,authentication-keypair,oauth-google-client"
   name: login
   namespace: {{ .Release.Namespace }}
   finalizers:
@@ -139,7 +139,7 @@ spec:
             - name: jwt.secret
               valueFrom:
                 secretKeyRef:
-                  name: sayaya-token-keypair
+                  name: authentication-keypair
                   key: private-key
             - name: google.client-id
               valueFrom:
@@ -150,16 +150,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: oauth-google-client
-                  key: secret
-            - name: github.client-id
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-github-client
-                  key: id
-            - name: github.client-secret
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-github-client
                   key: secret
             - name: TZ
               value: Asia/Seoul
