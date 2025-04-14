@@ -13,5 +13,10 @@
     "redo": "다시 실행",
     "save": "저장",
 
+    "sign in": "로그인",
+    "Authentication for service use": "서비스 이용을 위한 인증",
+    "sign out": "로그아웃",
+    "Safely end session": "안전하게 세션 종료",
+
     "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다"
 }
