@@ -55,9 +55,10 @@ dependencyResolutionManagement {
             library("mockk", "io.mockk", "mockk").version { require("1.13.17") }
             library("kotest-extensions-spring", "io.kotest.extensions", "kotest-extensions-spring").version { require("1.3.0") }
             library("spring-boot-test", "org.springframework.boot", "spring-boot-starter-test").withoutVersion()
+            library("spring-security-test", "org.springframework.security", "spring-security-test").withoutVersion()
             library("kubernetes-mock", "io.fabric8", "kubernetes-server-mock").version { require("7.1.0") }
             library("kubernetes-mockserver", "io.fabric8", "mockwebserver").version { require("7.1.0") }
-            bundle("test-api", listOf("reactor-test", "kotest-runner", "mockk", "kotest-extensions-spring", "spring-boot-test"))
+            bundle("test-api", listOf("reactor-test", "kotest-runner", "mockk", "kotest-extensions-spring", "spring-boot-test", "spring-security-test"))
             library("testcontainers-junit", "org.testcontainers", "junit-jupiter").withoutVersion()
             library("testcontainers-postgresql", "org.testcontainers", "postgresql").withoutVersion()
             library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").version { require("2.0.2") }
