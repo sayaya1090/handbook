@@ -29,10 +29,12 @@ internal class TypeParentConsistencyTest(
     @PersistenceContext private val em: EntityManager
 ) : BehaviorSpec({
     val user = User().apply {
-        id = "system"
+        id = UUID.fromString("93951bc3-be1e-4fc8-865f-d6376ac3e87b")
         name = "system"
         createDateTime = Instant.now()
         lastModifyDateTime = Instant.now()
+        provider = "handbook"
+        account = "system"
     }
 
     tx.transactional {

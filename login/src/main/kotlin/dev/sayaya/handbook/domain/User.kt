@@ -5,6 +5,9 @@ import java.util.*
 
 data class User (
     val id: UUID,
+    val provider: String,
+    val account: String,
+    val name: String,
     val roles: MutableList<Role> = mutableListOf()
 ) {
     lateinit var lastLoginDateTime: LocalDateTime

@@ -24,7 +24,7 @@ data class R2dbcTypeEntity (
     var description: String = ""
     var primitive: Boolean = false
     @CreatedDate @Column("created_at") lateinit var createDateTime: Instant
-    @CreatedBy @Column("created_by") lateinit var createBy: String
+    @CreatedBy @Column("created_by") lateinit var createBy: UUID
     @Transient @Id val pk: R2dbcTypeId = R2dbcTypeId(workspace, id, name)
 
     companion object {

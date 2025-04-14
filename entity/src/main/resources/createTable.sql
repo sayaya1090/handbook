@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS type (
     name character varying(64),
     parent character varying(64),
     created_at timestamp(6) with time zone NOT NULL,
-    created_by character varying(64) NOT NULL,
+    created_by uuid NOT NULL,
     effective_at timestamp(6) with time zone NOT NULL,
     expire_at timestamp(6) with time zone NOT NULL,
     primitive boolean NOT NULL,
