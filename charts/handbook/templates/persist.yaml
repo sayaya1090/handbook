@@ -16,6 +16,7 @@ data:
         import:
           - classpath:postgresql.yaml
           - classpath:observability.yaml
+          - classpath:authentication.yaml
     management:
       endpoint:
         health:
@@ -90,6 +91,10 @@ spec:
           configMap:
             name: observability
             defaultMode: 420
+        - name: authentication-config
+          configMap:
+            name: authentication
+            defaultMode: 420
       containers:
         - name: persist
           image: {{ index .Values "persist" "image" "name" }}:{{ index .Values "persist" "image" "tag" | default "latest" }}
@@ -110,6 +115,11 @@ spec:
                 secretKeyRef:
                   key: password
                   name: postgresql-app
+            - name: jwt.secret
+              valueFrom:
+                secretKeyRef:
+                  name: authentication-keypair
+                  key: public-key
             - name: TZ
               value: Asia/Seoul
           resources:
@@ -129,6 +139,9 @@ spec:
             - name: observability-config
               mountPath: /app/resources/observability.yaml
               subPath: observability.yaml
+            - name: authentication-config
+              mountPath: /app/resources/authentication.yaml
+              subPath: authentication.yaml
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
