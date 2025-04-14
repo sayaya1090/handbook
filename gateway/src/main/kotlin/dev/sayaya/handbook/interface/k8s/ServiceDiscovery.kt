@@ -8,14 +8,17 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import java.time.Duration
 
-class ServiceDiscovery (
-    private val client: WebClient.Builder,
-    private val service: String
-): MenuSupplier {
-    override fun menu(headers: HttpHeaders): Flux<Menu> = client.baseUrl("http://$service").build().get()
-        .uri("/menus")
+class ServiceDiscovery (clientBuilder: WebClient.Builder, service: String): MenuSupplier {
+    companion object {
+        const val URI = "/menus"
+        const val ACCEPT_MEDIA_TYPE = "application/vnd.sayaya.handbook.v1+json"
+    }
+    private val url: String = "http://$service"
+    private val client = clientBuilder.baseUrl(url).build()
+    override fun menu(headers: HttpHeaders): Flux<Menu> = client.get()
+        .uri(URI)
         .headers{h->headers.forEach(h::addAll)}
-        .accept(MediaType.parseMediaType("application/vnd.sayaya.handbook.v1+json"))
+        .accept(MediaType.parseMediaType(ACCEPT_MEDIA_TYPE))
         .retrieve()
         .bodyToFlux(Menu::class.java)
         .timeout(Duration.ofMillis(1200))
