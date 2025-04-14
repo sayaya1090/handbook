@@ -9,6 +9,7 @@ plugins {
 }
 dependencies {
     implementation(project(":domain"))
+    implementation(project(":activity"))
     implementation(project(":authentication"))
     implementation(libs.bundles.spring.client)
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")

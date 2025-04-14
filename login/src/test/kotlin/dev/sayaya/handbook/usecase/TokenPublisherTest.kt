@@ -11,6 +11,7 @@ import io.mockk.mockkClass
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.oauth2.core.user.OAuth2User
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 import java.time.LocalDateTime
 import java.util.*
 
@@ -20,18 +21,24 @@ internal class TokenPublisherTest: BehaviorSpec({
         val publisher = TokenPublisher(factory = tokenFactory, userRepository = userRepo)
         val now = LocalDateTime.now()
         When("존재하는 사용자 접근 시") {
+            every { userRepo.findUserByProviderAndAccount(PROVIDER, "user1") }.returns(Mono.just(user1))
+            val principal = mockkClass(OAuth2User::class).mock("user1")
             val size = users.size
-            val token = publisher.publish(PROVIDER, user1Principal).block()
+            Then("토큰이 발급된다") {
+                publisher.publish(PROVIDER, principal).let(StepVerifier::create).expectNextMatches { token ->
+                    token != null
+                }.expectComplete().verify()
+
+            }
             Then("사용자는 추가되지 않는다") { users.size shouldBe size }
-            Then("토큰이 발급된다") { token shouldNotBe null }
             Then("로그인 기록이 남는다") {
                 val newUser = users.filter { it.key == user1.id }.values.first()
                 newUser.lastLoginDateTime shouldBeGreaterThanOrEqualTo now
             }
         }
         When("존재하지 않는 사용자 접근 시") {
-            val principal = mockkClass(OAuth2User::class)
-            principal.mock("anonymous")
+            every { userRepo.findUserByProviderAndAccount(PROVIDER, "anonymous") }.returns(Mono.empty())
+            val principal = mockkClass(OAuth2User::class).mock("anonymous")
             val size = users.size
             val token = publisher.publish(PROVIDER, principal).block()
             Then("새로운 사용자가 생성된다") { users.size shouldBe size+1 }
@@ -45,21 +52,16 @@ internal class TokenPublisherTest: BehaviorSpec({
 }) {
     companion object {
         private const val PROVIDER = "any provider"
-        private val user1 = User(id=UUID.randomUUID()).apply {
+        private val user1 = User(id=UUID.randomUUID(), provider=PROVIDER, account="", name="").apply {
             lastLoginDateTime = LocalDateTime.of(1900, 1, 1, 0, 0, 0)
         }
-        private val user1Principal = mockkClass(OAuth2User::class).mock("user1")
         private val users =  mutableMapOf(user1.id to user1)
 
-        private val tokenFactory = mockkClass(TokenFactory::class, relaxed = true).apply {
+        private val tokenFactory = mockkClass(TokenFactory::class).apply {
             every { publish(any()) }.returns("token")
         }
-        private val userRepo = mockkClass(UserRepository::class, relaxed = true).apply {
-            every { findById(ofType(UUID::class)) }.answers { answer ->
-                Mono.justOrEmpty(users[answer.invocation.args[0] as UUID])
-            }
-            every { findUserByProviderAndAccount(PROVIDER, "user1") }.returns(Mono.just(user1))
-            every { create(any()) }.answers{ answer ->
+        private val userRepo = mockkClass(UserRepository::class).apply {
+            every { create(ofType(User::class)) }.answers { answer ->
                 val user = answer.invocation.args[0] as User
                 users[user.id] = user
                 Mono.just(user)
