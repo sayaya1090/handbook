@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro&display=swap');
+.console {
+    border: 1px solid;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow: auto;
+    transition: height 300ms ease 0ms;
+}
+:root[color-theme='light'] .console {
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-background);
+    box-shadow: rgba(0,0,0,0.23) 0.25rem 0.25rem 0.5rem;
+}
+:root[color-theme='dark'] .console {
+    border-color: var(--md-sys-color-outline);
+    background-color: var(--md-sys-color-surface-container-high);
+}
+.line {
+    font-family: 'Source Code Pro', 'Nanum Gothic Coding', Consolas, monospace;
+    overflow: hidden;
+    border-right: .5em solid;
+    white-space: pre;
+    width: fit-content;
+    min-height: 1.2rem;
+    animation: blink-caret 1s step-end infinite;
+    line-height: 1.2rem;
+    margin: 0.1rem;
+    border-right-color: var(--md-sys-color-on-background);
+    color: var(--md-sys-color-on-background);
+}
+.line-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+.button {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    --_label-text-font: 'Source Code Pro', 'Nanum Gothic Coding', Consolas, monospace;
+    --_label-text-size: 1rem;
+    --_label-text-color: var(--md-sys-color-on-background);
+    --_icon-color: var(--md-sys-color-on-background);
+}
+.button[selected]  {
+    --_disabled-icon-color: var(--md-sys-color-primary);
+    --_disabled-label-text-color: var(--md-sys-color-primary);
+    --_disabled-icon-opacity: 1;
+    --_disabled-label-text-opacity: 1;
+}
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: var(--md-sys-color-on-background); }
+}
