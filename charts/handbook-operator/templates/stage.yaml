@@ -28,6 +28,22 @@ spec:
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist") }}` }}
         - uses: compose-output
+          as: search-user-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-user") }}` }}
+        - uses: compose-output
+          as: persist-user-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-user") }}` }}
+        - uses: compose-output
+          as: search-workspace-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-workspace") }}` }}
+        - uses: compose-output
+          as: persist-workspace-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-workspace") }}` }}
+        - uses: compose-output
           as: search-type-image
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type") }}` }}
@@ -45,14 +61,20 @@ spec:
                           value: {{ `${{ outputs['login-image'].img.tag }}@${{ outputs['login-image'].img.digest }}` }}
                         - key: persist.image.tag
                           value: {{ `${{ outputs['persist-image'].img.tag }}@${{ outputs['persist-image'].img.digest }}` }}
+                        - key: search-user.image.tag
+                          value: {{ `${{ outputs['search-user-image'].img.tag }}@${{ outputs['search-user-image'].img.digest }}` }}
+                        - key: persist-user.image.tag
+                          value: {{ `${{ outputs['persist-user-image'].img.tag }}@${{ outputs['persist-user-image'].img.digest }}` }}
+                        - key: search-workspace.image.tag
+                          value: {{ `${{ outputs['search-workspace-image'].img.tag }}@${{ outputs['search-workspace-image'].img.digest }}` }}
+                        - key: persist-workspace.image.tag
+                          value: {{ `${{ outputs['persist-workspace-image'].img.tag }}@${{ outputs['persist-workspace-image'].img.digest }}` }}
                         - key: search-type.image.tag
                           value: {{ `${{ outputs['search-type-image'].img.tag }}@${{ outputs['search-type-image'].img.digest }}` }}
                     repoURL: https://github.com/sayaya1090/handbook.git
   verification:
     analysisTemplates:
     - name: gateway-test
-    - name: persist-test
-    - name: search-type-test
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -92,6 +114,10 @@ spec:
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/gateway"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/login"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-user"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-user"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-workspace"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-workspace"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type")
                     ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")
                   }

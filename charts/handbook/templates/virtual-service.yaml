@@ -51,6 +51,46 @@ spec:
               number: 80
     - match:
         - uri:
+            regex: ^/workspace
+          method:
+            exact: GET
+      route:
+        - destination:
+            host: search-workspace
+            port:
+              number: 80
+    - match:
+        - uri:
+            regex: ^/workspace
+          method:
+            regex: ^(PUT|POST|DELETE|PATCH)$
+      route:
+        - destination:
+            host: persist-workspace
+            port:
+              number: 80
+    - match:
+        - uri:
+            regex: ^/user
+          method:
+            exact: GET
+      route:
+        - destination:
+            host: search-user
+            port:
+              number: 80
+    - match:
+        - uri:
+            regex: ^/user
+          method:
+            regex: ^(PUT|POST|DELETE|PATCH)$
+      route:
+        - destination:
+            host: persist-user
+            port:
+              number: 80
+    - match:
+        - uri:
             exact: /type
       rewrite:
         uri: /{{ .Values.bucket.name }}/static/type.html

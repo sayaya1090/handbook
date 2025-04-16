@@ -25,7 +25,42 @@ metadata:
 spec:
   lookupPolicy:
     local: false
-
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: search-user
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: persist-user
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: search-workspace
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: persist-workspace
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
 ---
 kind: ImageStream
 apiVersion: image.openshift.io/v1
