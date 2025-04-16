@@ -19,6 +19,7 @@ internal class MenuController {
             .icon("fa-briefcase")
             .iconType("sharp")
             .script("js/workspace.nocache.js")
+            .bottom(true)
             .tools(
                 Tool.builder().title("workspace info").order("S1").icon("fa-information").iconType("sharp").build(),
                 Tool.builder().title("groups").order("S5").icon("fa-users-gear").iconType("sharp").build(),

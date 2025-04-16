@@ -19,6 +19,7 @@ internal class MenuController {
             .icon("fa-user")
             .iconType("sharp")
             .script("js/user.nocache.js")
+            .bottom(true)
             .tools(
                 Tool.builder().title("user info").order("U1").icon("fa-information").iconType("sharp").build()
             ).build()
