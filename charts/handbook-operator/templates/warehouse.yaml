@@ -29,6 +29,30 @@ spec:
         discoveryLimit: 2
         imageSelectionStrategy: NewestBuild
         insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-user'
+        strictSemvers: true
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist-user'
+        strictSemvers: true
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-workspace'
+        strictSemvers: true
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist-workspace'
+        strictSemvers: true
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
         repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'
         strictSemvers: true
     - git:
