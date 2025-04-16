@@ -25,6 +25,8 @@ data:
     services:
       - name: login
       - name: search-type
+      - name: search-workspace
+      - name: search-user
 
 ---
 
