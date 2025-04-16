@@ -6,6 +6,7 @@
     "mdSysTypescaleBody": "'Nanum Gothic Coding', monospace",
 
     "types": "데이터 형식 정의",
+    "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다",
     "reload": "데이터 가져오기",
     "addType": "타입 추가",
     "delType": "타입 삭제",
@@ -18,5 +19,12 @@
     "sign out": "로그아웃",
     "Safely end session": "안전하게 세션 종료",
 
-    "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다"
+    "user info": "사용자 정보",
+    "View/Edit User Information": "사용자 정보 확인/수정",
+
+    "workspaces": "워크스페이스",
+    "Name, Group, and Permission": "이름, 그룹, 권한",
+    "workspace info": "워크스페이스 정보",
+    "groups": "그룹 관리",
+    "permissions": "권한 관리"
 }
