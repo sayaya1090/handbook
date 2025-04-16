@@ -54,10 +54,12 @@ internal class TypeAttributesMvTest(
             val dateMin2 = LocalDate.of(1990, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
             val dateMax = LocalDate.of(2999, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()
             val user = em.merge(User().apply {
-                id = "system"
+                id = UUID.fromString("93951bc3-be1e-4fc8-865f-d6376ac3e87b")
                 name = "system"
                 createDateTime = Instant.now()
                 lastModifyDateTime = Instant.now()
+                provider = "handbook"
+                account = "system"
             })
             type1Version1 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_1", "t1-v1", null, dateMin, dateMax))
             type2Version1 = em.merge(Type.of(workspace, UUID.randomUUID(), user,"type_2", "t2-v1", "type_1", dateMin2, LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()))

@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 @Singleton
 @dagger.Component(modules = { Module.class, ApiModule.class, HostSharedModule.class })
 public interface Component {
-    ModuleScriptElement scriptElement();
+    ModuleScriptManager scriptManager();
     FontElement fontElement();
     FontStyleElement fontStyleElement();
     ProgressElement progressElement();
