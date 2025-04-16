@@ -74,7 +74,7 @@ class SecurityConfig(
         anonymous { }
     }
     private fun ServerWebExchange.sendAuthenticationCookie(token: String): Mono<Void> {
-        response.addCookie(ResponseCookie.from(authConfig.header, token).path("/").httpOnly(true).secure(true).maxAge(tokenConfig.duration).sameSite(LAX.name).build())
+        response.addCookie(ResponseCookie.from(authConfig.header, token).path("/").httpOnly(true).secure(true).maxAge(tokenConfig.duration).sameSite(LAX.attributeValue()).build())
         response.statusCode = HttpStatus.FOUND
         response.headers.location = URI.create(urlConfig.loginRedirectUri)
         return response.setComplete()
