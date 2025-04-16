@@ -13,5 +13,10 @@
     "redo": "Redo",
     "save": "Save",
 
+    "sign in": "Sign In",
+    "Authentication for service use": "Authentication for service use",
+    "sign out": "Sign Out",
+    "Safely end session": "Safely end session",
+
     "defineTypesPropertiesAndRelations": "Types, props, and relations"
 }

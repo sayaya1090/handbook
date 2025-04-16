@@ -38,8 +38,8 @@ class R2dbcTypeRepositoryTest(
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     beforeSpec {
         databaseClient.sql("""
-            INSERT INTO "user" (id, last_modified_at, created_at, last_login_at, name) 
-            VALUES ('system', NOW(), NOW(), null, 'system')
+            INSERT INTO public."user" (id, last_modified_at, created_at, last_login_at, name, provider, account) 
+            VALUES ('93951bc3-be1e-4fc8-865f-d6376ac3e87b', NOW(), NOW(), null, 'system', 'handbook', 'system');
         """.trimIndent()
         ).fetch().rowsUpdated().let(StepVerifier::create).expectNextCount(1).verifyComplete()
     }
@@ -132,8 +132,8 @@ class R2dbcTypeRepositoryTest(
         @EnableR2dbcAuditing
         class TestConfig {
             private val logger = LoggerFactory.getLogger(TestConfig::class.java)
-            @Bean fun auditorProvider(): ReactiveAuditorAware<String> = ReactiveAuditorAware {
-                Mono.just("system")
+            @Bean fun auditorProvider(): ReactiveAuditorAware<UUID> = ReactiveAuditorAware {
+                Mono.just(UUID.fromString("93951bc3-be1e-4fc8-865f-d6376ac3e87b"))
             }
         }
         @JvmStatic

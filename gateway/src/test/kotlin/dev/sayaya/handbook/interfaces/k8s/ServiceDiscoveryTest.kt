@@ -1,6 +1,7 @@
-package dev.sayaya.handbook.`interface`.k8s
+package dev.sayaya.handbook.interfaces.k8s
 
 import dev.sayaya.handbook.client.domain.Menu
+import dev.sayaya.handbook.`interface`.k8s.ServiceDiscovery
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
@@ -12,23 +13,23 @@ import reactor.core.publisher.Flux
 import java.time.Duration
 
 internal class ServiceDiscoveryTest : ShouldSpec({
-    val mockWebClientBuilder = mockk<WebClient.Builder>()
     val mockWebClient = mockk<WebClient>()
+    val mockWebClientBuilder = mockk<WebClient.Builder>()
     val mockResponseSpec = mockk<WebClient.ResponseSpec>()
-
 
     val serviceUrl = "test-service"
     val testHeaders = HttpHeaders()
     val testMenu = Menu()
     val testMenuList = listOf(testMenu)
 
+    every { mockWebClientBuilder.baseUrl("http://$serviceUrl") } returns mockWebClientBuilder
+    every { mockWebClientBuilder.build() } returns mockWebClient
+
     // ServiceDiscovery 인스턴스 생성
     val serviceDiscovery = ServiceDiscovery(mockWebClientBuilder, serviceUrl)
 
     // Mock 동작 설정
     beforeTest {
-        every { mockWebClientBuilder.baseUrl("http://$serviceUrl") } returns mockWebClientBuilder
-        every { mockWebClientBuilder.build() } returns mockWebClient
         every { mockWebClient.get().uri("/menus").headers(any()).accept(any()).retrieve() } returns mockResponseSpec
         every { mockResponseSpec.bodyToFlux(Menu::class.java) } returns Flux.fromIterable(testMenuList)
     }
