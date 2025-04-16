@@ -23,6 +23,6 @@ public class AuthenticationProviderButton implements IsElement<MdButtonElement> 
         this.api = api;
     }
     private void login(String provider) {
-        window.location.href = "login/oauth2/authorization/" + provider;
+        window.location.href = "oauth2/authorization/" + provider;
     }
 }
