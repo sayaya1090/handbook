@@ -23,6 +23,7 @@ data:
     server:
       port: 8080
     services:
+      - name: login
       - name: search-type
 
 ---
