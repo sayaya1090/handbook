@@ -1,4 +1,9 @@
 package dev.sayaya.handbook.domain
 
-class User {
-}
+import java.util.*
+
+@JvmRecord
+data class User (
+    val id: UUID,
+    val name: String
+)
