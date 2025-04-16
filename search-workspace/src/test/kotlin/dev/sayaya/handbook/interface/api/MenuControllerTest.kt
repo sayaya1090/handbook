@@ -66,7 +66,7 @@ class MenuControllerTest : ShouldSpec({
 
         should("메뉴에 정의된 각 툴의 타이틀이 예상과 일치하는지 확인한다") {
             // Expected tool titles
-            val expectedToolTitles = listOf("workspaces")
+            val expectedToolTitles = listOf("workspace info", "groups", "permissions")
 
             // When
             val result = webTestClient.get().uri("/menus")
