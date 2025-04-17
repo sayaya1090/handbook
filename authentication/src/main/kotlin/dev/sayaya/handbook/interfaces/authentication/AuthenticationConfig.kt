@@ -9,4 +9,5 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties(prefix="spring.security.authentication")
 class AuthenticationConfig {
     lateinit var header: String
+    var refresh: String = "Refresh"
 }
