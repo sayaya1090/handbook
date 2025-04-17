@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
@@ -15,6 +16,6 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class WorkspaceList {
     @Delegate private final BehaviorSubject<List<Workspace>> _this = behavior(List.of());
     @Inject WorkspaceList(UserProvider user) {
-        user.filter(u->u.workspaces()!=null).map(u-> Arrays.stream(u.workspaces()).toList()).subscribe(_this);
+        user.filter(u->u.workspaces()!=null).map(u-> Arrays.stream(u.workspaces()).collect(Collectors.toList())).subscribe(_this);
     }
 }
