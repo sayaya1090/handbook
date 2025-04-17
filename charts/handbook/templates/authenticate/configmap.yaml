@@ -8,6 +8,6 @@ data:
     spring:
       security:
         authentication:
-          header: Authorization
+          header: Authentication
           jwt:
             secret: ${jwt.secret}

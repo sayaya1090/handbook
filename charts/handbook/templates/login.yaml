@@ -74,7 +74,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/login'
-    configmap.reloader.stakater.com/reload: "login,postgresql-ro,observability"
+    configmap.reloader.stakater.com/reload: "login,postgresql-ro,observability,authentication"
     secret.reloader.stakater.com/reload: "postgresql-app,authentication-keypair,oauth-google-client"
   name: login
   namespace: {{ .Release.Namespace }}
