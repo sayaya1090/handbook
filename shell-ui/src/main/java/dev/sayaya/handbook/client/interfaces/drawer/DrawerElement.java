@@ -16,10 +16,12 @@ import static org.jboss.elemento.Elements.nav;
 @Singleton
 public class DrawerElement implements IsElement<HTMLElement> {
     @Delegate private final HTMLContainerBuilder<HTMLElement> _this = nav();
-    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools) {
+    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace) {
         _this.css("drawer")
-                .add(btnToggle.style("margin: 8px;").element())
-                .add(div().style("display: flex; height: -webkit-fill-available;")
+                .add(div().style("display: flex;flex-direction: row;align-items: center;")
+                        .add(btnToggle.style("margin: 8px;").element())
+                        .add(workspace)
+                ).add(div().style("display: flex; height: -webkit-fill-available;")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);
     }

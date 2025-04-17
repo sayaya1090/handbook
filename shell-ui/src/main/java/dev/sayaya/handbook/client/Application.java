@@ -15,7 +15,6 @@ public class Application implements EntryPoint {
         components.frameUpdater().initialize();
         components.languagePackManager().initialize();
         components.scriptManager().initialize();
-        components.userProvider().initialize();
         document.head.append(components.fontElement().element());
         document.head.append(components.fontStyleElement().element());
         body().add(components.progressElement())
