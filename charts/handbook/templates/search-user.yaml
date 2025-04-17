@@ -49,7 +49,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/search-user'
-    configmap.reloader.stakater.com/reload: "search-user,postgresql-ro,observability"
+    configmap.reloader.stakater.com/reload: "search-user,postgresql-ro,observability,authentication"
     secret.reloader.stakater.com/reload: "postgresql-app"
   name: search-user
   namespace: {{ .Release.Namespace }}
