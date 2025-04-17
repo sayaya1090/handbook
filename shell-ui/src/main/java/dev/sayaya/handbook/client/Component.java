@@ -20,4 +20,5 @@ public interface Component {
     UrlBasedToolResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
     LanguagePackManager languagePackManager();
+    UserProvider userProvider();
 }
