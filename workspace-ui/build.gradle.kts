@@ -32,6 +32,7 @@ gwt {
 tasks.register<Copy>("copyResources") {
     from(project(":ui-asset").file("src/main/webapp"))
     into("src/main/webapp")
+    into("src/test/webapp")
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 tasks.named("processResources") {
