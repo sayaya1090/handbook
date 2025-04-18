@@ -18,9 +18,9 @@ public class DrawerElement implements IsElement<HTMLElement> {
     @Delegate private final HTMLContainerBuilder<HTMLElement> _this = nav();
     @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace) {
         _this.css("drawer")
-                .add(div().style("display: flex;flex-direction: row;align-items: center;")
-                        .add(btnToggle.style("margin: 8px;").element())
-                        .add(workspace)
+                .add(div().css("header")
+                        .add(workspace.css("workspace"))
+                        .add(btnToggle.style("margin: 8px;"))
                 ).add(div().style("display: flex; height: -webkit-fill-available;")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);
