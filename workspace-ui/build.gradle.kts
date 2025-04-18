@@ -15,7 +15,7 @@ dependencies {
 }
 gwt {
     gwtVersion = "2.12.2"
-    modules = listOf("dev.sayaya.handbook.Workspace")
+    modules = listOf("dev.sayaya.handbook.Workspace", "dev.sayaya.handbook.WorkspaceCreate")
     sourceLevel = "auto"
     war = file("src/main/webapp")
     devMode {
