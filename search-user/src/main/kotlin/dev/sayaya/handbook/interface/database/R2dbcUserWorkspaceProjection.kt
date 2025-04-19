@@ -14,6 +14,6 @@ data class R2dbcUserWorkspaceProjection (
     @Column("last_login_at") val lastLoginDateTime: LocalDateTime?,
     @Column("last_modified_at") val lastModifyDateTime: LocalDateTime,
     val state: State,
-    val workspaceId: UUID,
-    val workspaceName: String
+    val workspaceId: UUID?,
+    val workspaceName: String?
 )

@@ -14,8 +14,9 @@ class R2dbcUserRepositoryDelegate(val repo: R2dbcUserRepository): UserRepository
         User (
             id = firstElement.id,
             name = firstElement.name,
-            workspaces = map {
-                Workspace.Companion.Simple(it.workspaceId, it.workspaceName)
+            workspaces = mapNotNull {
+                if(it.workspaceId==null || it.workspaceName==null) null
+                else Workspace.Companion.Simple(it.workspaceId, it.workspaceName)
             }
         )
     }
