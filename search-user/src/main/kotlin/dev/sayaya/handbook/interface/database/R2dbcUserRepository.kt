@@ -21,9 +21,9 @@ interface R2dbcUserRepository: R2dbcRepository<R2dbcUserWorkspaceProjection, UUI
             w.id as workspace_id, 
             w.name as workspace_name
         FROM "user" u
-        JOIN group_member gm ON u.id = gm.member
-        JOIN "group" g ON g.workspace = gm.workspace AND g.name = gm.group
-        JOIN workspace w ON w.id = g.workspace
+        LEFT JOIN group_member gm ON u.id = gm.member
+        LEFT JOIN "group" g ON g.workspace = gm.workspace AND g.name = gm.group
+        LEFT JOIN workspace w ON w.id = g.workspace
         WHERE u.id = :userId
         ORDER BY w.name
     """)

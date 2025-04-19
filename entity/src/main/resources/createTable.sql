@@ -1,3 +1,26 @@
+CREATE TABLE public."user" (
+    id uuid NOT NULL,
+    provider character varying(32) NOT NULL,
+    account character varying(64) NOT NULL,
+    name character varying(16) NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    last_modified_at timestamp(6) with time zone NOT NULL,
+    last_login_at timestamp(6) with time zone,
+    state character varying(12) DEFAULT 'ACTIVATED'::character varying NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE public.workspace (
+    id uuid NOT NULL,
+    name character varying(32) NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    created_by uuid NOT NULL,
+    last_modified_at timestamp(6) with time zone NOT NULL,
+    last_modified_by uuid NOT NULL,
+    description text NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE IF NOT EXISTS type (
     workspace UUID NOT NULL,
     id UUID NOT NULL,
@@ -13,6 +36,57 @@ CREATE TABLE IF NOT EXISTS type (
     last boolean DEFAULT true NOT NULL,
     PRIMARY KEY (workspace, id)
 ) PARTITION BY HASH (workspace);
+
+CREATE TABLE public.attribute (
+    workspace uuid NOT NULL,
+    type uuid NOT NULL,
+    name character varying(32) NOT NULL,
+    attribute_type character varying(31) NOT NULL,
+    nullable boolean NOT NULL,
+    description character varying(255),
+    value_validators jsonb,
+    value_type character varying(255),
+    key_validators jsonb,
+    key_type character varying(255),
+    reference_type character varying(64),
+    file_extensions text,
+    PRIMARY KEY (workspace, type, name),
+    CONSTRAINT attribute_key_type_check CHECK (((key_type)::text = ANY ((ARRAY['Value'::character varying, 'Array'::character varying, 'Map'::character varying, 'File'::character varying, 'Document'::character varying])::text[]))),
+    CONSTRAINT attribute_value_type_check CHECK (((value_type)::text = ANY ((ARRAY['Value'::character varying, 'Array'::character varying, 'Map'::character varying, 'File'::character varying, 'Document'::character varying])::text[])))
+);
+
+CREATE TABLE public."group" (
+    workspace uuid NOT NULL,
+    name character varying(32) NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    created_by uuid NOT NULL,
+    last_modified_at timestamp(6) with time zone NOT NULL,
+    last_modified_by uuid NOT NULL,
+    PRIMARY KEY (workspace, name)
+);
+
+CREATE TABLE public.group_member (
+    workspace uuid NOT NULL,
+    "group" character varying(32) NOT NULL,
+    member uuid NOT NULL,
+    PRIMARY KEY (workspace, "group", member)
+);
+
+CREATE TABLE public.group_role (
+    workspace uuid NOT NULL,
+    "group" character varying(32) NOT NULL,
+    role uuid NOT NULL,
+    PRIMARY KEY (workspace, "group", role)
+);
+
+CREATE TABLE public.role (
+    id uuid NOT NULL,
+    name character varying(16) NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    created_by uuid NOT NULL,
+    last_modified_at timestamp(6) with time zone NOT NULL,
+    last_modified_by uuid NOT NULL
+);
 
 CREATE TABLE type_partition_00 PARTITION OF type FOR VALUES WITH (MODULUS 100, REMAINDER 0);
 CREATE TABLE type_partition_01 PARTITION OF type FOR VALUES WITH (MODULUS 100, REMAINDER 1);

@@ -28,14 +28,12 @@ internal class Group {
     @ManyToMany @JoinTable(name = "group_member",
         joinColumns = [JoinColumn(name = "workspace", referencedColumnName = "workspace"), JoinColumn(name = "\"group\"", referencedColumnName = "name")],
         inverseJoinColumns = [JoinColumn(name = "member")],
-        uniqueConstraints = [UniqueConstraint(columnNames = ["workspace", "group", "member"])],
         indexes = [Index(columnList = "member")])
     @OnDelete(action = OnDeleteAction.CASCADE)
     lateinit var members: List<User>
     @ManyToMany @JoinTable(name = "group_role",
         joinColumns = [JoinColumn(name = "workspace", referencedColumnName = "workspace"), JoinColumn(name = "\"group\"", referencedColumnName = "name")],
         inverseJoinColumns = [JoinColumn(name = "role")],
-        uniqueConstraints = [UniqueConstraint(columnNames = ["workspace", "group", "role"])],
         indexes = [Index(columnList = "role")])
     @OnDelete(action = OnDeleteAction.CASCADE)
     lateinit var roles: List<Role>
@@ -43,8 +41,8 @@ internal class Group {
     companion object {
         @Embeddable
         data class GroupId (
-            @Column(name = "workspace", updatable = false) val workspace: UUID = UUID.randomUUID(),
-            @Column(name = "name", length = 32, nullable = false, updatable = false) val name: String = ""
+            @JvmField @Column(name = "workspace") val workspace: UUID = UUID.randomUUID(),
+            @JvmField @Column(name = "name", length = 32) val name: String = ""
         ) : Serializable
     }
 }
