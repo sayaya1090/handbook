@@ -25,17 +25,19 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
     private final ToolRailItemFactory factory;
     private final List<ToolRailItemElement> children = new LinkedList<>();
     private final CloseToolRailButton close;
+    private final MenuHoverElementProvider parent;
     @Inject ToolRailElement(ToolList list, ToolRailMode mode, MenuHoverElementProvider parent, ToolRailItemFactory factory, CloseToolRailButton close) {
         this.factory = factory;
         this.close = close;
-        parent.distinctUntilChanged().subscribe(this::offset);
-        list.distinctUntilChanged().subscribe(this::update);
+        this.parent = parent;
+        list.distinctUntilChanged().debounceTime(10).subscribe(this::update);
         mode.distinctUntilChanged().subscribe(this::mode);
     }
     private void update(List<Tool> tools) {
         clear();
         if(tools ==null || tools.size() <=1) return;
         tools.stream().sorted(nullsLast(comparing(Tool::order))).map(this::createItem).forEach(this::add);
+        offset(parent.getValue());
     }
     private ToolRailItemElement createItem(Tool tool) {
         var child = factory.item(tool);
