@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.create;
 
+import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLDivElement;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
@@ -14,19 +15,13 @@ import static org.jboss.elemento.Elements.div;
 @Singleton
 public class ContentElement implements IsElement<HTMLDivElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> div = div().style("display: flex;height: -webkit-fill-available;");
+    private final DialogElement dialog;
     @Inject ContentElement(DialogElement dialog) {
-        add(dialog.style("width: 35rem; height: 0rem; margin: auto;"));
-        //log.next(WELCOME_MESSAGE);
+        this.dialog = dialog;
+        add(dialog.style("height: 0rem;"));
         setTimeout(e-> initialize(), 100);
     }
     private void initialize() {
-        /*console.element().style.height = CSSProperties.HeightUnionType.of("20rem");
-        console.alignCenter(false);
-        setTimeout(e-> {
-            log.next("> SELECT YOUR AUTHENTICATION PROVIDER:");
-            console.close();
-            console.alignCenter(true);
-            console.add(providerFactory.button("google"));
-        }, 100);*/
+        dialog.element().style.height = CSSProperties.HeightUnionType.of("25rem");
     }
 }

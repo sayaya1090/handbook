@@ -8,6 +8,7 @@ public class Application implements EntryPoint {
     private final Component components = DaggerComponent.create();
     @Override
     public void onModuleLoad() {
+        components.languagePackManager().initialize();
         body().add(components.contentElement());
     }
 }
