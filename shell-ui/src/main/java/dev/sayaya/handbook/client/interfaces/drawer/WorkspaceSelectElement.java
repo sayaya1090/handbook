@@ -38,7 +38,7 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
     }
     private enum Mode {
         HIDE("0rem", "0rem", 0),
-        EXPAND("1rem", "-webkit-fill-available", 1);
+        EXPAND("1rem", "100%", 1);
 
         private final String marginLeft;
         private final String width;

@@ -14,12 +14,12 @@ import static org.jboss.elemento.Elements.div;
 
 @Singleton
 public class ContentElement implements IsElement<HTMLDivElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> div = div().style("display: flex;height: -webkit-fill-available;");
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> div = div().style("display: flex;height: 100dvh;");
     private final DialogElement dialog;
     @Inject ContentElement(DialogElement dialog) {
         this.dialog = dialog;
-        add(dialog.style("height: 0rem;"));
-        setTimeout(e-> initialize(), 100);
+        add(dialog.style("height: 0rem; overflow: hidden;"));
+        setTimeout(e-> initialize(), 10);
     }
     private void initialize() {
         dialog.element().style.height = CSSProperties.HeightUnionType.of("25rem");

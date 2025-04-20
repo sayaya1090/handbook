@@ -21,7 +21,7 @@ public class DrawerElement implements IsElement<HTMLElement> {
                 .add(div().css("header")
                         .add(workspace.css("workspace"))
                         .add(btnToggle.style("margin: 8px;"))
-                ).add(div().style("display: flex; height: -webkit-fill-available;")
+                ).add(div().style("display: flex; height: 100dvh;")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);
     }
