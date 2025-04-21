@@ -26,5 +26,13 @@
     "Name, Group, and Permission": "이름, 그룹, 권한",
     "workspace info": "워크스페이스 정보",
     "groups": "그룹 관리",
-    "permissions": "권한 관리"
+    "permissions": "권한 관리",
+    "Create a new workspace.": "새로운 워크스페이스를 생성하세요.",
+    "New workspace name": "새로운 워크스페이스 이름",
+    "or": "또는",
+    "Join an existing workspace.": "운영 중인 워크스페이스에 가입하세요.",
+    "Please contact the workspace administrator for the workspace ID.": "워크스페이스 ID는 워크스페이스 관리자에게 문의하세요.",
+    "Workspace ID to join": "가입할 워크스페이스 ID",
+    "Create": "생성",
+    "Request to join": "가입 요청"
 }

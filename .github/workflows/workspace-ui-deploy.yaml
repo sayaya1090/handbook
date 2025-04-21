@@ -28,8 +28,8 @@ jobs:
         run: gradle $SUBMODULE:build
       - name: Unpack
         run: |
-          unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.css" -d static
-          mv static/workspace static/js
+          unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.json" "**/*.css" -d static
+          mv static/workspace/* static/js/
           mv static/workspaceCreate/* static/js/
       - name: Deploy
         env:
