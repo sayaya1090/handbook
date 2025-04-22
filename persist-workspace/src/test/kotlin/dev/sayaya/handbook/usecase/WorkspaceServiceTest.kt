@@ -29,7 +29,7 @@ internal class WorkspaceServiceTest: ShouldSpec({
         verify(exactly = 1) { eventHandler.publish(workspace) }
     }
 
-    should("타입 저장에 실패하면 이벤트핸들러에 저장된 타입을 전달하지 않음") {
+    should("워크스페이스 저장에 실패하면 이벤트핸들러에 저장된 워크스페이스를 전달하지 않음") {
         every { repo.save(workspace) } returns Mono.error(RuntimeException("DB 에러"))
         every { eventHandler.publish(workspace) } returns Mono.empty()
 
