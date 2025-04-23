@@ -6,6 +6,7 @@
     "mdSysTypescaleBody": "JetBrains Mono, monospace",
 
     "types": "Type Definition",
+    "defineTypesPropertiesAndRelations": "Types, props, relations",
     "reload": "Fetch Data",
     "addType": "Add Type",
     "delType": "Remove Type",
@@ -18,5 +19,20 @@
     "sign out": "Sign Out",
     "Safely end session": "Safely end session",
 
-    "defineTypesPropertiesAndRelations": "Types, props, and relations"
+    "user info": "User Info",
+    "View/Edit User Information": "View/Edit User Info",
+
+    "workspaces": "Workspaces",
+    "Name, Group, and Permission": "Name, Group, Permission",
+    "workspace info": "Workspace Info",
+    "groups": "Group Management",
+    "permissions": "Permission Management",
+    "Create a new workspace.": "Create a new workspace.",
+    "New workspace name": "New workspace name",
+    "or": "OR",
+    "Join an existing workspace.": "Join an existing workspace.",
+    "Please contact the workspace administrator for the workspace ID.": "Please contact the workspace administrator for the workspace ID.",
+    "Workspace ID to join": "Workspace ID to join",
+    "Create": "Create",
+    "Request to join": "Request to join"
 }

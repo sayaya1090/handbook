@@ -17,7 +17,7 @@ public class ContentElement implements IsElement<HTMLDivElement>, FrameContainer
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> div;
     @Inject ContentElement(DrawerElement drawer) {
         this.div = div();
-        div.id("content").style("display: flex; height: -webkit-fill-available; inset: 0;")
+        div.id("content").style("display: flex; height: 100dvh; inset: 0;")
            .add(drawer);
     }
     @Override

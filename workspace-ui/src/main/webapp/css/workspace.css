@@ -1,0 +1,50 @@
+.dialog {
+    border: 1px solid;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow: auto;
+    width: 35rem;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    transition: height 300ms ease 0ms;
+}
+:root[color-theme='light'] body {
+    background: var(--md-sys-color-surface-container-high) !important;
+}
+:root[color-theme='light'] .dialog {
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-background);
+    box-shadow: rgba(0,0,0,0.23) 0.25rem 0.25rem 0.5rem;
+}
+:root[color-theme='dark'] .dialog {
+    border-color: var(--md-sys-color-outline);
+    background-color: var(--md-sys-color-surface-container-high);
+}
+.dialog .span {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.dialog .span .text-field {
+    --_text-field-label-text-line-height: 0.8rem;
+    --_text-field-input-text-line-height: 0.8rem;
+    --md-outlined-field-top-space: 14px;
+    --md-outlined-field-bottom-space: 14px;
+}
+.dialog .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1rem 0;
+}
+.dialog .divider::before,
+.dialog .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid;
+}
+.dialog .divider span {
+    padding: 0 10px;
+}

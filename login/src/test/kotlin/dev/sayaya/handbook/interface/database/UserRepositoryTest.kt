@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.`interface`.database
 
 import dev.sayaya.handbook.domain.State
+import dev.sayaya.handbook.interfaces.authentication.R2dbcAuditorConfig
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -21,7 +22,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @DataR2dbcTest
-@Import(R2dbcConfig::class)
+@Import(R2dbcConfig::class, R2dbcAuditorConfig::class)
 @Testcontainers
 internal class UserRepositoryTest(
     private val repo: R2dbcUserRepository,

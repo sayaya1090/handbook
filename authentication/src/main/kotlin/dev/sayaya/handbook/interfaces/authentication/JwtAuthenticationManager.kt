@@ -24,7 +24,7 @@ class JwtAuthenticationManager (pem: Pem): ReactiveAuthenticationManager {
                 Mono.just(it)
             }
         } catch (e: ExpiredJwtException) {
-            Mono.empty()
+            Mono.error(e)
         } catch (e: Exception) {
             e.printStackTrace()
             Mono.error(BadCredentialsException("Invalid token"))

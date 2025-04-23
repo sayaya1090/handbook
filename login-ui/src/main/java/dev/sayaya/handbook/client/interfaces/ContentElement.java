@@ -16,7 +16,7 @@ import static org.jboss.elemento.Elements.div;
 
 @Singleton
 public class ContentElement implements IsElement<HTMLDivElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> div = div().style("display: flex;height: -webkit-fill-available;");
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> div = div().style("display: flex;height: 100dvh;");
     private final static String WELCOME_MESSAGE = """
             ═══════════════════════════════════════════════════════
              _   _                 _ _                 _   \s
