@@ -4,6 +4,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+import jsinterop.base.Js;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -26,4 +27,11 @@ public final class Label {
     private String save;
 
     private String defineTypesPropertiesAndRelations;
+
+    @JsOverlay
+    @JsIgnore
+    public static String findLabelOrDefault(Label label, String key) {
+        if(label == null) return key;
+        return Js.asPropertyMap(label).has(key) ? Js.asPropertyMap(label).get(key).toString() : key;
+    }
 }

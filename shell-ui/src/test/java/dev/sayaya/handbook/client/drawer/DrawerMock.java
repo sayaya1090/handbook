@@ -3,7 +3,9 @@ package dev.sayaya.handbook.client.drawer;
 import dagger.Provides;
 import dev.sayaya.handbook.client.domain.Menu;
 import dev.sayaya.handbook.client.domain.Tool;
+import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
+import dev.sayaya.handbook.client.usecase.UserRepository;
 
 import javax.inject.Singleton;
 import java.util.List;
@@ -54,7 +56,11 @@ public class DrawerMock {
                 .tools(Tool.builder().title("menu4-tool1").uriRegex("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
                 .build()
     };
+    private static User user = new User();
     @Provides @Singleton MenuRepository provideMenuRepository() {
         return ()-> behavior(List.of(menu));
+    }
+    @Provides @Singleton UserRepository provideUserRepository() {
+        return ()-> behavior(user);
     }
 }

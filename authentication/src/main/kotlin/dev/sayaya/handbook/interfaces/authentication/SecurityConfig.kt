@@ -11,7 +11,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter
 
-@Configuration("net.sayaya.authentication.SecurityConfig")
+@Configuration("dev.sayaya.handbook.interfaces.authentication.SecurityConfig")
 @ConditionalOnMissingBean(SecurityWebFilterChain::class)
 @EnableReactiveMethodSecurity
 class SecurityConfig(private val jwtAuthenticationConverter: JwtAuthenticationConverter, jwtAuthenticationManager: JwtAuthenticationManager) {
@@ -23,5 +23,9 @@ class SecurityConfig(private val jwtAuthenticationConverter: JwtAuthenticationCo
         headers { frameOptions { mode = XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN } }
         authenticationWebFilter.setServerAuthenticationConverter(jwtAuthenticationConverter)
         addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+        authorizeExchange {
+            authorize("/actuator/**", permitAll)
+            authorize(anyExchange, authenticated)
+        }
     }
 }

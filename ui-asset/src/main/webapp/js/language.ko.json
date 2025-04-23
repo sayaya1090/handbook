@@ -6,6 +6,7 @@
     "mdSysTypescaleBody": "'Nanum Gothic Coding', monospace",
 
     "types": "데이터 형식 정의",
+    "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다",
     "reload": "데이터 가져오기",
     "addType": "타입 추가",
     "delType": "타입 삭제",
@@ -18,5 +19,20 @@
     "sign out": "로그아웃",
     "Safely end session": "안전하게 세션 종료",
 
-    "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다"
+    "user info": "사용자 정보",
+    "View/Edit User Information": "사용자 정보 확인/수정",
+
+    "workspaces": "워크스페이스",
+    "Name, Group, and Permission": "이름, 그룹, 권한",
+    "workspace info": "워크스페이스 정보",
+    "groups": "그룹 관리",
+    "permissions": "권한 관리",
+    "Create a new workspace.": "새로운 워크스페이스를 생성하세요.",
+    "New workspace name": "새로운 워크스페이스 이름",
+    "or": "또는",
+    "Join an existing workspace.": "운영 중인 워크스페이스에 가입하세요.",
+    "Please contact the workspace administrator for the workspace ID.": "워크스페이스 ID는 워크스페이스 관리자에게 문의하세요.",
+    "Workspace ID to join": "가입할 워크스페이스 ID",
+    "Create": "생성",
+    "Request to join": "가입 요청"
 }

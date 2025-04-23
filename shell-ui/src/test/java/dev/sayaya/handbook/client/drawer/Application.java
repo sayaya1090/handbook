@@ -16,7 +16,7 @@ public class Application implements EntryPoint {
         components.urlBasedToolResolver().initialize();
         components.toolBasedMenuResolver().initialize();
         components.script().initialize();
-        body().style("display: flex; height: -webkit-fill-available; inset: 0;")
+        body().style("display: flex; height: 100dvh; inset: 0;")
                 .add(components.drawer())
                 .add(div().css("frame").style("display: flex; align-items: center; gap: 10px; margin: 10px; left: 600px;")
                         .add(button("URL 1").id("url1")
