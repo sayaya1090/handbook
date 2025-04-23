@@ -15,18 +15,17 @@ internal class WorkspaceServiceTest: ShouldSpec({
     val service = WorkspaceService(workspaceRepo, groupRepo, eventHandler)
 
     beforeTest {
-        clearMocks(workspaceRepo)
+        clearMocks(workspaceRepo, groupRepo, eventHandler)
     }
     // Given
     val workspaceBuilder = spyk(WorkspaceBuilder(name="test"))
     val workspace = workspaceBuilder.build()
     every { workspaceBuilder.build() } returns workspace
-    every { groupRepo.createAndAssign(workspace, principal, any(), any()) } returns Mono.just(mockk())
-    every { eventHandler.publish(workspace) } returns Mono.empty()
 
     should("워크스페이스 저장에 성공하면 이벤트핸들러에 저장된 타입을 전달") {
         every { workspaceRepo.save(workspace) } returns Mono.just(workspace)
-
+        every { groupRepo.createAndAssign(workspace, principal, any(), any()) } returns Mono.just(mockk())
+        every { eventHandler.publish(workspace) } returns Mono.empty()
         // When & Then
         service.save(principal, workspaceBuilder).let(StepVerifier::create).expectNext(workspace).verifyComplete()
         verify(exactly = 1) { workspaceRepo.save(workspace) }
@@ -36,7 +35,8 @@ internal class WorkspaceServiceTest: ShouldSpec({
 
     should("워크스페이스 저장에 실패하면 이벤트핸들러에 저장된 워크스페이스를 전달하지 않음") {
         every { workspaceRepo.save(workspace) } returns Mono.error(RuntimeException("DB 에러"))
-
+        every { groupRepo.createAndAssign(workspace, principal, any(), any()) } returns Mono.just(mockk())
+        every { eventHandler.publish(workspace) } returns Mono.empty()
         // When & Then
         service.save(principal, workspaceBuilder).let(StepVerifier::create).verifyError(RuntimeException::class.java)
         verify(exactly = 1) { workspaceRepo.save(workspace) }
