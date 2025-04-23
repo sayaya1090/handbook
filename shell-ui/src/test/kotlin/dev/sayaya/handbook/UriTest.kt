@@ -11,6 +11,7 @@ import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import java.io.File
+import java.lang.Thread.sleep
 
 internal class UriTest: BehaviorSpec({
     val document = ChromeDriver(ChromeOptions().addArguments("--headless"))
@@ -23,6 +24,7 @@ internal class UriTest: BehaviorSpec({
     val toolRail = rails[1]
     Given("메뉴 초기화") {
         btnMenu.click() // 메뉴버튼을 눌러 초기화
+        sleep(100)
         val frame = document.findElement(By.className("frame"))
         Then("첫번째 메뉴는 Tool이 1개 이하이다") {
             DrawerMock.menu[0].tools().size shouldBeLessThanOrEqual 1
@@ -32,6 +34,7 @@ internal class UriTest: BehaviorSpec({
         }
         When("첫번째 메뉴에 배정된 URL로 변경 요청을 하면") {
             frame.findElement(By.id("url1")).click()
+            sleep(100)
             val url1st = document.currentUrl
             Then("URL이 변경된다") {
                 url1st shouldNotBe null
@@ -53,6 +56,7 @@ internal class UriTest: BehaviorSpec({
             }
             And("세번째 메뉴 첫번째 Tool에 배정된 URL로 변경 요청을 하면") {
                 frame.findElement(By.id("url2")).click()
+                sleep(100)
                 val url2nd = document.currentUrl
                 Then("URL이 변경된다") {
                     url2nd shouldNotBe null
@@ -75,6 +79,7 @@ internal class UriTest: BehaviorSpec({
                 }
                 And("세번째 메뉴 두번째 Tool에 배정된 URL로 변경 요청을 하면") {
                     frame.findElement(By.id("url3")).click()
+                    sleep(100)
                     val url3rd = document.currentUrl
                     Then("URL이 변경된다") {
                         url3rd shouldNotBe null

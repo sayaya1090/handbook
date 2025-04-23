@@ -38,8 +38,7 @@ internal class MenuController {
     }
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)
-    fun menus(principal: Principal, request: ServerHttpRequest): Flux<Menu> =
-        if(principal is AnonymousAuthenticationToken)
-            Flux.just(SIGN_IN)
+    fun menus(principal: Principal?, request: ServerHttpRequest): Flux<Menu> =
+        if(principal==null || principal is AnonymousAuthenticationToken) Flux.just(SIGN_IN)
         else Flux.just(SIGN_OUT)
 }
