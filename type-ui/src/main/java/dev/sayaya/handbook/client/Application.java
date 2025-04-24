@@ -15,6 +15,7 @@ public class Application implements EntryPoint {
         components.renderer().next(frame-> {
             frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/typebox.css").element());
             frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/canvas.css").element());
+            frame.append(components.controller().element());
             frame.append(components.canvas().element());
             return true;
         });

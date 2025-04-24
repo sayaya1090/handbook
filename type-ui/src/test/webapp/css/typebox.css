@@ -4,17 +4,18 @@
     object-fit: contain;
     margin: 1em;
     transition: left 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
-                top 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
-                width 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
-                height 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
-                background-color 300ms ease,
-                box-shadow 300ms ease;
+    top 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
+    width 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
+    height 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
+    background-color 300ms ease,
+    box-shadow 300ms ease;
 }
 .type-box .card {
     border-radius: 0.5em;
+    --_container-color: var(--md-sys-color-surface-container);
     box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
     transition: box-shadow 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1),
-                height 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1);
+    height 300ms cubic-bezier(0.25, 1.25, 0.5, 1.1);
 }
 
 .type-box .add {

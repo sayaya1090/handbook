@@ -12,7 +12,7 @@ public class Application implements EntryPoint {
     private final Component components = DaggerComponent.create();
     @Override public void onModuleLoad() {
         var canvas = components.canvas();
-        body().add(canvas);
+        body().add(components.controller()).add(canvas);
 
         String json = "{\n" +
                 "  \"id\": \"exampleId\",\n" +

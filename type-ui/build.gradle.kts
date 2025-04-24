@@ -40,6 +40,15 @@ tasks.register<Copy>("copyResources") {
 tasks.named("processResources") {
     dependsOn("copyResources")
 }
+tasks.register<Copy>("copyTestResources") {
+    dependsOn("copyResources")
+    from("src/main/webapp")
+    into("src/test/webapp")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+tasks.named("compileTestJava") {
+    dependsOn("copyTestResources")
+}
 tasks.named("war", War::class) {
     archiveFileName.set("type-ui.war")
     duplicatesStrategy = DuplicatesStrategy.WARN
