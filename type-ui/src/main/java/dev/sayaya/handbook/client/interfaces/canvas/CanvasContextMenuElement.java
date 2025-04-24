@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces.canvas;
 
 import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.handbook.client.usecase.language.LanguagePackManager;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdMenuElement;
 import dev.sayaya.ui.elements.MenuElementBuilder;
 import elemental2.dom.Element;
@@ -27,10 +27,10 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
     private final MenuElementBuilder.MenuItemElementBuilder<?> addType;
     private final MenuElementBuilder.MenuItemElementBuilder<?> undo;
     private final MenuElementBuilder.MenuItemElementBuilder<?> redo;
-    @Inject CanvasContextMenuElement(ActionManager actions, LanguagePackManager labels) {
+    @Inject CanvasContextMenuElement(ActionManager actions, Observable<Label> labels) {
         this(div(), actions, labels);
     }
-    private CanvasContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, LanguagePackManager labels) {
+    private CanvasContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, Observable<Label> labels) {
         container.add(menu.anchorElement(container));
         load = menu.item().headline("Reload");
         addType = menu.item().headline("Add Type");
@@ -49,10 +49,10 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
         labels.subscribe(this::update);
     }
     private void update(Label labels) {
-        updateLabel(load, labels.load());
-        updateLabel(addType, labels.addType());
-        updateLabel(undo, labels.undo());
-        updateLabel(redo, labels.redo());
+        updateLabel(load, Label.findLabelOrDefault(labels, "reload"));
+        updateLabel(addType, Label.findLabelOrDefault(labels, "addType"));
+        updateLabel(undo, Label.findLabelOrDefault(labels, "undo"));
+        updateLabel(redo, Label.findLabelOrDefault(labels, "redo"));
     }
     private static void updateLabel(MenuElementBuilder.MenuItemElementBuilder<?> item, String label) {
         item.element().childNodes.asList().stream()

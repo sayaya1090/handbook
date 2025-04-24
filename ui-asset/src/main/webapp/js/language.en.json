@@ -6,7 +6,7 @@
     "mdSysTypescaleBody": "JetBrains Mono, monospace",
 
     "types": "Type Definition",
-    "defineTypesPropertiesAndRelations": "Types, props, relations",
+    "Define Types, Properties, and Relations": "Types, props, relations",
     "reload": "Fetch Data",
     "addType": "Add Type",
     "delType": "Remove Type",

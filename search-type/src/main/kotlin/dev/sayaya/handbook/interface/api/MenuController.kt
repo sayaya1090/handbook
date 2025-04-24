@@ -14,7 +14,7 @@ internal class MenuController {
     companion object {
         val MENU: Menu = Menu.builder()
             .title("types")
-            .supportingText("defineTypesPropertiesAndRelations")
+            .supportingText("Define Types, Properties, and Relations")
             .order("B")
             .icon("fa-cubes")
             .iconType("sharp")

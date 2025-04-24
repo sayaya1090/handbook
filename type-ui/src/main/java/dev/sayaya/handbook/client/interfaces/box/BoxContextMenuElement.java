@@ -4,7 +4,7 @@ import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.handbook.client.usecase.language.LanguagePackManager;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdMenuElement;
 import dev.sayaya.ui.elements.MenuElementBuilder;
 import elemental2.dom.*;
@@ -24,10 +24,10 @@ public class BoxContextMenuElement implements IsElement<MdMenuElement> {
     private final MenuElementBuilder.MenuItemElementBuilder<?> delType;
     private final ActionManager actionManager;
     private final SelectedBoxElement selected;
-    @Inject BoxContextMenuElement(ActionManager actions, SelectedBoxElement selected, LanguagePackManager labels) {
+    @Inject BoxContextMenuElement(ActionManager actions, SelectedBoxElement selected, Observable<Label> labels) {
         this(div(), actions, selected, labels);
     }
-    private BoxContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, SelectedBoxElement selected, LanguagePackManager labels) {
+    private BoxContextMenuElement(HTMLContainerBuilder<HTMLDivElement> container, ActionManager actions, SelectedBoxElement selected, Observable<Label> labels) {
         container.add(menu.anchorElement(container));
         this.actionManager = actions;
         this.selected = selected;
@@ -41,7 +41,7 @@ public class BoxContextMenuElement implements IsElement<MdMenuElement> {
         delType.on(EventType.click, this::handeDelete);
     }
     private void update(Label labels) {
-        updateLabel(delType, labels.delType());
+        updateLabel(delType, Label.findLabelOrDefault(labels, "delType"));
     }
     private static void updateLabel(MenuElementBuilder.MenuItemElementBuilder<?> item, String label) {
         item.element().childNodes.asList().stream()

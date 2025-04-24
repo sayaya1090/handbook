@@ -6,7 +6,7 @@
     "mdSysTypescaleBody": "'Nanum Gothic Coding', monospace",
 
     "types": "데이터 형식 정의",
-    "defineTypesPropertiesAndRelations": "타입과 속성, 관계를 정의합니다",
+    "Define Types, Properties, and Relations": "타입과 속성, 관계를 정의합니다",
     "reload": "데이터 가져오기",
     "addType": "타입 추가",
     "delType": "타입 삭제",
