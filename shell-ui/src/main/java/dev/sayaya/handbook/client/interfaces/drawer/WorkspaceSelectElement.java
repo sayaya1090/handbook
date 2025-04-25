@@ -4,10 +4,10 @@ import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.MenuRailMode;
 import dev.sayaya.handbook.client.usecase.WorkspaceList;
-import dev.sayaya.handbook.client.usecase.WorkspaceProvider;
+import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.Observer;
 import dev.sayaya.ui.elements.SelectElementBuilder.OutlinedSelectElementBuilder;
 import elemental2.dom.CSSProperties;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
@@ -22,15 +22,25 @@ import static dev.sayaya.ui.elements.SelectElementBuilder.select;
 @Singleton
 public class WorkspaceSelectElement implements IsElement<HTMLElement> {
     @Delegate  private final OutlinedSelectElementBuilder _this = select().outlined().label("Workspace").required(true).menuPositioning(Popover);
-    @Inject WorkspaceSelectElement(WorkspaceList workspaces, WorkspaceProvider provider, MenuRailMode menu) {
-        workspaces.subscribe(this::update);
+    private List<Workspace> workspaces;
+    private Workspace selectedWorkspace;
+    private final Observer<Workspace> observer;
+    @Inject WorkspaceSelectElement(WorkspaceList workspaces, Observable<Workspace> observable, Observer<Workspace> observer, MenuRailMode menu) {
+        this.observer = observer;
+        workspaces.subscribe(list->update(list, selectedWorkspace));
+        observable.distinctUntilChanged().subscribe(workspace->update(this.workspaces, workspace));
         onChange(evt->onSelect(value()));
         menu.subscribe(this::update);
     }
-    private void update(List<Workspace> workspaces) {
+    private void update(List<Workspace> workspaces, Workspace selectedWorkspace) {
+        this.workspaces = workspaces;
+        this.selectedWorkspace = selectedWorkspace;
         removeAllOptions();
         disable(workspaces==null || workspaces.isEmpty());
-        if(workspaces!=null) for(var workspace: workspaces) option().value(workspace.id()).headline(workspace.name());
+        if(workspaces!=null) for(var workspace: workspaces) {
+            var opt = option().value(workspace.id()).headline(workspace.name());
+            if(selectedWorkspace!=null && selectedWorkspace.id().equals(workspace.id())) opt.select();
+        }
     }
     private void update(MenuRailState menu) {
         if(menu == MenuRailState.HIDE || menu == MenuRailState.COLLAPSE) mode(Mode.HIDE);
@@ -58,6 +68,7 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
     }
 
     private void onSelect(String id) {
-        DomGlobal.console.log(id);
+        var workspace = workspaces.stream().filter(w->w.id().equals(id)).findFirst();
+        observer.next(workspace.orElse(null));
     }
 }

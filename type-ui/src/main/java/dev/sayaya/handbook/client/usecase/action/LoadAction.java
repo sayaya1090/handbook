@@ -5,33 +5,32 @@ import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Type;
-import dev.sayaya.handbook.client.usecase.*;
+import dev.sayaya.handbook.client.usecase.BoxList;
+import dev.sayaya.handbook.client.usecase.BoxTailor;
+import dev.sayaya.handbook.client.usecase.TypeRepository;
 
-import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class LoadAction extends ComplexAction {
-    @AssistedInject LoadAction(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
-        super(pipeline(searchProvider, typeRepository, boxList, tailor));
+    @AssistedInject LoadAction(TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
+        super(pipeline(typeRepository, boxList, tailor));
     }
-    private static Action[] pipeline(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
+    private static Action[] pipeline(TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
         return new Action[] {
-                clear(boxList), search(searchProvider, typeRepository, boxList, tailor)
+                clear(boxList), search(typeRepository, boxList, tailor)
         };
     }
     private static Action clear(BoxList boxList) {
         return new DeleteBoxAction(boxList, boxList.getValue());
     }
-    private static Action search(SearchProvider searchProvider, TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
+    private static Action search(TypeRepository typeRepository, BoxList boxList, BoxTailor tailor) {
         return new Action() {
-            private CreateBoxAction[] creates;
+            private List<CreateBoxAction> creates;
             @Override
             public void execute() {
-                var param = searchProvider.getValue();
-                typeRepository.search(param).subscribe(page->{
-                    var boxes = Arrays.stream(page.content())
-                            .map(type->map(type, tailor))
-                            .toArray(Box[]::new);
-                    creates = Arrays.stream(boxes).map(box->new CreateBoxAction(boxList, box)).toArray(CreateBoxAction[]::new);
+                typeRepository.list().subscribe(list->{
+                    creates = list.stream().map(type->new CreateBoxAction(boxList, map(type, tailor))).collect(Collectors.toList());
                     for(var create:creates) create.execute();
                 });
             }

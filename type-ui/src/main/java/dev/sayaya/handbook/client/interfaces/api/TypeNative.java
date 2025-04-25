@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.api;
+package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Type;

@@ -6,6 +6,7 @@ import dagger.Provides;
 import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.domain.Progress;
 import dev.sayaya.handbook.client.domain.Tool;
+import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.interfaces.LanguageRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
@@ -24,15 +25,19 @@ public abstract class HostSharedModule {
         ClientWindow.renderer = behavior(null);
         ClientWindow.tools = behavior(new Tool[]{});
         ClientWindow.labels = behavior(null);
+        ClientWindow.workspace = behavior(null);
     }
     @Provides @Singleton static BehaviorSubject<Progress> progress() { return ClientWindow.progress; }
     @Provides @Singleton static BehaviorSubject<String> uri() { return ClientWindow.uri; }
     @Provides @Singleton static Observable<Render> render() { return ClientWindow.renderer.asObservable(); }
     @Provides @Singleton static Observer<Tool[]> tools() { return ClientWindow.tools; }
     @Provides @Singleton static BehaviorSubject<Label> labels() { return ClientWindow.labels; }
+    @Provides @Singleton static BehaviorSubject<Workspace> workspace() { return ClientWindow.workspace; }
     @Binds abstract Observable<Progress> progressObservableProvider(BehaviorSubject<Progress> impl);
     @Binds abstract Observer<Progress> progressObserverProvider(BehaviorSubject<Progress> impl);
     @Binds abstract Observable<String> uriObservableProvider(BehaviorSubject<String> impl);
     @Binds abstract Observer<String> uriObserverProvider(BehaviorSubject<String> impl);
     @Binds abstract LanguageProvider bindLanguageProvider(LanguageRepository impl);
+    @Binds abstract Observable<Workspace> workspaceObservableProvider(BehaviorSubject<Workspace> impl);
+    @Binds abstract Observer<Workspace> workspaceObserverProvider(BehaviorSubject<Workspace> impl);
 }

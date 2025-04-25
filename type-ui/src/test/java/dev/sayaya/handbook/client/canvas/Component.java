@@ -1,8 +1,10 @@
 package dev.sayaya.handbook.client.canvas;
 
+import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
 import dev.sayaya.handbook.client.usecase.ClientSharedModule;
+import dev.sayaya.rx.Observer;
 
 import javax.inject.Singleton;
 
@@ -11,4 +13,5 @@ import javax.inject.Singleton;
 public interface Component {
     ControllerElement controller();
     CanvasElement canvas();
+    Observer<Workspace> workspaceProvider();
 }

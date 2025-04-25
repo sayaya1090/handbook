@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.canvas;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.client.api.TypeNative;
 import dev.sayaya.handbook.client.domain.Type;
+import dev.sayaya.handbook.client.interfaces.api.TypeNative;
 import elemental2.dom.DomGlobal;
 
 import static elemental2.core.Global.JSON;

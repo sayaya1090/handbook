@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client;
 
-import dev.sayaya.handbook.client.api.ApiModule;
 import dev.sayaya.handbook.client.domain.Progress;
 import dev.sayaya.handbook.client.domain.Tool;
+import dev.sayaya.handbook.client.interfaces.api.ApiModule;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementModule;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;

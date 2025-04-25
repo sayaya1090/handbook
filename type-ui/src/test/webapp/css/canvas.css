@@ -5,7 +5,10 @@
     flex-direction: row;
     justify-content: space-between;
     margin: 0.5rem auto;
-    width: 20rem;
+    width: 30rem;
+    border-radius: 2rem;
+    padding: 0.5rem;
+    background: var(--md-sys-color-surface-container-highest);
 }
 .canvas {
     position: absolute;

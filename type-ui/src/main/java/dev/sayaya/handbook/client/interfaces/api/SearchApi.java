@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.api;
+package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Page;
 import dev.sayaya.handbook.client.domain.Search;

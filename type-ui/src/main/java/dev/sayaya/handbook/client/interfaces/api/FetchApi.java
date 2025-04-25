@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.api;
+package dev.sayaya.handbook.client.interfaces.api;
 
 import elemental2.core.Global;
 import elemental2.dom.DomGlobal;

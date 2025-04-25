@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.api;
+package dev.sayaya.handbook.client.interfaces.api;
 
 import dagger.Binds;
 import dagger.Module;

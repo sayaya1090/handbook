@@ -6,6 +6,7 @@ import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
+import dev.sayaya.rx.Observable;
 
 import javax.inject.Singleton;
 import java.util.List;
@@ -62,5 +63,8 @@ public class DrawerMock {
     }
     @Provides @Singleton UserRepository provideUserRepository() {
         return ()-> behavior(user);
+    }
+    @Provides @Singleton Observable<Tool[]> provideTools() {
+        return ClientWindow.tools.asObservable();
     }
 }
