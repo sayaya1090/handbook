@@ -20,7 +20,7 @@ public class WorkspaceList {
         user.subscribe(this::update);
     }
     private void update(User user) {
-        if(user.workspaces()==null) next(List.of());
+        if(user==null || user.workspaces()==null) next(List.of());
         else next(Arrays.stream(user.workspaces()).collect(Collectors.toList()));
     }
 }
