@@ -40,7 +40,7 @@ public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
     public Observable<List<Type>> list() {
         if(workspace==null) return Observable.of(List.of());
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
-        var promise = search("workspaces/" + workspace.id() + "/types", Search.builder().limit(100).build()).finally_(()-> progress.next(Progress.builder().enabled(false).build()));
+        var promise = search("workspace/" + workspace.id() + "/types", Search.builder().limit(100).build()).finally_(()-> progress.next(Progress.builder().enabled(false).build()));
         return AsyncSubject.await(promise).map(page-> {
             var natives = page.content();
             return Arrays.stream(natives).map(TypeNative::toType).collect(Collectors.toList());
