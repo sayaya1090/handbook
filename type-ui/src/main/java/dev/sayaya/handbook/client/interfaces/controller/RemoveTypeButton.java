@@ -13,17 +13,18 @@ import javax.inject.Singleton;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
 @Singleton
-class ReloadButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
+class RemoveTypeButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
-            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrows-rotate")
+            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-square-minus")
     );
-    @Inject ReloadButton(Observable<Label> labels) {
+    @Inject
+    RemoveTypeButton(Observable<Label> labels) {
         labels.subscribe(this::update);
         submit.onClick(evt-> {
 
         });
     }
     private void update(Label label) {
-        //submitLabel.element().innerHTML = findLabelOrDefault(label, "reload");
+        //submitLabel.element().innerHTML = findLabelOrDefault(label, "redo");
     }
 }

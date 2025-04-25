@@ -13,7 +13,12 @@ import static org.jboss.elemento.Elements.div;
 @Singleton
 public class ControllerElement implements IsElement<HTMLDivElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> container = div();
-    @Inject ControllerElement(ReloadButton reload, SaveButton save) {
-        add(reload).add(save);
+    @Inject ControllerElement(ReloadButton reload, AddTypeButton add, RemoveTypeButton remove, UndoButton undo, RedoButton redo, DocumentButton doc, SaveButton save) {
+        css("controller")
+                .add(reload)
+                .add(div().style("display:flex; gap:0.5rem;").add(add).add(remove))
+                .add(div().style("display:flex; gap:0.5rem;").add(undo).add(redo))
+                .add(doc)
+                .add(save);
     }
 }

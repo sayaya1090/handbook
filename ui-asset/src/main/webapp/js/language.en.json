@@ -7,6 +7,8 @@
 
     "types": "Type Definition",
     "Define Types, Properties, and Relations": "Types, props, relations",
+    "View as Graph": "View as Graph",
+    "View as Calendar": "View as Calendar",
     "reload": "Fetch Data",
     "addType": "Add Type",
     "delType": "Remove Type",

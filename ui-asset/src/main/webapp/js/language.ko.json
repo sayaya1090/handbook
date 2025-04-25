@@ -7,6 +7,8 @@
 
     "types": "데이터 형식 정의",
     "Define Types, Properties, and Relations": "타입과 속성, 관계를 정의합니다",
+    "View as Graph": "그래프 형태로 보기",
+    "View as Calendar": "캘린더 형태로 보기",
     "reload": "데이터 가져오기",
     "addType": "타입 추가",
     "delType": "타입 삭제",
