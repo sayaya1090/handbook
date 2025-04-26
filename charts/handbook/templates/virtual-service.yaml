@@ -36,7 +36,7 @@ spec:
             regex: ^(PUT|POST|DELETE|PATCH)$
       route:
         - destination:
-            host: persist
+            host: persist-type
             port:
               number: 80
     - match:
@@ -91,26 +91,6 @@ spec:
               number: 80
     - match:
         - uri:
-            exact: /type
-      rewrite:
-        uri: /{{ .Values.bucket.name }}/static/type.html
-      route:
-        - destination:
-            host: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
-            port:
-              number: 80
-    - match:
-        - uri:
-            exact: /login
-      rewrite:
-        uri: /{{ .Values.bucket.name }}/static/login.html
-      route:
-        - destination:
-            host: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
-            port:
-              number: 80
-    - match:
-        - uri:
             prefix: /css
       rewrite:
         uri: /{{ .Values.bucket.name }}/static/css
@@ -133,7 +113,7 @@ spec:
               number: 80
     - match:
         - uri:
-            exact: /
+            prefix: /
       rewrite:
         uri: /{{ .Values.bucket.name }}/static/shell.html
       route:

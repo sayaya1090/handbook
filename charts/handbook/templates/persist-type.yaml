@@ -1,14 +1,14 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: persist
+  name: persist-type
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/instance: persist
+    app.kubernetes.io/instance: persist-type
 data:
   application.yaml: |
     spring:
-      application.name: persist
+      application.name: persist-type
       main:
         web-application-type: reactive
       threads.virtual.enabled: true
@@ -30,10 +30,10 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: persist
+  name: persist-type
 spec:
   selector:
-    app: persist
+    app: persist-type
   ports:
     - protocol: TCP
       port: 80
@@ -48,15 +48,15 @@ metadata:
   annotations:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
-    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/persist'
-    configmap.reloader.stakater.com/reload: "persist,postgresql-rw,observability,authentication"
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/persist-type'
+    configmap.reloader.stakater.com/reload: "persist-type,postgresql-rw,observability,authentication"
     secret.reloader.stakater.com/reload: "postgresql-app"
-  name: persist
+  name: persist-type
   namespace: {{ .Release.Namespace }}
   finalizers:
     - foregroundDeletion
   labels:
-    app: persist
+    app: persist-type
     app.kubernetes.io/component: handbook
     app.kubernetes.io/instance: handbook
     app.kubernetes.io/name: handbook
@@ -67,13 +67,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: persist
+      app: persist-type
   template:
     metadata:
       labels:
-        app: persist
+        app: persist-type
         version: 0.0.1
-        deployment: persist
+        deployment: persist-type
       annotations:
         prometheus.io/path: /actuator/prometheus
         prometheus.io/port: '8080'
@@ -81,7 +81,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: persist
+            name: persist-type
             defaultMode: 420
         - name: postgres-config
           configMap:
@@ -96,8 +96,8 @@ spec:
             name: authentication
             defaultMode: 420
       containers:
-        - name: persist
-          image: {{ index .Values "persist" "image" "name" }}:{{ index .Values "persist" "image" "tag" | default "latest" }}
+        - name: persist-type
+          image: {{ index .Values "persist-type" "image" "name" }}:{{ index .Values "persist-type" "image" "tag" | default "latest" }}
           ports:
             - containerPort: 8080
               protocol: TCP

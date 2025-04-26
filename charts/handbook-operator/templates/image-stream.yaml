@@ -20,7 +20,7 @@ spec:
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
-  name: persist
+  name: persist-type
   namespace: {{ .Release.Namespace }}
 spec:
   lookupPolicy:
