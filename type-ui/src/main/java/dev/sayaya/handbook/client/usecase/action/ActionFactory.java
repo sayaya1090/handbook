@@ -14,16 +14,20 @@ public class ActionFactory {
     @Delegate private final DeleteBoxAction.DeleteActionFactory deleteBox;
     @Delegate private final PushOutOverlapAction.PushOutOverlapActionFactory pushOutOverlap;
     @Delegate private final LoadAction.LoadActionFactory load;
+    @Delegate private final SaveAction.SaveActionFactory save;
+
     @Inject ActionFactory(
             CreateBoxAction.CreateActionFactory createBox,
             DeleteBoxAction.DeleteActionFactory deleteBox,
             PushOutOverlapAction.PushOutOverlapActionFactory pushOutOverlap,
-            LoadAction.LoadActionFactory load
+            LoadAction.LoadActionFactory load,
+            SaveAction.SaveActionFactory save
     ) {
         this.createBox = createBox;
         this.deleteBox = deleteBox;
         this.pushOutOverlap = pushOutOverlap;
         this.load = load;
+        this.save = save;
     }
     public Action complex(Action... actions) {
         return new ComplexAction(actions);

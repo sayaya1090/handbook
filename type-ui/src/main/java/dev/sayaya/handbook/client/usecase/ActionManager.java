@@ -89,6 +89,10 @@ public class ActionManager {
         push(action);
         action.execute();
     }
+    public void save() {
+        var action = factory.save();
+        action.execute();
+    }
     private void push(Action action) {
         if (undo.size() >= MAX_STACK_SIZE) undo.removeFirst(); // 가장 오래된 작업 제거
         undo.add(action);
