@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: persist-test
+  name: persist-type-test
   namespace: {{ .Release.Namespace }}
 immutable: false
 data:
@@ -191,7 +191,7 @@ data:
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: persist-test
+  name: persist-type-test
   namespace: {{ .Release.Namespace }}
 spec:
   args:
@@ -203,7 +203,7 @@ spec:
           key: token
           name: prometheus
   metrics:
-    - name: persist-performance
+    - name: persist-type-performance
       provider:
         job:
           spec:
@@ -228,12 +228,12 @@ spec:
                 volumes:
                   - name: test-scripts
                     configMap:
-                      name: persist-test
+                      name: persist-type-test
                   - name: test-output
                     emptyDir: {}
                 restartPolicy: Never
             backoffLimit: 0
-    - name: persist-success-rate
+    - name: persist-type-success-rate
       initialDelay: 5m
       provider:
         prometheus:
@@ -243,10 +243,10 @@ spec:
               value: Bearer {{ `{{ args.prometheus-token }}` }}
           insecure: true
           query: >
-            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="persist", status=~"2.."}[6m])) /
-            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="persist"}[6m])) * 100
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="persist-type", status=~"2.."}[6m])) /
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-test", app="persist-type"}[6m])) * 100
       successCondition: result[0] >= 99
-    - name: persist-200tps-response-time
+    - name: persist-type-200tps-response-time
       initialDelay: 2m
       provider:
         prometheus:
@@ -259,10 +259,10 @@ spec:
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
-              destination_app="persist"
+              destination_app="persist-type"
             }[1m])) by (le))
       successCondition: result[0] <= 500
-    - name: persist-500tps-response-time
+    - name: persist-type-500tps-response-time
       initialDelay: 4m
       provider:
         prometheus:
@@ -275,6 +275,6 @@ spec:
             histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{
               reporter="destination",
               destination_workload_namespace="handbook-test",
-              destination_app="persist"
+              destination_app="persist-type"
             }[1m])) by (le))
       successCondition: result[0] <= 500
