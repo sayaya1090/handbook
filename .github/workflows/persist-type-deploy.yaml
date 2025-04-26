@@ -2,7 +2,7 @@ name: 저장 모듈 배포
 on:
   push:
     paths:
-      - persist/**
+      - persist-type/**
 jobs:
   test-and-deploy:
     runs-on: handbook-operator
@@ -10,7 +10,7 @@ jobs:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
-      SUBMODULE: persist
+      SUBMODULE: persist-type
     steps:
       - name: Checkout
         uses: actions/checkout@v4
