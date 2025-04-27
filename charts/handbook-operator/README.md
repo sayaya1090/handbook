@@ -50,8 +50,8 @@ spec:
               - name: database.ip
                 value: '{{`{{ database }}`}}'
               - forceString: true
-                name: persist.image.name
-                value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist'
+                name: persist-type.image.name
+                value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/persist-type'
               - forceString: true
                 name: search-type.image.name
                 value: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/search-type'

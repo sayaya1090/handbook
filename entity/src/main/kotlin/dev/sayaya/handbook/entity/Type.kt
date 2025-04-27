@@ -14,7 +14,7 @@ import java.util.*
     Index(columnList = "name, last, effective_at, expire_at"),
     Index(columnList = "last, effective_at, expire_at, created_at DESC"),
 ]) @Entity
-@IdClass(Type.Companion.TypeId::class) // 복합 키 클래스 설정
+@IdClass(Type.Companion.TypeId::class)
 internal class Type {
     @Id @Column(name = "workspace") lateinit var workspace: UUID
     @Id @Column(name = "id") lateinit var id: UUID
