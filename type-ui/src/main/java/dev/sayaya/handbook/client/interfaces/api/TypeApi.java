@@ -1,12 +1,14 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.client.usecase.BasetimeProvider;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
+import elemental2.dom.URLSearchParams;
 import elemental2.promise.Promise;
 
 import javax.inject.Inject;
@@ -21,11 +23,13 @@ import static elemental2.core.Global.JSON;
 @Singleton
 public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
     private final FetchApi fetchApi;
+    private final BasetimeProvider basetime;
     private final Observer<Progress> progress;
     private Workspace workspace;
-    @Inject TypeApi(FetchApi fetchApi, Observer<Progress> progress, Observable<Workspace> workspace) {
+    @Inject TypeApi(FetchApi fetchApi, Observer<Progress> progress, Observable<Workspace> workspace, BasetimeProvider basetime) {
         this.fetchApi = fetchApi;
         this.progress = progress;
+        this.basetime = basetime;
         workspace.distinctUntilChanged().subscribe(w-> this.workspace = w);
     }
     @Override
@@ -46,8 +50,10 @@ public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
         request.setBody(JSON.stringify(boxes.stream().toArray(Box[]::new)));
+        var params = new URLSearchParams();
+        params.set("basetime", String.valueOf(basetime.getValue().getTime()));
         return AsyncSubject.await(fetchApi
-                .request("workspace", request)
+                .request("workspace?" + params, request)
                 .then(this::handleResponse)
                 .then(this::parse)
                 .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
