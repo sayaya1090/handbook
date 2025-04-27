@@ -2,7 +2,7 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: persist
+  name: persist-type
   namespace: {{ .Release.Namespace }}
 spec:
   maxReplicas: 5
@@ -17,7 +17,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: persist
+    name: persist-type
 {{- end }}
 ---
 {{- if not .Values.mode }}
