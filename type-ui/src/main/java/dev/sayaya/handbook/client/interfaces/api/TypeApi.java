@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
-import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.client.domain.Box;
+import dev.sayaya.handbook.client.domain.Progress;
+import dev.sayaya.handbook.client.domain.Type;
+import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.BasetimeProvider;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
@@ -21,7 +24,7 @@ import static elemental2.core.Global.JSON;
 
 @SuppressWarnings("SimplifyStreamApiCallChains")
 @Singleton
-public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
+public class TypeApi implements TypeRepository {
     private final FetchApi fetchApi;
     private final BasetimeProvider basetime;
     private final Observer<Progress> progress;
@@ -31,14 +34,6 @@ public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
         this.progress = progress;
         this.basetime = basetime;
         workspace.distinctUntilChanged().subscribe(w-> this.workspace = w);
-    }
-    @Override
-    public Promise<Response> searchRequest(String url) {
-        var request = RequestInit.create();
-        request.setHeaders(new String[][] {
-                new String[] {"Accept", "application/vnd.sayaya.handbook.v1+json"}
-        });
-        return fetchApi.request(url, request);
     }
     @Override
     public Observable<Void> save(List<Box> boxes) {
@@ -53,15 +48,12 @@ public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
         var params = new URLSearchParams();
         params.set("basetime", String.valueOf(basetime.getValue().getTime()));
         return AsyncSubject.await(fetchApi
-                .request("workspace?" + params, request)
+                .request("workspace/" + workspace.id() + "/types?" + params, request)
                 .then(this::handleResponse)
-                .then(this::parse)
+                .then(resp -> Promise.resolve((Void)null))
                 .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
                 .catch_(this::handleException)
         );
-    }
-    private Promise<Void> parse(Response response) {
-        return Promise.resolve((Void)null);
     }
     private Promise<Response> handleResponse(Response response) {
         return switch (response.status) {
@@ -77,10 +69,25 @@ public class TypeApi implements SearchApi<TypeNative>, TypeRepository {
     public Observable<List<Type>> list() {
         if(workspace==null) return Observable.of(List.of());
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
-        var promise = search("workspace/" + workspace.id() + "/types", Search.builder().limit(100).build()).finally_(()-> progress.next(Progress.builder().enabled(false).build()));
-        return AsyncSubject.await(promise).map(page-> {
-            var natives = page.content();
-            return Arrays.stream(natives).map(TypeNative::toType).collect(Collectors.toList());
+        var request = RequestInit.create();
+        request.setHeaders(new String[][] {
+                new String[] {"Accept", "application/vnd.sayaya.handbook.v1+json"}
+        });
+        var params = new URLSearchParams();
+        params.set("basetime", String.valueOf(basetime.getValue().getTime()));
+        return AsyncSubject.await(fetchApi
+                .request("workspace/" + workspace.id() + "/types?" + params, request)
+                .then(this::handleResponse)
+                .then(this::parse)
+                .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
+                .catch_(this::handleException)
+        );
+    }
+    private Promise<List<Type>> parse(Response response) {
+        return response.json().then(values -> {
+            var natives = (TypeNative[]) values;
+            var list = Arrays.stream(natives).map(TypeNative::toType).collect(Collectors.toList());
+            return Promise.resolve(list);
         });
     }
 }

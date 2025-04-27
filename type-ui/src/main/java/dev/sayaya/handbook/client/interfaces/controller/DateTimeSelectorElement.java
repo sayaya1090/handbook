@@ -21,8 +21,7 @@ class DateTimeSelectorElement implements IsElement<MdTextFieldElement.MdOutlined
     @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder field = textField().outlined()
             .attr("type", "datetime-local")
             .style("""
-                margin-left: 1rem;
-                min-width: 10rem;
+                width: 15rem;
                 --md-outlined-field-top-space: 6px;
                 --md-outlined-field-bottom-space: 6px;
             """);
@@ -37,14 +36,14 @@ class DateTimeSelectorElement implements IsElement<MdTextFieldElement.MdOutlined
     }
     private void update(Date date) {
         JsDate cast = JsDate.create(date.getTime());
-        field.element().valueAsNumber = fromUtcToLocalDatetime(cast);
+        field.element().valueAsNumber = (fromUtcToLocalDatetime(cast) / 1000) * 1000.0;
     }
     private void update(Label label) {
         field.label(findLabelOrDefault(label, "Base Datetime"));
     }
-    private static double fromUtcToLocalDatetime(JsDate date) {
+    private static long fromUtcToLocalDatetime(JsDate date) {
         var offset = date.getTimezoneOffset();
-        return date.getTime() - offset*60*1000;
+        return (long) (date.getTime() - offset*60*1000);
     }
     private static long fromLocalDatetimeToUtc(JsDate date) {
         var offset = date.getTimezoneOffset();
