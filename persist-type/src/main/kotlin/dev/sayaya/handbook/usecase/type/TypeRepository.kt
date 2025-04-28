@@ -5,5 +5,5 @@ import reactor.core.publisher.Mono
 import java.util.*
 
 interface TypeRepository {
-    fun save(workspace: UUID, type: Type): Mono<Type>
+    fun save(workspace: UUID, types: List<Type>): Mono<List<Type>>
 }
