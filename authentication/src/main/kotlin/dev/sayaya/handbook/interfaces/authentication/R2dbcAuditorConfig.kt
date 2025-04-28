@@ -20,6 +20,13 @@ class R2dbcAuditorConfig {
             .timeout(Duration.ofSeconds(1))
             .map { obj: SecurityContext -> obj.authentication }
             .filter { obj: Authentication -> obj.isAuthenticated }
-            .map { obj: Authentication -> UUID.fromString(obj.principal as String) }
+            .mapNotNull { obj: Authentication ->
+                val principal = obj.principal
+                when (principal) {
+                    is String -> UUID.fromString(principal)
+                    is UUID -> principal
+                    else -> null
+                }
+            }
     }
 }
