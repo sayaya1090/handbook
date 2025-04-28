@@ -22,6 +22,7 @@ class DateTimeSelectorElement implements IsElement<MdTextFieldElement.MdOutlined
             .attr("type", "datetime-local")
             .style("""
                 width: 15rem;
+                text-align: center;
                 --md-outlined-field-top-space: 6px;
                 --md-outlined-field-bottom-space: 6px;
             """);
