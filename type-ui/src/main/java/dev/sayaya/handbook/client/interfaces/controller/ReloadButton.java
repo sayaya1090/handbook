@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.domain.Label;
+import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdIconButtonElement;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
@@ -17,11 +18,9 @@ class ReloadButton implements IconButtonElementBuilder<MdIconButtonElement, Icon
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
             IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrows-rotate")
     );
-    @Inject ReloadButton(Observable<Label> labels) {
+    @Inject ReloadButton(ActionManager mgr, Observable<Label> labels) {
         labels.subscribe(this::update);
-        submit.onClick(evt-> {
-
-        });
+        submit.onClick(evt->mgr.load());
     }
     private void update(Label label) {
         //submitLabel.element().innerHTML = findLabelOrDefault(label, "reload");
