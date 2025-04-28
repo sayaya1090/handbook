@@ -42,7 +42,7 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val
         attributes = attributes
     )
 
-    override fun save(workspace: UUID, types: List<Type>): Mono<List<Type>> = types.toEntity(workspace).let { entities ->
+    override fun saveAll(workspace: UUID, types: List<Type>): Mono<List<Type>> = types.toEntity(workspace).let { entities ->
         template.saveAll(entities)
     }.thenReturn(types)
 

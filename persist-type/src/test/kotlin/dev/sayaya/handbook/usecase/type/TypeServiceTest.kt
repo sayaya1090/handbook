@@ -17,7 +17,7 @@ import java.util.*
 @Suppress("ReactiveStreamsUnusedPublisher")
 internal class TypeServiceTest: ShouldSpec({
     val repo = mockk<TypeRepository>()
-    val layoutRepo = mockk<LayoutRepository>()
+    val layoutRepo = mockk<TypeLayoutRepository>()
     val layoutFactory = mockk<LayoutFactory>()
     val eventHandler = mockk<ExternalServiceHandler>()
     val principal = mockk<Principal>()
@@ -54,22 +54,22 @@ internal class TypeServiceTest: ShouldSpec({
 
     should("타입 저장 과정 전체가 성공적으로 완료됨") {
         // Given - 모든 단계 성공 시나리오
-        every { repo.save(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
+        every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
         every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.just(testLayout)
-        every { layoutRepo.save(testLayout, typeWithLayouts) } returns Mono.just(typeWithLayouts)
+        every { layoutRepo.saveAll(testLayout, typeWithLayouts) } returns Mono.just(typeWithLayouts)
         every { eventHandler.publish(principal, workspace, typeWithLayouts) } returns Mono.empty()
 
         // When & Then
         service.save(principal, workspace, typeWithLayouts).let(StepVerifier::create).expectNext(typeWithLayouts).verifyComplete()
-        verify(exactly = 1) { repo.save(workspace, listOf(testType)) }
+        verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
         verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutRepo.save(testLayout, typeWithLayouts) }
+        verify(exactly = 1) { layoutRepo.saveAll(testLayout, typeWithLayouts) }
         verify(exactly = 1) { eventHandler.publish(principal, workspace, typeWithLayouts) }
     }
     should("타입 저장 실패 시 레이아웃 생성을 시도하지 않음") {
         // Given
         val error = RuntimeException("DB 오류")
-        every { repo.save(workspace, any<List<Type>>()) } returns Mono.error(error)
+        every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.error(error)
 
         // When & Then
         service.save(principal, workspace, typeWithLayouts)
@@ -79,16 +79,16 @@ internal class TypeServiceTest: ShouldSpec({
             }
 
         // 검증
-        verify(exactly = 1) { repo.save(workspace, listOf(testType)) }
+        verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
         verify(exactly = 0) { layoutFactory.getOrCreateLayouts(any(), any()) }
-        verify(exactly = 0) { layoutRepo.save(any(), any()) }
+        verify(exactly = 0) { layoutRepo.saveAll(any(), any()) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 
     should("레이아웃 생성 실패 시 레이아웃 저장을 시도하지 않음") {
         // Given
         val error = RuntimeException("레이아웃 생성 오류")
-        every { repo.save(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
+        every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
         every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.error(error)
 
         // When & Then
@@ -99,18 +99,18 @@ internal class TypeServiceTest: ShouldSpec({
             }
 
         // 검증
-        verify(exactly = 1) { repo.save(workspace, listOf(testType)) }
+        verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
         verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 0) { layoutRepo.save(any(), any()) }
+        verify(exactly = 0) { layoutRepo.saveAll(any(), any()) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 
     should("레이아웃 저장 실패 시 이벤트 발행을 시도하지 않음") {
         // Given
         val error = RuntimeException("레이아웃 저장 오류")
-        every { repo.save(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
+        every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
         every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.just(testLayout)
-        every { layoutRepo.save(testLayout, typeWithLayouts) } returns Mono.error(error)
+        every { layoutRepo.saveAll(testLayout, typeWithLayouts) } returns Mono.error(error)
 
         // When & Then
         service.save(principal, workspace, typeWithLayouts)
@@ -120,18 +120,18 @@ internal class TypeServiceTest: ShouldSpec({
             }
 
         // 검증
-        verify(exactly = 1) { repo.save(workspace, listOf(testType)) }
+        verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
         verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutRepo.save(testLayout, typeWithLayouts) }
+        verify(exactly = 1) { layoutRepo.saveAll(testLayout, typeWithLayouts) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 
     should("이벤트 발행 실패 시에도 타입 및 레이아웃은 저장되고 완료됨") {
         // Given - 이벤트 발행만 실패하는 시나리오
         val error = RuntimeException("이벤트 발행 오류")
-        every { repo.save(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
+        every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
         every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.just(testLayout)
-        every { layoutRepo.save(testLayout, typeWithLayouts) } returns Mono.just(typeWithLayouts)
+        every { layoutRepo.saveAll(testLayout, typeWithLayouts) } returns Mono.just(typeWithLayouts)
         every { eventHandler.publish(principal, workspace, typeWithLayouts) } returns Mono.error(error)
 
         // When & Then
@@ -142,9 +142,9 @@ internal class TypeServiceTest: ShouldSpec({
             }
 
         // 검증 - 모든 단계가 호출됨
-        verify(exactly = 1) { repo.save(workspace, listOf(testType)) }
+        verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
         verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutRepo.save(testLayout, typeWithLayouts) }
+        verify(exactly = 1) { layoutRepo.saveAll(testLayout, typeWithLayouts) }
         verify(exactly = 1) { eventHandler.publish(principal, workspace, typeWithLayouts) }
     }
 
@@ -172,9 +172,9 @@ internal class TypeServiceTest: ShouldSpec({
         val multipleTypeWithLayouts = listOf(typeWithLayout, secondTypeWithLayout)
         val allTypes = listOf(testType, secondType)
 
-        every { repo.save(workspace, allTypes) } returns Mono.just(allTypes)
+        every { repo.saveAll(workspace, allTypes) } returns Mono.just(allTypes)
         every { layoutFactory.getOrCreateLayouts(workspace, allTypes) } returns Mono.just(testLayout)
-        every { layoutRepo.save(testLayout, multipleTypeWithLayouts) } returns Mono.just(multipleTypeWithLayouts)
+        every { layoutRepo.saveAll(testLayout, multipleTypeWithLayouts) } returns Mono.just(multipleTypeWithLayouts)
         every { eventHandler.publish(principal, workspace, multipleTypeWithLayouts) } returns Mono.empty()
 
         // When & Then
@@ -184,9 +184,9 @@ internal class TypeServiceTest: ShouldSpec({
             .verifyComplete()
 
         // 검증
-        verify(exactly = 1) { repo.save(workspace, allTypes) }
+        verify(exactly = 1) { repo.saveAll(workspace, allTypes) }
         verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, allTypes) }
-        verify(exactly = 1) { layoutRepo.save(testLayout, multipleTypeWithLayouts) }
+        verify(exactly = 1) { layoutRepo.saveAll(testLayout, multipleTypeWithLayouts) }
         verify(exactly = 1) { eventHandler.publish(principal, workspace, multipleTypeWithLayouts) }
     }
 
@@ -200,9 +200,9 @@ internal class TypeServiceTest: ShouldSpec({
             .verifyComplete()
 
         // 검증
-        verify(exactly = 0) { repo.save(any(), any()) }
+        verify(exactly = 0) { repo.saveAll(any(), any()) }
         verify(exactly = 0) { layoutFactory.getOrCreateLayouts(any(), any()) }
-        verify(exactly = 0) { layoutRepo.save(any(), any()) }
+        verify(exactly = 0) { layoutRepo.saveAll(any(), any()) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 })

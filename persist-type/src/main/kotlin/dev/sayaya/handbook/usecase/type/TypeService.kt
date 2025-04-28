@@ -11,7 +11,7 @@ import java.util.*
 @Service
 class TypeService(
     private val repo: TypeRepository,
-    private val layoutRepo: LayoutRepository,
+    private val layoutRepo: TypeLayoutRepository,
     private val layoutFactory: LayoutFactory,
     private val eventHandler: ExternalServiceHandler,
 ) {
@@ -31,9 +31,9 @@ class TypeService(
     fun save(principal: Principal, workspace: UUID, typeWithLayouts: List<TypeWithLayout>): Mono<List<TypeWithLayout>> =
         if (typeWithLayouts.isEmpty()) Mono.empty()
         else typeWithLayouts.toType()
-        .let { types -> repo.save(workspace, types) }
+        .let { types -> repo.saveAll(workspace, types) }
         .flatMap { savedTypes -> layoutFactory.getOrCreateLayouts(workspace, savedTypes) }
-        .flatMap { layoutRepo.save(it, typeWithLayouts) }
+        .flatMap { layoutRepo.saveAll(it, typeWithLayouts) }
         .delayUntil { eventHandler.publish(principal, workspace, it) }
 
     private fun List<TypeWithLayout>.toType(): List<Type> = this.map { it.type }
