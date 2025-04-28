@@ -35,7 +35,7 @@ public final class TypeNative {
             parent
         );
     }
-    @JsOverlay @JsIgnore private static TypeNative from(Type type) {
+    @JsOverlay @JsIgnore static TypeNative from(Type type) {
         if (type == null) return null;
         var nativeType = new TypeNative();
         nativeType.id = type.id();

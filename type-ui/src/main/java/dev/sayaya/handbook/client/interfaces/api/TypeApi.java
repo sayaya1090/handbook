@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static elemental2.core.Global.JSON;
-
 @SuppressWarnings("SimplifyStreamApiCallChains")
 @Singleton
 public class TypeApi implements TypeRepository {
@@ -44,11 +42,9 @@ public class TypeApi implements TypeRepository {
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
-        request.setBody(JSON.stringify(boxes.stream().toArray(Box[]::new)));
-        var params = new URLSearchParams();
-        params.set("basetime", String.valueOf(basetime.getValue().getTime()));
+        request.setBody(TypeWithLayoutNative.toJSON(boxes));
         return AsyncSubject.await(fetchApi
-                .request("workspace/" + workspace.id() + "/types?" + params, request)
+                .request("workspace/" + workspace.id() + "/types", request)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void)null))
                 .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
