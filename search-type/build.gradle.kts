@@ -9,7 +9,6 @@ plugins {
 }
 dependencies {
     implementation(project(":domain"))
-    implementation(project(":search"))
     implementation(project(":activity"))
     implementation(project(":authentication"))
     implementation(libs.bundles.spring.client)

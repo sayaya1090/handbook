@@ -1,12 +1,10 @@
 package dev.sayaya.handbook.`interface`.database
 
 import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
-@Table("type")
-class R2dbcTypeEntity (
+data class R2dbcTypeLayoutEntity (
     val workspace: UUID,
     val id: UUID,
     val name: String,
@@ -16,7 +14,13 @@ class R2dbcTypeEntity (
     @Column("expire_at") val expireDateTime: Instant,
     val description: String = "",
     val primitive: Boolean = false,
+    val last: Boolean,
     @Column("created_at") val createDateTime: Instant,
     @Column("created_by") val createBy: String,
-    override val count: Long = -1
-): EntityPageable
+
+    val layout: UUID,
+    val x: Short,
+    val y: Short,
+    val width: Short,
+    val height: Short
+)

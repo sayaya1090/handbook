@@ -1,18 +1,18 @@
 package dev.sayaya.handbook.`interface`.api
 
-import dev.sayaya.handbook.domain.Search
-import dev.sayaya.handbook.domain.Type
-import dev.sayaya.handbook.usecase.TypeSearchService
-import org.springframework.data.domain.Page
+import dev.sayaya.handbook.domain.TypeWithLayout
+import dev.sayaya.handbook.usecase.LayoutService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.Instant
 import java.util.*
 
 @RestController
-class SearchController(private val svc: TypeSearchService) {
+class TypeController(private val svc: LayoutService) {
     @GetMapping("/workspace/{workspace}/types", produces = ["application/vnd.sayaya.handbook.v1+json"])
-    fun findWorklists(@PathVariable workspace: UUID, param: Search): Mono<Page<Type>> = svc.search(workspace, param)
+    fun find(@PathVariable workspace: UUID, @RequestParam("basetime") baseTime: Instant): Flux<TypeWithLayout> = svc.search(workspace, baseTime)
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
