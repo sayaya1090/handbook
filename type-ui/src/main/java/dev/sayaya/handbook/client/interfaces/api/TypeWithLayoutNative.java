@@ -21,6 +21,7 @@ public final class TypeWithLayoutNative {
     @JsOverlay @JsIgnore private static TypeWithLayoutNative from(Box box) {
         if (box == null) return null;
         var nativeType = new TypeWithLayoutNative();
+
         nativeType.type = TypeNative.from(box.type());
         nativeType.x = box.x();
         nativeType.y = box.y();

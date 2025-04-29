@@ -15,18 +15,14 @@ public class EditBoxAction implements Action {
     }
     @Override
     public void execute() {
-        element.box().name(after.name())
-                .description(after.description())
-                .x(after.x()).y(after.y())
+        element.box().type(after.type()).x(after.x()).y(after.y())
                 .width(after.width()).height(after.height());
         element.update();
     }
 
     @Override
     public void rollback() {
-        element.box().name(before.name())
-                .description(before.description())
-                .x(before.x()).y(before.y())
+        element.box().type(before.type()).x(before.x()).y(before.y())
                 .width(before.width()).height(before.height());
         element.update();
     }

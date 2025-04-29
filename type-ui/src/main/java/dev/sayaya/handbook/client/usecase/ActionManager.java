@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Box;
+import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.domain.Value;
 import dev.sayaya.handbook.client.usecase.action.ActionFactory;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
@@ -10,7 +11,9 @@ import dev.sayaya.handbook.client.usecase.action.ResizeBoxAction;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Singleton
@@ -25,7 +28,12 @@ public class ActionManager {
         this.tailor = tailor;
     }
     public void addType(double x, double y) {
-        var box = Box.builder().name("Untitle").x((int)x).y((int)y).width(250).height(1).build();
+        var type = Type.builder().id("Untitle-" + generateUniqueString()).version("0.0.0")
+                .effectDateTime(new Date(0))
+                .expireDateTime(new Date(32503680000000L))
+                .attributes(List.of())
+                .build();
+        var box = Box.builder().type(type).x((int)x).y((int)y).width(250).height(1).build();
         box.height(tailor.estimateBoxHeight(box));
         var action = factory.complex (
                 factory.createBox(box),
@@ -33,6 +41,9 @@ public class ActionManager {
         );
         push(action);
         action.execute();
+    }
+    private static String generateUniqueString() {
+        return Double.toString(Math.random()).substring(2, 7); // 랜덤 숫자 (문자열)
     }
     public void delType(Box... boxes) {
         var action = factory.deleteBox(boxes);
@@ -68,7 +79,15 @@ public class ActionManager {
         action.execute();
     }
     public void title(UpdatableBox boxElement, String title) {
-        var next = boxElement.box().toBuilder().name(title).build();
+        var type = boxElement.box().type().toBuilder().id(title).build();
+        var next = boxElement.box().toBuilder().type(type).build();
+        var action = new EditBoxAction(boxElement, next);
+        push(action);
+        action.execute();
+    }
+    public void version(UpdatableBox boxElement, String version) {
+        var type = boxElement.box().type().toBuilder().version(version).build();
+        var next = boxElement.box().toBuilder().type(type).build();
         var action = new EditBoxAction(boxElement, next);
         push(action);
         action.execute();

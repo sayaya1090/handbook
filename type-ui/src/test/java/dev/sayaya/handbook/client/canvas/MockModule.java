@@ -34,7 +34,7 @@ public abstract class MockModule {
     @Provides static BoxTailor boxTailorProvider() {
         return box->{
             if(box == null) return 0;
-            return 100 + box.values().size()*57;
+            return 180 + box.values().size()*57;
         };
     }
     @Binds abstract TypeRepository typeRepositoryProvider(TypeApi impl);

@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
-import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Type;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
@@ -21,7 +20,7 @@ public final class TypeNative {
     @JsProperty(name = "expire_date_time") public Double expireDateTime;
     @JsProperty public String description;
     @JsProperty public boolean primitive;
-    @JsProperty public List<Attribute> attributes; // 배열
+    @JsProperty public AttributeNative[] attributes; // 배열
     @JsProperty public String parent;
     @JsOverlay @JsIgnore public Type toType() {
         return new Type(
@@ -31,7 +30,7 @@ public final class TypeNative {
             expireDateTime != null ? new Date(expireDateTime.longValue()) : null,
             description,
             primitive,
-            attributes != null ? attributes : List.of(),
+            List.of(),
             parent
         );
     }
@@ -44,7 +43,7 @@ public final class TypeNative {
         nativeType.expireDateTime = type.expireDateTime()!=null?Long.valueOf(type.expireDateTime().getTime()).doubleValue():null;
         nativeType.description = type.description();
         nativeType.primitive = type.primitive();
-        nativeType.attributes = type.attributes();
+        nativeType.attributes = new AttributeNative[0];
         nativeType.parent = type.parent();
         return nativeType;
     }

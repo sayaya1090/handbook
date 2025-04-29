@@ -41,9 +41,7 @@ public class LoadAction extends ComplexAction {
         };
     }
     private static Box map(Type type, BoxTailor tailor) {
-        var box = Box.builder().type(type).id(type.id()).name(type.id())
-                .width(250).height(1).x(1).y(1)
-                .build();
+        var box = Box.builder().type(type).width(250).height(1).x(1).y(1).build();
         return box.height(tailor.estimateBoxHeight(box));
     }
     @AssistedFactory
