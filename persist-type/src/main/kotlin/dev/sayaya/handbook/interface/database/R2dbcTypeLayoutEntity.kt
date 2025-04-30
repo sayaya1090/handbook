@@ -9,8 +9,8 @@ data class R2dbcTypeLayoutEntity (
     val layout: UUID,
     val type: String,
     val version: String,
-    val x: UShort,
-    val y: UShort,
-    val width: UShort,
-    val height: UShort
+    val x: Short,
+    val y: Short,
+    val width: Short,
+    val height: Short
 )

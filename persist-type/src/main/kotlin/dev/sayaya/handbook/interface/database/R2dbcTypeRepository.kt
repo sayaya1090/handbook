@@ -4,11 +4,12 @@ import com.github.f4b6a3.ulid.Ulid
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.usecase.type.TypeRepository
-import io.r2dbc.spi.Statement
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.util.function.Tuple2
 import reactor.util.function.Tuples
@@ -16,7 +17,8 @@ import java.time.Instant
 import java.util.*
 
 @Repository
-class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val childRepo: R2dbcAttributeRepository): TypeRepository {
+class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val childRepo: R2dbcAttributeRepository): TypeRepository, BatchRepository<R2dbcTypeEntity> {
+    private val log: Logger = LoggerFactory.getLogger(this::class.java)
     fun save(workspace: UUID, type: Type): Mono<Type> = insert(workspace, type).flatMap { entity ->
         persistAttributes(entity, type).map(this::toDomain)
     }
@@ -42,40 +44,17 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val
         attributes = attributes
     )
 
-    override fun saveAll(workspace: UUID, types: List<Type>): Mono<List<Type>> = types.toEntity(workspace).let { entities ->
-        template.saveAll(entities)
-    }.thenReturn(types)
-
+    override fun saveAll(workspace: UUID, types: List<Type>): Mono<List<Type>> = saveAll(types.toEntity(workspace)).thenReturn(types)
     // 배치를 한번에 저장한다.
-    private fun R2dbcEntityTemplate.saveAll(entities: List<R2dbcTypeEntity>): Mono<Void> = getAuthenticatedUser().flatMap { user->
+    private fun saveAll(entities: List<R2dbcTypeEntity>): Mono<List<R2dbcTypeEntity>> = getAuthenticatedUser().flatMap { user->
         val now = Instant.now() // 현재 시각
-        val sql = """
-                INSERT INTO type (
-                    workspace, id, name, version, parent, 
-                    effective_at, expire_at, 
-                    description, primitive,
-                    created_by, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """.trimIndent()
-        databaseClient.inConnection { connection ->
-            val statement = connection.createStatement(sql)
-            entities.forEach { entity -> statement.bind(entity, user, now).add() }
-            Flux.from(statement.execute()).then()
-        }
+        saveAll(entities, escapeSql(user), formatTimestampLiteral(now))
+            .collectList()
+            .doOnError { error -> log.error("Batch execution failed inside inConnection!", error) } // 에러 로깅
     }
     private fun getAuthenticatedUser(): Mono<String> = ReactiveSecurityContextHolder.getContext().map { it.authentication.name }
         .switchIfEmpty(Mono.error(IllegalStateException("Unable to retrieve authenticated user context")))
-    private fun Statement.bind(entity: R2dbcTypeEntity, user: String, now: Instant) = bind(0, entity.workspace)
-        .bind(1, entity.id)
-        .bind(2, entity.name)
-        .bind(3, entity.version)
-        .bind(4, entity.parent)
-        .bind(5, entity.effectDateTime)
-        .bind(6, entity.expireDateTime)
-        .bind(7, entity.description)
-        .bind(8, entity.primitive)
-        .bind(9, user)
-        .bind(10, now)
+
     private fun List<Type>.toEntity(workspace: UUID) = this.map { type ->
         R2dbcTypeEntity.of(
             workspace = workspace,
@@ -85,5 +64,26 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val
             description = type.description ?: "",
             primitive = type.primitive
         )
+    }
+
+    override val databaseClient: DatabaseClient = template.databaseClient
+    override fun insertInto(): String = INSERT_TYPE_SQL
+    override fun R2dbcTypeEntity.toCsv(): String = """
+        ${escapeSql(workspace.toString())},
+        ${escapeSql(id.toString())},
+        ${escapeSql(name)},
+        ${escapeSql(version)},
+        ${escapeSql(parent)},
+        ${formatTimestampLiteral(effectDateTime)},
+        ${formatTimestampLiteral(expireDateTime)},
+        ${escapeSql(description)},
+        $primitive
+    """.trimIndent()
+
+    companion object {
+        private const val INSERT_TYPE_SQL = """
+            INSERT INTO type (workspace, id, name, version, parent, effective_at, expire_at, 
+            description, primitive, created_by, created_at) 
+        """
     }
 }

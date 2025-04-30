@@ -13,7 +13,7 @@ import java.util.*
 class R2dbcLayoutRepository(private val template: R2dbcEntityTemplate): LayoutRepository {
     override fun findById(workspace: UUID, id: UUID): Mono<Layout> = template.select(query(
         where("workspace").`is`(workspace).and("id").`is`(id)), R2dbcLayoutEntity::class.java
-    ).single().map(R2dbcLayoutRepository::toDomain)
+    ).singleOrEmpty().map(R2dbcLayoutRepository::toDomain)
     override fun save(layout: Layout): Mono<Layout> = layout.toEntity().let(template::insert).map(R2dbcLayoutRepository::toDomain)
     companion object {
         private fun toDomain(entity: R2dbcLayoutEntity): Layout = Layout(entity.workspace, entity.id).apply {
