@@ -2,6 +2,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgresql
+  annotations:
+    traffic.sidecar.istio.io/excludeOutboundIPRanges: "172.30.0.1/32"
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:17
   backup:
@@ -23,6 +25,8 @@ spec:
     retentionPolicy: 7d
     target: prefer-standby
   instances: 3
+  minSyncReplicas: 1
+  maxSyncReplicas: 2
   storage:
     {{- with .Values.persistence.size }}
     size: {{ . | quote }}
@@ -33,12 +37,29 @@ spec:
   postgresql:
     parameters:
       max_connections: "500"
+      max_slot_wal_keep_size: "1GB"
       timezone: "Asia/Seoul"
   superuserSecret:
     name: postgres
   enableSuperuserAccess: true
+  {{- with .Values.bucket.name }}
+  externalClusters:
+    - name: postgresql-backup-source
+      barmanObjectStore:
+        destinationPath: 's3://{{ . }}/old' # 기존 백업이 저장된 S3 경로
+        serverName: postgresql
+        endpointURL: 'http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local'
+        s3Credentials:
+          accessKeyId:
+            key: AWS_ACCESS_KEY_ID
+            name: bucket
+          secretAccessKey:
+            key: AWS_SECRET_ACCESS_KEY
+            name: bucket
   bootstrap:
-    initdb:
+    recovery:
       database: handbook
       owner: postgres
-      encoding: UTF8
+      source: postgresql-backup-source
+  {{- end }}
+
