@@ -10,8 +10,9 @@ import java.util.*
 /*
  * 날짜구간 fragment마다 layout이 1:1 대응된다.
  */
-@Table(name = "layout")
-@Entity
+@Table(name = "layout", indexes=[
+    Index(columnList = "workspace, effective_at, expire_at")
+]) @Entity
 @IdClass(Layout.Companion.LayoutId::class)
 internal class Layout {
     @Id @Column(name = "workspace") lateinit var workspace: UUID

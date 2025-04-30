@@ -11,8 +11,9 @@ import java.io.Serializable
 import java.time.Instant
 import java.util.*
 
-@Table(name = "\"group\"")
-@Entity
+@Table(name = "\"group\"", indexes=[
+    Index(columnList = "workspace")
+]) @Entity
 internal class Group {
     @EmbeddedId lateinit var id: GroupId
     @ManyToOne

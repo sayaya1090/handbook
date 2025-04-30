@@ -1,25 +1,20 @@
 package dev.sayaya.handbook.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.IdClass
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinColumns
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import java.io.Serializable
-import java.util.UUID
+import java.util.*
 
 /*
  * Type에 대해 (type name, version)으로 정의되는 약한 참조를 사용한다.
  * 레이아웃 내 모든 type의 name, version을 사용한 UUID를 layout을 하고, 전체 레이아웃에 대한 정보는 레이아웃 키로 모든
  * 엔티티를 한꺼번에 조회한다.
  */
-@Table(name = "layout_type")
-@Entity
+@Table(name = "layout_type", indexes=[
+    Index(columnList = "workspace, layout"),
+    Index(columnList = "workspace, type, version")
+]) @Entity
 @IdClass(LayoutType.Companion.TypeLayoutId::class)
 internal class LayoutType {
     @Id @Column(name = "workspace") lateinit var workspace: UUID

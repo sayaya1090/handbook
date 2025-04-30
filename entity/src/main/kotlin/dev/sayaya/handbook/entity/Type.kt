@@ -10,9 +10,9 @@ import java.util.*
 // 같은 Type, version에 대해서는 last=true인 데이터가 유일해야 한다
 // 이 테이블은 파티션이 적용되어 있어 createTable.sql로 초기화한다
 @Table(name = "type", indexes=[
-    Index(columnList = "name, version, last"),
-    Index(columnList = "name, last, effective_at, expire_at"),
-    Index(columnList = "last, effective_at, expire_at, created_at DESC"),
+    Index(columnList = "workspace, name, version, last"),
+    Index(columnList = "workspace, name, last, effective_at, expire_at"),
+    Index(columnList = "workspace, last, effective_at, expire_at, created_at DESC"),
 ]) @Entity
 @IdClass(Type.Companion.TypeId::class)
 internal class Type {
