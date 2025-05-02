@@ -27,6 +27,10 @@ internal class Type {
     @Column(name = "expire_at", nullable = false) lateinit var expireDateTime: Instant
     @Column(columnDefinition = "text", nullable = false) var description: String = ""
     @Column(nullable = false) var primitive: Boolean = false
+    @Column(nullable = false, columnDefinition = "smallint") val x: Short = 0
+    @Column(nullable = false, columnDefinition = "smallint") val y: Short = 0
+    @Column(nullable = false, columnDefinition = "smallint") val width: Short = 0
+    @Column(nullable = false, columnDefinition = "smallint") val height: Short = 0
     @Column(name="\"last\"", nullable = false, columnDefinition = "boolean DEFAULT true") var last: Boolean = true
     companion object {
         data class TypeId (

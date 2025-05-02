@@ -33,6 +33,10 @@ CREATE TABLE IF NOT EXISTS type (
     primitive boolean NOT NULL,
     version TEXT,
     description text NOT NULL,
+    x smallint DEFAULT 0 NOT NULL,
+    y smallint DEFAULT 0 NOT NULL,
+    width smallint DEFAULT 0 NOT NULL,
+    height smallint DEFAULT 0 NOT NULL,
     last boolean DEFAULT true NOT NULL,
     PRIMARY KEY (workspace, id)
 ) PARTITION BY HASH (workspace);

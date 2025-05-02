@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.`interface`.database
 
+import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.TypeWithLayout
 import dev.sayaya.handbook.usecase.LayoutRepository
@@ -11,7 +12,29 @@ import java.util.*
 
 @Repository
 class R2dbcTypeLayoutRepository(private val template: R2dbcEntityTemplate): LayoutRepository {
-    override fun findByBaseTime(workspace: UUID, baseTime: Instant): Flux<TypeWithLayout> = template.databaseClient.sql(sql)
+    override fun findAll(workspace: UUID): Flux<Layout> = template.databaseClient.sql(FIND_LAYOUT_SQL)
+        .bind("workspace", workspace)
+        .map { row ->
+            val effectDateTime = row.get("effective_at", Instant::class.java)!!
+            val expireDateTime = row.get("expire_at", Instant::class.java)!!
+            effectDateTime to expireDateTime
+        }.all().collectList().flatMapIterable { list ->
+            val set = TreeSet<Instant>()
+            list.forEach { (effectDateTime, expireDateTime) ->
+                set.add(effectDateTime)
+                set.add(expireDateTime)
+            }
+            if (set.size < 2) emptyList()
+            else set.toList().zipWithNext().map { (start, end) ->
+                Layout(
+                    workspace = workspace,
+                    effectDateTime = start,
+                    expireDateTime = end
+                )
+            }
+        }
+
+    override fun findByBaseTime(workspace: UUID, baseTime: Instant): Flux<TypeWithLayout> = template.databaseClient.sql(FIND_TYPE_LAYOUT_SQL)
             .bind("baseTime", baseTime) // 바인딩된 baseTime 값
             .bind("workspace", workspace) // 바인딩된 workspace ID 값
             .map { row ->
@@ -33,7 +56,10 @@ class R2dbcTypeLayoutRepository(private val template: R2dbcEntityTemplate): Layo
             }.all()
 
     companion object {
-        private val sql = """
+        private val FIND_LAYOUT_SQL = """
+            SELECT t.effective_at, t.expire_at FROM type t WHERE t.workspace = :workspace AND t.last=true
+        """.trimIndent()
+        private val FIND_TYPE_LAYOUT_SQL = """
             SELECT t.name, t.version, t.parent, 
             t.effective_at, t.expire_at, t.description, t.primitive, 
             l.x, l.y, l.width, l.height
