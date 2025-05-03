@@ -22,6 +22,7 @@ public class Application implements EntryPoint {
                 String url = DomGlobal.window.location.pathname + DomGlobal.window.location.search;
                 update(url, frame);
             });
+            components.boxCache().initialize();
             return true;
         });
         components.tools().subscribe(tools -> Arrays.stream(tools).forEach(this::toolClickHandler));

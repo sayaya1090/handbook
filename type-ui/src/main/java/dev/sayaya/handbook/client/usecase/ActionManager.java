@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.domain.Value;
 import dev.sayaya.handbook.client.usecase.action.ActionFactory;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
 import dev.sayaya.handbook.client.usecase.action.ResizeBoxAction;
+import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,9 +24,11 @@ public class ActionManager {
     private final LinkedList<Action> redo = new LinkedList<>();
     private final ActionFactory factory;
     private final BoxTailor tailor;
-    @Inject ActionManager(ActionFactory factory, BoxTailor tailor) {
+    @Delegate private final LayoutActionManager layoutActionManager;
+    @Inject ActionManager(ActionFactory factory, BoxTailor tailor, LayoutActionManager layoutActionManager) {
         this.factory = factory;
         this.tailor = tailor;
+        this.layoutActionManager = layoutActionManager;
     }
     public void addType(double x, double y) {
         var type = Type.builder().id("Untitle-" + generateUniqueString()).version("0.0.0")
@@ -111,6 +114,21 @@ public class ActionManager {
     public void save() {
         var action = factory.save();
         action.execute();
+    }
+    public void changeToAfterLayout() {
+        var action = layoutActionManager.changeToAfterLayout();
+        if (action != null) {
+            push(action);
+            action.execute();
+        }
+    }
+    public void changeToBeforeLayout() {
+        var action = layoutActionManager.changeToBeforeLayout();
+        if (action != null) {
+            push(action);
+            action.execute();
+        }
+
     }
     private void push(Action action) {
         if (undo.size() >= MAX_STACK_SIZE) undo.removeFirst(); // 가장 오래된 작업 제거

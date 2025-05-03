@@ -15,19 +15,22 @@ public class ActionFactory {
     @Delegate private final PushOutOverlapAction.PushOutOverlapActionFactory pushOutOverlap;
     @Delegate private final LoadAction.LoadActionFactory load;
     @Delegate private final SaveAction.SaveActionFactory save;
+    @Delegate private final ChangeLayoutAction.ChangeLayoutActionFactory changeLayout;
 
     @Inject ActionFactory(
             CreateBoxAction.CreateActionFactory createBox,
             DeleteBoxAction.DeleteActionFactory deleteBox,
             PushOutOverlapAction.PushOutOverlapActionFactory pushOutOverlap,
             LoadAction.LoadActionFactory load,
-            SaveAction.SaveActionFactory save
+            SaveAction.SaveActionFactory save,
+            ChangeLayoutAction.ChangeLayoutActionFactory changeLayout
     ) {
         this.createBox = createBox;
         this.deleteBox = deleteBox;
         this.pushOutOverlap = pushOutOverlap;
         this.load = load;
         this.save = save;
+        this.changeLayout = changeLayout;
     }
     public Action complex(Action... actions) {
         return new ComplexAction(actions);

@@ -13,4 +13,14 @@ import lombok.experimental.Accessors;
 public final class Workspace {
     private String id;
     private String name;
+
+    @JsOverlay @JsIgnore
+    static Workspace of(String id, String name) {
+        Workspace workspace = new Workspace();
+        workspace.id = id;
+        workspace.name = name;
+        return workspace;
+    }
+    @JsOverlay @JsIgnore
+    public static WorkspaceBuilder builder() { return new WorkspaceBuilder(); }
 }

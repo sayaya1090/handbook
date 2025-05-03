@@ -36,8 +36,11 @@ class DateTimeSelectorElement implements IsElement<MdTextFieldElement.MdOutlined
         });
     }
     private void update(Date date) {
-        JsDate cast = JsDate.create(date.getTime());
-        field.element().valueAsNumber = (fromUtcToLocalDatetime(cast) / 1000) * 1000.0;
+        if(date==null) field.element().valueAsNumber = null;
+        else {
+            JsDate cast = JsDate.create(date.getTime());
+            field.element().valueAsNumber = (fromUtcToLocalDatetime(cast) / 1000) * 1000.0;
+        }
     }
     private void update(Label label) {
         field.label(findLabelOrDefault(label, "Base Datetime"));

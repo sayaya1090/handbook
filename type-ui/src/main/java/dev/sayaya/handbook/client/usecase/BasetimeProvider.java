@@ -11,6 +11,11 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 @Singleton
 public class BasetimeProvider {
-    @Delegate private final BehaviorSubject<Date> boxes = behavior(new Date());
-    @Inject BasetimeProvider() {}
+    @Delegate private final BehaviorSubject<Date> subject = behavior(null);
+    @Inject BasetimeProvider(LayoutProvider layout) {
+        layout.subscribe(period -> {
+            if(period!=null) next(period.effectDateTime());
+            else next(null);
+        });
+    }
 }

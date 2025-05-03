@@ -13,12 +13,12 @@ import static org.jboss.elemento.Elements.div;
 @Singleton
 public class ControllerElement implements IsElement<HTMLDivElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> container = div();
-    @Inject ControllerElement(DateTimeSelectorElement basetime, ReloadButton reload, AddTypeButton add, RemoveTypeButton remove, UndoButton undo, RedoButton redo, DocumentButton doc, SaveButton save) {
+    @Inject ControllerElement(BeforeButton before, AfterButton after, DateTimeSelectorElement basetime, ReloadButton reload, AddTypeButton add, RemoveTypeButton remove, UndoButton undo, RedoButton redo, DocumentButton doc, SaveButton save) {
         css("controller")
-                .add(div().style("display:flex; align-items:center; gap:0.5rem; margin-left: 1rem;").add(basetime).add(reload))
+                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(before).add(basetime).add(after).add(reload))
                 .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(add).add(remove))
                 .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(undo).add(redo))
                 .add(doc)
-                .add(save.style("margin-right: 1rem;"));
+                .add(save);
     }
 }

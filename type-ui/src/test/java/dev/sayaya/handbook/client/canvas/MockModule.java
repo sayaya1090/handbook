@@ -1,22 +1,20 @@
 package dev.sayaya.handbook.client.canvas;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import dagger.Binds;
 import dagger.Provides;
-import dev.sayaya.handbook.client.domain.Label;
-import dev.sayaya.handbook.client.domain.Progress;
-import dev.sayaya.handbook.client.domain.Workspace;
+import dev.sayaya.handbook.client.domain.*;
 import dev.sayaya.handbook.client.interfaces.LanguageRepository;
-import dev.sayaya.handbook.client.interfaces.api.FetchApi;
-import dev.sayaya.handbook.client.interfaces.api.TypeApi;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
-import dev.sayaya.handbook.client.usecase.BoxTailor;
-import dev.sayaya.handbook.client.usecase.LanguageProvider;
-import dev.sayaya.handbook.client.usecase.TypeRepository;
-import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
+import dev.sayaya.handbook.client.usecase.*;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
@@ -37,6 +35,95 @@ public abstract class MockModule {
             return 180 + box.values().size()*57;
         };
     }
-    @Binds abstract TypeRepository typeRepositoryProvider(TypeApi impl);
-    @Provides static FetchApi fetch() { return new FetchApi() {}; }
+    private static final DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss");
+    @Provides static TypeRepository typeRepositoryProvider() {
+        return new TypeRepository() {
+            private final List<Box> boxes = List.of(
+                    Box.builder().type(Type.builder()
+                            .id("type_1")
+                            .version("t1-v1")
+                            .effectDateTime(dtf.parse("2025-01-01 18:00:00"))
+                            .expireDateTime(dtf.parse("2025-12-31 00:00:00"))
+                            .description("type_1")
+                            .primitive(true)
+                            .parent(null)
+                            .attributes(Collections.emptyList())
+                            .build()
+                    ).x(100).y(100).width(200).height(200).build(),
+                    Box.builder().type(Type.builder()
+                            .id("type_2")
+                            .version("t2-v1")
+                            .effectDateTime(dtf.parse("2025-03-01 00:00:00"))
+                            .expireDateTime(dtf.parse("2025-08-01 00:00:00"))
+                            .description("type_2")
+                            .primitive(true)
+                            .parent("type_1")
+                            .attributes(Collections.emptyList())
+                            .build()
+                    ).x(400).y(100).width(200).height(200).build(),
+                    Box.builder().type(Type.builder()
+                            .id("type_2")
+                            .version("t2-v2")
+                            .effectDateTime(dtf.parse("2025-08-01 00:00:00"))
+                            .expireDateTime(dtf.parse("2025-12-31 00:00:00"))
+                            .description("type_2")
+                            .primitive(true)
+                            .parent("type_1")
+                            .attributes(Collections.emptyList())
+                            .build()
+                    ).x(400).y(100).width(200).height(200).build(),
+                    Box.builder().type(Type.builder()
+                            .id("type_3")
+                            .version("t3-v1")
+                            .effectDateTime(dtf.parse("2025-03-01 00:00:00"))
+                            .expireDateTime(dtf.parse("2025-09-01 00:00:00"))
+                            .description("type_1")
+                            .primitive(true)
+                            .parent("type_2")
+                            .attributes(Collections.emptyList())
+                            .build()
+                    ).x(200).y(400).width(200).height(200).build(),
+                    Box.builder().type(Type.builder()
+                            .id("type_3")
+                            .version("t3-v2")
+                            .effectDateTime(dtf.parse("2025-09-01 00:00:00"))
+                            .expireDateTime(dtf.parse("2025-12-31 00:00:00"))
+                            .description("type_3")
+                            .primitive(true)
+                            .parent("type_2")
+                            .attributes(Collections.emptyList())
+                            .build()
+                    ).x(200).y(400).width(200).height(200).build()
+            );
+            @Override
+            public Observable<List<Box>> list(Period period) {
+                long periodStart = period.effectDateTime().getTime();
+                long periodEnd = period.expireDateTime().getTime();
+                var filtered = boxes.stream().filter(box -> {
+                    long typeStart = box.type().effectDateTime().getTime();
+                    long typeEnd = box.type().expireDateTime().getTime();
+                    return (typeStart < periodEnd) && (periodStart < typeEnd);
+                }).collect(Collectors.toUnmodifiableList());
+                return Observable.of(filtered);
+            }
+            @Override
+            public Observable<Void> save(List<Box> boxes) {
+                return null;
+            }
+        };
+    }
+    @Provides static LayoutRepository layout() {
+        return new LayoutRepository() {
+            private final List<Period> periods = List.of(
+                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-01-01 18:00:00")).expireDateTime(dtf.parse("2025-03-01 00:00:00")).build(),
+                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-03-01 00:00:00")).expireDateTime(dtf.parse("2025-08-01 00:00:00")).build(),
+                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-08-01 00:00:00")).expireDateTime(dtf.parse("2025-09-01 00:00:00")).build(),
+                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-09-01 00:00:00")).expireDateTime(dtf.parse("2025-12-31 00:00:00")).build()
+            );
+            @Override
+            public Observable<List<Period>> layouts() {
+                return Observable.of(periods);
+            }
+        };
+    }
 }

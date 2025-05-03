@@ -26,17 +26,21 @@ public final class Box {
 
     private Box(Type type, int x, int y, int width, int height, List<Value> values) {
         this.type       = type;
-        this.x          = validateGreaterThanZero(x, "X must be greater than 0");
-        this.y          = validateGreaterThanZero(y, "Y must be greater than 0");
+        this.x          = validateGreaterThanOrEqualZero(x, "X must be greater than or equal 0");
+        this.y          = validateGreaterThanOrEqualZero(y, "Y must be greater than or equal 0");
         this.width      = validateGreaterThanZero(width, "Width must be greater than 0");
         this.height     = validateGreaterThanZero(height, "Height must be greater than 0");
         this.values     = values!=null ? values: new LinkedList<>();
     }
     public String id() {
-        return type.id();
+        return type.id() + "$$$" + type.version();
     }
     private static void require(boolean condition, String message) {
         if (!condition) throw new IllegalArgumentException(message);
+    }
+    private static int validateGreaterThanOrEqualZero(int value, String message) {
+        require(value >= 0, message);
+        return value;
     }
     private static int validateGreaterThanZero(int value, String message) {
         require(value > 0, message);
