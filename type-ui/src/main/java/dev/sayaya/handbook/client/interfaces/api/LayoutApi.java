@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Period;
 import dev.sayaya.handbook.client.domain.Progress;
-import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.LayoutRepository;
 import dev.sayaya.rx.Observable;
@@ -55,10 +54,10 @@ public class LayoutApi implements LayoutRepository {
     private <V> V handleException(Object throwable) {
         throw new RuntimeException("Request failed: " + throwable);
     }
-    private Promise<List<Type>> parse(Response response) {
+    private Promise<List<Period>> parse(Response response) {
         return response.json().then(values -> {
-            var natives = (TypeNative[]) values;
-            var list = Arrays.stream(natives).map(TypeNative::toType).collect(Collectors.toList());
+            var natives = (PeriodNative[]) values;
+            var list = Arrays.stream(natives).map(PeriodNative::toPeriod).collect(Collectors.toList());
             return Promise.resolve(list);
         });
     }
