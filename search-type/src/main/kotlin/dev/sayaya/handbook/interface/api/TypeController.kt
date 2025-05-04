@@ -15,7 +15,10 @@ class TypeController(private val svc: LayoutService) {
     @GetMapping("/workspace/{workspace}/layouts", produces = ["application/vnd.sayaya.handbook.v1+json"])
     fun layouts(@PathVariable workspace: UUID): Flux<Layout> = svc.findAll(workspace)
     @GetMapping("/workspace/{workspace}/types", produces = ["application/vnd.sayaya.handbook.v1+json"])
-    fun find(@PathVariable workspace: UUID, @RequestParam("basetime") baseTime: Instant): Flux<TypeWithLayout> = svc.findByBaseTime(workspace, baseTime)
+    fun find(@PathVariable workspace: UUID,
+             @RequestParam("effect_date_time") effectDateTime: Instant,
+             @RequestParam("expire_date_time") expireDateTime: Instant
+    ): Flux<TypeWithLayout> = svc.findByRange(workspace, effectDateTime, expireDateTime)
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

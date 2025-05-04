@@ -11,5 +11,5 @@ import java.util.Comparator.comparing
 @Service
 class LayoutService(private val repo: LayoutRepository) {
     fun findAll(workspace: UUID): Flux<Layout> = repo.findAll(workspace).sort(comparing(Layout::effectDateTime))
-    fun findByBaseTime(workspace: UUID, baseTime: Instant): Flux<TypeWithLayout> = repo.findByBaseTime(workspace, baseTime)
+    fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<TypeWithLayout> = repo.findByRange(workspace, effectDateTime, expireDateTime)
 }

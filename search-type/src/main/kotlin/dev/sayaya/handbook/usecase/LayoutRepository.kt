@@ -8,5 +8,5 @@ import java.util.*
 
 interface LayoutRepository {
     fun findAll(workspace: UUID): Flux<Layout>
-    fun findByBaseTime(workspace: UUID, baseTime: Instant): Flux<TypeWithLayout>
+    fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<TypeWithLayout>
 }

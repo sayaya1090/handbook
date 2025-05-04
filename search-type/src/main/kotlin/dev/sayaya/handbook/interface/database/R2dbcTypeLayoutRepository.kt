@@ -34,26 +34,27 @@ class R2dbcTypeLayoutRepository(private val template: R2dbcEntityTemplate): Layo
             }
         }
 
-    override fun findByBaseTime(workspace: UUID, baseTime: Instant): Flux<TypeWithLayout> = template.databaseClient.sql(FIND_TYPE_LAYOUT_SQL)
-            .bind("baseTime", baseTime) // 바인딩된 baseTime 값
-            .bind("workspace", workspace) // 바인딩된 workspace ID 값
-            .map { row ->
-                TypeWithLayout(
-                    type = Type(
-                        id = row.get("name", String::class.java)!!,
-                        version = row.get("version", String::class.java)!!,
-                        effectDateTime = row.get("effective_at", Instant::class.java)!!,
-                        expireDateTime = row.get("expire_at", Instant::class.java)!!,
-                        description = row.get("description", String::class.java) ?: "",
-                        primitive = row.get("primitive", Boolean::class.java) ?: false,
-                        attributes = emptyList(),
-                        parent = row.get("parent", String::class.java),
-                    ), x = row.get("x", Short::class.java)!!.unsigned(),
-                    y = row.get("y", Short::class.java)!!.unsigned(),
-                    width = row.get("width", Short::class.java)!!.unsigned(),
-                    height = row.get("height", Short::class.java)!!.unsigned()
-                )
-            }.all()
+    override fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<TypeWithLayout> = template.databaseClient.sql(FIND_TYPE_LAYOUT_SQL)
+        .bind("effectDateTime", effectDateTime)
+        .bind("expireDateTime", expireDateTime)
+        .bind("workspace", workspace)
+        .map { row ->
+            TypeWithLayout(
+                type = Type(
+                    id = row.get("name", String::class.java)!!,
+                    version = row.get("version", String::class.java)!!,
+                    effectDateTime = row.get("effective_at", Instant::class.java)!!,
+                    expireDateTime = row.get("expire_at", Instant::class.java)!!,
+                    description = row.get("description", String::class.java) ?: "",
+                    primitive = row.get("primitive", Boolean::class.java) ?: false,
+                    attributes = emptyList(),
+                    parent = row.get("parent", String::class.java),
+                ), x = row.get("x", Short::class.java)!!.unsigned(),
+                y = row.get("y", Short::class.java)!!.unsigned(),
+                width = row.get("width", Short::class.java)!!.unsigned(),
+                height = row.get("height", Short::class.java)!!.unsigned()
+            )
+        }.all()
 
     companion object {
         private val FIND_LAYOUT_SQL = """
@@ -68,8 +69,8 @@ class R2dbcTypeLayoutRepository(private val template: R2dbcEntityTemplate): Layo
             ON t.workspace = l.workspace AND t.name = l.type AND t.version = l.version AND t.last=true
             INNER JOIN layout p
             ON l.layout = p.id
-            AND p.effective_at <= :baseTime
-            AND p.expire_at > :baseTime
+            AND p.effective_at < :expireDateTime
+            AND p.expire_at >= :effectDateTime
             AND t.workspace = :workspace
         """.trimIndent()
         fun Short.unsigned(): UShort = (this + 32768).toUShort()
