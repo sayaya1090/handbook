@@ -57,7 +57,7 @@ public class LayoutApi implements LayoutRepository {
     private Promise<List<Period>> parse(Response response) {
         return response.json().then(values -> {
             var natives = (PeriodNative[]) values;
-            var list = Arrays.stream(natives).map(PeriodNative::toPeriod).collect(Collectors.toList());
+            var list = Arrays.stream(natives).map(PeriodNative::toDomain).collect(Collectors.toList());
             return Promise.resolve(list);
         });
     }

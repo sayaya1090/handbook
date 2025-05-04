@@ -22,19 +22,22 @@ public final class TypeNative {
     @JsProperty public boolean primitive;
     @JsProperty public AttributeNative[] attributes; // 배열
     @JsProperty public String parent;
-    @JsOverlay @JsIgnore public Type toType() {
-        return new Type(
-            id,
-            version,
-            effectDateTime != null ? new Date(effectDateTime.longValue()) : null,
-            expireDateTime != null ? new Date(expireDateTime.longValue()) : null,
-            description,
-            primitive,
-            List.of(),
-            parent
-        );
+    @JsProperty public double x;
+    @JsProperty public double y;
+    @JsProperty public double width;
+    @JsProperty public double height;
+    @JsProperty public boolean delete;
+    @JsOverlay @JsIgnore public Type toDomain() {
+        return Type.builder().id(id).version(version)
+                .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
+                .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null)
+                .description(description).primitive(primitive)
+                .attributes(List.of())
+                .parent(parent)
+                .x((int)x).y((int)y).width((int)width).height((int)height)
+                .build();
     }
-    @JsOverlay @JsIgnore static TypeNative from(Type type) {
+    @JsOverlay @JsIgnore public static TypeNative from(Type type, boolean delete) {
         if (type == null) return null;
         var nativeType = new TypeNative();
         nativeType.id = type.id();
@@ -45,9 +48,11 @@ public final class TypeNative {
         nativeType.primitive = type.primitive();
         nativeType.attributes = new AttributeNative[0];
         nativeType.parent = type.parent();
+        nativeType.x = type.x();
+        nativeType.y = type.y();
+        nativeType.width = type.width();
+        nativeType.height = type.height();
+        nativeType.delete = delete;
         return nativeType;
-    }
-    @JsOverlay @JsIgnore public static String toJSON(Type type) {
-        return JSON.stringify(from(type));
     }
 }

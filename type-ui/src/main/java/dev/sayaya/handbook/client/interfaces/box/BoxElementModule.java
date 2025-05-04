@@ -12,9 +12,8 @@ public interface BoxElementModule {
     @Binds UpdatableBoxList updatableBoxProvider(BoxElementList impl);
     @Provides static BoxTailor boxTailorProvider() {
         return box->{
-            DomGlobal.console.log("!!!");
             if(box == null) return 0;
-            return 180 + box.values().size()*57;
+            return 180 + box.attributes().size()*57;
         };
     }
 }

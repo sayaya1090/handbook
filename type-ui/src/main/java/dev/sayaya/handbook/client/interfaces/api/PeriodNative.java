@@ -15,7 +15,7 @@ public final class PeriodNative {
     @JsProperty public String workspace;
     @JsProperty(name = "effect_date_time") public Double effectDateTime;
     @JsProperty(name = "expire_date_time") public Double expireDateTime;
-    @JsOverlay @JsIgnore public Period toPeriod() {
+    @JsOverlay @JsIgnore public Period toDomain() {
         return new Period(
             workspace,
             effectDateTime != null ? new Date(effectDateTime.longValue()) : null,

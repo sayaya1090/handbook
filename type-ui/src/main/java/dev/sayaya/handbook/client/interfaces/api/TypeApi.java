@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
-import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.client.domain.Period;
+import dev.sayaya.handbook.client.domain.Progress;
+import dev.sayaya.handbook.client.domain.Type;
+import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
@@ -14,9 +17,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@SuppressWarnings("SimplifyStreamApiCallChains")
+import static elemental2.core.Global.JSON;
+
 @Singleton
 public class TypeApi implements TypeRepository {
     private final FetchApi fetchApi;
@@ -29,7 +35,7 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Void> save(List<Box> boxes) {
+    public Observable<Void> save(Set<Type> toDelete, Set<Type> toUpsert) {
         if(workspace==null) return Observable.of((Void)null);
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
@@ -37,7 +43,11 @@ public class TypeApi implements TypeRepository {
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
-        request.setBody(TypeWithLayoutNative.toJSON(boxes));
+        var natives = Stream.concat(
+                toDelete.stream().map(type->TypeNative.from(type, true)),
+                toUpsert.stream().map(type->TypeNative.from(type, false))
+        ).toArray(TypeNative[]::new);
+        request.setBody(JSON.stringify(natives));
         return AsyncSubject.await(fetchApi
                 .request("workspace/" + workspace.id() + "/types", request)
                 .then(this::handleResponse)
@@ -57,7 +67,7 @@ public class TypeApi implements TypeRepository {
         throw new RuntimeException("Request failed: " + throwable);
     }
     @Override
-    public Observable<List<Box>> list(Period period) {
+    public Observable<List<Type>> list(Period period) {
         if(workspace==null) return Observable.of(List.of());
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
@@ -75,10 +85,11 @@ public class TypeApi implements TypeRepository {
                 .catch_(this::handleException)
         );
     }
+
     private Promise<List<Type>> parse(Response response) {
         return response.json().then(values -> {
             var natives = (TypeNative[]) values;
-            var list = Arrays.stream(natives).map(TypeNative::toType).collect(Collectors.toList());
+            var list = Arrays.stream(natives).map(TypeNative::toDomain).collect(Collectors.toList());
             return Promise.resolve(list);
         });
     }

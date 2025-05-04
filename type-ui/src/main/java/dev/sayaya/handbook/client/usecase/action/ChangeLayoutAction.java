@@ -18,7 +18,6 @@ public class ChangeLayoutAction implements Action {
     }
     @Override
     public void execute() {
-        DomGlobal.console.log("layout changed to "+next);
         if(before == null) before = layout.getValue();
         layout.next(next);
     }

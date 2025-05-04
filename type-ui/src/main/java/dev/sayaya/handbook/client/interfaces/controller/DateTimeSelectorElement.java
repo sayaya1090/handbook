@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client.interfaces.controller;
 
 import com.google.gwt.core.client.JsDate;
 import dev.sayaya.handbook.client.domain.Label;
-import dev.sayaya.handbook.client.usecase.BasetimeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdTextFieldElement;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;

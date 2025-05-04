@@ -1,4 +1,12 @@
 ## 타입 UI
+### 도메인
+
+### 구조
+ 워크스페이스 변경(WorkspaceProvider) -> 레이아웃 목록 업데이트(LayoutList) -> 마지막 레이아웃 선택(LayoutProvider)
+ 레이아웃 변경(LayoutProvider) -> 필요시 DB 쿼리(TypeCache) -> Box 목록 업데이트(BoxList) -> 화면 출력
+ 수정 ->
+ 저장 요청 -> 업데이트 목록 -> 저장
+
 ### 일반 기능
     타입 추가: 빈 영역에서 컨텍스트 메뉴
     삭제: 박스를 선택하고 컨텍스트 메뉴

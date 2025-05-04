@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
@@ -18,9 +17,9 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class AttributeTypeList {
     @Delegate private final BehaviorSubject<String[]> types = behavior(new String[0]);
     private final List<String> primitiveTypes = List.of("Value", "Array", "Map", "File", "Document");
-    @Inject AttributeTypeList(BoxList boxList) {
-        boxList.distinct().subscribe(boxes-> {
-            var referenceTypes = Arrays.stream(boxes).map(Box::type).filter(Objects::nonNull).map(Type::id);
+    @Inject AttributeTypeList(TypeListEditing typeListEditing) {
+        typeListEditing.distinct().subscribe(boxes-> {
+            var referenceTypes = Arrays.stream(boxes).filter(Objects::nonNull).map(Type::id);
             var concat = Stream.concat(primitiveTypes.stream(), referenceTypes);
             this.types.next(concat.toArray(String[]::new));
         });

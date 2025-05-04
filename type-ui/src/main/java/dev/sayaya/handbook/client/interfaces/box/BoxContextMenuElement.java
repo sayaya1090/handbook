@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.client.domain.Box;
 import dev.sayaya.handbook.client.domain.Label;
+import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.Observable;
@@ -51,7 +51,7 @@ public class BoxContextMenuElement implements IsElement<MdMenuElement> {
         item.headline(label);
     }
     private void handeDelete(MouseEvent evt) {
-        var targetBoxes = selected.getValue().stream().map(BoxElement::box).toArray(Box[]::new);
+        var targetBoxes = selected.getValue().stream().map(BoxElement::box).toArray(Type[]::new);
         actionManager.delType(targetBoxes);
     }
 }

@@ -1,11 +1,9 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
-import dev.sayaya.handbook.client.domain.Box;
+import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Type;
-import dev.sayaya.handbook.client.domain.Value;
 import dev.sayaya.handbook.client.usecase.action.ActionFactory;
-import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
 import dev.sayaya.handbook.client.usecase.action.ResizeBoxAction;
 import lombok.experimental.Delegate;
 
@@ -35,12 +33,12 @@ public class ActionManager {
                 .effectDateTime(new Date(0))
                 .expireDateTime(new Date(32503680000000L))
                 .attributes(List.of())
+                .x((int)x).y((int)y).width(250).height(1)
                 .build();
-        var box = Box.builder().type(type).x((int)x).y((int)y).width(250).height(1).build();
-        box.height(tailor.estimateBoxHeight(box));
+        type = type.height(tailor.estimateBoxHeight(type));
         var action = factory.complex (
-                factory.createBox(box),
-                factory.pushOutOverlap(box)
+                factory.createBox(type),
+                factory.pushOutOverlap(type)
         );
         push(action);
         action.execute();
@@ -48,16 +46,17 @@ public class ActionManager {
     private static String generateUniqueString() {
         return Double.toString(Math.random()).substring(2, 7); // 랜덤 숫자 (문자열)
     }
-    public void delType(Box... boxes) {
+    public void delType(Type... boxes) {
         var action = factory.deleteBox(boxes);
         push(action);
         action.execute();
     }
     public void move(int deltaX, int deltaY, UpdatableBox... boxElements) {
-        var updateBoxes = Arrays.stream(boxElements).map(boxElement -> boxElement.box().toBuilder()
-                .x(boxElement.box().x() + deltaX).y(boxElement.box().y() + deltaY)
-                .build()
-        ).toArray(Box[]::new);
+        var updateBoxes = Arrays.stream(boxElements)
+                .map(boxElement -> {
+                    var box = boxElement.box();
+                    return box.toBuilder().x(box.x() + deltaX).y(box.y() + deltaY).build();
+                }).toArray(Type[]::new);
         var pushOutAction = factory.pushOutOverlap(updateBoxes);
         var actions = Stream.concat(
                 Arrays.stream(boxElements).map(boxElement -> factory.move(boxElement, deltaX, deltaY)),
@@ -69,9 +68,8 @@ public class ActionManager {
     }
     public void resize(int width, int height, UpdatableBox... boxElements) {
         var updateBoxes = Arrays.stream(boxElements).map(boxElement -> boxElement.box().toBuilder()
-                .width(width).height(height)
-                .build()
-        ).toArray(Box[]::new);
+                .width(width).height(height).build()
+        ).toArray(Type[]::new);
         var pushOutAction = factory.pushOutOverlap(updateBoxes);
         var actions = Stream.concat(
                 Arrays.stream(boxElements).map(boxElement -> new ResizeBoxAction(boxElement, width, height)),
@@ -82,23 +80,21 @@ public class ActionManager {
         action.execute();
     }
     public void title(UpdatableBox boxElement, String title) {
-        var type = boxElement.box().type().toBuilder().id(title).build();
-        var next = boxElement.box().toBuilder().type(type).build();
-        var action = new EditBoxAction(boxElement, next);
+        var next = boxElement.box().toBuilder().id(title).build();
+        var action = factory.editBox(boxElement, next);
         push(action);
         action.execute();
     }
     public void version(UpdatableBox boxElement, String version) {
-        var type = boxElement.box().type().toBuilder().version(version).build();
-        var next = boxElement.box().toBuilder().type(type).build();
-        var action = new EditBoxAction(boxElement, next);
+        var next = boxElement.box().toBuilder().version(version).build();
+        var action = factory.editBox(boxElement, next);
         push(action);
         action.execute();
     }
     public void addValue(UpdatableBox boxElement) {
-        var value = Value.builder().name("property").build();
-        var nextBox = boxElement.box().toBuilder().addValue(value).build();
-        nextBox.height(tailor.estimateBoxHeight(nextBox));
+        var value = Attribute.builder().name("property").build();
+        var nextBox = boxElement.box().toBuilder().attribute(value).build();
+        nextBox = nextBox.height(tailor.estimateBoxHeight(nextBox));
         var add = factory.addAttribute(boxElement, value);
         var resize = new ResizeBoxAction(boxElement, nextBox.width(), nextBox.height());
         var pushOutAction = factory.pushOutOverlap(nextBox);

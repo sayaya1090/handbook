@@ -1,5 +1,6 @@
-package dev.sayaya.handbook.client.usecase;
+package dev.sayaya.handbook.client.interfaces.controller;
 
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 

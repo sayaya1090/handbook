@@ -2,8 +2,8 @@ package dev.sayaya.handbook.client.interfaces.box;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
-import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.domain.Value;
+import dev.sayaya.handbook.client.domain.Attribute;
+import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
@@ -28,24 +28,24 @@ import static dev.sayaya.ui.elements.IconElementBuilder.icon;
 import static org.jboss.elemento.Elements.div;
 
 public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableBox {
-    private final Box box;
+    private final Type box;
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CardElementBuilder<?, ?> card;
     private final TypeNameElement title;
     private final TypeVersionElement version;
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder btnAdd;
-    private final Subject<List<Value>> values = (Subject) subject(List.class);
+    private final Subject<List<Attribute>> values = (Subject) subject(List.class);
     private final SelectedBoxElement selected;
     private final DragShapeElement dragShapeElement;
     private final BoxContextMenuElement context;
     private final CanvasContextMenuElement canvasContext;
     private double dragStartTimer;
-    @AssistedInject BoxElement(@Assisted Box box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+    @AssistedInject BoxElement(@Assisted Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
                                TypeNameElement.TypeNameElementFactory typeNameFactory, TypeVersionElement.TypeVersionElementFactory typeVersionFactory,
                                BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
         this(div(), box, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeVersionFactory, context, canvasContext, valueListFactory);
     }
-    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Box box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
                        TypeNameElement.TypeNameElementFactory typeNameFactory, TypeVersionElement.TypeVersionElementFactory typeVersionFactory,
                        BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
         super(container.element());
@@ -153,7 +153,7 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         actionManager.move(dx, dy, selected.getValue().stream().toArray(BoxElement[]::new));
     }
     @Override
-    public Box box() {
+    public Type box() {
         return box;
     }
     @Override
@@ -162,8 +162,8 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         container.element().style.top = box.y() + "px";
         card.element().style.width = CSSProperties.WidthUnionType.of(box.width() + "px");
         card.element().style.height = CSSProperties.HeightUnionType.of(box.height() + "px");
-        values.next(box.values());
-        title.update(box.type());
-        version.update(box.type());
+        values.next(box.attributes());
+        title.update(box);
+        version.update(box);
     }
 }

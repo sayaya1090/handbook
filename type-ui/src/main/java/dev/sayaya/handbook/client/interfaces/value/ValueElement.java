@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.interfaces.value;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
-import dev.sayaya.handbook.client.domain.Value;
+import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.usecase.AttributeTypeList;
 import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.SelectElementBuilder;
@@ -16,12 +16,12 @@ import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
 
 public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
-    @AssistedInject ValueElement(@Assisted Subject<Value> value, AttributeTypeList typeList) {
+    @AssistedInject ValueElement(@Assisted Subject<Attribute> value, AttributeTypeList typeList) {
         this(div(), value, typeList);
     }
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder title = textField().outlined().css("label");
     private final SelectElementBuilder.OutlinedSelectElementBuilder type = select().outlined().css("type");
-    private ValueElement(HTMLContainerBuilder<HTMLDivElement> element, Subject<Value> value, AttributeTypeList typeList) {
+    private ValueElement(HTMLContainerBuilder<HTMLDivElement> element, Subject<Attribute> value, AttributeTypeList typeList) {
         super(element.element());
         value.subscribe(this::update);
         typeList.subscribe(this::update);
@@ -29,8 +29,8 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
         title.onChange(evt->target.name(title.value()));
         type.onChange(evt->target.type(type.element().value));
     }
-    private Value target;
-    private void update(Value value) {
+    private Attribute target;
+    private void update(Attribute value) {
         this.target = value;
         title.value(value.name());
         type.element().value = value.type();
@@ -41,6 +41,6 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
     }
     @AssistedFactory
     interface ValueElementFactory {
-        ValueElement valueElement(Subject<Value> value);
+        ValueElement valueElement(Subject<Attribute> value);
     }
 }
