@@ -63,14 +63,10 @@ class R2dbcTypeLayoutRepository(private val template: R2dbcEntityTemplate): Layo
         private val FIND_TYPE_LAYOUT_SQL = """
             SELECT t.name, t.version, t.parent, 
             t.effective_at, t.expire_at, t.description, t.primitive, 
-            l.x, l.y, l.width, l.height
+            t.x, t.y, t.width, t.height
             FROM type t 
-            INNER JOIN layout_type l 
-            ON t.workspace = l.workspace AND t.name = l.type AND t.version = l.version AND t.last=true
-            INNER JOIN layout p
-            ON l.layout = p.id
-            AND p.effective_at < :expireDateTime
-            AND p.expire_at >= :effectDateTime
+            WHERE t.effective_at < :expireDateTime
+            AND t.expire_at >= :effectDateTime
             AND t.workspace = :workspace
         """.trimIndent()
         fun Short.unsigned(): UShort = (this + 32768).toUShort()
