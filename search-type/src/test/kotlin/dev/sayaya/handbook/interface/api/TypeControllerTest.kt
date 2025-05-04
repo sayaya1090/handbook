@@ -2,8 +2,7 @@ package dev.sayaya.handbook.`interface`.api
 
 import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
-import dev.sayaya.handbook.domain.TypeWithLayout
-import dev.sayaya.handbook.usecase.LayoutService
+import dev.sayaya.handbook.usecase.TypeService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.string.shouldContain
 import io.mockk.clearMocks
@@ -23,7 +22,7 @@ import java.util.*
 @Suppress("ReactiveStreamsUnusedPublisher")
 @ExtendWith(SpringExtension::class)
 internal class TypeControllerTest : ShouldSpec({
-    val mockService = mockk<LayoutService>()
+    val mockService = mockk<TypeService>()
     val controller = TypeController(mockService)
     val webTestClient = WebTestClient.bindToController(controller).build()
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
@@ -84,31 +83,29 @@ internal class TypeControllerTest : ShouldSpec({
         val effectDateTime = now.minus(1, ChronoUnit.HOURS) // 검색 시작 시간
         val expireDateTime = now.plus(1, ChronoUnit.HOURS)   // 검색 종료 시간
 
-        should("올바른 범위 검색 요청 시 기간에 맞는 TypeWithLayout 목록을 반환해야 한다") {
+        should("올바른 범위 검색 요청 시 기간에 맞는 Type 목록을 반환해야 한다") {
             // Given: Mock된 서비스 응답 정의
             val expectedTypes = listOf(
-                TypeWithLayout(
-                    type = Type(
-                        id = "type_1",
-                        parent = null,
-                        version = "v1",
-                        effectDateTime = effectDateTime.minusSeconds(100),
-                        expireDateTime = effectDateTime.plusSeconds(100),
-                        description = "description",
-                        primitive = true,
-                        attributes = emptyList()
-                    ), x = 0u, y = 100u, width = 100u, height = 80u
-                ), TypeWithLayout(
-                    type = Type(
-                        id = "type_2",
-                        parent = null,
-                        version = "v2",
-                        effectDateTime = effectDateTime.minusSeconds(100),
-                        expireDateTime = effectDateTime.plusSeconds(100),
-                        description = "description",
-                        primitive = true,
-                        attributes = emptyList()
-                    ), x = 150u, y = 100u, width = 80u, height = 100u
+                Type(
+                    id = "type_1",
+                    parent = null,
+                    version = "v1",
+                    effectDateTime = effectDateTime.minusSeconds(100),
+                    expireDateTime = effectDateTime.plusSeconds(100),
+                    description = "description",
+                    primitive = true,
+                    attributes = emptyList(),
+                    x = 0u, y = 100u, width = 100u, height = 80u
+                ), Type(
+                    id = "type_2",
+                    parent = null,
+                    version = "v2",
+                    effectDateTime = effectDateTime.minusSeconds(100),
+                    expireDateTime = effectDateTime.plusSeconds(100),
+                    description = "description",
+                    primitive = true,
+                    attributes = emptyList(),
+                    x = 150u, y = 100u, width = 80u, height = 100u
                 )
             )
             every { mockService.findByRange(workspace,effectDateTime, expireDateTime) } returns Flux.fromIterable(expectedTypes)
@@ -121,16 +118,8 @@ internal class TypeControllerTest : ShouldSpec({
                     .build()
             }.accept(MediaType.parseMediaType("application/vnd.sayaya.handbook.v1+json")).exchange()
                 .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$[0].type.id").isEqualTo("type_1")
-                .jsonPath("$[0].type.version").isEqualTo("v1")
-                .jsonPath("$[0].x").isEqualTo(0u)
-                .jsonPath("$[0].y").isEqualTo(100u)
-                .jsonPath("$[0].width").isEqualTo(100u)
-                .jsonPath("$[0].height").isEqualTo(80u)
-                .jsonPath("$[1].type.id").isEqualTo("type_2")
-                .jsonPath("$[1].type.version").isEqualTo("v2")
-                .jsonPath("$[1].x").isEqualTo(150)
+                .expectBody(object : ParameterizedTypeReference<List<Type>>() {})
+                .isEqualTo(expectedTypes)
 
             verify(exactly = 1) { mockService.findByRange(workspace, effectDateTime, expireDateTime) }
         }
