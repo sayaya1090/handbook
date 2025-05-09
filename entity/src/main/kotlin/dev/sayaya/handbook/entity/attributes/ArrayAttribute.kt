@@ -10,13 +10,14 @@ import java.io.Serializable
 
 @Entity
 @DiscriminatorValue("Array")
-internal class ArrayAttribute: Attribute() {
-    @Enumerated(EnumType.STRING) @Column(name="value_type") lateinit var valueType: AttributeType
+internal class ArrayAttribute: Attribute(), Attribute.Companion.HasValueType {
+    @Enumerated(EnumType.STRING) @Column(name="value_type") override lateinit var valueType: AttributeType
     @JdbcTypeCode(SqlTypes.JSON) @Column(name="value_validators", columnDefinition = "jsonb") var validators: Serializable? = null
     companion object {
-        fun of(type: Type, name: String, valueType: AttributeType, validators: Serializable? = null) = ArrayAttribute().apply {
+        fun of(type: Type, name: String, index: Short, valueType: AttributeType, validators: Serializable? = null) = ArrayAttribute().apply {
             this.type(type)
             this.name(name)
+            this.order = index
             this.valueType = valueType
             this.validators = validators
         }

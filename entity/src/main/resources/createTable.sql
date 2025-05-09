@@ -46,6 +46,7 @@ CREATE TABLE public.attribute (
     type uuid NOT NULL,
     name character varying(32) NOT NULL,
     attribute_type character varying(31) NOT NULL,
+    "order" smallint NOT NULL,
     nullable boolean NOT NULL,
     description character varying(255),
     value_validators jsonb,

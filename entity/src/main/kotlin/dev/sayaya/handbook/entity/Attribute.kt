@@ -18,6 +18,7 @@ internal abstract class Attribute {
         JoinColumn(name = "workspace", insertable = false, updatable = false),
         JoinColumn(name = "type", insertable = false, updatable = false)
     ) private lateinit var typeObj: Type
+    @Column(name = "\"order\"", columnDefinition = "smallint") var order: Short = 0
     fun name() = id.name
     fun type(newType: Type) {
         typeObj = newType
@@ -38,5 +39,11 @@ internal abstract class Attribute {
             @Column(name = "type", updatable = false) val typeId: UUID = UUID.randomUUID(),
             @Column(name = "name", length = 32, nullable = false, updatable = false) val name: String = ""
         ) : Serializable
+        interface HasKeyType {
+            val keyType: AttributeType
+        }
+        interface HasValueType {
+            val valueType: AttributeType
+        }
     }
 }

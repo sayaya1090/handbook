@@ -1,7 +1,21 @@
 package dev.sayaya.handbook.domain
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME
+
+
+@JsonTypeInfo(use = NAME, property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = Attribute.Companion.ValueAttribute::class, name = "Value"),
+    JsonSubTypes.Type(value = Attribute.Companion.ArrayAttribute::class, name = "Array"),
+    JsonSubTypes.Type(value = Attribute.Companion.MapAttribute::class, name = "Map"),
+    JsonSubTypes.Type(value = Attribute.Companion.DocumentAttribute::class, name = "Document"),
+    JsonSubTypes.Type(value = Attribute.Companion.FileAttribute::class, name = "File")
+)
 interface Attribute {
     val name: String
+    val order: Short
     val description: String?
     val type: AttributeType
     val nullable: Boolean
@@ -10,9 +24,15 @@ interface Attribute {
     companion object {
         const val DEFAULT_NAME = ""
         val DEFAULT_DESCRIPTION: String? = null
-
+        interface HasKeyType {
+            val keyType: AttributeType
+        }
+        interface HasValueType {
+            val valueType: AttributeType
+        }
         data class ValueAttribute (
             override val name: String = DEFAULT_NAME,
+            override val order: Short = 0,
             override val description: String? = DEFAULT_DESCRIPTION,
             override val nullable: Boolean = false,
             override val inherited: Boolean
@@ -21,25 +41,28 @@ interface Attribute {
         }
         data class ArrayAttribute (
             override val name: String = DEFAULT_NAME,
+            override val order: Short = 0,
             override val description: String? = DEFAULT_DESCRIPTION,
-            val valueType: AttributeType = AttributeType.Value,
+            override val valueType: AttributeType = AttributeType.Value,
             override val nullable: Boolean = false,
             override val inherited: Boolean
-        ): Attribute {
+        ): Attribute, HasValueType {
             override val type: AttributeType = AttributeType.Array
         }
         data class MapAttribute (
             override val name: String = DEFAULT_NAME,
+            override val order: Short = 0,
             override val description: String? = DEFAULT_DESCRIPTION,
-            val keyType: AttributeType = AttributeType.Value,
-            val valueType: AttributeType = AttributeType.Value,
+            override val keyType: AttributeType = AttributeType.Value,
+            override val valueType: AttributeType = AttributeType.Value,
             override val nullable: Boolean = false,
             override val inherited: Boolean
-        ): Attribute {
+        ): Attribute, HasKeyType, HasValueType {
             override val type: AttributeType = AttributeType.Map
         }
         data class DocumentAttribute (
             override val name: String = DEFAULT_NAME,
+            override val order: Short = 0,
             override val description: String? = DEFAULT_DESCRIPTION,
             val referenceType: String,
             override val nullable: Boolean = false,
@@ -49,6 +72,7 @@ interface Attribute {
         }
         data class FileAttribute (
             override val name: String = DEFAULT_NAME,
+            override val order: Short = 0,
             override val description: String? = DEFAULT_DESCRIPTION,
             val extensions: Set<String> = emptySet(),
             override val nullable: Boolean = false,

@@ -10,17 +10,18 @@ import java.io.Serializable
 
 @Entity
 @DiscriminatorValue("Map")
-internal class MapAttribute: Attribute() {
-    @Enumerated(EnumType.STRING) @Column(name="key_type") lateinit var keyType: AttributeType
-    @Enumerated(EnumType.STRING) @Column(name="value_type") lateinit var valueType: AttributeType
+internal class MapAttribute: Attribute(), Attribute.Companion.HasKeyType, Attribute.Companion.HasValueType {
+    @Enumerated(EnumType.STRING) @Column(name="key_type") override lateinit var keyType: AttributeType
+    @Enumerated(EnumType.STRING) @Column(name="value_type") override lateinit var valueType: AttributeType
     @JdbcTypeCode(SqlTypes.JSON) @Column(name="key_validators", columnDefinition = "jsonb") var keyValidators: Serializable? = null
     @JdbcTypeCode(SqlTypes.JSON) @Column(name="value_validators", columnDefinition = "jsonb") var valueValidators: Serializable? = null
     companion object {
-        fun of(type: Type, name: String,
+        fun of(type: Type, name: String, index: Short,
                keyType: AttributeType, valueType: AttributeType,
                keyValidators: Serializable? = null, valueValidators: Serializable? = null) = MapAttribute().apply {
             this.type(type)
             this.name(name)
+            this.order = index
             this.keyType = keyType
             this.valueType = valueType
             this.keyValidators = keyValidators
