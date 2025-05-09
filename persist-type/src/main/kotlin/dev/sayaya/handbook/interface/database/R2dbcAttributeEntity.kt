@@ -12,6 +12,7 @@ data class R2dbcAttributeEntity (
     val workspace: UUID,
     val type: UUID,
     val name: String,
+    val order: Short,
     val attributeType: AttributeType,
     val keyType: AttributeType?,
     val valueType: AttributeType?,

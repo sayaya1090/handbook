@@ -6,4 +6,5 @@ import java.util.*
 
 interface TypeRepository {
     fun saveAll(workspace: UUID, types: List<Type>): Mono<List<Type>>
+    fun deleteAll(workspace: UUID, types: List<Type>): Mono<List<Type>>
 }

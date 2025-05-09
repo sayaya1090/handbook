@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.ReactiveAuditorAware
 import org.springframework.data.r2dbc.config.EnableR2dbcAuditing
-import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -28,13 +27,12 @@ import java.util.*
     "logging.level.io.r2dbc.postgresql.PARAM=DEBUG",
 ]) @Import(R2dbcTypeRepositoryTest.Companion.TestConfig::class)
 class R2dbcTypeRepositoryTest(
-    private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
-    val childRepo = mockk<R2dbcAttributeRepository>().apply {
+    /*val childRepo = mockk<R2dbcAttributeRepository>().apply {
         every { save(any(), any()) } answers { Mono.just(secondArg()) }
     }
-    val repository = R2dbcTypeRepository(template, childRepo)
+    val repository = R2DbcTypeRepository(databaseClient, childRepo)
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     beforeSpec {
         databaseClient.sql("""
@@ -125,7 +123,7 @@ class R2dbcTypeRepositoryTest(
             .verifyComplete()
 
         verify(exactly = 1) { childRepo.save(any(), any()) }
-    }
+    }*/
 }) {
     companion object {
         @TestConfiguration

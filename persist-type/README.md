@@ -24,4 +24,5 @@
   - 저장된 layout이 없을 때 layout 생성
   - type layout 저장
   - type과 type layout 벌크 저장
+  - attribute 역직렬화
   - 

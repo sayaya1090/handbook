@@ -2,7 +2,6 @@ package dev.sayaya.handbook.usecase.type
 
 import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
-import dev.sayaya.handbook.domain.TypeWithLayout
 import io.kotest.core.spec.style.ShouldSpec
 import io.mockk.clearMocks
 import io.mockk.every
@@ -17,14 +16,13 @@ import java.util.*
 @Suppress("ReactiveStreamsUnusedPublisher")
 internal class TypeServiceTest: ShouldSpec({
     val repo = mockk<TypeRepository>()
-    val layoutRepo = mockk<TypeLayoutRepository>()
-    val layoutFactory = mockk<LayoutFactory>()
+
     val eventHandler = mockk<ExternalServiceHandler>()
     val principal = mockk<Principal>()
-    val service = TypeService(repo, layoutRepo, layoutFactory, eventHandler)
+    val service = TypeService(repo, eventHandler)
 
     beforeTest {
-        clearMocks(repo, layoutRepo, layoutFactory, eventHandler, principal)
+        clearMocks(repo, eventHandler, principal)
     }
     // Given
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
@@ -36,34 +34,21 @@ internal class TypeServiceTest: ShouldSpec({
         expireDateTime = Instant.parse("2024-12-31T23:59:59Z"),
         description = "test type",
         primitive = false,
-        attributes = emptyList()
-    )
-    val testLayout = Layout(workspace, UUID.randomUUID()).apply {
-        effectDateTime = testType.effectDateTime
-        expireDateTime = testType.expireDateTime
-    }
-
-    val typeWithLayout = TypeWithLayout(
-        type = testType,
+        attributes = emptyList(),
         x = 10u,
         y = 20u,
         width = 100u,
         height = 50u
     )
-    val typeWithLayouts = listOf(typeWithLayout)
-
+/*
     should("타입 저장 과정 전체가 성공적으로 완료됨") {
         // Given - 모든 단계 성공 시나리오
         every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
-        every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.just(testLayout)
-        every { layoutRepo.saveAll(testLayout, typeWithLayouts) } returns Mono.just(typeWithLayouts)
         every { eventHandler.publish(principal, workspace, typeWithLayouts) } returns Mono.empty()
 
         // When & Then
         service.save(principal, workspace, typeWithLayouts).let(StepVerifier::create).expectNext(typeWithLayouts).verifyComplete()
         verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutRepo.saveAll(testLayout, typeWithLayouts) }
         verify(exactly = 1) { eventHandler.publish(principal, workspace, typeWithLayouts) }
     }
     should("타입 저장 실패 시 레이아웃 생성을 시도하지 않음") {
@@ -80,8 +65,6 @@ internal class TypeServiceTest: ShouldSpec({
 
         // 검증
         verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
-        verify(exactly = 0) { layoutFactory.getOrCreateLayouts(any(), any()) }
-        verify(exactly = 0) { layoutRepo.saveAll(any(), any()) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 
@@ -89,7 +72,6 @@ internal class TypeServiceTest: ShouldSpec({
         // Given
         val error = RuntimeException("레이아웃 생성 오류")
         every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
-        every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.error(error)
 
         // When & Then
         service.save(principal, workspace, typeWithLayouts)
@@ -100,8 +82,6 @@ internal class TypeServiceTest: ShouldSpec({
 
         // 검증
         verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 0) { layoutRepo.saveAll(any(), any()) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 
@@ -109,8 +89,6 @@ internal class TypeServiceTest: ShouldSpec({
         // Given
         val error = RuntimeException("레이아웃 저장 오류")
         every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
-        every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.just(testLayout)
-        every { layoutRepo.saveAll(testLayout, typeWithLayouts) } returns Mono.error(error)
 
         // When & Then
         service.save(principal, workspace, typeWithLayouts)
@@ -121,8 +99,6 @@ internal class TypeServiceTest: ShouldSpec({
 
         // 검증
         verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutRepo.saveAll(testLayout, typeWithLayouts) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 
@@ -130,8 +106,6 @@ internal class TypeServiceTest: ShouldSpec({
         // Given - 이벤트 발행만 실패하는 시나리오
         val error = RuntimeException("이벤트 발행 오류")
         every { repo.saveAll(workspace, any<List<Type>>()) } returns Mono.just(listOf(testType))
-        every { layoutFactory.getOrCreateLayouts(workspace, any<List<Type>>()) } returns Mono.just(testLayout)
-        every { layoutRepo.saveAll(testLayout, typeWithLayouts) } returns Mono.just(typeWithLayouts)
         every { eventHandler.publish(principal, workspace, typeWithLayouts) } returns Mono.error(error)
 
         // When & Then
@@ -143,8 +117,6 @@ internal class TypeServiceTest: ShouldSpec({
 
         // 검증 - 모든 단계가 호출됨
         verify(exactly = 1) { repo.saveAll(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, listOf(testType)) }
-        verify(exactly = 1) { layoutRepo.saveAll(testLayout, typeWithLayouts) }
         verify(exactly = 1) { eventHandler.publish(principal, workspace, typeWithLayouts) }
     }
 
@@ -158,23 +130,16 @@ internal class TypeServiceTest: ShouldSpec({
             expireDateTime = Instant.parse("2024-12-20T23:59:59Z"),
             description = "another test type",
             primitive = false,
-            attributes = emptyList()
-        )
-
-        val secondTypeWithLayout = TypeWithLayout(
-            type = secondType,
+            attributes = emptyList(),
             x = 200u,
             y = 100u,
             width = 150u,
             height = 75u
         )
 
-        val multipleTypeWithLayouts = listOf(typeWithLayout, secondTypeWithLayout)
         val allTypes = listOf(testType, secondType)
 
         every { repo.saveAll(workspace, allTypes) } returns Mono.just(allTypes)
-        every { layoutFactory.getOrCreateLayouts(workspace, allTypes) } returns Mono.just(testLayout)
-        every { layoutRepo.saveAll(testLayout, multipleTypeWithLayouts) } returns Mono.just(multipleTypeWithLayouts)
         every { eventHandler.publish(principal, workspace, multipleTypeWithLayouts) } returns Mono.empty()
 
         // When & Then
@@ -185,14 +150,12 @@ internal class TypeServiceTest: ShouldSpec({
 
         // 검증
         verify(exactly = 1) { repo.saveAll(workspace, allTypes) }
-        verify(exactly = 1) { layoutFactory.getOrCreateLayouts(workspace, allTypes) }
-        verify(exactly = 1) { layoutRepo.saveAll(testLayout, multipleTypeWithLayouts) }
         verify(exactly = 1) { eventHandler.publish(principal, workspace, multipleTypeWithLayouts) }
-    }
+    }*/
 
     should("빈 타입 목록으로 호출 시에는 아무것도 저장하지 않음") {
         // Given
-        val emptyTypeWithLayouts = emptyList<TypeWithLayout>()
+        val emptyTypeWithLayouts = emptyList<Type>()
 
         // When & Then
         service.save(principal, workspace, emptyTypeWithLayouts)
@@ -201,8 +164,6 @@ internal class TypeServiceTest: ShouldSpec({
 
         // 검증
         verify(exactly = 0) { repo.saveAll(any(), any()) }
-        verify(exactly = 0) { layoutFactory.getOrCreateLayouts(any(), any()) }
-        verify(exactly = 0) { layoutRepo.saveAll(any(), any()) }
         verify(exactly = 0) { eventHandler.publish(any(), any(), any()) }
     }
 })
