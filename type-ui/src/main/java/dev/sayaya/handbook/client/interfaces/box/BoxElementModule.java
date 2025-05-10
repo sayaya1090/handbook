@@ -5,7 +5,6 @@ import dagger.Module;
 import dagger.Provides;
 import dev.sayaya.handbook.client.usecase.BoxTailor;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
-import elemental2.dom.DomGlobal;
 
 @Module
 public interface BoxElementModule {
@@ -13,7 +12,7 @@ public interface BoxElementModule {
     @Provides static BoxTailor boxTailorProvider() {
         return box->{
             if(box == null) return 0;
-            return 180 + box.attributes().size()*57;
+            return 170 + box.attributes().size()*53;
         };
     }
 }

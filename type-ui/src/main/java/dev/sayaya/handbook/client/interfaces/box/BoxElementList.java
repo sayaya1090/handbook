@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
 import dev.sayaya.handbook.client.domain.Type;
-import dev.sayaya.handbook.client.usecase.TypeListEditing;
+import dev.sayaya.handbook.client.usecase.LayoutTypeList;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -18,10 +18,10 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class BoxElementList implements UpdatableBoxList {
     @Delegate private final BehaviorSubject<BoxElement[]> elements = behavior(new BoxElement[0]);
     private final BoxElementCache factory;
-    @Inject BoxElementList(TypeListEditing typeListEditing, BoxElementCache factory) {
+    @Inject BoxElementList(LayoutTypeList typeListEditing, BoxElementCache factory) {
         this.factory = factory;
-        typeListEditing.subscribe(boxes -> {
-            var next = Arrays.stream(boxes).map(this::findOrCreate).toArray(BoxElement[]::new);
+        typeListEditing.distinctUntilChanged().subscribe(boxes -> {
+            var next = boxes.stream().map(this::findOrCreate).toArray(BoxElement[]::new);
             elements.next(next);
         });
     }
@@ -38,6 +38,6 @@ public class BoxElementList implements UpdatableBoxList {
 
     @Override
     public int estimateBoxHeight(Type box) {
-        return 100 + box.attributes().size()*57;
+        return 170 + box.attributes().size()*53;
     }
 }

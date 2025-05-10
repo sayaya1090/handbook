@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdTextFieldElement;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
+import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 

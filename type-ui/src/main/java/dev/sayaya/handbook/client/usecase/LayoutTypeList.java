@@ -2,51 +2,42 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Period;
 import dev.sayaya.handbook.client.domain.Type;
-import elemental2.dom.DomGlobal;
+import dev.sayaya.rx.subject.BehaviorSubject;
+import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
+
 @Singleton
 public class LayoutTypeList {
-    private final Map<Period, List<String>> typeIdCache = new HashMap<>();
-    private final Map<String, Type> typeCache = new HashMap<>();
+    private final TypeList all;
     private final LayoutProvider layoutProvider;
-    private final RepositoryTypeCache repository;
-    private final TypeListEditing typeListEditing;
-    private final TypeListToDelete typeListToDelete;
-    @Inject LayoutTypeList(LayoutProvider layoutProvider, RepositoryTypeCache repository, TypeListEditing typeListEditing, TypeListToDelete typeListToDelete) {
+    @Delegate private final BehaviorSubject<Set<Type>> types = behavior(Set.of());
+    @Inject LayoutTypeList(LayoutProvider layoutProvider, TypeList all) {
         this.layoutProvider = layoutProvider;
-        this.repository = repository;
-        this.typeListEditing = typeListEditing;
-        this.typeListToDelete = typeListToDelete;
+        this.all = all;
+        layoutProvider.distinctUntilChanged().subscribe(this::update);
+        all.distinctUntilChanged().subscribe(this::update);
     }
-    public void initialize() {
-        layoutProvider.subscribe(this::update);
+    private void update(Period period) {
+        next(filter(all.getValue(), period));
     }
-    void update(Period period) {
-        if (period != null) {
-            if(!typeIdCache.containsKey(period)) repository.list(period).subscribe(types->{
-                types.forEach(type-> typeCache.putIfAbsent(key(type), type));
-                typeIdCache.computeIfAbsent(period, k->new LinkedList<>())
-                        .addAll(types.stream().map(LayoutTypeList::key).collect(Collectors.toList()));
-                fireSubscribe(period);
-            }); else fireSubscribe(period);
-        }
+    private void update(Set<Type> all) {
+        next(filter(all, layoutProvider.getValue()));
     }
-    private void fireSubscribe(Period period) {
-        var deleteCandidates = typeListToDelete.getValue();
-        var typesToEdit = typeIdCache.get(period).stream()
-                .map(typeCache::get)
-                .filter(Objects::nonNull)
-                .filter(type -> !deleteCandidates.contains(type))
-                .toArray(Type[]::new);
-        typeListEditing.next(typesToEdit);
+    private static Set<Type> filter(Set<Type> all, Period period) {
+        if(period == null) return Set.of();
+        if(all == null || all.isEmpty()) return Set.of();
+        return all.stream().filter(type->contains(type, period)).collect(Collectors.toSet());
     }
-    private static String key(Type type) {
-        return type.id() + "$$$" + type.version();
+    private static boolean contains(Type type, Period period) {
+        return  type.effectDateTime() != null && type.expireDateTime() != null && // null 체크 추가
+                type.effectDateTime().before(period.expireDateTime()) &&
+                type.expireDateTime().after(period.effectDateTime());
     }
 }
 

@@ -25,6 +25,7 @@ import static dev.sayaya.rx.subject.Subject.subject;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static dev.sayaya.ui.elements.CardElementBuilder.card;
 import static dev.sayaya.ui.elements.IconElementBuilder.icon;
+import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
 
 public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableBox {
@@ -32,7 +33,9 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CardElementBuilder<?, ?> card;
     private final TypeNameElement title;
-    private final TypeVersionElement version;
+    private final TypeStringValueElement version;
+    private final TypeDateValueElement effectDate;
+    private final TypeDateValueElement expireDate;
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder btnAdd;
     private final Subject<List<Attribute>> values = (Subject) subject(List.class);
     private final SelectedBoxElement selected;
@@ -41,12 +44,14 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
     private final CanvasContextMenuElement canvasContext;
     private double dragStartTimer;
     @AssistedInject BoxElement(@Assisted Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
-                               TypeNameElement.TypeNameElementFactory typeNameFactory, TypeVersionElement.TypeVersionElementFactory typeVersionFactory,
+                               TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
+                               TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
                                BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
-        this(div(), box, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeVersionFactory, context, canvasContext, valueListFactory);
+        this(div(), box, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeValueFactory, typeDateValueFactory, context, canvasContext, valueListFactory);
     }
     private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
-                       TypeNameElement.TypeNameElementFactory typeNameFactory, TypeVersionElement.TypeVersionElementFactory typeVersionFactory,
+                       TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
+                       TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
                        BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
         super(container.element());
         if (box == null) throw new IllegalArgumentException("Box must not be null.");
@@ -55,7 +60,9 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         this.container = container.css("type-box");
         this.card = card().outlined().css("card").attr("tabindex", "0");
         this.title = typeNameFactory.create(this);
-        this.version = typeVersionFactory.create(this);
+        this.version = typeValueFactory.create("Version", value-> actionManager.version(this, value), Type::version).alignRight();
+        this.effectDate = typeDateValueFactory.create("Effect Date", value-> actionManager.effectDateTime(this, value), Type::effectDateTime);
+        this.expireDate = typeDateValueFactory.create("Expire Date", value-> actionManager.expireDateTime(this, value), Type::expireDateTime);
         this.btnAdd = button().icon().add(icon("add")).css("add");
         container.add(card.add(title)
                 .add(div().style("""
@@ -63,14 +70,14 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
                         justify-items: stretch;
                         grid-auto-flow: column;
                         grid-template-rows: 1fr 1fr;
+                        gap: 0.5rem;
                         padding: 0.5rem;
-                        """).add(typeVersionFactory.create(this)).add(typeVersionFactory.create(this)).add(version.style("direction: rtl;")))
-                .add(valueListFactory.valueList(this.values))
+                        """).add(effectDate).add(expireDate).add(version))
+                .add(valueListFactory.valueList(this.values, this))
                 .add(btnAdd));
         update();
         mode.subscribe(this::setMode);
         selected.subscribe(selectedBox -> setSelected(selectedBox.contains(this)));
-
         this.selected = selected;
         this.dragShapeElement = dragShapeElement;
         this.context = context;
@@ -165,5 +172,7 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         values.next(box.attributes());
         title.update(box);
         version.update(box);
+        effectDate.update(box);
+        expireDate.update(box);
     }
 }

@@ -4,7 +4,6 @@ import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
-import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.TypeListToUpsert;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
 

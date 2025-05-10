@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.Objects;
+
 @Data
 @Accessors(fluent = true)
 @Builder
@@ -11,5 +13,22 @@ public class Attribute {
     private String id;
     private String name;
     private String type;
+    private String keyType;
+    private String valueType;
     private Type parent;
+    private String description;
+    private boolean nullable;
+    private boolean inherited;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Attribute cast = (Attribute) o;
+        return Objects.equals(id, cast.id);
+    }
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

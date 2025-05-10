@@ -8,13 +8,14 @@ import lombok.experimental.Accessors;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Accessors(fluent = true)
 @Builder(toBuilder = true)
 public class Type {
-    private String id;
-    private String version;
+    private final String id;
+    private final String version;
     private Date effectDateTime;
     private Date expireDateTime;
     private String description;
@@ -28,20 +29,24 @@ public class Type {
     private int height;
 
     private Type(String id, String version, Date effectDateTime, Date expireDateTime, String description, boolean primitive, List<Attribute> attributes, String parent, int x, int y, int width, int height) {
-        id(id).version(version)
-                .effectDateTime(effectDateTime).expireDateTime(expireDateTime)
+        this.id = validateNonNullOrEmpty(id, "id");
+        this.version = validateNonNullOrEmpty(version, "version");
+        effectDateTime(effectDateTime).expireDateTime(expireDateTime)
                 .description(description).primitive(primitive)
                 .attributes(attributes).parent(parent)
                 .x(x).y(y).width(width).height(height);
         require(expireDateTime.after(effectDateTime), "Expire date time must be after effect date time");
     }
-    public Type id(String id) {
-        this.id = validateNonNullOrEmpty(id, "id");
-        return this;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Type type = (Type) o;
+        return Objects.equals(id, type.id) && Objects.equals(version, type.version);
     }
-    public Type version(String version) {
-        this.version = validateNonNullOrEmpty(version, "version");
-        return this;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, version);
     }
     public Type effectDateTime(Date effectDateTime) {
         this.effectDateTime = validateNonNull(effectDateTime, "Effect date time must not be null");
@@ -74,8 +79,7 @@ public class Type {
     }
     public void copyFrom(Type other) {
         require(other != null, "Other type must not be null");
-        id(other.id).version(other.version)
-                .effectDateTime(other.effectDateTime).expireDateTime(other.expireDateTime)
+        effectDateTime(other.effectDateTime).expireDateTime(other.expireDateTime)
                 .description(other.description).primitive(other.primitive)
                 .attributes(new LinkedList<>(other.attributes)).parent(other.parent)
                 .x(other.x).y(other.y).width(other.width).height(other.height);

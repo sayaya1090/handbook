@@ -36,7 +36,7 @@ public abstract class MockModule {
     @Provides static BoxTailor boxTailorProvider() {
         return box->{
             if(box == null) return 0;
-            return 180 + box.attributes().size()*57;
+            return 170 + box.attributes().size()*53;
         };
     }
     private static final DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss");
@@ -51,8 +51,11 @@ public abstract class MockModule {
                             .description("type_1")
                             .primitive(true)
                             .parent(null)
-                            .attributes(Collections.emptyList())
-                            .x(100).y(100).width(200).height(200).build(),
+                            .attributes(List.of(
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type("Value").nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type("Array").valueType("Value").nullable(true).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$2").name("attr_3").type("Map").keyType("Value").valueType("Value").nullable(false).inherited(true).build()
+                            )).x(100).y(100).width(550).height(371).build(),
                     Type.builder()
                             .id("type_2")
                             .version("t2-v1")
@@ -62,7 +65,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_1")
                             .attributes(Collections.emptyList())
-                            .x(400).y(100).width(200).height(200).build(),
+                            .x(700).y(100).width(550).height(200).build(),
                     Type.builder()
                             .id("type_2")
                             .version("t2-v2")
@@ -72,7 +75,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_1")
                             .attributes(Collections.emptyList())
-                            .x(400).y(100).width(200).height(200).build(),
+                            .x(700).y(100).width(550).height(200).build(),
                     Type.builder()
                             .id("type_3")
                             .version("t3-v1")
@@ -82,7 +85,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_2")
                             .attributes(Collections.emptyList())
-                            .x(200).y(400).width(200).height(200).build(),
+                            .x(200).y(500).width(550).height(200).build(),
                     Type.builder()
                             .id("type_3")
                             .version("t3-v2")
@@ -92,7 +95,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_2")
                             .attributes(Collections.emptyList())
-                            .x(200).y(400).width(200).height(200).build()
+                            .x(200).y(500).width(550).height(200).build()
             );
             @Override
             public Observable<List<Type>> list(Period period) {
@@ -120,10 +123,10 @@ public abstract class MockModule {
     @Provides static LayoutRepository layout() {
         return new LayoutRepository() {
             private final List<Period> periods = List.of(
-                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-01-01 18:00:00")).expireDateTime(dtf.parse("2025-03-01 00:00:00")).build(),
-                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-03-01 00:00:00")).expireDateTime(dtf.parse("2025-08-01 00:00:00")).build(),
-                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-08-01 00:00:00")).expireDateTime(dtf.parse("2025-09-01 00:00:00")).build(),
-                    Period.builder().workspace("1").effectDateTime(dtf.parse("2025-09-01 00:00:00")).expireDateTime(dtf.parse("2025-12-31 00:00:00")).build()
+                    Period.builder().effectDateTime(dtf.parse("2025-01-01 18:00:00")).expireDateTime(dtf.parse("2025-03-01 00:00:00")).build(),
+                    Period.builder().effectDateTime(dtf.parse("2025-03-01 00:00:00")).expireDateTime(dtf.parse("2025-08-01 00:00:00")).build(),
+                    Period.builder().effectDateTime(dtf.parse("2025-08-01 00:00:00")).expireDateTime(dtf.parse("2025-09-01 00:00:00")).build(),
+                    Period.builder().effectDateTime(dtf.parse("2025-09-01 00:00:00")).expireDateTime(dtf.parse("2025-12-31 00:00:00")).build()
             );
             @Override
             public Observable<List<Period>> layouts() {

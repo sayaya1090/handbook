@@ -16,13 +16,14 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         components.renderer().next(frame-> {
+            frame.style.overflow = "auto";;
             frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/typebox.css").element());
             frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/canvas.css").element());
             Observable.timer(1, 100).take(1).subscribe(tick-> {
                 String url = DomGlobal.window.location.pathname + DomGlobal.window.location.search;
                 update(url, frame);
             });
-            components.boxCache().initialize();
+            components.periodService();
             return true;
         });
         components.tools().subscribe(tools -> Arrays.stream(tools).forEach(this::toolClickHandler));

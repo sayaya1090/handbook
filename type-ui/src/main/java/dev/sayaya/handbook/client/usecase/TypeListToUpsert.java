@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Type;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.Subscription;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -53,5 +54,9 @@ public class TypeListToUpsert {
     }
     public Subscription subscribe(Consumer<Set<Type>> consumer) {
         return types.subscribe(consumer);
+    }
+    public void clear() {
+        filter.clear();
+        types.next(Set.of());
     }
 }

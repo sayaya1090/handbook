@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
@@ -14,7 +15,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class BasetimeProvider {
     @Delegate private final BehaviorSubject<Date> subject = behavior(null);
     @Inject BasetimeProvider(LayoutProvider layout) {
-        layout.subscribe(period -> {
+        layout.distinctUntilChanged().subscribe(period -> {
             if(period!=null) next(period.effectDateTime());
             else next(null);
         });

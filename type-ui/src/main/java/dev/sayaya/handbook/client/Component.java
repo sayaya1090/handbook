@@ -6,9 +6,7 @@ import dev.sayaya.handbook.client.interfaces.api.ApiModule;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementModule;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
-import dev.sayaya.handbook.client.usecase.LayoutTypeList;
-import dev.sayaya.handbook.client.usecase.ClientSharedModule;
-import dev.sayaya.handbook.client.usecase.Render;
+import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 
@@ -23,5 +21,5 @@ public interface Component {
     Observer<Progress> progress();
     Observer<Render> renderer();
     Observable<Tool[]> tools();
-    LayoutTypeList boxCache();
+    PeriodRecalculationService periodService();
 }

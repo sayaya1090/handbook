@@ -4,7 +4,7 @@ import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.action.ActionFactory;
-import dev.sayaya.handbook.client.usecase.action.ResizeBoxAction;
+import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
@@ -22,18 +23,20 @@ public class ActionManager {
     private final LinkedList<Action> redo = new LinkedList<>();
     private final ActionFactory factory;
     private final BoxTailor tailor;
+    private final LayoutProvider layout;
     @Delegate private final LayoutActionManager layoutActionManager;
-    @Inject ActionManager(ActionFactory factory, BoxTailor tailor, LayoutActionManager layoutActionManager) {
+    @Inject ActionManager(ActionFactory factory, BoxTailor tailor, LayoutProvider layout, LayoutActionManager layoutActionManager) {
         this.factory = factory;
         this.tailor = tailor;
+        this.layout = layout;
         this.layoutActionManager = layoutActionManager;
     }
     public void addType(double x, double y) {
         var type = Type.builder().id("Untitle-" + generateUniqueString()).version("0.0.0")
-                .effectDateTime(new Date(0))
-                .expireDateTime(new Date(32503680000000L))
+                .effectDateTime(layout.getValue().effectDateTime())
+                .expireDateTime(layout.getValue().expireDateTime())
                 .attributes(List.of())
-                .x((int)x).y((int)y).width(250).height(1)
+                .x((int)x).y((int)y).width(550).height(1)
                 .build();
         type = type.height(tailor.estimateBoxHeight(type));
         var action = factory.complex (
@@ -72,7 +75,7 @@ public class ActionManager {
         ).toArray(Type[]::new);
         var pushOutAction = factory.pushOutOverlap(updateBoxes);
         var actions = Stream.concat(
-                Arrays.stream(boxElements).map(boxElement -> new ResizeBoxAction(boxElement, width, height)),
+                Arrays.stream(boxElements).map(boxElement -> factory.resize(boxElement, width, height)),
                 Stream.of(pushOutAction)
         ).toArray(Action[]::new);
         var action = factory.complex(actions);
@@ -80,25 +83,59 @@ public class ActionManager {
         action.execute();
     }
     public void title(UpdatableBox boxElement, String title) {
+        var prev = boxElement.box();
         var next = boxElement.box().toBuilder().id(title).build();
-        var action = factory.editBox(boxElement, next);
+        var action = factory.replaceBox(prev, next);
         push(action);
         action.execute();
     }
     public void version(UpdatableBox boxElement, String version) {
+        var prev = boxElement.box();
         var next = boxElement.box().toBuilder().version(version).build();
-        var action = factory.editBox(boxElement, next);
+        var action = factory.replaceBox(prev, next);
+        push(action);
+        action.execute();
+    }
+    public void effectDateTime(UpdatableBox boxElement, Date effectDateTime) {
+        var next = boxElement.box().toBuilder().effectDateTime(effectDateTime).build();
+        var action = factory.editBox(boxElement.box(), next);
+        push(action);
+        action.execute();
+    }
+    public void expireDateTime(UpdatableBox boxElement, Date expireDateTime) {
+        var next = boxElement.box().toBuilder().expireDateTime(expireDateTime).build();
+        var action = factory.editBox(boxElement.box(), next);
         push(action);
         action.execute();
     }
     public void addValue(UpdatableBox boxElement) {
-        var value = Attribute.builder().name("property").build();
+        var uniqueString = generateUniqueString();
+        var value = Attribute.builder().id(boxElement.box().id() + "$$$" + boxElement.box().version() + "$$$" + uniqueString).name("prop-" + uniqueString).nullable(true).type("Value").build();
+        var before = new LinkedList<>(boxElement.box().attributes());
+        var after = new LinkedList<>(before);
+        after.add(value);
+        var add = factory.addAttribute(boxElement, before, after);
+
         var nextBox = boxElement.box().toBuilder().attribute(value).build();
         nextBox = nextBox.height(tailor.estimateBoxHeight(nextBox));
-        var add = factory.addAttribute(boxElement, value);
-        var resize = new ResizeBoxAction(boxElement, nextBox.width(), nextBox.height());
+        var resize = factory.resize(boxElement, nextBox.width(), nextBox.height());
         var pushOutAction = factory.pushOutOverlap(nextBox);
         var action = factory.complex(add, resize, pushOutAction);
+        push(action);
+        action.execute();
+    }
+    public void removeValue(UpdatableBox boxElement, Attribute... attributes) {
+        var set = Arrays.stream(attributes).collect(Collectors.toUnmodifiableSet());
+        var nextAttributes = boxElement.box().attributes().stream().filter(a->!set.contains(a)).collect(Collectors.toUnmodifiableList());
+        var rem = factory.addAttribute(boxElement, boxElement.box().attributes(), nextAttributes);
+
+        var nextBox = boxElement.box().toBuilder().clearAttributes().attributes(nextAttributes).build();  // Resize를 위해
+        nextBox = nextBox.height(tailor.estimateBoxHeight(nextBox));
+        DomGlobal.console.log(nextAttributes);
+        DomGlobal.console.log(boxElement.box().height());
+        DomGlobal.console.log(nextBox.height());
+        var resize = factory.resize(boxElement, nextBox.width(), nextBox.height());
+        var action = factory.complex(rem, resize);
         push(action);
         action.execute();
     }

@@ -6,8 +6,11 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static elemental2.core.Global.JSON;
 import static jsinterop.annotations.JsPackage.GLOBAL;
@@ -32,8 +35,10 @@ public final class TypeNative {
                 .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
                 .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null)
                 .description(description).primitive(primitive)
-                .attributes(List.of())
-                .parent(parent)
+                .attributes(attributes != null ? IntStream.range(0, attributes.length)
+                        .mapToObj(i-> attributes[i].toDomain(id, version, i))
+                        .collect(Collectors.toList()) : List.of()
+                ).parent(parent)
                 .x((int)x).y((int)y).width((int)width).height((int)height)
                 .build();
     }
@@ -46,7 +51,7 @@ public final class TypeNative {
         nativeType.expireDateTime = type.expireDateTime()!=null?Long.valueOf(type.expireDateTime().getTime()).doubleValue():null;
         nativeType.description = type.description();
         nativeType.primitive = type.primitive();
-        nativeType.attributes = new AttributeNative[0];
+        nativeType.attributes = type.attributes().stream().map(AttributeNative::from).toArray(i-> new AttributeNative[i]);
         nativeType.parent = type.parent();
         nativeType.x = type.x();
         nativeType.y = type.y();

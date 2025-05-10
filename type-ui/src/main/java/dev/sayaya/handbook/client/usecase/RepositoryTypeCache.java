@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
+import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Period;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.rx.Observable;
@@ -9,6 +10,7 @@ import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /*
@@ -37,7 +39,34 @@ public class RepositoryTypeCache {
         return cache.containsKey(key(type));
     }
     public boolean isChanged(Type type) {
-        var origin = cache.get(key(type));
-        return !type.equals(origin);
+        return !equalsExactly(type, cache.get(key(type)));
+    }
+    private boolean equalsExactly(Type type, Type origin) {
+        if(!type.equals(origin)) return false;
+        return Objects.equals(type.effectDateTime(), origin.effectDateTime()) &&
+               Objects.equals(type.expireDateTime(), origin.expireDateTime()) &&
+               Objects.equals(type.description(), origin.description()) &&
+               Objects.equals(type.primitive(), origin.primitive()) &&
+               equalsExactly(type.attributes(), origin.attributes()) &&
+               Objects.equals(type.parent(), origin.parent()) &&
+               type.x() == origin.x() &&
+               type.y() == origin.y() &&
+               type.width() == origin.width() &&
+               type.height() == origin.height();
+    }
+    private boolean equalsExactly(List<Attribute> attributes, List<Attribute> origin) {
+        if(attributes.size() != origin.size()) return false;
+        for (int i = 0; i < attributes.size(); i++) if(!equalsExactly(attributes.get(i), origin.get(i))) return false;
+        return true;
+    }
+    private boolean equalsExactly(Attribute attribute, Attribute origin) {
+        return Objects.equals(attribute.name(), origin.name()) &&
+               Objects.equals(attribute.type(), origin.type()) &&
+               Objects.equals(attribute.keyType(), origin.keyType()) &&
+               Objects.equals(attribute.valueType(), origin.valueType()) &&
+               Objects.equals(attribute.parent(), origin.parent()) &&
+               Objects.equals(attribute.description(), origin.description()) &&
+               attribute.nullable() == origin.nullable() &&
+               attribute.inherited() == origin.inherited();
     }
 }
