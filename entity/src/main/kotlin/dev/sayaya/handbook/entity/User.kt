@@ -16,5 +16,5 @@ internal class User {
     @CreatedDate @Column(name = "created_at", nullable = false) lateinit var createDateTime: Instant
     @LastModifiedDate @Column(name = "last_modified_at", nullable = false) lateinit var lastModifyDateTime: Instant
     @Column(name = "last_login_at") val lastLoginDateTime: Instant? = null
-    @Column(columnDefinition = "VARCHAR(12) NOT NULL DEFAULT 'ACTIVATED'") var state: String = "ACTIVATED"
+    @Column(columnDefinition = "VARCHAR(12) DEFAULT 'ACTIVATED'::VARCHAR NOT NULL") var state: String = "ACTIVATED"
 }

@@ -81,10 +81,9 @@ WITH RECURSIVE
             v.expire_at,
             att.name AS attribute_name,
             att.attribute_type,
+            att.order,
             att.description,
             att.nullable,
-            att.value_type,
-            att.reference_type,
             0 AS inheritance_depth,
             v.parent AS parent_type
         FROM versions v
@@ -98,10 +97,9 @@ WITH RECURSIVE
             ic.expire_at,
             att.name,
             att.attribute_type,
+            att.order,
             att.description,
             att.nullable,
-            att.value_type,
-            att.reference_type,
             ic.inheritance_depth + 1,
             t.parent
         FROM inheritance_chain ic
@@ -120,10 +118,9 @@ WITH RECURSIVE
             ic.expire_at,
             ic.attribute_name,
             ic.attribute_type,
+            ic.order,
             ic.description,
             ic.nullable,
-            ic.value_type,
-            ic.reference_type,
             ic.inheritance_depth,
             ROW_NUMBER() OVER (
                 PARTITION BY ic.workspace, ic.descendant_type, ic.effective_at, ic.attribute_name
@@ -138,10 +135,9 @@ SELECT
     version,
     attribute_type,
     attribute_name AS name,
+    "order",
     description,
     nullable,
-    value_type,
-    reference_type,
     effective_at,
     expire_at
 FROM filtered_inheritance

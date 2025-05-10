@@ -13,7 +13,7 @@ internal class Database {
     }
     fun dump(): String {
         val process = ProcessBuilder(
-            "docker", "exec", postgres.containerId,
+            "podman", "exec", postgres.containerId,
             "pg_dump", "-h", "localhost", "-U", postgres.username, "--no-owner", "--schema-only", postgres.databaseName
         ).redirectErrorStream(true).start()
 

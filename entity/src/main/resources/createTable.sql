@@ -45,19 +45,14 @@ CREATE TABLE public.attribute (
     workspace uuid NOT NULL,
     type uuid NOT NULL,
     name character varying(32) NOT NULL,
-    attribute_type character varying(31) NOT NULL,
+    attribute_type jsonb NOT NULL,
     "order" smallint NOT NULL,
     nullable boolean NOT NULL,
     description character varying(255),
-    value_validators jsonb,
-    value_type character varying(255),
-    key_validators jsonb,
-    key_type character varying(255),
-    reference_type character varying(64),
-    file_extensions text,
     PRIMARY KEY (workspace, type, name),
-    CONSTRAINT attribute_key_type_check CHECK (((key_type)::text = ANY ((ARRAY['Value'::character varying, 'Array'::character varying, 'Map'::character varying, 'File'::character varying, 'Document'::character varying])::text[]))),
-    CONSTRAINT attribute_value_type_check CHECK (((value_type)::text = ANY ((ARRAY['Value'::character varying, 'Array'::character varying, 'Map'::character varying, 'File'::character varying, 'Document'::character varying])::text[])))
+    CONSTRAINT attribute_type_check CHECK (
+        (attribute_type->>'base_type') IN ('Value', 'Array', 'Map', 'File', 'Document')
+    )
 );
 CREATE TABLE public.layout (
     workspace uuid NOT NULL,

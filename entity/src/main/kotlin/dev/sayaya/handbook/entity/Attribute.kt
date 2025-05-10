@@ -1,23 +1,22 @@
 package dev.sayaya.handbook.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.hibernate.type.SqlTypes
 import java.io.Serializable
 import java.util.*
 
 @Table(name = "attribute")
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "attribute_type", discriminatorType = DiscriminatorType.STRING)
-internal abstract class Attribute {
+internal class Attribute {
     @EmbeddedId lateinit var id: AttributeId
-    @ManyToOne
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumns(
+    @ManyToOne @JoinColumns(
         JoinColumn(name = "workspace", insertable = false, updatable = false),
         JoinColumn(name = "type", insertable = false, updatable = false)
-    ) private lateinit var typeObj: Type
+    ) @OnDelete(action = OnDeleteAction.CASCADE)
+    private lateinit var typeObj: Type
     @Column(name = "\"order\"", columnDefinition = "smallint") var order: Short = 0
     fun name() = id.name
     fun type(newType: Type) {
@@ -30,8 +29,12 @@ internal abstract class Attribute {
         id = if (::typeObj.isInitialized) AttributeId(workspace = typeObj.workspace, typeId = typeObj.id, name = newName)
         else AttributeId(workspace = UUID.randomUUID(), typeId = UUID.randomUUID(), name = newName)
     }
-    @Column(nullable = false) open var nullable: Boolean = false
-    @Column open var description: String? = null
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "attribute_type", columnDefinition = "jsonb", nullable = false)
+    lateinit var attributeType: GenericTypeDefinition
+    @Column(nullable = false) var nullable: Boolean = false
+    @Column var description: String? = null
+
     companion object {
         @Embeddable
         data class AttributeId (
@@ -39,11 +42,13 @@ internal abstract class Attribute {
             @Column(name = "type", updatable = false) val typeId: UUID = UUID.randomUUID(),
             @Column(name = "name", length = 32, nullable = false, updatable = false) val name: String = ""
         ) : Serializable
-        interface HasKeyType {
-            val keyType: AttributeType
-        }
-        interface HasValueType {
-            val valueType: AttributeType
+        fun of(type: Type, name: String, attributeType: GenericTypeDefinition, order: Short, nullable: Boolean = false, description: String? = null): Attribute = Attribute().apply {
+            type(type) // typeObj 및 id 설정
+            name(name) // id의 name 설정
+            this.attributeType = attributeType
+            this.order = order
+            this.nullable = nullable
+            this.description = description
         }
     }
 }
