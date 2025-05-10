@@ -8,6 +8,7 @@ import java.util.*
 data class R2dbcAttributeEntity (
     val workspace: UUID,
     val type: UUID,
+    val order: Short,
     val name: String,
     val attributeType: AttributeType,
     val keyType: AttributeType?,
