@@ -1,9 +1,10 @@
 package dev.sayaya.handbook.entity.view
 
+import dev.sayaya.handbook.entity.Attribute
 import dev.sayaya.handbook.entity.AttributeType
+import dev.sayaya.handbook.entity.GenericTypeDefinition
 import dev.sayaya.handbook.entity.Type
 import dev.sayaya.handbook.entity.User
-import dev.sayaya.handbook.entity.attributes.*
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainAll
@@ -75,25 +76,43 @@ internal class TypeAttributesMvTest(
                 val type2Def2 = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type2Version2!!.id))
                 val type3Def = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type3Version1!!.id))
                 val type3Def2 = em.find(Type::class.java, Type.Companion.TypeId(workspace=workspace, id=type3Version2!!.id))
-                val type1DefAttr1 = ValueAttribute.of(type1Def, "common_attr", 0).apply {
+                val type1DefAttr1 = Attribute.of(type1Def, "common_attr", GenericTypeDefinition(baseType = AttributeType.Value), 0).apply {
                     description = "Common Attribute in Type1"
                 }
-                val type2DefAttr1 = ArrayAttribute.of(type2Def,  "unique_attr", 0,AttributeType.Value).apply {
+                val type2DefAttr1 = Attribute.of(type2Def,  "unique_attr", GenericTypeDefinition(
+                    baseType = AttributeType.Array,
+                    typeArguments = listOf(GenericTypeDefinition(baseType = AttributeType.Value))
+                ), 0).apply {
                     description = "Unique Attribute in Type2"
                 }
-                val type2DefAttr2 = ValueAttribute.of(type2Def, "common_attr", 1).apply {
+                val type2DefAttr2 = Attribute.of(type2Def, "common_attr", GenericTypeDefinition(baseType = AttributeType.Value),1).apply {
                     description = "Overwritten Attribute in Type2"
                 }
-                val type3DefAttr1 = DocumentAttribute.of(type3Def, "exclusive_attr", 0, "type_1").apply {
+                val type3DefAttr1 = Attribute.of(type3Def, "exclusive_attr", GenericTypeDefinition(
+                    baseType = AttributeType.Document,
+                    referencedType = "type_1"
+                ), 0).apply {
                     description = "Exclusive Attribute in Type3"
                 }
-                val type2Def2Attr2 = FileAttribute.of(type2Def2, "common_attr", 1,"png,jpg,jpeg").apply {
+                val type2Def2Attr2 = Attribute.of(type2Def2, "common_attr", GenericTypeDefinition(
+                    baseType = AttributeType.File,
+                    constraints = mapOf("extensions" to "png,jpg,jpeg")
+                ), 1).apply {
                     description = "Overwritten Attribute in Type2"
                 }
-                val type3Def2Attr1 = DocumentAttribute.of(type3Def2, "exclusive_attr", 0,"type_1").apply {
+                val type3Def2Attr1 = Attribute.of(type3Def2, "exclusive_attr", GenericTypeDefinition(
+                    baseType = AttributeType.Document,
+                    referencedType = "type_1"
+                ), 0).apply {
                     description = "Exclusive Attribute in Type3"
                 }
-                val type3Def2Attr2 = MapAttribute.of(type3Def2, "exclusive_attr2", 1,AttributeType.Value, AttributeType.Value).apply {
+                val type3Def2Attr2 = Attribute.of(type3Def2, "exclusive_attr2", GenericTypeDefinition(
+                    baseType = AttributeType.Map,
+                    typeArguments = listOf(
+                        GenericTypeDefinition(baseType = AttributeType.Value),
+                        GenericTypeDefinition(baseType = AttributeType.Value)
+                    )
+                ), 1).apply {
                     description = "Added Attribute in Type3"
                 }
                 em.merge(type1DefAttr1)
