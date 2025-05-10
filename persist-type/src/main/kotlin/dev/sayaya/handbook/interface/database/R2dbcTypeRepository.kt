@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.`interface`.database
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.f4b6a3.ulid.Ulid
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.Type
@@ -14,7 +15,10 @@ import java.time.Instant
 import java.util.*
 
 @Repository
-class R2dbcTypeRepository(override val databaseClient: DatabaseClient): TypeRepository, R2dbcTypeBatchUpsertRepository, R2dbcTypeBatchDeleteRepository {
+class R2dbcTypeRepository(
+    override val databaseClient: DatabaseClient,
+    override val objectMapper: ObjectMapper
+): TypeRepository, R2dbcTypeBatchUpsertRepository, R2dbcTypeBatchDeleteRepository {
     override val log: Logger = LoggerFactory.getLogger(this::class.java)
     override fun saveAll(workspace: UUID, types: List<Type>): Mono<List<Type>> = getAuthenticatedUser().flatMapMany { user ->
         saveAll(types.toEntity(workspace), user, Instant.now())
@@ -50,10 +54,6 @@ class R2dbcTypeRepository(override val databaseClient: DatabaseClient): TypeRepo
             name = attribute.name,
             order = attribute.order,
             attributeType = attribute.type,
-            keyType = if(attribute is Attribute.Companion.HasKeyType) attribute.keyType else null,
-            valueType = if(attribute is Attribute.Companion.HasValueType) attribute.valueType else null,
-            referenceType = if(attribute is Attribute.Companion.DocumentAttribute) attribute.referenceType else null,
-            fileExtensions = if(attribute is Attribute.Companion.FileAttribute) attribute.extensions.joinToString(",") else null,
             description = attribute.description,
             nullable = attribute.nullable
         )

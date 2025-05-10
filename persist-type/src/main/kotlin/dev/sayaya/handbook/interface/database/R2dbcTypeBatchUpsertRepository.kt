@@ -1,10 +1,12 @@
 package dev.sayaya.handbook.`interface`.database
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.r2dbc.core.DatabaseClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.io.Serializable
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -24,6 +26,7 @@ import java.util.stream.Collectors
  */
 interface R2dbcTypeBatchUpsertRepository {
     val databaseClient: DatabaseClient
+    val objectMapper: ObjectMapper
     val log: Logger
     fun saveAll(entities: List<R2dbcTypeEntity>, createdBy: String, createdAt: Instant): Flux<R2dbcTypeEntity> {
         val constantCsv = listOf(escapeSql(createdBy), formatTimestampLiteral(createdAt)).joinToString(separator = ", ", prefix = ", ")
@@ -44,6 +47,20 @@ interface R2dbcTypeBatchUpsertRepository {
         log.info(sql)
         return databaseClient.sql(sql).fetch().rowsUpdated()
     }
+    private fun serialize(value: Serializable?): String {
+        if (value == null) return "NULL" // SQL의 NULL 값으로 처리
+        val escapedValue = objectMapper.writeValueAsString(value)
+        return "'$escapedValue'"
+    }
+    fun R2dbcAttributeEntity.toCsv(): String = """
+            ${escapeSql(workspace.toString())},
+            ${escapeSql(type.toString())},
+            ${escapeSql(name)},
+            ${serialize(attributeType)},
+            $order,
+            $nullable,
+            ${escapeSql(description)}
+        """.trimIndent()
     companion object {
         private const val INSERT_TYPE_SQL = """
             INSERT INTO type (workspace, id, name, version, parent, effective_at, expire_at, 
@@ -51,8 +68,7 @@ interface R2dbcTypeBatchUpsertRepository {
         """
         private const val INSERT_TYPE_ATTRIBUTE_SQL = """
             INSERT INTO attribute (workspace, type, name, attribute_type, "order", nullable,
-            description, value_validators, value_type, key_validators, key_type, reference_type,
-            file_extensions) 
+            description) 
         """
         private val timestampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSXXX").withZone(ZoneOffset.UTC)
 
@@ -81,20 +97,5 @@ interface R2dbcTypeBatchUpsertRepository {
             ${formatNumberLiteral(width)},
             ${formatNumberLiteral(height)}
         """
-        fun R2dbcAttributeEntity.toCsv(): String = """
-            ${escapeSql(workspace.toString())},
-            ${escapeSql(type.toString())},
-            ${escapeSql(name)},
-            ${escapeSql(attributeType.name)},
-            $order,
-            $nullable,
-            ${escapeSql(description)},
-            ${/*escapeSql(valueValidators)*/ "NULL"},
-            ${escapeSql(valueType?.name)},
-            ${/*escapeSql(keyValidators)*/ "NULL"},
-            ${escapeSql(keyType?.name)},
-            ${escapeSql(referenceType)},
-            ${escapeSql(fileExtensions)}
-        """.trimIndent()
     }
 }

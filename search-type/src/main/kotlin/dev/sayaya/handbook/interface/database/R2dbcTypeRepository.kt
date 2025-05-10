@@ -2,6 +2,7 @@ package dev.sayaya.handbook.`interface`.database
 
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
+import dev.sayaya.handbook.domain.AttributeTypeDefinition
 import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.exception.MissingFieldException
@@ -85,48 +86,14 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate): TypeReposi
         width = width.unsigned(),
         height = height.unsigned()
     )
-    private fun R2dbcAttributeEntity.toDomain(): Attribute = when(attributeType) {
-        AttributeType.Value -> Attribute.Companion.ValueAttribute(
-            name=name,
-            order=order,
-            description=description,
-            nullable=nullable,
-            inherited=false
-        )
-        AttributeType.Array -> Attribute.Companion.ArrayAttribute (
-            name=name,
-            order=order,
-            description=description,
-            nullable=nullable,
-            valueType=valueType ?: throw MissingFieldException("Missing valueType for ArrayAttribute with name: $name"),
-            inherited = false
-        )
-        AttributeType.Map -> Attribute.Companion.MapAttribute(
-            name=name,
-            order=order,
-            description=description,
-            nullable=nullable,
-            keyType=keyType ?: throw IllegalStateException("Missing keyType for MapAttribute with name: $name"),
-            valueType=valueType ?: throw IllegalStateException("Missing valueType for MapAttribute with name: $name"),
-            inherited=false
-        )
-        AttributeType.File -> Attribute.Companion.FileAttribute(
-            name=name,
-            order=order,
-            description=description,
-            nullable=nullable,
-            extensions=fileExtensions?.split(",")?.map { it.trim() }?.toSet() ?: throw IllegalStateException(),
-            inherited=false
-        )
-        AttributeType.Document -> Attribute.Companion.DocumentAttribute(
-            name=name,
-            order=order,
-            description=description,
-            nullable=nullable,
-            referenceType=referenceType ?: throw IllegalStateException(),
-            inherited=false
-        )
-    }
+    private fun R2dbcAttributeEntity.toDomain(): Attribute = Attribute (
+        name=name,
+        type=attributeType,
+        order=order,
+        description=description,
+        nullable=nullable,
+        inherited=false
+    )
 
     companion object {
         private val FIND_LAYOUT_SQL = """
