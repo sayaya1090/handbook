@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.`interface`.database
 
-import dev.sayaya.handbook.domain.AttributeType
+import dev.sayaya.handbook.domain.AttributeTypeDefinition
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
@@ -13,11 +13,7 @@ data class R2dbcAttributeEntity (
     val type: UUID,
     val name: String,
     val order: Short,
-    val attributeType: AttributeType,
-    val keyType: AttributeType?,
-    val valueType: AttributeType?,
-    val referenceType: String?,
-    val fileExtensions: String?,
+    val attributeType: AttributeTypeDefinition,
     var description: String?,
     var nullable: Boolean,
 ) {

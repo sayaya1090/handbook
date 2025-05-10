@@ -50,10 +50,6 @@ class R2dbcTypeRepository(override val databaseClient: DatabaseClient): TypeRepo
             name = attribute.name,
             order = attribute.order,
             attributeType = attribute.type,
-            keyType = if(attribute is Attribute.Companion.HasKeyType) attribute.keyType else null,
-            valueType = if(attribute is Attribute.Companion.HasValueType) attribute.valueType else null,
-            referenceType = if(attribute is Attribute.Companion.DocumentAttribute) attribute.referenceType else null,
-            fileExtensions = if(attribute is Attribute.Companion.FileAttribute) attribute.extensions.joinToString(",") else null,
             description = attribute.description,
             nullable = attribute.nullable
         )
