@@ -29,9 +29,7 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
     }
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder title = textField().outlined().css("label");
     private final CheckboxElementBuilder nullable = CheckboxElementBuilder.checkbox();
-    private final SelectElementBuilder.OutlinedSelectElementBuilder type = select().outlined().css("type");
-    private final SelectElementBuilder.OutlinedSelectElementBuilder keyType = select().outlined().css("type");
-    private final SelectElementBuilder.OutlinedSelectElementBuilder valueType = select().outlined().css("type");
+    //private final SelectElementBuilder.OutlinedSelectElementBuilder type = select().outlined().css("type");
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder btnRem = button().icon().add(icon("remove"));
     private final Subscription typeListSubscription;
     private ValueElement(HTMLContainerBuilder<HTMLDivElement> element, Attribute value, AttributeTypeList typeList, ActionManager actionManager, UpdatableBox parent) {
@@ -40,13 +38,13 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
         typeListSubscription = typeList.distinctUntilChanged().subscribe(this::update);
         element.css("property")
                 .add(div().style("display: flex; align-items: center;").add(nullable).add(title))
-                .add(div().style("display: flex; align-items: center;").add(type).add(keyType).add(valueType).add(btnRem));
+                .add(div().style("display: flex; align-items: center;").add(btnRem));
         nullable.onChange(evt->target.nullable(!nullable.isSelected()));
         title.onChange(evt->target.name(title.value()));
-        type.onChange(evt->{
+        /*type.onChange(evt->{
             target.type(type.element().value);
             updateTypes();
-        });
+        });*/
         btnRem.onClick(evt->{
             actionManager.removeValue(parent, value);
             typeListSubscription.unsubscribe();
@@ -57,34 +55,14 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
         this.target = value;
         nullable.select(!value.nullable());
         title.value(value.name());
-        type.element().value = value.type();
-        updateTypes();
+        //type.element().value = value.type();
     }
     private void update(String[] types) {
-        update(type, types);
-        update(keyType, types);
-        update(valueType, types);
+        //update(type, types);
     }
     private static void update(SelectElementBuilder.OutlinedSelectElementBuilder elem, String[] types) {
         elem.removeAllOptions();
         for(var t: types) elem.option().value(t).headline(t);
-    }
-    private void updateTypes() {
-        String type = target.type() == null ? "Value" : target.type();
-        switch (type) {
-            case "Value", "File" -> {
-                keyType.element().style.display = "none";
-                valueType.element().style.display = "none";
-            }
-            case "Array", "Document" -> {
-                keyType.element().style.display = "none";
-                valueType.element().style.display = "inherit";
-            }
-            case "Map" -> {
-                keyType.element().style.display = "inherit";
-                valueType.element().style.display = "inherit";
-            }
-        }
     }
     @AssistedFactory
     interface ValueElementFactory {

@@ -62,8 +62,6 @@ public class RepositoryTypeCache {
     private boolean equalsExactly(Attribute attribute, Attribute origin) {
         return Objects.equals(attribute.name(), origin.name()) &&
                Objects.equals(attribute.type(), origin.type()) &&
-               Objects.equals(attribute.keyType(), origin.keyType()) &&
-               Objects.equals(attribute.valueType(), origin.valueType()) &&
                Objects.equals(attribute.parent(), origin.parent()) &&
                Objects.equals(attribute.description(), origin.description()) &&
                attribute.nullable() == origin.nullable() &&

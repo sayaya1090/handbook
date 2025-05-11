@@ -52,9 +52,9 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent(null)
                             .attributes(List.of(
-                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type("Value").nullable(false).inherited(false).build(),
-                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type("Array").valueType("Value").nullable(true).inherited(false).build(),
-                                    Attribute.builder().id("type_1$$$t1-v1$$$2").name("attr_3").type("Map").keyType("Value").valueType("Value").nullable(false).inherited(true).build()
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(new AttributeTypeDefinition.ValueType()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type(new AttributeTypeDefinition.ArrayType(new AttributeTypeDefinition.ValueType())).nullable(true).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$2").name("attr_3").type(new AttributeTypeDefinition.MapType(new AttributeTypeDefinition.ValueType(), new AttributeTypeDefinition.ValueType())).nullable(false).inherited(true).build()
                             )).x(100).y(100).width(550).height(371).build(),
                     Type.builder()
                             .id("type_2")

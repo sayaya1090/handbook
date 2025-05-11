@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Attribute;
+import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.action.ActionFactory;
 import elemental2.dom.DomGlobal;
@@ -110,7 +111,9 @@ public class ActionManager {
     }
     public void addValue(UpdatableBox boxElement) {
         var uniqueString = generateUniqueString();
-        var value = Attribute.builder().id(boxElement.box().id() + "$$$" + boxElement.box().version() + "$$$" + uniqueString).name("prop-" + uniqueString).nullable(true).type("Value").build();
+        var value = Attribute.builder().id(boxElement.box().id() + "$$$" + boxElement.box().version() + "$$$" + uniqueString).name("prop-" + uniqueString).nullable(true)
+                .type(new AttributeTypeDefinition.ValueType())
+                .build();
         var before = new LinkedList<>(boxElement.box().attributes());
         var after = new LinkedList<>(before);
         after.add(value);

@@ -12,9 +12,7 @@ import java.util.Objects;
 public class Attribute {
     private String id;
     private String name;
-    private String type;
-    private String keyType;
-    private String valueType;
+    private AttributeTypeDefinition type;
     private Type parent;
     private String description;
     private boolean nullable;
