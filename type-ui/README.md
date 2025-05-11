@@ -1,4 +1,24 @@
 ## 타입 UI
+### 도메인
+
+### 역할
+  - WorkspaceProvider: 단일 워크스페이스 공급자
+  - LayoutRepository: 영속된 레이아웃 읽기를 위한 인터페이스
+  - CalculatedLayoutService: 타입이 변경되었을 때 레이아웃 재계산 기능 제공
+  - LayoutList: 현재 클라이언트에서 다루고 있는 전체 레이아웃 목록 
+  - LayoutProvider: 전체 레이아웃에서 현재 화면에서 사용 중인 레이아웃 공급자
+  - TypeRepository: 타입 영속/영속된 타입 읽기를 위한 인터페이스
+  - RepositoryTypeCache: DB에서 한번 읽은 타입에 대한 캐시
+  - LayoutTypeList: 각 레이아웃마다 출력되어야 할 타입 관리
+  - TypeListEditing: 현재 레이아웃에서 출력 중인 타입
+  - TypeListToUpsert: 추가/변경되어 DB에 반영되어야 할 타입 목록
+  - TypeListToDelete: 삭제되어 DB에 반영되어야 할 타입 목록
+### 구조
+ 워크스페이스 변경(WorkspaceProvider) -> 레이아웃 목록 업데이트(LayoutList) -> 마지막 레이아웃 선택(LayoutProvider)
+ 레이아웃 변경(LayoutProvider) -> 필요시 DB 쿼리(TypeCache) -> Box 목록 업데이트(BoxList) -> 화면 출력
+ 수정 ->
+ 저장 요청 -> 업데이트 목록 -> 저장
+
 ### 일반 기능
     타입 추가: 빈 영역에서 컨텍스트 메뉴
     삭제: 박스를 선택하고 컨텍스트 메뉴

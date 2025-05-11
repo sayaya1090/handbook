@@ -23,7 +23,7 @@ public class WorkspaceRequireHandler {
         user.subscribe(this::update);
     }
     private void update(User user) {
-        if(user==null || (user.workspaces()!=null && user.workspaces().length > 1)) drawerMode.next(DrawerState.COLLAPSE);
+        if(user!=null && user.workspaces()!=null && user.workspaces().length > 0) drawerMode.next(DrawerState.COLLAPSE);
         else {
             var existingScript = document.getElementById("module-script");
             if (existingScript != null) existingScript.remove();

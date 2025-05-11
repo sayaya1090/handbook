@@ -30,6 +30,7 @@ public class FontStyleElement implements IsElement<HTMLStyleElement> {
         }
         """;
     private void update(Label label) {
+        if(label==null) return;
         var mdRefTypefacePlain = label.mdRefTypefacePlain();
         var mdSysTypescaleHeadline = label.mdSysTypescaleHeadline();
         var mdSysTypescaleLabel = label.mdSysTypescaleLabel();

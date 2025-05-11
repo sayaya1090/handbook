@@ -33,6 +33,10 @@ CREATE TABLE IF NOT EXISTS type (
     primitive boolean NOT NULL,
     version TEXT,
     description text NOT NULL,
+    x smallint DEFAULT 0 NOT NULL,
+    y smallint DEFAULT 0 NOT NULL,
+    width smallint DEFAULT 0 NOT NULL,
+    height smallint DEFAULT 0 NOT NULL,
     last boolean DEFAULT true NOT NULL,
     PRIMARY KEY (workspace, id)
 ) PARTITION BY HASH (workspace);
@@ -41,18 +45,44 @@ CREATE TABLE public.attribute (
     workspace uuid NOT NULL,
     type uuid NOT NULL,
     name character varying(32) NOT NULL,
-    attribute_type character varying(31) NOT NULL,
+    attribute_type jsonb NOT NULL,
+    "order" smallint NOT NULL,
     nullable boolean NOT NULL,
     description character varying(255),
-    value_validators jsonb,
-    value_type character varying(255),
-    key_validators jsonb,
-    key_type character varying(255),
-    reference_type character varying(64),
-    file_extensions text,
     PRIMARY KEY (workspace, type, name),
-    CONSTRAINT attribute_key_type_check CHECK (((key_type)::text = ANY ((ARRAY['Value'::character varying, 'Array'::character varying, 'Map'::character varying, 'File'::character varying, 'Document'::character varying])::text[]))),
-    CONSTRAINT attribute_value_type_check CHECK (((value_type)::text = ANY ((ARRAY['Value'::character varying, 'Array'::character varying, 'Map'::character varying, 'File'::character varying, 'Document'::character varying])::text[])))
+    CONSTRAINT attribute_type_check CHECK (
+        (attribute_type->>'base_type') IN ('Value', 'Array', 'Map', 'File', 'Document')
+    )
+);
+CREATE TABLE public.layout (
+    workspace uuid NOT NULL,
+    id uuid NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    created_by uuid NOT NULL,
+    effective_at timestamp(6) with time zone NOT NULL,
+    expire_at timestamp(6) with time zone NOT NULL,
+    PRIMARY KEY (workspace, id)
+);
+
+CREATE TABLE public.layout_type (
+    workspace uuid NOT NULL,
+    layout uuid NOT NULL,
+    type character varying(64) NOT NULL,
+    version character varying(64) NOT NULL,
+    x smallint NOT NULL,
+    y smallint NOT NULL,
+    width smallint NOT NULL,
+    height smallint NOT NULL,
+    PRIMARY KEY (workspace, layout, type, version)
+);
+
+CREATE TABLE public.layout_attribute (
+    workspace uuid NOT NULL,
+    layout uuid NOT NULL,
+    type character varying(255) NOT NULL,
+    version character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    PRIMARY KEY (workspace, layout, type, version, name)
 );
 
 CREATE TABLE public."group" (

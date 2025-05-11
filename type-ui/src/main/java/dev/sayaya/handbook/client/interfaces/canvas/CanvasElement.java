@@ -10,8 +10,10 @@ import elemental2.dom.Event;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.KeyboardEvent;
 import elemental2.dom.MouseEvent;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
+import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,42 +26,33 @@ import java.util.stream.Collectors;
 import static org.jboss.elemento.Elements.div;
 
 @Singleton
-public class CanvasElement extends HTMLContainerBuilder<HTMLDivElement> {
+public class CanvasElement implements IsElement<HTMLDivElement> {
     private static final String KEY_Z = "KeyZ";
-
-    @Inject CanvasElement(BoxElementList elements,
-                          CanvasMode mode,
-                          ActionManager actionManager,
-                          CanvasContextMenuElement contextElement,
-                          BoxContextMenuElement boxContextMenuElement,
-                          SelectedBoxElement selected, DragShapeElement dragElement) {
-        this(div(), elements, mode, actionManager, contextElement, boxContextMenuElement, selected, dragElement);
-    }
-    private final HTMLContainerBuilder<HTMLDivElement> container;
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> container = div();
     private final CanvasMode mode;
     private final ActionManager actionManager;
     private final CanvasContextMenuElement contextElement;
     private final BoxContextMenuElement boxContextMenuElement;
     private final List<BoxElement> children = new LinkedList<>();
 
-    private CanvasElement(HTMLContainerBuilder<HTMLDivElement> container,
-                          BoxElementList elements, CanvasMode mode, ActionManager actionManager,
+    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager,
                           CanvasContextMenuElement contextElement,
                           BoxContextMenuElement boxContextMenuElement,
                           SelectedBoxElement selected, DragShapeElement dragElement) {
-        super(container.element());
-        this.container = container;
         this.mode = mode;
         this.actionManager = actionManager;
         this.contextElement = contextElement;
         this.boxContextMenuElement = boxContextMenuElement;
+        container.css("canvas").attr("tabindex", "0")
+                .add(contextElement)
+                .add(dragElement)
+                .add(boxContextMenuElement);
         init(container, elements, dragElement, selected);
     }
     private void init(HTMLContainerBuilder<HTMLDivElement> container,
                       BoxElementList elements,
                       DragShapeElement dragElement,
                       SelectedBoxElement selected) {
-        container.css("canvas").attr("tabindex", "0").add(contextElement).add(dragElement).add(boxContextMenuElement);
         initEventHandlers(selected);
         dragElement.onDrop(actionManager::move);
         elements.distinct().subscribe(this::update);

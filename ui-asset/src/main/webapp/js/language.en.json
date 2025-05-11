@@ -6,7 +6,10 @@
     "mdSysTypescaleBody": "JetBrains Mono, monospace",
 
     "types": "Type Definition",
-    "defineTypesPropertiesAndRelations": "Types, props, relations",
+    "Define Types, Properties, and Relations": "Types, props, relations",
+    "View as Graph": "View as Graph",
+    "View as Calendar": "View as Calendar",
+    "Base Datetime": "Base Datetime",
     "reload": "Fetch Data",
     "addType": "Add Type",
     "delType": "Remove Type",

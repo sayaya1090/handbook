@@ -1,33 +1,41 @@
 package dev.sayaya.handbook.client.usecase.action;
 
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
-import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.usecase.UpdatableBox;
+import dev.sayaya.handbook.client.domain.Type;
+import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.TypeListToUpsert;
 
-public class EditBoxAction implements Action {
-    private final Box before;
-    private final Box after;
-    private final UpdatableBox element;
-    public EditBoxAction(UpdatableBox element, Box after) {
-        this.element = element;
-        this.before = element.box().toBuilder().build();
+class EditBoxAction implements Action {
+    private final Type before;
+    private final Type after;
+    private final TypeList typeList;
+    private final TypeListToUpsert toUpsert;
+    @AssistedInject EditBoxAction(@Assisted("before") Type before, @Assisted("after") Type after, TypeList typeList, TypeListToUpsert toUpsert) {
+        this.before = before;
         this.after = after;
+        this.typeList = typeList;
+        this.toUpsert = toUpsert;
     }
     @Override
     public void execute() {
-        element.box().name(after.name())
-                .description(after.description())
-                .x(after.x()).y(after.y())
-                .width(after.width()).height(after.height());
-        element.update();
+        toUpsert.add(after);
+        typeList.replace(before, after);
     }
 
     @Override
     public void rollback() {
-        element.box().name(before.name())
-                .description(before.description())
-                .x(before.x()).y(before.y())
-                .width(before.width()).height(before.height());
-        element.update();
+        toUpsert.remove(after);
+        typeList.replace(after, before);
+    }
+
+    @AssistedFactory
+    interface EditBoxActionFactory {
+        EditBoxAction _editBox(@Assisted("before") Type before, @Assisted("after") Type after);
+        default Action editBox(Type before, Type after) {
+            return _editBox(before, after);
+        }
     }
 }
