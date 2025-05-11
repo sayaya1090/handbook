@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.client.domain.Workspace;
+import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -16,11 +17,12 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 @Singleton
 public class WorkspaceList {
     @Delegate private final BehaviorSubject<List<Workspace>> _this = behavior(List.of());
-    @Inject WorkspaceList(UserProvider user) {
+    @Inject WorkspaceList(UserProvider user, Observer<Workspace> workspaceProvider) {
         user.subscribe(this::update);
+        subscribe(list->list.stream().findFirst().ifPresent(workspaceProvider::next));
     }
     private void update(User user) {
-        if(user.workspaces()==null) next(List.of());
+        if(user==null || user.workspaces()==null) next(List.of());
         else next(Arrays.stream(user.workspaces()).collect(Collectors.toList()));
     }
 }

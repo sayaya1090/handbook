@@ -18,16 +18,6 @@ public final class Label {
     private String mdSysTypescaleLabel;
     private String mdSysTypescaleBody;
 
-    private String types;
-    private String reload;
-    private String addType;
-    private String delType;
-    private String undo;
-    private String redo;
-    private String save;
-
-    private String defineTypesPropertiesAndRelations;
-
     @JsOverlay
     @JsIgnore
     public static String findLabelOrDefault(Label label, String key) {

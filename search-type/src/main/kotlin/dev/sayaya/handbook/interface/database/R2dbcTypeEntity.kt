@@ -6,17 +6,20 @@ import java.time.Instant
 import java.util.*
 
 @Table("type")
-class R2dbcTypeEntity (
+data class R2dbcTypeEntity (
     val workspace: UUID,
     val id: UUID,
     val name: String,
     val version: String,
-    val parent: String? = null,
+    var parent: String?,
     @Column("effective_at") val effectDateTime: Instant,
     @Column("expire_at") val expireDateTime: Instant,
-    val description: String = "",
-    val primitive: Boolean = false,
+    val description: String,
+    val primitive: Boolean,
     @Column("created_at") val createDateTime: Instant,
-    @Column("created_by") val createBy: String,
-    override val count: Long = -1
-): EntityPageable
+    @Column("created_by") val createBy: UUID,
+    val x: Short,
+    val y: Short,
+    val width: Short,
+    val height: Short
+)

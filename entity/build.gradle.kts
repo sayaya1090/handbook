@@ -10,6 +10,7 @@ plugins {
 dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation(libs.kotlin.jackson)
     testImplementation(libs.bundles.test.api)
     testImplementation(libs.bundles.test.containers)
     testImplementation(libs.testcontainers.postgresql)

@@ -61,12 +61,12 @@ class MenuControllerTest : ShouldSpec({
 
             // Then
             result!!.size shouldBe 1
-            result[0].tools().size shouldBe 4
+            result[0].tools().size shouldBe 2
         }
 
         should("메뉴에 정의된 각 툴의 타이틀이 예상과 일치하는지 확인한다") {
             // Expected tool titles
-            val expectedToolTitles = listOf("reload", "save", "undo", "redo")
+            val expectedToolTitles = listOf("View as Graph", "View as Calendar")
 
             // When
             val result = webTestClient.get().uri("/menus")

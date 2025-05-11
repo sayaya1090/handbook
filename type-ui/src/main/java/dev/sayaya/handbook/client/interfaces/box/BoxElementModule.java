@@ -12,7 +12,7 @@ public interface BoxElementModule {
     @Provides static BoxTailor boxTailorProvider() {
         return box->{
             if(box == null) return 0;
-            return 100 + box.values().size()*57;
+            return 170 + box.attributes().size()*53;
         };
     }
 }

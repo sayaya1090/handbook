@@ -18,7 +18,8 @@ class TypeTest : StringSpec({
             parent = null,
             description = "The parent type",
             attributes = listOf(Attribute.Companion.ValueAttribute(name = "Attr1", inherited = false)),
-            primitive = false
+            primitive = false,
+            x=0u, y=0u, width=100u, height=100u
         )
 
         val childType = Type(
@@ -29,7 +30,8 @@ class TypeTest : StringSpec({
             parent = parentType.id,
             description = "The child type",
             attributes = listOf(Attribute.Companion.MapAttribute(name = "MapAttr", inherited = false)),
-            primitive = false
+            primitive = false,
+            x=0u, y=0u, width=100u, height=100u
         )
 
         parentType.id shouldBe "parent-type"
@@ -47,7 +49,8 @@ class TypeTest : StringSpec({
                 parent = null,
                 description = "Invalid blank id",
                 attributes = emptyList(),
-                primitive = false
+                primitive = false,
+                x=0u, y=0u, width=100u, height=100u
             )
         }
         exceptionForBlank shouldHaveMessage "Type id cannot be blank"
@@ -62,7 +65,8 @@ class TypeTest : StringSpec({
                 parent = null,
                 description = "Invalid date time test",
                 attributes = emptyList(),
-                primitive = false
+                primitive = false,
+                x=0u, y=0u, width=100u, height=100u
             )
         }.shouldHaveMessage("Expire date time must be after effect date time")
     }
@@ -77,7 +81,8 @@ class TypeTest : StringSpec({
                 parent = null,
                 description = "Same date time test",
                 attributes = emptyList(),
-                primitive = false
+                primitive = false,
+                x=0u, y=0u, width=100u, height=100u
             )
         }.shouldHaveMessage("Expire date time must be after effect date time")
     }

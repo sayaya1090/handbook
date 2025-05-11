@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
 import dagger.assisted.AssistedFactory;
-import dev.sayaya.handbook.client.domain.Box;
+import dev.sayaya.handbook.client.domain.Type;
 
 @AssistedFactory
 interface BoxElementFactory {
-    BoxElement create(Box box);
+    BoxElement create(Type box);
 }

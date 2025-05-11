@@ -32,15 +32,29 @@ gwt {
         strict = true
     }
 }
-tasks.register<Copy>("copyResources") {
-    from(project(":ui-asset").file("src/main/webapp"))
-    into("src/main/webapp")
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-tasks.named("processResources") {
-    dependsOn("copyResources")
-}
-tasks.named("war", War::class) {
-    archiveFileName.set("type-ui.war")
-    duplicatesStrategy = DuplicatesStrategy.WARN
+tasks {
+    register<Copy>("copyResources") {
+        from(project(":ui-asset").file("src/main/webapp"))
+        into("src/main/webapp")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    named("processResources") {
+        dependsOn("copyResources")
+    }
+    register<Copy>("copyTestResources") {
+        dependsOn("copyResources")
+        from("src/main/webapp")
+        into("src/test/webapp")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    named("compileTestJava") {
+        dependsOn("copyTestResources")
+    }
+    named("war", War::class) {
+        archiveFileName.set("type-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+    named("compileTestKotlin") {
+        dependsOn(named("compileJava"))
+    }
 }

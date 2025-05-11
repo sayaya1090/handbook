@@ -15,12 +15,12 @@ import static org.jboss.elemento.Elements.htmlElement;
 @Singleton
 public class FontElement implements IsElement<HTMLLinkElement> {
     @Delegate private final HTMLElementBuilder<HTMLLinkElement> _this = htmlElement("link", HTMLLinkElement.class).id("fonts").attr("rel", "stylesheet").attr("type", "text/css");
-    @Inject
-    FontElement(BehaviorSubject<Label> labels) {
+    @Inject FontElement(BehaviorSubject<Label> labels) {
         labels.subscribe(this::update);
     }
     private void update(Label label) {
-       var url = label.fontUrl();
-       _this.attr("href", url);
+        if(label==null) return;
+        var url = label.fontUrl();
+        _this.attr("href", url);
     }
 }

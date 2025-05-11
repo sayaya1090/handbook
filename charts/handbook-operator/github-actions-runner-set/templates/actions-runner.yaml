@@ -20,8 +20,8 @@ spec:
       LABEL org.opencontainers.image.description "A RedHat UBI 9 based runner image for GitHub Actions"
 
       # Arguments
-      ARG RUNNER_VERSION=2.322.0
-      ARG RUNNER_CONTAINER_HOOKS_VERSION=0.6.2
+      ARG RUNNER_VERSION=2.323.0
+      ARG RUNNER_CONTAINER_HOOKS_VERSION=0.7.0
 
       # Shell setup
       SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -99,7 +99,7 @@ spec:
       ./aws/install && \
 
       # Setup default locale to KoKr
-      dnf install -y https://dl.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/Packages/g/glibc-langpack-ko-2.34-125.el9_5.3.x86_64.rpm && \
+      dnf install -y https://dl.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/Packages/g/glibc-langpack-ko-2.34-125.el9_5.8.x86_64.rpm && \
       dnf clean all && \
 
       # Set the working directory

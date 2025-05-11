@@ -19,11 +19,10 @@ data class TypeAttributesMv(
     val attributeType: String? = null,
     @Id @Column(nullable = false)
     val name: String,
+    val order: Short,
     val description: String? = null,
     @Column(nullable = false)
     val nullable: Boolean,
-    val valueType: String? = null,
-    val referenceType: String? = null,
     @Column(name = "effective_at", nullable = false) val effectiveDateTime: Instant,
     @Column(name = "expire_at", nullable = false) val expiryDateTime: Instant
 ) {

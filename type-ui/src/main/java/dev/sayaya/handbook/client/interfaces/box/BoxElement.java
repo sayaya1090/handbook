@@ -2,8 +2,8 @@ package dev.sayaya.handbook.client.interfaces.box;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
-import dev.sayaya.handbook.client.domain.Box;
-import dev.sayaya.handbook.client.domain.Value;
+import dev.sayaya.handbook.client.domain.Attribute;
+import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
@@ -13,9 +13,7 @@ import dev.sayaya.handbook.client.usecase.UpdatableBox;
 import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.CardElementBuilder;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
-import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.*;
-import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -31,22 +29,29 @@ import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
 
 public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableBox {
-    private final Box box;
+    private final Type box;
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CardElementBuilder<?, ?> card;
-    private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder title;
+    private final TypeNameElement title;
+    private final TypeStringValueElement version;
+    private final TypeDateValueElement effectDate;
+    private final TypeDateValueElement expireDate;
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder btnAdd;
-    private final Subject<List<Value>> values = (Subject) subject(List.class);
+    private final Subject<List<Attribute>> values = (Subject) subject(List.class);
     private final SelectedBoxElement selected;
     private final DragShapeElement dragShapeElement;
     private final BoxContextMenuElement context;
     private final CanvasContextMenuElement canvasContext;
     private double dragStartTimer;
-    @AssistedInject BoxElement(@Assisted Box box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+    @AssistedInject BoxElement(@Assisted Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+                               TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
+                               TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
                                BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
-        this(div(), box, actionManager, selected, dragShapeElement, mode, context, canvasContext, valueListFactory);
+        this(div(), box, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeValueFactory, typeDateValueFactory, context, canvasContext, valueListFactory);
     }
-    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Box box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+                       TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
+                       TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
                        BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
         super(container.element());
         if (box == null) throw new IllegalArgumentException("Box must not be null.");
@@ -54,14 +59,25 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
 
         this.container = container.css("type-box");
         this.card = card().outlined().css("card").attr("tabindex", "0");
-        this.title = textField().outlined().css("label");
+        this.title = typeNameFactory.create(this);
+        this.version = typeValueFactory.create("Version", value-> actionManager.version(this, value), Type::version).alignRight();
+        this.effectDate = typeDateValueFactory.create("Effect Date", value-> actionManager.effectDateTime(this, value), Type::effectDateTime);
+        this.expireDate = typeDateValueFactory.create("Expire Date", value-> actionManager.expireDateTime(this, value), Type::expireDateTime);
         this.btnAdd = button().icon().add(icon("add")).css("add");
-        container.add(card.add(title).add(valueListFactory.valueList(this.values))
+        container.add(card.add(title)
+                .add(div().style("""
+                        display: grid;
+                        justify-items: stretch;
+                        grid-auto-flow: column;
+                        grid-template-rows: 1fr 1fr;
+                        gap: 0.5rem;
+                        padding: 0.5rem;
+                        """).add(effectDate).add(expireDate).add(version))
+                .add(valueListFactory.valueList(this.values, this))
                 .add(btnAdd));
         update();
         mode.subscribe(this::setMode);
         selected.subscribe(selectedBox -> setSelected(selectedBox.contains(this)));
-
         this.selected = selected;
         this.dragShapeElement = dragShapeElement;
         this.context = context;
@@ -89,10 +105,6 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         container.on(EventType.mouseup, this::clearDragStartTimer);
         container.on(EventType.mousemove, this::clearDragStartTimer);
         container.on(EventType.keydown, evt->handleKeyPress(evt, actionManager));
-        title.on(EventType.change, evt -> {
-            var ipt = Js.asPropertyMap(evt.target);
-            actionManager.title(boxElement, ipt.get("value").toString());
-        });
         btnAdd.on(EventType.click, evt -> {
             actionManager.addValue(boxElement);
         });
@@ -148,16 +160,19 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         actionManager.move(dx, dy, selected.getValue().stream().toArray(BoxElement[]::new));
     }
     @Override
-    public Box box() {
+    public Type box() {
         return box;
     }
     @Override
     public void update() {
-        title.value(box.name());
         container.element().style.left = box.x() + "px";
         container.element().style.top = box.y() + "px";
         card.element().style.width = CSSProperties.WidthUnionType.of(box.width() + "px");
         card.element().style.height = CSSProperties.HeightUnionType.of(box.height() + "px");
-        values.next(box.values());
+        values.next(box.attributes());
+        title.update(box);
+        version.update(box);
+        effectDate.update(box);
+        expireDate.update(box);
     }
 }

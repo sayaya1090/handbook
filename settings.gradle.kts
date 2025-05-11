@@ -69,7 +69,7 @@ dependencyResolutionManagement {
             library("gwt-user", "org.gwtproject", "gwt-user").version { require("2.12.2") }
             library("gwt-dev", "org.gwtproject", "gwt-dev").version { require("2.12.2") }
             library("sayaya-ui", "dev.sayaya", "ui").version { require("material3-2.2.0") }
-            library("sayaya-rx", "dev.sayaya", "rx").version { require("2.1") }
+            library("sayaya-rx", "dev.sayaya", "rx").version { require("2.1.1") }
             library("lombok", "org.projectlombok", "lombok").version { require("1.18.38") }
             bundle("sayaya-web", listOf("elemento-core", "elemental2-svg", "gwt-user", "dagger-gwt", "dagger-compiler", "sayaya-ui", "sayaya-rx", "lombok"))
 
@@ -93,14 +93,14 @@ include("shell-ui")
 include("gateway")
 include("testcontainer")
 include("search")
-include("search-type")
-include("persist")
-include("type-ui")
-include("login")
-include("login-ui")
 include("search-workspace")
 include("persist-workspace")
 include("workspace-ui")
+include("search-type")
+include("persist-type")
+include("type-ui")
+include("login")
+include("login-ui")
 include("search-user")
 include("persist-user")
 include("user-ui")
