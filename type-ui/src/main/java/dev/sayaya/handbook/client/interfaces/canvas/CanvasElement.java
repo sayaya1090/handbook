@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.interfaces.box.BoxElement;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
+import dev.sayaya.handbook.client.interfaces.value.AttributeEditorDialog;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import elemental2.dom.Event;
 import elemental2.dom.HTMLDivElement;
@@ -38,6 +39,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager,
                           CanvasContextMenuElement contextElement,
                           BoxContextMenuElement boxContextMenuElement,
+                          AttributeEditorDialog attributeEditor,
                           SelectedBoxElement selected, DragShapeElement dragElement) {
         this.mode = mode;
         this.actionManager = actionManager;
@@ -46,7 +48,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         container.css("canvas").attr("tabindex", "0")
                 .add(contextElement)
                 .add(dragElement)
-                .add(boxContextMenuElement);
+                .add(boxContextMenuElement)
+                .add(attributeEditor);
         init(container, elements, dragElement, selected);
     }
     private void init(HTMLContainerBuilder<HTMLDivElement> container,

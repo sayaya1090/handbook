@@ -34,10 +34,10 @@ public class ActionManager {
     }
     public void addType(double x, double y) {
         var type = Type.builder().id("Untitle-" + generateUniqueString()).version("0.0.0")
-                .effectDateTime(layout.getValue().effectDateTime())
-                .expireDateTime(layout.getValue().expireDateTime())
+                .effectDateTime(layout.getValue()!=null?layout.getValue().effectDateTime() : new Date(0))
+                .expireDateTime(layout.getValue()!=null?layout.getValue().expireDateTime() : new Date(32503680000000L))
                 .attributes(List.of())
-                .x((int)x).y((int)y).width(550).height(1)
+                .x((int)x).y((int)y).width(300).height(1)
                 .build();
         type = type.height(tailor.estimateBoxHeight(type));
         var action = factory.complex (
@@ -112,7 +112,7 @@ public class ActionManager {
     public void addValue(UpdatableBox boxElement) {
         var uniqueString = generateUniqueString();
         var value = Attribute.builder().id(boxElement.box().id() + "$$$" + boxElement.box().version() + "$$$" + uniqueString).name("prop-" + uniqueString).nullable(true)
-                .type(new AttributeTypeDefinition.ValueType())
+                .type(AttributeTypeDefinition.builder().baseType(AttributeTypeDefinition.AttributeType.Value).build())
                 .build();
         var before = new LinkedList<>(boxElement.box().attributes());
         var after = new LinkedList<>(before);
