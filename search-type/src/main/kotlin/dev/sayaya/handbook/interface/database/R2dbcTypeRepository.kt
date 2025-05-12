@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.`interface`.database
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
 import dev.sayaya.handbook.domain.AttributeTypeDefinition
@@ -17,7 +18,7 @@ import java.time.Instant
 import java.util.*
 
 @Repository
-class R2dbcTypeRepository(private val template: R2dbcEntityTemplate): TypeRepository {
+class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val objectMapper: ObjectMapper): TypeRepository {
     override fun findAll(workspace: UUID): Flux<Layout> = template.databaseClient.sql(FIND_LAYOUT_SQL)
         .bind("workspace", workspace).map { row ->
             val effectDateTime = row.get("effective_at", Instant::class.java)!!
@@ -88,7 +89,7 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate): TypeReposi
     )
     private fun R2dbcAttributeEntity.toDomain(): Attribute = Attribute (
         name=name,
-        type=attributeType,
+        type=objectMapper.readValue(attributeType.asArray(), AttributeTypeDefinition::class.java) ?: throw MissingFieldException("attributeType"),
         order=order,
         description=description,
         nullable=nullable,
