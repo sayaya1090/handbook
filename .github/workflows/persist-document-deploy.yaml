@@ -1,8 +1,8 @@
-name: 타입 저장 모듈 배포
+name: 도큐먼트 저장 모듈 배포
 on:
   push:
     paths:
-      - persist-type/**
+      - persist-document/**
 jobs:
   test-and-deploy:
     runs-on: handbook-operator
@@ -10,7 +10,7 @@ jobs:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
-      SUBMODULE: persist-type
+      SUBMODULE: persist-document
     steps:
       - name: Checkout
         uses: actions/checkout@v4

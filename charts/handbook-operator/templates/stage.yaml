@@ -36,6 +36,14 @@ spec:
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-user") }}` }}
         - uses: compose-output
+          as: persist-document-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-document") }}` }}
+        - uses: compose-output
+          as: search-document-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-document") }}` }}
+        - uses: compose-output
           as: search-workspace-image
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-workspace") }}` }}
@@ -65,6 +73,10 @@ spec:
                           value: {{ `${{ outputs['search-user-image'].img.tag }}@${{ outputs['search-user-image'].img.digest }}` }}
                         - key: persist-user.image.tag
                           value: {{ `${{ outputs['persist-user-image'].img.tag }}@${{ outputs['persist-user-image'].img.digest }}` }}
+                        - key: search-document.image.tag
+                          value: {{ `${{ outputs['search-document-image'].img.tag }}@${{ outputs['search-document-image'].img.digest }}` }}
+                        - key: persist-document.image.tag
+                          value: {{ `${{ outputs['persist-document-image'].img.tag }}@${{ outputs['persist-document-image'].img.digest }}` }}
                         - key: search-workspace.image.tag
                           value: {{ `${{ outputs['search-workspace-image'].img.tag }}@${{ outputs['search-workspace-image'].img.digest }}` }}
                         - key: persist-workspace.image.tag
@@ -117,6 +129,8 @@ spec:
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-type"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-user"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-user"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-document"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-document"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-workspace"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-workspace")
                     ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")

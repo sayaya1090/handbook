@@ -1,0 +1,176 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: search-document
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: search-document
+data:
+  application.yaml: |
+    spring:
+      application.name: search-document
+      main:
+        web-application-type: reactive
+      threads.virtual.enabled: true
+      config:
+        import:
+          - classpath:postgresql.yaml
+          - classpath:observability.yaml
+          - classpath:authentication.yaml
+    management:
+      endpoint:
+        health:
+          probes:
+            enabled: true
+    server:
+      port: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-document
+spec:
+  selector:
+    app: search-document
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/search-document'
+    configmap.reloader.stakater.com/reload: "search-document,postgresql-ro,observability,authentication"
+    secret.reloader.stakater.com/reload: "postgresql-app"
+  name: search-document
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - foregroundDeletion
+  labels:
+    app: search-document
+    app.kubernetes.io/component: handbook
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/name: handbook
+    app.kubernetes.io/part-of: handbook
+    app.openshift.io/runtime: spring-boot
+    app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
+    app.openshift.io/runtime-version: latest
+spec:
+  selector:
+    matchLabels:
+      app: search-document
+  template:
+    metadata:
+      labels:
+        app: search-document
+        version: 0.0.1
+        deployment: search-document
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: search-document
+            defaultMode: 420
+        - name: postgres-config
+          configMap:
+            name: postgresql-ro
+            defaultMode: 420
+        - name: observability-config
+          configMap:
+            name: observability
+            defaultMode: 420
+        - name: authentication-config
+          configMap:
+            name: authentication
+            defaultMode: 420
+      containers:
+        - name: search-document
+          image: {{ index .Values "search-document" "image" "name" }}:{{ index .Values "search-document" "image" "tag" | default "latest" }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          env:
+            - name: postgres.username
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: postgresql-app
+            - name: postgres.password
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgresql-app
+            - name: jwt.secret
+              valueFrom:
+                secretKeyRef:
+                  name: authentication-keypair
+                  key: public-key
+            - name: TZ
+              value: Asia/Seoul
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/resources/application.yaml
+              subPath: application.yaml
+            - name: postgres-config
+              mountPath: /app/resources/postgresql.yaml
+              subPath: postgresql.yaml
+            - name: observability-config
+              mountPath: /app/resources/observability.yaml
+              subPath: observability.yaml
+            - name: authentication-config
+              mountPath: /app/resources/authentication.yaml
+              subPath: authentication.yaml
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 0
+  progressDeadlineSeconds: 600
+  paused: false
