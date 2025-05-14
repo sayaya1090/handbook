@@ -91,10 +91,22 @@
 
 .type-box .property .type {
     --_container-height: 1.5rem;
-    --_leading-space: 0rem;
-    --_trailing-space: 0rem;
+    --_leading-space: 0.5rem;
+    --_trailing-space: 0.5rem;
     --_container-shape-start-start: 0.3rem;
     --_container-shape-start-end: 0.3rem;
     --_container-shape-end-start: 0.3rem;
     --_container-shape-end-end: 0.3rem;
+}
+.arrow {
+    stroke-width: 1.5;
+    transition: stroke 0.3s ease;
+    stroke: var(--md-sys-color-outline);
+    fill: var(--md-sys-color-outline);
+}
+.arrow:hover {
+    z-index: 100;
+    cursor: pointer;
+    stroke: var(--md-sys-color-primary);
+    fill: var(--md-sys-color-primary);
 }

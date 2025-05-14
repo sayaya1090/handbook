@@ -17,6 +17,10 @@
     "redo": "다시 실행",
     "save": "저장",
 
+    "Edit %type%'s Attribute": "%type% 속성 편집",
+    "Apply": "적용",
+    "Cancel": "취소",
+
     "sign in": "로그인",
     "Authentication for service use": "서비스 이용을 위한 인증",
     "sign out": "로그아웃",

@@ -59,6 +59,7 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
             }
             updateParam();
         });
+        reference.onChange(evt->this.def.referencedType(reference.value()));
     }
     private void updateTypes(AttributeTypeDefinition.AttributeType[] types) {
         type.removeAllOptions();

@@ -37,7 +37,7 @@ public class ActionManager {
                 .effectDateTime(layout.getValue()!=null?layout.getValue().effectDateTime() : new Date(0))
                 .expireDateTime(layout.getValue()!=null?layout.getValue().expireDateTime() : new Date(32503680000000L))
                 .attributes(List.of())
-                .x((int)x).y((int)y).width(300).height(1)
+                .x((int)x).y((int)y).width(400).height(1)
                 .build();
         type = type.height(tailor.estimateBoxHeight(type));
         var action = factory.complex (

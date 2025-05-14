@@ -24,4 +24,27 @@ public class AttributeTypeDefinition {
         File,
         Document
     }
+    @Override
+    public String toString() {
+        switch (baseType) {
+            case Value -> {
+                return "Value";
+            }
+            case Array -> {
+                return "Array<" + arguments.get(0) + ">";
+            }
+            case Map -> {
+                return "Map<" + arguments.get(0) + ", " + arguments.get(1) + ">";
+            }
+            case File -> {
+                return "File(" + String.join(", ", extensions) + ")";
+            }
+            case Document -> {
+                return referencedType;
+            }
+            default -> {
+                return "Unknown";
+            }
+        }
+    }
 }
