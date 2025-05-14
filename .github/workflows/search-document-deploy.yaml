@@ -1,8 +1,8 @@
-name: 타입 저장 모듈 배포
+name: 도큐먼트 검색 모듈 배포
 on:
   push:
     paths:
-      - persist-type/**
+      - search-document/**
 jobs:
   test-and-deploy:
     runs-on: handbook-operator
@@ -10,7 +10,7 @@ jobs:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
       BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
-      SUBMODULE: persist-type
+      SUBMODULE: search-document
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,4 +34,4 @@ jobs:
           IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook-operator/$SUBMODULE"
           echo "Deploying with IMAGE=$IMAGE"
           oc registry login
-          gradle $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest
+          gradle $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest -Djib.allowInsecureRegistries=true
