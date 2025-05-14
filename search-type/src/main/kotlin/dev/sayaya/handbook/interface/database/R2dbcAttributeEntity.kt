@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.`interface`.database
 
-import dev.sayaya.handbook.domain.AttributeTypeDefinition
+import io.r2dbc.postgresql.codec.Json
 import org.springframework.data.relational.core.mapping.Table
 import java.util.*
 
@@ -10,7 +10,7 @@ data class R2dbcAttributeEntity (
     val type: UUID,
     val order: Short,
     val name: String,
-    val attributeType: AttributeTypeDefinition,
+    val attributeType: Json,
     val description: String?,
     val nullable: Boolean,
 )

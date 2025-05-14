@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static dev.sayaya.handbook.client.domain.AttributeTypeDefinition.AttributeType.*;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 @dagger.Module
@@ -36,7 +37,7 @@ public abstract class MockModule {
     @Provides static BoxTailor boxTailorProvider() {
         return box->{
             if(box == null) return 0;
-            return 170 + box.attributes().size()*53;
+            return 170 + box.attributes().size()*41;
         };
     }
     private static final DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss");
@@ -52,10 +53,20 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent(null)
                             .attributes(List.of(
-                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(new AttributeTypeDefinition.ValueType()).nullable(false).inherited(false).build(),
-                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type(new AttributeTypeDefinition.ArrayType(new AttributeTypeDefinition.ValueType())).nullable(true).inherited(false).build(),
-                                    Attribute.builder().id("type_1$$$t1-v1$$$2").name("attr_3").type(new AttributeTypeDefinition.MapType(new AttributeTypeDefinition.ValueType(), new AttributeTypeDefinition.ValueType())).nullable(false).inherited(true).build()
-                            )).x(100).y(100).width(550).height(371).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(AttributeTypeDefinition.builder().baseType(Value).build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type(AttributeTypeDefinition.builder().baseType(Array)
+                                                    .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                            .build()
+                                    ).nullable(true).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$2").name("attr_3")
+                                            .type(AttributeTypeDefinition.builder().baseType(Map)
+                                                    .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                                    .argument(AttributeTypeDefinition.builder().baseType(Array)
+                                                            .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                                            .build())
+                                                    .build()
+                                            ).nullable(false).inherited(true).build()
+                            )).x(100).y(100).width(400).height(293).build(),
                     Type.builder()
                             .id("type_2")
                             .version("t2-v1")
@@ -65,7 +76,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_1")
                             .attributes(Collections.emptyList())
-                            .x(700).y(100).width(550).height(200).build(),
+                            .x(700).y(100).width(400).height(170).build(),
                     Type.builder()
                             .id("type_2")
                             .version("t2-v2")
@@ -75,7 +86,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_1")
                             .attributes(Collections.emptyList())
-                            .x(700).y(100).width(550).height(200).build(),
+                            .x(700).y(100).width(400).height(170).build(),
                     Type.builder()
                             .id("type_3")
                             .version("t3-v1")
@@ -85,7 +96,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_2")
                             .attributes(Collections.emptyList())
-                            .x(200).y(500).width(550).height(200).build(),
+                            .x(200).y(500).width(400).height(170).build(),
                     Type.builder()
                             .id("type_3")
                             .version("t3-v2")
@@ -95,7 +106,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_2")
                             .attributes(Collections.emptyList())
-                            .x(200).y(500).width(550).height(200).build()
+                            .x(200).y(500).width(400).height(170).build()
             );
             @Override
             public Observable<List<Type>> list(Period period) {

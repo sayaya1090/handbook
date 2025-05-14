@@ -1,5 +1,16 @@
 package dev.sayaya.handbook.`interface`.database
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.PropertyAccessor
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.testcontainer.Database
@@ -22,7 +33,19 @@ internal class R2dbcTypeRepositoryTest @Autowired constructor(
     private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
-    val repository = R2dbcTypeRepository(template)
+    val objectMapper = ObjectMapper()
+        .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        .registerModule(JavaTimeModule().addDeserializer(Instant::class.java, object : JsonDeserializer<Instant>() {
+            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant {
+                val epochMillis = p.longValue
+                return Instant.ofEpochMilli(epochMillis)
+            }
+        })).registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+    val repository = R2dbcTypeRepository(template, objectMapper)
     // 테스트에 사용할 고정된 Workspace UUID
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     val otherWorkspace = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee") // 다른 워크스페이스 테스트용

@@ -10,10 +10,12 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.interfaces.value.ValueListElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.UpdatableBox;
+import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.CardElementBuilder;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import elemental2.dom.*;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -21,11 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static dev.sayaya.rx.Observable.timer;
+import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 import static dev.sayaya.rx.subject.Subject.subject;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static dev.sayaya.ui.elements.CardElementBuilder.card;
 import static dev.sayaya.ui.elements.IconElementBuilder.icon;
-import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
 
 public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableBox {
@@ -42,6 +45,7 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
     private final DragShapeElement dragShapeElement;
     private final BoxContextMenuElement context;
     private final CanvasContextMenuElement canvasContext;
+    @Delegate private final BehaviorSubject<BoxElement> subject = behavior(this);
     private double dragStartTimer;
     @AssistedInject BoxElement(@Assisted Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
                                TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
@@ -169,10 +173,12 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         container.element().style.top = box.y() + "px";
         card.element().style.width = CSSProperties.WidthUnionType.of(box.width() + "px");
         card.element().style.height = CSSProperties.HeightUnionType.of(box.height() + "px");
-        values.next(box.attributes());
         title.update(box);
         version.update(box);
         effectDate.update(box);
         expireDate.update(box);
+
+        timer(300, -1).subscribe(t->values.next(box.attributes()));
+        subject.next(this);
     }
 }

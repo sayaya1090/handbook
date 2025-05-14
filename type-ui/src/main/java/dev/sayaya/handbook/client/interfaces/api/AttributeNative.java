@@ -14,11 +14,21 @@ import static jsinterop.annotations.JsPackage.GLOBAL;
 public final class AttributeNative {
     @JsProperty public String name;
     @JsProperty public String description;
+    @JsProperty public double order;
     @JsProperty public AttributeTypeDefinitionNative type;
     @JsProperty public boolean nullable;
     @JsProperty public boolean inherited;
 
     @JsOverlay @JsIgnore public Attribute toDomain(String id, String version, int i) {
+        /*type==File
+        Objects.requireNonNull(extensions, "extensions cannot be null");
+        if (extensions.stream().anyMatch(ext -> ext == null || !ext.matches("^[a-zA-Z0-9]+$"))) {
+            throw new IllegalArgumentException("FileAttribute extensions must contain only non-null alphanumeric characters.");
+        }
+        type==Document
+        Objects.requireNonNull(referencedType, "referencedType cannot be null");
+        */
+
         return Attribute.builder()
                 .id(id + "$$$" + version + "$$$" + i)
                 .name(name).description(description)

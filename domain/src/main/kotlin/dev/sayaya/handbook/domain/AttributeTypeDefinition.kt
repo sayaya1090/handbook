@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import java.io.Serializable
 
-@JsonTypeInfo(use = NAME, property = "baseType")
+@JsonTypeInfo(use = NAME, property = "base_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = AttributeTypeDefinition.Companion.ValueType::class, name = "Value"),
     JsonSubTypes.Type(value = AttributeTypeDefinition.Companion.ArrayType::class, name = "Array"),
@@ -18,7 +18,6 @@ import java.io.Serializable
 ) @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed interface AttributeTypeDefinition: Serializable {
-    val baseType: AttributeType
     val constraints: Map<String, Serializable>
 
     companion object {
@@ -31,14 +30,11 @@ sealed interface AttributeTypeDefinition: Serializable {
         }
         data class ValueType (
             override val constraints: Map<String, Serializable> = emptyMap()
-        ): AttributeTypeDefinition {
-            override val baseType: AttributeType = AttributeType.Value
-        }
+        ): AttributeTypeDefinition
         data class ArrayType (
             val type: AttributeTypeDefinition,
             override val constraints: Map<String, Serializable> = emptyMap()
         ): AttributeTypeDefinition {
-            override val baseType: AttributeType = AttributeType.Array
             val arguments: List<AttributeTypeDefinition> = listOf(type)
         }
         data class MapType (
@@ -46,13 +42,11 @@ sealed interface AttributeTypeDefinition: Serializable {
             val value: AttributeTypeDefinition,
             override val constraints: Map<String, Serializable> = emptyMap()
         ): AttributeTypeDefinition {
-            override val baseType: AttributeType = AttributeType.Map
             val arguments: List<AttributeTypeDefinition> = listOf(key, value)
         }
         data class FileType (
             val extensions: Set<String>
         ): AttributeTypeDefinition {
-            override val baseType: AttributeType = AttributeType.File
             override val constraints: Map<String, Serializable> = mapOf()
             init {
                 require(extensions.all { it.matches(Regex("^[a-zA-Z0-9]+$")) }) {
@@ -63,8 +57,6 @@ sealed interface AttributeTypeDefinition: Serializable {
         data class DocumentType (
             val referencedType: String,
             override val constraints: Map<String, Serializable> = emptyMap()
-        ): AttributeTypeDefinition {
-            override val baseType: AttributeType = AttributeType.Document
-        }
+        ): AttributeTypeDefinition
     }
 }
