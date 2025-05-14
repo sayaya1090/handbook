@@ -68,7 +68,7 @@ dependencyResolutionManagement {
             library("elemental2-svg", "com.google.elemental2", "elemental2-svg").version { require("1.2.3") }
             library("gwt-user", "org.gwtproject", "gwt-user").version { require("2.12.2") }
             library("gwt-dev", "org.gwtproject", "gwt-dev").version { require("2.12.2") }
-            library("sayaya-ui", "dev.sayaya", "ui").version { require("material3-2.2.0") }
+            library("sayaya-ui", "dev.sayaya", "ui").version { require("material3-2.2.1") }
             library("sayaya-rx", "dev.sayaya", "rx").version { require("2.1.1") }
             library("lombok", "org.projectlombok", "lombok").version { require("1.18.38") }
             bundle("sayaya-web", listOf("elemento-core", "elemental2-svg", "gwt-user", "dagger-gwt", "dagger-compiler", "sayaya-ui", "sayaya-rx", "lombok"))

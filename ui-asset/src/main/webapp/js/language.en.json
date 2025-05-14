@@ -17,6 +17,10 @@
     "redo": "Redo",
     "save": "Save",
 
+    "Edit %type%'s Attribute": "Edit %type%'s Attribute",
+    "Apply": "Apply",
+    "Cancel": "Cancel",
+
     "sign in": "Sign In",
     "Authentication for service use": "Authentication for service use",
     "sign out": "Sign Out",

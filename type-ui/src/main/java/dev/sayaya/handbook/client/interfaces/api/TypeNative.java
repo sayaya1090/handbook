@@ -44,6 +44,11 @@ public final class TypeNative {
     }
     @JsOverlay @JsIgnore public static TypeNative from(Type type, boolean delete) {
         if (type == null) return null;
+        var attributes = new AttributeNative[type.attributes().size()];
+        for (int i = 0; i < type.attributes().size(); i++) {
+            attributes[i] = AttributeNative.from(type.attributes().get(i));
+            attributes[i].order = i;
+        }
         var nativeType = new TypeNative();
         nativeType.id = type.id();
         nativeType.version = type.version();
@@ -51,7 +56,7 @@ public final class TypeNative {
         nativeType.expireDateTime = type.expireDateTime()!=null?Long.valueOf(type.expireDateTime().getTime()).doubleValue():null;
         nativeType.description = type.description();
         nativeType.primitive = type.primitive();
-        nativeType.attributes = type.attributes().stream().map(AttributeNative::from).toArray(i-> new AttributeNative[i]);
+        nativeType.attributes = attributes;
         nativeType.parent = type.parent();
         nativeType.x = type.x();
         nativeType.y = type.y();
