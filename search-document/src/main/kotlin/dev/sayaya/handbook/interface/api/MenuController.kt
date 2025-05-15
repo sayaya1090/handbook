@@ -19,7 +19,10 @@ internal class MenuController {
             .icon("fa-database")
             .iconType("sharp")
             .script("js/document/data.nocache.js")
-            .build()
+            .tools(
+                Tool.builder().title("View as Graph").order("AE").icon("fa-diagram-project").iconType("sharp").build(),
+                Tool.builder().title("View as Calendar").order("AH").icon("fa-calendar-range").iconType("sharp").build()
+            ).build()
     }
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)

@@ -92,6 +92,8 @@ CREATE TABLE IF NOT EXISTS public.document (
     version TEXT,
     created_at timestamp(6) with time zone NOT NULL,
     created_by uuid NOT NULL,
+    effective_at timestamp(6) with time zone NOT NULL,
+    expire_at timestamp(6) with time zone NOT NULL,
     data jsonb NOT NULL,
     last boolean DEFAULT true NOT NULL,
     PRIMARY KEY (workspace, id)

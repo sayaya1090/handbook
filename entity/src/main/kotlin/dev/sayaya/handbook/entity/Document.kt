@@ -18,7 +18,7 @@ import java.util.UUID
 
 @Table(name = "document", indexes=[
     Index(columnList = "workspace, type, serial, created_at"),
-    Index(columnList = "workspace, type, last, created_at DESC"),
+    Index(columnList = "workspace, type, last, effective_at, expire_at, created_at DESC"),
 ]) @Entity
 @IdClass(Document.Companion.DocumentId::class)
 internal class Document {
@@ -28,6 +28,8 @@ internal class Document {
     @Column(length = 128) lateinit var serial: String
     @CreatedDate @Column(name = "created_at", nullable = false) lateinit var createDateTime: Instant
     @CreatedBy @ManyToOne @JoinColumn(name = "created_by", nullable = false) lateinit var createBy: User
+    @Column(name = "effective_at", nullable = false) lateinit var effectDateTime: Instant
+    @Column(name = "expire_at", nullable = false) lateinit var expireDateTime: Instant
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "data", columnDefinition = "jsonb", nullable = false)
     lateinit var data: Serializable

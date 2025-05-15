@@ -39,13 +39,42 @@ class MenuControllerTest : ShouldSpec({
                 .hasSize(1)
                 .contains(expectedMenu)
         }
-
         should("Content-Type이 예상한 값과 일치하는지 확인한다") {
             // When & Then
             webTestClient.get().uri("/menus")
                 .exchange()
                 .expectStatus().isOk
                 .expectHeader().contentType("application/vnd.sayaya.handbook.v1+json")
+        }
+        should("메뉴의 tools 배열이 예상한 크기와 일치하는지 확인한다") {
+            // When
+            val result = webTestClient.get().uri("/menus")
+                .exchange()
+                .expectStatus().isOk
+                .expectBodyList(Menu::class.java)
+                .returnResult()
+                .responseBody
+
+            // Then
+            result!!.size shouldBe 1
+            result[0].tools().size shouldBe 2
+        }
+
+        should("메뉴에 정의된 각 툴의 타이틀이 예상과 일치하는지 확인한다") {
+            // Expected tool titles
+            val expectedToolTitles = listOf("View as Graph", "View as Calendar")
+
+            // When
+            val result = webTestClient.get().uri("/menus")
+                .exchange()
+                .expectStatus().isOk
+                .expectBodyList(Menu::class.java)
+                .returnResult()
+                .responseBody
+
+            // Then
+            val actualToolTitles = result!![0].tools().map { it.title() }
+            actualToolTitles shouldContainExactly expectedToolTitles
         }
     }
 })
