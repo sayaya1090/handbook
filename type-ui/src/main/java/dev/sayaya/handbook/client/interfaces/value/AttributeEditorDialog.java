@@ -87,7 +87,7 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
     }
     private void update(Label labels) {
         this.label = labels;
-        title.element().innerHTML = Label.findLabelOrDefault(labels, "Edit %type%'s Attribute").replace("%type%", attr.name());
+        if(attr!=null) title.element().innerHTML = Label.findLabelOrDefault(labels, "Edit %type%'s Attribute").replace("%type%", attr.name());
         apply.element().innerHTML = Label.findLabelOrDefault(labels, "Apply");
         close.element().innerHTML = Label.findLabelOrDefault(labels, "Close");
     }
