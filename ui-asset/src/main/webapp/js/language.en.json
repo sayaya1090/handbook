@@ -5,6 +5,9 @@
     "mdSysTypescaleLabel": "Montserrat, serif",
     "mdSysTypescaleBody": "JetBrains Mono, monospace",
 
+    "documents": "Master Data",
+    "Define Master Data": "Define Master Data",
+
     "types": "Type Definition",
     "Define Types, Properties, and Relations": "Types, props, relations",
     "View as Graph": "View as Graph",
