@@ -27,6 +27,7 @@ data:
       - name: search-type
       - name: search-workspace
       - name: search-user
+      - name: search-document
 
 ---
 
