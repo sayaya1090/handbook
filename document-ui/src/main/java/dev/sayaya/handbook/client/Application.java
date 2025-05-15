@@ -23,6 +23,14 @@ public class Application implements EntryPoint {
         });
     }
     private void update(String url, HTMLElement frame) {
-        frame.innerHTML = "Hello, World!";
+        switch (url) {
+            case "/", "/types?view=graph" -> {
+                //frame.append(components.controller().element());
+                //frame.append(components.canvas().element());
+            }
+            case "/types?view=calendar" -> {
+
+            }
+        }
     }
 }

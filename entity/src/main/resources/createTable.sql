@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS public.document (
     workspace uuid NOT NULL,
     id uuid NOT NULL,
     type character varying(64),
-    version TEXT,
+    serial character varying(128),
     created_at timestamp(6) with time zone NOT NULL,
     created_by uuid NOT NULL,
     effective_at timestamp(6) with time zone NOT NULL,
