@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":activity"))
     implementation(project(":authentication"))
+    implementation(project(":search"))
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)

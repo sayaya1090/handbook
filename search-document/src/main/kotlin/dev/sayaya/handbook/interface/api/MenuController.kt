@@ -20,7 +20,7 @@ internal class MenuController {
             .iconType("sharp")
             .script("js/document/data.nocache.js")
             .tools(
-                Tool.builder().title("View as Graph").order("AE").icon("fa-diagram-project").iconType("sharp").build(),
+                Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
                 Tool.builder().title("View as Calendar").order("AH").icon("fa-calendar-range").iconType("sharp").build()
             ).build()
     }
