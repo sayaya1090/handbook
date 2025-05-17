@@ -14,7 +14,7 @@ spec:
   source:
     type: Dockerfile
     dockerfile: |
-      FROM registry.access.redhat.com/ubi9/ubi-init:9.5
+      FROM registry.access.redhat.com/ubi9/ubi-init:9.6
 
       LABEL org.opencontainers.image.title "actions-runner-ubi9"
       LABEL org.opencontainers.image.description "A RedHat UBI 9 based runner image for GitHub Actions"
@@ -65,7 +65,7 @@ spec:
       # Install software
       dnf update -y && \
       dnf install dnf-plugins-core -y && \
-      dnf install -y git git-lfs jq krb5-libs libicu libyaml-devel lttng-ust zsh net-tools openssl-libs wget rsync && \
+      dnf install -y git git-lfs jq krb5-libs libicu libyaml-devel lttng-ust zsh net-tools openssl-libs wget rsync glibc-langpack-ko.x86_64 && \
 
       # Change default shell
       /usr/bin/sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"# && \
@@ -98,8 +98,6 @@ spec:
       rm awscliv2.zip && \
       ./aws/install && \
 
-      # Setup default locale to KoKr
-      dnf install -y https://dl.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/Packages/g/glibc-langpack-ko-2.34-125.el9_5.8.x86_64.rpm && \
       dnf clean all && \
 
       # Set the working directory
