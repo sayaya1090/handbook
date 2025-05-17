@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - persist-type/**
+  workflow_dispatch:
 jobs:
   test-and-deploy:
     runs-on: handbook-operator
