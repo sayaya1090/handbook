@@ -17,8 +17,8 @@ class TypeController(private val svc: TypeService) {
     @GetMapping("/workspace/{workspace}/types", produces = ["application/vnd.sayaya.handbook.v1+json"])
     fun find(@PathVariable workspace: UUID,
              @RequestParam("effect_date_time") effectDateTime: Instant,
-             @RequestParam("expire_date_time") expireDateTime: Instant
-    ): Flux<Type> = svc.findByRange(workspace, effectDateTime, expireDateTime)
+             @RequestParam("expire_date_time", required=false) expireDateTime: Instant?
+    ): Flux<Type> = svc.findByRange(workspace, effectDateTime, expireDateTime?:effectDateTime)
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
