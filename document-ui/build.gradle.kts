@@ -20,7 +20,7 @@ gwt {
     war = file("src/main/webapp")
     devMode {
         modules = listOf(
-            "dev.sayaya.handbook.Document",
+            "dev.sayaya.handbook.Tab",
         )
         war = file("src/test/webapp")
     }
