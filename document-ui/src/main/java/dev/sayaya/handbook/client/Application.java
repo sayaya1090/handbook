@@ -18,16 +18,14 @@ public class Application implements EntryPoint {
             Observable.timer(1, 100).take(1).subscribe(tick-> {
                 String url = DomGlobal.window.location.pathname + DomGlobal.window.location.search;
                 update(url, frame);
+                components.typeApi().initialize();
             });
             return true;
         });
     }
     private void update(String url, HTMLElement frame) {
         switch (url) {
-            case "/", "/types?view=graph" -> {
-                //frame.append(components.controller().element());
-                //frame.append(components.canvas().element());
-            }
+            case "/", "/types?view=graph" -> frame.append(components.tabs().element());
             case "/types?view=calendar" -> {
 
             }
