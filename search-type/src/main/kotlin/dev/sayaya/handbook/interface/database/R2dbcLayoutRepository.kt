@@ -1,17 +1,16 @@
 package dev.sayaya.handbook.`interface`.database
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.usecase.LayoutRepository
-import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import java.time.Instant
 import java.util.*
 
 @Repository
-class R2dbcLayoutRepository(private val template: R2dbcEntityTemplate, private val objectMapper: ObjectMapper): LayoutRepository {
-    override fun findAll(workspace: UUID): Flux<Layout> = template.databaseClient.sql(FIND_LAYOUT_SQL)
+class R2dbcLayoutRepository(private val client: DatabaseClient): LayoutRepository {
+    override fun findAll(workspace: UUID): Flux<Layout> = client.sql(FIND_LAYOUT_SQL)
         .bind("workspace", workspace).map { row ->
             val effectDateTime = row.get("effective_at", Instant::class.java)!!
             val expireDateTime = row.get("expire_at", Instant::class.java)!!

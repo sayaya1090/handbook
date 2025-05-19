@@ -17,23 +17,22 @@ import java.util.*
 
 @Repository
 class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val objectMapper: ObjectMapper): TypeRepository {
-    override fun findAll(workspace: UUID): Flux<Type> = query(where("workspace").`is`(workspace).and("last").`is`(true))
-        .let { template.select(it, R2dbcTypeEntity::class.java) }
-        .collectList()
+    override fun findAll(workspace: UUID): Flux<Type> = template.databaseClient.sql(FIND_TYPE_WITH_PREV_AND_NEXT)
+        .bind("workspace", workspace)
+        .mapValue(R2dbcTypeEntity::class.java)
+        .all().collectList()
         .flatMapMany { r2dbcTypes ->
             r2dbcTypes.toDomainWithAttributes(workspace)
         }
 
-    override fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<Type> = query(
-        where("workspace").`is`(workspace)
-            .and("effective_at").lessThan(expireDateTime)
-            .and("expire_at").greaterThan(effectDateTime)
-            .and("last").`is`(true)
-    ).let { template.select(it, R2dbcTypeEntity::class.java) }
-        .collectList()
-        .flatMapMany { r2dbcTypes ->
-            r2dbcTypes.toDomainWithAttributes(workspace)
-        }
+    override fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<Type> = template.databaseClient.sql(FIND_TYPE_WITH_PREV_AND_NEXT_BY_RANGE).bind("workspace", workspace)
+            .bind("effectDateTime", effectDateTime)
+            .bind("expireDateTime", expireDateTime)
+            .mapValue(R2dbcTypeEntity::class.java)
+            .all().collectList()
+            .flatMapMany { r2dbcTypes ->
+                r2dbcTypes.toDomainWithAttributes(workspace)
+            }
 
     private fun List<R2dbcTypeEntity>.toDomainWithAttributes(workspace: UUID): Flux<Type> {
         if (isEmpty()) return Flux.empty()
@@ -82,35 +81,23 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val
     )
 
     companion object {
-        private val FIND_LAYOUT_SQL = """
-            SELECT t.effective_at, t.expire_at FROM type t WHERE t.workspace = :workspace AND t.last=true
+        private val FIND_TYPE_WITH_PREV_AND_NEXT = """
+            SELECT t.*,
+                   prev.version AS prev,
+                   next.version AS next
+            FROM public.type t
+            LEFT JOIN public.type prev ON prev.workspace = t.workspace
+                                       AND prev.name = t.name
+                                       AND prev.expire_at = t.effective_at
+                                       AND prev.last=true
+            LEFT JOIN public.type next ON next.workspace = t.workspace
+                                       AND next.name = t.name
+                                       AND next.effective_at = t.expire_at
+                                       AND next.last=true
+            WHERE t.workspace = :workspace AND t.last=true
         """.trimIndent()
-        private val FIND_MOST_RECENT_TYPENAMES_BY_DUE = """
-            SELECT t.name
-            FROM (
-                SELECT
-                    t.name,
-                    ROW_NUMBER() OVER(
-                        PARTITION BY t.name ORDER BY t.effective_at DESC
-                    ) as rn
-                FROM type t
-                WHERE t.workspace = :workspace AND t.expire_at > :effect AND t.last=true
-            ) t
-            WHERE t.rn = 1
-        """.trimIndent()
-        private val FIND_MOST_RECENT_TYPENAMES = """
-            SELECT t.name
-            FROM (
-                SELECT
-                    t.name,
-                    ROW_NUMBER() OVER(
-                        PARTITION BY t.name ORDER BY t.effective_at DESC
-                    ) as rn
-                FROM type t
-                WHERE t.workspace = :workspace AND t.last=true
-            ) t
-            WHERE t.rn = 1
-        """.trimIndent()
+        private val FIND_TYPE_WITH_PREV_AND_NEXT_BY_RANGE =
+            "$FIND_TYPE_WITH_PREV_AND_NEXT AND t.effective_at <= :expireDateTime AND t.expire_at >= :effectDateTime"
         fun Short.unsigned(): UShort = (this + 32768).toUShort()
     }
 }
