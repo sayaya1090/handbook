@@ -2,9 +2,7 @@ package dev.sayaya.handbook.`interface`.database
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Attribute
-import dev.sayaya.handbook.domain.AttributeType
 import dev.sayaya.handbook.domain.AttributeTypeDefinition
-import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.exception.MissingFieldException
 import dev.sayaya.handbook.usecase.TypeRepository
@@ -19,25 +17,11 @@ import java.util.*
 
 @Repository
 class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val objectMapper: ObjectMapper): TypeRepository {
-    override fun findAll(workspace: UUID): Flux<Layout> = template.databaseClient.sql(FIND_LAYOUT_SQL)
-        .bind("workspace", workspace).map { row ->
-            val effectDateTime = row.get("effective_at", Instant::class.java)!!
-            val expireDateTime = row.get("expire_at", Instant::class.java)!!
-            effectDateTime to expireDateTime
-        }.all().collectList().flatMapIterable { list ->
-            val set = TreeSet<Instant>()
-            list.forEach { (effectDateTime, expireDateTime) ->
-                set.add(effectDateTime)
-                set.add(expireDateTime)
-            }
-            if (set.size < 2) emptyList()
-            else set.toList().zipWithNext().map { (start, end) ->
-                Layout(
-                    workspace = workspace,
-                    effectDateTime = start,
-                    expireDateTime = end
-                )
-            }
+    override fun findAll(workspace: UUID): Flux<Type> = query(where("workspace").`is`(workspace).and("last").`is`(true))
+        .let { template.select(it, R2dbcTypeEntity::class.java) }
+        .collectList()
+        .flatMapMany { r2dbcTypes ->
+            r2dbcTypes.toDomainWithAttributes(workspace)
         }
 
     override fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<Type> = query(
@@ -50,6 +34,7 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val
         .flatMapMany { r2dbcTypes ->
             r2dbcTypes.toDomainWithAttributes(workspace)
         }
+
     private fun List<R2dbcTypeEntity>.toDomainWithAttributes(workspace: UUID): Flux<Type> {
         if (isEmpty()) return Flux.empty()
         val typeIds = map { it.id }.distinct()
@@ -99,6 +84,32 @@ class R2dbcTypeRepository(private val template: R2dbcEntityTemplate, private val
     companion object {
         private val FIND_LAYOUT_SQL = """
             SELECT t.effective_at, t.expire_at FROM type t WHERE t.workspace = :workspace AND t.last=true
+        """.trimIndent()
+        private val FIND_MOST_RECENT_TYPENAMES_BY_DUE = """
+            SELECT t.name
+            FROM (
+                SELECT
+                    t.name,
+                    ROW_NUMBER() OVER(
+                        PARTITION BY t.name ORDER BY t.effective_at DESC
+                    ) as rn
+                FROM type t
+                WHERE t.workspace = :workspace AND t.expire_at > :effect AND t.last=true
+            ) t
+            WHERE t.rn = 1
+        """.trimIndent()
+        private val FIND_MOST_RECENT_TYPENAMES = """
+            SELECT t.name
+            FROM (
+                SELECT
+                    t.name,
+                    ROW_NUMBER() OVER(
+                        PARTITION BY t.name ORDER BY t.effective_at DESC
+                    ) as rn
+                FROM type t
+                WHERE t.workspace = :workspace AND t.last=true
+            ) t
+            WHERE t.rn = 1
         """.trimIndent()
         fun Short.unsigned(): UShort = (this + 32768).toUShort()
     }
