@@ -14,7 +14,6 @@ public class Application implements EntryPoint {
     public void onModuleLoad() {
         components.renderer().next(frame-> {
             frame.style.overflow = "auto";
-            frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/document.css").element());
             Observable.timer(1, 100).take(1).subscribe(tick-> {
                 String url = DomGlobal.window.location.pathname + DomGlobal.window.location.search;
                 update(url, frame);
@@ -25,7 +24,14 @@ public class Application implements EntryPoint {
     }
     private void update(String url, HTMLElement frame) {
         switch (url) {
-            case "/", "/types?view=graph" -> frame.append(components.tabs().element());
+            case "/", "/types?view=graph" -> {
+                frame.append(htmlElement("script", HTMLLinkElement.class).attr("src", "js/handsontable.full.min.js").element());
+                frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/handsontable.full.min.css").element());
+                frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/document.css").element());
+                frame.append(components.tabs().element());
+                frame.append(components.controller().element());
+                frame.append(components.table().element());
+            }
             case "/types?view=calendar" -> {
 
             }

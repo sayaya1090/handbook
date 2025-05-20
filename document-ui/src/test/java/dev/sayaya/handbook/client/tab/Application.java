@@ -10,6 +10,8 @@ public class Application implements EntryPoint {
     @Override public void onModuleLoad() {
         components.workspaceProvider().next(Workspace.builder().id("").name("").build());
         body().add(components.tabs());
+        body().add(components.controller());
+        body().add(components.table());
         components.typeRepository().list().subscribe(components.typeList()::next);
     }
 }

@@ -1,0 +1,18 @@
+.controller {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.5rem auto;
+    padding: 0.5rem;
+}
+
+.controller .label {
+    text-align: center;
+    --_leading-space: 5px;
+    --_trailing-space: 5px;
+    --_top-space: 5px;
+    --_bottom-space: 5px;
+    margin: 0.5rem auto;
+    width: 8rem;
+}

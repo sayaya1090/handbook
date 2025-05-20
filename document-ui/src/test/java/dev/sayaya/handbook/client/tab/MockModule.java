@@ -57,7 +57,7 @@ public abstract class MockModule {
                                                             .build())
                                                     .build()
                                             ).nullable(false).inherited(true).build()
-                            )).x(100).y(100).width(400).height(293).build(),
+                            )).build(),
                     Type.builder()
                             .id("type_2")
                             .version("t2-v2")
@@ -67,7 +67,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_1")
                             .attributes(Collections.emptyList())
-                            .x(700).y(100).width(400).height(170).build(),
+                            .build(),
                     Type.builder()
                             .id("type_3")
                             .version("t3-v2")
@@ -77,7 +77,7 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent("type_2")
                             .attributes(Collections.emptyList())
-                            .x(200).y(500).width(400).height(170).build()
+                            .build()
             );
             @Override
             public Observable<List<Type>> list() {

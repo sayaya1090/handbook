@@ -23,11 +23,6 @@ public final class TypeNative {
     @JsProperty public boolean primitive;
     @JsProperty public AttributeNative[] attributes; // 배열
     @JsProperty public String parent;
-    @JsProperty public double x;
-    @JsProperty public double y;
-    @JsProperty public double width;
-    @JsProperty public double height;
-    @JsProperty public boolean delete;
     @JsOverlay @JsIgnore public Type toDomain() {
         return Type.builder().id(id).version(version)
                 .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
@@ -37,7 +32,6 @@ public final class TypeNative {
                         .mapToObj(i-> attributes[i].toDomain(id, version, i))
                         .collect(Collectors.toList()) : List.of()
                 ).parent(parent)
-                .x((int)x).y((int)y).width((int)width).height((int)height)
                 .build();
     }
     @JsOverlay @JsIgnore public static TypeNative from(Type type, boolean delete) {
@@ -56,11 +50,6 @@ public final class TypeNative {
         nativeType.primitive = type.primitive();
         nativeType.attributes = attributes;
         nativeType.parent = type.parent();
-        nativeType.x = type.x();
-        nativeType.y = type.y();
-        nativeType.width = type.width();
-        nativeType.height = type.height();
-        nativeType.delete = delete;
         return nativeType;
     }
 }
