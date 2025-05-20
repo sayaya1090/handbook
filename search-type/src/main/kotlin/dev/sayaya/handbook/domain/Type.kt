@@ -16,7 +16,9 @@ data class Type (
     val x: UShort,
     val y: UShort,
     val width: UShort,
-    val height: UShort
+    val height: UShort,
+    val prev: String? = null,
+    val next: String? = null,
 ) {
     init {
         require(id.isNotBlank()) { "Type id cannot be blank" }

@@ -8,6 +8,7 @@ import java.util.*
 
 @Service
 class TypeService(private val repo: TypeRepository) {
-    fun findByRange(workspace: UUID, effectDateTime: Instant, expireDateTime: Instant): Flux<Type> = repo.findByRange(workspace, effectDateTime, expireDateTime)
-    fun findAll(workspace: UUID): Flux<Type> = repo.findAll(workspace)
+    fun findByRange(workspace: UUID, effectDateTime: Instant?, expireDateTime: Instant?): Flux<Type> = if(effectDateTime!=null) repo.findByRange(workspace, effectDateTime, expireDateTime ?: effectDateTime)
+    else findAll(workspace)
+    private fun findAll(workspace: UUID): Flux<Type> = repo.findAll(workspace)
 }

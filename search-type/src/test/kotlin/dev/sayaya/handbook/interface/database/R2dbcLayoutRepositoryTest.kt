@@ -17,7 +17,6 @@ import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.ShouldSpec
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
-import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -30,7 +29,6 @@ import java.util.*
     "logging.level.io.r2dbc.postgresql.PARAM=DEBUG",
 ])
 internal class R2dbcLayoutRepositoryTest @Autowired constructor(
-    private val template: R2dbcEntityTemplate,
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
     val objectMapper = ObjectMapper()
@@ -45,7 +43,7 @@ internal class R2dbcLayoutRepositoryTest @Autowired constructor(
             }
         })).registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
         .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-    val repository = R2dbcLayoutRepository(template, objectMapper)
+    val repository = R2dbcLayoutRepository(databaseClient)
     // 테스트에 사용할 고정된 Workspace UUID
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
     val otherWorkspace = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee") // 다른 워크스페이스 테스트용

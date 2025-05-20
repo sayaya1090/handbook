@@ -22,4 +22,7 @@ data class R2dbcTypeEntity (
     val y: Short,
     val width: Short,
     val height: Short
-)
+) {
+    var prev: String? = null
+    var next: String? = null
+}

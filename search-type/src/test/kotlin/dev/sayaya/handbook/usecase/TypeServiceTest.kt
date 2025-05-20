@@ -19,10 +19,7 @@ internal class TypeServiceTest : ShouldSpec({
     beforeEach {
         clearMocks(mockRepository, recordedCalls = true, answers = false, verificationMarks = true)
     }
-
-    context("findAll 메서드 테스트") {
-
-    }
+    
     context("findByRange 메서드 테스트") {
         val baseEffectTime = Instant.parse("2025-03-15T00:00:00Z")
         val baseExpireTime = Instant.parse("2025-03-16T00:00:00Z") // effect + 1 day
@@ -48,7 +45,9 @@ internal class TypeServiceTest : ShouldSpec({
             primitive = false,
             x=150u, y=10u, width=80u, height=80u
         )
-
+        should("baseExpireTime이 null이면 baseEffectTime으로 동작해야 한다") {
+            
+        }
         should("리포지토리의 findByRange를 호출하고 결과를 그대로 반환해야 한다") {
             // Given: Mock Repository가 특정 Type Flux를 반환하도록 설정
             every { mockRepository.findByRange(workspace, baseEffectTime, baseExpireTime) } returns

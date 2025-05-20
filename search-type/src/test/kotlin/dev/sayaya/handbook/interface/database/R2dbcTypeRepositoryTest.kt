@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.ShouldSpec
