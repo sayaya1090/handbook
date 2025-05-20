@@ -34,7 +34,7 @@ public class Type {
         this.next = next;
         this.effectDateTime = validateNonNull(effectDateTime, "Effect date time");
         this.expireDateTime = validateNonNull(expireDateTime, "Expire date time");
-        this.description = validateNonNullOrEmpty(description, "description");
+        this.description = description;
         this.primitive = primitive;
         this.attributes = validateNonNull(attributes, "attributes");
         this.parent = parent;

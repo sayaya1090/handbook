@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Type;
+import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
@@ -17,6 +18,8 @@ import static jsinterop.annotations.JsPackage.GLOBAL;
 public final class TypeNative {
     @JsProperty public String id;
     @JsProperty public String version;
+    @JsProperty public String prev;
+    @JsProperty public String next;
     @JsProperty(name = "effect_date_time") public Double effectDateTime;
     @JsProperty(name = "expire_date_time") public Double expireDateTime;
     @JsProperty public String description;
@@ -24,32 +27,14 @@ public final class TypeNative {
     @JsProperty public AttributeNative[] attributes; // 배열
     @JsProperty public String parent;
     @JsOverlay @JsIgnore public Type toDomain() {
-        return Type.builder().id(id).version(version)
+        return Type.builder().id(id).version(version).prev(prev).next(next)
                 .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
                 .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null)
                 .description(description).primitive(primitive)
                 .attributes(attributes != null ? IntStream.range(0, attributes.length)
-                        .mapToObj(i-> attributes[i].toDomain(id, version, i))
+                        .mapToObj(i -> attributes[i].toDomain(id, version, i))
                         .collect(Collectors.toList()) : List.of()
                 ).parent(parent)
                 .build();
-    }
-    @JsOverlay @JsIgnore public static TypeNative from(Type type, boolean delete) {
-        if (type == null) return null;
-        var attributes = new AttributeNative[type.attributes().size()];
-        for (int i = 0; i < type.attributes().size(); i++) {
-            attributes[i] = AttributeNative.from(type.attributes().get(i));
-            attributes[i].order = i;
-        }
-        var nativeType = new TypeNative();
-        nativeType.id = type.id();
-        nativeType.version = type.version();
-        nativeType.effectDateTime = type.effectDateTime()!=null?Long.valueOf(type.effectDateTime().getTime()).doubleValue():null;
-        nativeType.expireDateTime = type.expireDateTime()!=null?Long.valueOf(type.expireDateTime().getTime()).doubleValue():null;
-        nativeType.description = type.description();
-        nativeType.primitive = type.primitive();
-        nativeType.attributes = attributes;
-        nativeType.parent = type.parent();
-        return nativeType;
     }
 }
