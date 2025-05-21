@@ -17,12 +17,12 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
     @Inject ControllerElement(
             AddButton add, RemoveButton remove,
             UndoButton undo, RedoButton redo, SaveButton save,
-            BeforeButton before, VersionElement version, AfterButton after,
+            NameElement name, BeforeButton before, VersionElement version, AfterButton after,
             EffectDatetimeElement effectDatetime, ExpireDatetimeElement expireDatetime
     ) {
         css("controller")
-                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(add).add(remove).add(undo).add(redo).add(save))
+                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(add).add(remove).add(undo).add(redo))
                 .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(before).add(version).add(after))
-                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(effectDatetime).add(label("~")).add(expireDatetime));
+                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(effectDatetime).add(label("~")).add(expireDatetime).add(save));
     }
 }
