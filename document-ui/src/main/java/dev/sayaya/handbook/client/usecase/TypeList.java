@@ -9,13 +9,13 @@ import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
+import java.util.Map;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 @Singleton
 public class TypeList {
-    @Delegate private final BehaviorSubject<List<Type>> subject = behavior(List.of());
+    @Delegate private final BehaviorSubject<Map<String, Map<String, Type>>> subject = behavior(Map.of());
     @Inject TypeList(Observable<Workspace> workspace) {
         /*workspace.switchMap(currentWorkspace -> {
             if (currentWorkspace == null || currentWorkspace.id() == null) return Observable.of(List.<Type>of());

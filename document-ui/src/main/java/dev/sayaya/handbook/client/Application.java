@@ -6,6 +6,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLLinkElement;
 
+import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlElement;
 
 public class Application implements EntryPoint {
@@ -30,7 +31,13 @@ public class Application implements EntryPoint {
                 frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/document.css").element());
                 frame.append(components.tabs().element());
                 frame.append(components.controller().element());
-                frame.append(components.table().element());
+                frame.append(div().style("padding: 1rem;")
+                        .add(div().style("""
+                        overflow: hidden;
+                        height: calc(100dvh - 2rem);
+                        height: fit-content;
+                        """).add(components.table())
+                ).element());
             }
             case "/types?view=calendar" -> {
 

@@ -8,7 +8,6 @@ import dev.sayaya.handbook.client.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
@@ -42,7 +41,10 @@ public class TypeApi implements TypeRepository {
         throw new RuntimeException("Request failed: " + throwable);
     }
     public void initialize() {
-        list().subscribe(typeList::next);
+        list().subscribe(list->{
+            var map = list.stream().collect(Collectors.groupingBy(Type::id, Collectors.toMap(Type::version, type -> type)));
+            typeList.next(map);
+        });
     }
     @Override
     public Observable<List<Type>> list() {
@@ -63,8 +65,7 @@ public class TypeApi implements TypeRepository {
     private Promise<List<Type>> parse(Response response) {
         return response.json().then(values -> {
             var natives = (TypeNative[]) values;
-            var list = Arrays.stream(natives).map(n->n.toDomain()).collect(Collectors.toList());
-            DomGlobal.console.log("Types loaded: " + list);
+            var list = Arrays.stream(natives).map(TypeNative::toDomain).collect(Collectors.toList());
             return Promise.resolve(list);
         });
     }

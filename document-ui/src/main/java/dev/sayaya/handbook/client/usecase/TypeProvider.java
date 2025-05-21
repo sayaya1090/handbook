@@ -14,7 +14,5 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class TypeProvider {
     @Delegate
     private final BehaviorSubject<Type> subject = behavior(null);
-    @Inject TypeProvider() {
-        subscribe(type-> DomGlobal.console.log(type));
-    }
+    @Inject TypeProvider() {}
 }
