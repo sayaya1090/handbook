@@ -67,8 +67,13 @@ public abstract class MockModule {
                             .description("type_2")
                             .primitive(true)
                             .parent("type_1")
-                            .attributes(Collections.emptyList())
-                            .build(),
+                            .attributes(List.of(
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(AttributeTypeDefinition.builder().baseType(Value).build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type(AttributeTypeDefinition.builder().baseType(Array)
+                                            .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                            .build()
+                                    ).nullable(true).inherited(false).build())
+                            ).build(),
                     Type.builder()
                             .id("type_2")
                             .version("t2-v2")
@@ -78,8 +83,21 @@ public abstract class MockModule {
                             .description("type_2")
                             .primitive(true)
                             .parent("type_1")
-                            .attributes(Collections.emptyList())
-                            .build(),
+                            .attributes(List.of(
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(AttributeTypeDefinition.builder().baseType(Value).build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2-2").type(AttributeTypeDefinition.builder().baseType(Array)
+                                            .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                            .build()
+                                    ).nullable(true).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$2").name("attr_3")
+                                            .type(AttributeTypeDefinition.builder().baseType(Map)
+                                                    .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                                    .argument(AttributeTypeDefinition.builder().baseType(Array)
+                                                            .argument(AttributeTypeDefinition.builder().baseType(Value).build())
+                                                            .build())
+                                                    .build()
+                                            ).nullable(false).inherited(true).build())
+                            ).build(),
                     Type.builder()
                             .id("type_3")
                             .version("t3-v2")

@@ -13,7 +13,7 @@ data class Document (
     val data: Map<String, String?>
 ){
     init {
-        require(serial.matches(Regex("^[a-zA-Z0-9]+$"))) { "Document serial must be alphanumeric." }
+        require(serial.matches(Regex("^[a-zA-Z0-9-_]+$"))) { "Document serial must be alphanumeric and may include hyphens and underscores." }
         require(expireDateTime.isAfter(effectDateTime)) { "Expire date time must be after effect date time" }
     }
 }

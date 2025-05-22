@@ -19,6 +19,7 @@ public class Application implements EntryPoint {
                 String url = DomGlobal.window.location.pathname + DomGlobal.window.location.search;
                 update(url, frame);
                 components.typeApi().initialize();
+                components.documentApi();
             });
             return true;
         });

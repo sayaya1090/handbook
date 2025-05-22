@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client;
 import dev.sayaya.handbook.client.domain.Progress;
 import dev.sayaya.handbook.client.interfaces.TypeTabsElement;
 import dev.sayaya.handbook.client.interfaces.api.ApiModule;
+import dev.sayaya.handbook.client.interfaces.api.DocumentApi;
 import dev.sayaya.handbook.client.interfaces.api.TypeApi;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
 import dev.sayaya.handbook.client.interfaces.table.DocumentTableElement;
@@ -19,6 +20,7 @@ public interface Component {
     ControllerElement controller();
     DocumentTableElement table();
     TypeApi typeApi();
+    DocumentApi documentApi();
     Observer<String> uri();
     Observer<Progress> progress();
     Observer<Render> renderer();
