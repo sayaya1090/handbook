@@ -14,7 +14,7 @@ import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 
 @Singleton
 public class VersionElement implements IsElement<MdTextFieldElement.MdOutlinedTextFieldElement> {
-    @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt = textField().outlined().css("label")
+    @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt = textField().outlined().css("label").style("width: 8rem;")
             .label("Version").value("1.0.0").enable(false);
     @Inject VersionElement(TypeProvider typeProvider) {
         ipt.element().readOnly = true;

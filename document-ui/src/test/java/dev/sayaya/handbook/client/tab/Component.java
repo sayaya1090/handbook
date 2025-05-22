@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client.tab;
 
 import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.interfaces.TypeTabsElement;
-import dev.sayaya.handbook.client.interfaces.api.TypeApi;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
 import dev.sayaya.handbook.client.interfaces.table.DocumentTableElement;
 import dev.sayaya.handbook.client.usecase.ClientSharedModule;

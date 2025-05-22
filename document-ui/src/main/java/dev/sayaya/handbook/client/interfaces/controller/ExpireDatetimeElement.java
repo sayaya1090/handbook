@@ -26,7 +26,7 @@ public class ExpireDatetimeElement implements IsElement<MdTextFieldElement.MdOut
         typeProvider.subscribe(this::update);
     }
     void update(Type type) {
-        var date = type.expireDateTime();
+        var date = type!=null ? type.expireDateTime() : null;
         if(date==null) ipt.element().valueAsNumber = null;
         else {
             JsDate cast = JsDate.create(date.getTime());

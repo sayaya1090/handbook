@@ -21,8 +21,8 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
             EffectDatetimeElement effectDatetime, ExpireDatetimeElement expireDatetime
     ) {
         css("controller")
-                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(add).add(remove).add(undo).add(redo))
-                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(before).add(version).add(after))
-                .add(div().style("display:flex; align-items:center; gap:0.5rem;").add(effectDatetime).add(label("~")).add(expireDatetime).add(save));
+                .add(div().style("flex: 1 1 0%; display:flex; align-items:center; justify-content: flex-start; gap:0.5rem;").add(add).add(remove).add(undo).add(redo))
+                .add(div().style("flex: 1 1 0%; display:flex; align-items:center; justify-content: center; gap:0.5rem;").add(before).add(version).add(after))
+                .add(div().style("flex: 1 1 0%; display:flex; align-items:center; justify-content: flex-end; gap:0.5rem;").add(effectDatetime).add(label("~")).add(expireDatetime).add(save));
     }
 }
