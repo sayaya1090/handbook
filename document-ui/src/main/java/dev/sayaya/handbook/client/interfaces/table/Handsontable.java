@@ -18,6 +18,7 @@ public final class Handsontable {
     public native boolean selectRows(int start, int end);
     public native boolean selectRows(int start);
     public native boolean selectCell(int row, int column);
+    public native void deselectCell();
     public native Element getCell(int row, int col, boolean topmost);
     public native void setDataAtCell(int row, int col, Object value);
     public native void alter(String action, int idex, int amount);

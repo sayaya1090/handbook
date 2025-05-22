@@ -1,22 +1,44 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
-import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsType;
+import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
+import dev.sayaya.handbook.client.interfaces.table.function.CellRenderer;
+import dev.sayaya.handbook.client.interfaces.table.function.HeaderRenderer;
+import jsinterop.annotations.*;
+import lombok.Builder;
+import lombok.Setter;
 import lombok.experimental.Accessors;
+
+import static org.jboss.elemento.Elements.label;
 
 @JsType(isNative = true, namespace= JsPackage.GLOBAL, name="Object")
 @Accessors(fluent=true)
+@Setter(onMethod_={@JsOverlay, @JsIgnore})
 public final class Column {
-    private String data;
-    private String header;
-    private String type;
-    private String format;
-    private String dateFormat;
-    private Object source;
-    private boolean strict;
-    private boolean readOnly;
+    @JsOverlay @JsIgnore
+    public static Column defaults() {
+        Column instance = new Column();
+        instance.headerRenderer = n->label().add(instance.header!=null?instance.header:instance.data).element();
+        return instance;
+    }
+    public String data;
+    public String header;
+    public String type;
+    @JsProperty(name="_width")
+    public Integer width;
+    public String format;
+    public String dateFormat;
+    public Object source;
+    public boolean strict;
+    public boolean readOnly;
+    public CellRenderer renderer;
     //private Validator validator;
-    private boolean allowInvalid;
-    private boolean allowEmpty;
-    private boolean filter;
+    public HeaderRenderer headerRenderer;
+    public boolean allowInvalid;
+    public boolean allowEmpty;
+    public CellEditorFn editor;
+    public boolean filter;
+    @JsFunction
+    public interface CellEditorFn {
+        CellEditor prototype(Object props);
+    }
 }
