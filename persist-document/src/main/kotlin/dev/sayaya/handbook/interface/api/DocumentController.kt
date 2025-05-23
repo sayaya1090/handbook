@@ -16,12 +16,15 @@ import java.util.*
 class DocumentController(private val svc: DocumentService) {
     private val logger = LoggerFactory.getLogger(DocumentController::class.java)
 
-    @PutMapping(value = ["/workspace/{workspace}/documents"])
+    @PostMapping(value = ["/workspace/{workspace}/documents"])
     @Transactional
-    fun save(@AuthenticationPrincipal principal: Principal, @PathVariable workspace: UUID, @RequestBody documents: List<Document>): Mono<Void> {
+    fun save(@AuthenticationPrincipal principal: Principal, @PathVariable workspace: UUID, @RequestBody documents: List<DocumentParam>): Mono<Void> {
         if (documents.isEmpty()) return Mono.empty()
-        return svc.save(principal, workspace, documents).doOnError { error ->
-            logger.error("Error saving document for workspace {}: {}", workspace, error.message, error)
+        val (toDeletes, toUpserts) = documents.partition { it.delete }
+        val update = if (toUpserts.isNotEmpty()) svc.save(principal, workspace, toUpserts.map(DocumentParam::document)) else Mono.empty()
+        val delete: Mono<List<Document>> = Mono.empty()
+        return update.mergeWith(delete).doOnError { error ->
+            logger.error("Error saving or deleting types for workspace {}: {}", workspace, error.message, error)
         }.then()
     }
     @ExceptionHandler(DuplicateKeyException::class)
