@@ -9,7 +9,5 @@ import java.util.UUID
 
 @Service
 class DocumentService(private val repo: DocumentRepository) {
-    fun search(workspace: UUID, param: Search): Mono<Page<Document>> = param.copy (
-        filters = param.filters + ("workspace" to workspace)
-    ).let(repo::search)
+    fun search(workspace: UUID, param: Search): Mono<Page<Document>> = repo.search(workspace, param)
 }
