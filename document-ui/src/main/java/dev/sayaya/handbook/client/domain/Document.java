@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @Accessors(fluent = true)
@@ -19,4 +20,16 @@ public class Document {
     private Date expireDateTime;
     @Singular("value")
     private Map<String, Object> values;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Document doc = (Document) o;
+        return Objects.equals(id, doc.id);
+    }
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

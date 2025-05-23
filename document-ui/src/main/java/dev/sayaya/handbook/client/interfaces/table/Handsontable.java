@@ -21,6 +21,7 @@ public final class Handsontable {
     public native void deselectCell();
     public native Element getCell(int row, int col, boolean topmost);
     public native void setDataAtCell(int row, int col, Object value);
-    public native void alter(String action, int idex, int amount);
+    public native void alter(String action, int index, int amount);
+    public native void spliceRow(int row, int index, int amount, Object... values);
 }
 

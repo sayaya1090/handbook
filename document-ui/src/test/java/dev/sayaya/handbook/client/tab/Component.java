@@ -4,9 +4,7 @@ import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.interfaces.TypeTabsElement;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
 import dev.sayaya.handbook.client.interfaces.table.DocumentTableElement;
-import dev.sayaya.handbook.client.usecase.ClientSharedModule;
-import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.client.usecase.TypeRepository;
+import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.rx.Observer;
 
 import javax.inject.Singleton;
@@ -19,5 +17,6 @@ public interface Component {
     DocumentTableElement table();
     TypeRepository typeRepository();
     TypeList typeList();
+    DocumentList documentList();
     Observer<Workspace> workspaceProvider();
 }

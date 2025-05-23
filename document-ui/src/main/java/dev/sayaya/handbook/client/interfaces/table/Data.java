@@ -6,7 +6,6 @@ import elemental2.core.JsArray;
 import elemental2.core.JsObject;
 import elemental2.core.ObjectPropertyDescriptor;
 import elemental2.dom.CustomEvent;
-import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
@@ -50,7 +49,7 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         JsPropertyMap<Object> map = Js.asPropertyMap(this);
         if(!map.has(key)) return null;
         Object obj = map.get(key);
-        if(obj instanceof String) return (String) Js.asPropertyMap(this).get(key);
+        if(obj instanceof String) return (String) obj;
         else return null;
     }
     @JsIgnore

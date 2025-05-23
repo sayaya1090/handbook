@@ -52,7 +52,7 @@
     border-right: hidden;
     border-bottom: hidden;
 }
-.handsontable .htNoFrame+td, .handsontable .htNoFrame+th, .handsontable.htRowHeaders thead tr th:nth-child(2n), .handsontable td:first-of-type, .handsontable th:first-child, .handsontable th:nth-child(2n) {
+.handsontable .htNoFrame+td, .handsontable .htNoFrame+th, .handsontable td:first-of-type, .handsontable th:first-child {
     border-left: 1px solid var(--md-sys-color-outline);
 }
 .handsontable tr:first-child td, .handsontable tr:first-child th {

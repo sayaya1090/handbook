@@ -5,16 +5,22 @@ import dagger.Binds;
 import dagger.Provides;
 import dev.sayaya.handbook.client.domain.*;
 import dev.sayaya.handbook.client.interfaces.LanguageRepository;
+import dev.sayaya.handbook.client.interfaces.api.DocumentNative;
+import dev.sayaya.handbook.client.interfaces.api.TypeNative;
+import dev.sayaya.handbook.client.usecase.DocumentRepository;
 import dev.sayaya.handbook.client.usecase.LanguageProvider;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import elemental2.dom.DomGlobal;
 
 import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static dev.sayaya.handbook.client.domain.AttributeTypeDefinition.AttributeType.*;
 import static dev.sayaya.handbook.client.domain.AttributeTypeDefinition.AttributeType.Array;
@@ -114,6 +120,16 @@ public abstract class MockModule {
                 var filtered = types.stream().map(t->t.toBuilder().build()).collect(Collectors.toUnmodifiableList());
                 return Observable.of(filtered);
             }
+        };
+    }
+    @Provides static DocumentRepository documentRepositoryProvider() {
+        return (toDelete, toUpsert) -> {
+            var natives = Stream.concat(
+                    toDelete.stream().map(type-> DocumentNative.from(type, true)),
+                    toUpsert.stream().map(type->DocumentNative.from(type, false))
+            ).toArray(DocumentNative[]::new);
+            DomGlobal.console.log("save", natives);
+            return Observable.of((Void)null);
         };
     }
 }

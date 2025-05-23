@@ -1,13 +1,13 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
-import com.google.gwt.aria.client.State;
+import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.interfaces.table.column.ColumnBuilder;
 import dev.sayaya.handbook.client.interfaces.table.column.ColumnString;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.elements.CheckboxElementBuilder;
 import elemental2.core.JsArray;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 
@@ -17,48 +17,51 @@ import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static dev.sayaya.ui.elements.CheckboxElementBuilder.checkbox;
 import static org.jboss.elemento.Elements.label;
 
 @Singleton
 public class DocumentTableElement implements IsElement<HTMLDivElement> {
-    private final CheckboxElementBuilder checkAll = checkbox().style("vertical-align: middle; --md-checkbox-outline-width: 1px;");
+    private final CheckboxElementBuilder checkAll = checkbox().style("vertical-align: bottom; --md-checkbox-outline-width: 1px;");
     private final Map<Integer, CheckboxElementBuilder> rowHeaders = new HashMap<>();
     private final HandsontableConfiguration config = new HandsontableConfiguration();
     private final HandsontableElement table;
-    @Inject DocumentTableElement(TypeProvider type, DataProvider data) {
+    private String lblSerial = "Serial";
+    private String lblEffectDatetime = "Effect date";
+    private String lblExpireDatetime = "Expire date";
+    private final TypeProvider typeProvider;
+    @Inject DocumentTableElement(TypeProvider type, DataProvider data, Observable<Label> labels) {
+        this.typeProvider = type;
         setting();
         table = new HandsontableElement(config);
         type.subscribe(this::update);
         data.subscribe(this::update);
+        labels.subscribe(this::update);
+    }
+    private void update(Label label) {
+        if (label == null) return;
+        lblSerial = Label.findLabelOrDefault(label, "Serial");
+        lblEffectDatetime = Label.findLabelOrDefault(label, "Effect date");
+        lblExpireDatetime = Label.findLabelOrDefault(label, "Expire date");
+        update(typeProvider.getValue());
     }
     private void update(Type type) {
         if(type==null || type.attributes().isEmpty()) return;
-        config.columns = type.attributes().stream()
-                .map(attr-> ColumnBuilder.string(attr.name()))
-                .map(ColumnString::build)
-                .toArray(Column[]::new);
+        config.columns = Stream.concat(
+                        Stream.of(
+                                ColumnBuilder.string("Serial").build().header(lblSerial),
+                                ColumnBuilder.string("Effect date time").build().header(lblEffectDatetime),
+                                ColumnBuilder.string("Expire date time").build().header(lblExpireDatetime)
+                        ), type.attributes().stream().map(attr-> ColumnBuilder.string(attr.name())).map(ColumnString::build)
+                ).toArray(Column[]::new);
         table.updateSettings(config);
-       /*var column = config.columns.computeIfAbsent(attr.name(), name->{
-                var column = new Column();
-                column.name(name);
-                column.type(attr.type());
-                column.readOnly(attr.readOnly());
-                return column;
-            });
-            if(attr.type() == Type.TypeAttribute.TypeAttributeType.CHECKBOX) {
-                column.renderer((row, col, value, cell, config) -> {
-                    cell.textContent = null;
-                    cell.appendChild(rowHeaders.get(row).element());
-                });
-            } else {
-                column.renderer((row, col, value, cell, config) -> {
-                    cell.textContent = value.toString();
-                });
-            }*/
     }
     private void update(List<Data> data) {
+        checkAll.select(false);
+        for(var checkbox: rowHeaders.values()) checkbox.element().remove();
+        rowHeaders.clear();
         config.data = data.stream().toArray(Data[]::new);
         table.updateSettings(config);
     }
@@ -67,6 +70,7 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         config.rowHeaders = false;
         config.width = "100%";
         config.rowHeaderWidth = 30;
+        config.data = new Data[0];
         selectAllHeader();
         selectRowHeader();
     }
@@ -74,7 +78,7 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         config.afterGetRowHeaderRenderers = renderers -> {
             JsArray.asJsArray(renderers).push((row, th)->{
                 var header = rowHeaders.computeIfAbsent(row, r->{
-                    var checkbox = checkbox().style("vertical-align: middle;  --md-checkbox-outline-width: 1px;");
+                    var checkbox = checkbox().style("vertical-align: bottom; --md-checkbox-outline-width: 1px;");
                     if(config.data.length > row) {
                         config.data[row].onStateChange(state->checkbox.select(state.state() == Data.DataState.SELECTED));
                         checkbox.onChange(evt->config.data[row].select(checkbox.isSelected()));
@@ -101,7 +105,6 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
             else table.deselectCell();
         });
     }
-
     @Override
     public HTMLDivElement element() {
         return table.element();

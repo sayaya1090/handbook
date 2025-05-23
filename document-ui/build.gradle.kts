@@ -25,6 +25,7 @@ gwt {
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
+    style = "PRETTY"
     compiler {
         strict = true
     }

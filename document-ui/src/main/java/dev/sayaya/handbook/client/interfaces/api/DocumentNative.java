@@ -1,16 +1,62 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Document;
+import dev.sayaya.handbook.client.domain.Type;
+import elemental2.core.JsMap;
+import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
+
+import java.util.Date;
 
 import static jsinterop.annotations.JsPackage.GLOBAL;
 
 @JsType(isNative = true, namespace = GLOBAL, name = "Object")
 public final class DocumentNative {
-    @JsOverlay @JsIgnore
-    public Document toDomain() {
-        return Document.builder().build();
+    @JsProperty public String id;
+    @JsProperty public String serial;
+    @JsProperty public String type;
+    @JsProperty(name = "effect_date_time") public Double effectDateTime;
+    @JsProperty(name = "expire_date_time") public Double expireDateTime;
+    @JsProperty public Object data;
+    @JsProperty public boolean delete;
+
+    @JsOverlay @JsIgnore public Document toDomain() {
+        var builder = Document.builder()
+                .id(id).serial(serial).type(type)
+                .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
+                .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null);
+        if(data!=null) {
+            JsPropertyMap<String> map = Js.cast(data);
+            map.forEach(key -> {
+                var value = map.get(key);
+                if(value != null) builder.value(key, value);
+            });
+        }
+        return builder.build();
+    }
+    @JsOverlay @JsIgnore public static DocumentNative from(Document document, boolean delete) {
+        if (document == null) return null;
+        DomGlobal.console.log(document.serial());
+        DomGlobal.console.log(delete);
+        var nativeDocument = new DocumentNative();
+        nativeDocument.id = document.id();
+        nativeDocument.serial = document.serial();
+        nativeDocument.type = document.type();
+        nativeDocument.effectDateTime = document.effectDateTime()!=null?Long.valueOf(document.effectDateTime().getTime()).doubleValue():null;
+        nativeDocument.expireDateTime = document.expireDateTime()!=null?Long.valueOf(document.expireDateTime().getTime()).doubleValue():null;
+        if (document.values() != null) {
+            var map = new JsMap<String, Object>();
+            document.values().forEach((key, value) -> {
+                if (value != null) map.set(key, value);
+            });
+            nativeDocument.data = map;
+        }
+        nativeDocument.delete = delete;
+        return nativeDocument;
     }
 }

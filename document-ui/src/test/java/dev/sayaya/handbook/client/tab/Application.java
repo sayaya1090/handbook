@@ -1,9 +1,12 @@
 package dev.sayaya.handbook.client.tab;
 
 import com.google.gwt.core.client.EntryPoint;
+import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.domain.Workspace;
 
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.jboss.elemento.Elements.body;
@@ -24,5 +27,14 @@ public class Application implements EntryPoint {
             var map = list.stream().collect(Collectors.groupingBy(Type::id, Collectors.toMap(Type::version, type -> type)));
             components.typeList().next(map);
         });
+        components.documentList().set(
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build());
     }
 }

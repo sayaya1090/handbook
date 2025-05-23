@@ -4,9 +4,12 @@ import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.domain.Progress;
 import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.DocumentList;
+import dev.sayaya.handbook.client.usecase.DocumentRepository;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
+import dev.sayaya.rx.subject.AsyncSubject;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
@@ -14,10 +17,13 @@ import elemental2.promise.Promise;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static elemental2.core.Global.JSON;
 
 @Singleton
-public class DocumentApi implements SearchApi<DocumentNative> {
+public class DocumentApi implements SearchApi<DocumentNative>, DocumentRepository {
     private final FetchApi fetchApi;
     private final Observer<Progress> progress;
     private final TypeProvider type;
@@ -57,7 +63,7 @@ public class DocumentApi implements SearchApi<DocumentNative> {
     }
     public void reload() {
         search().then(page->{
-            documents.next(Arrays.stream(page.getContent()).collect(Collectors.toUnmodifiableList()));
+            documents.set(page.getContent());
             return null;
         });
     }
@@ -68,5 +74,36 @@ public class DocumentApi implements SearchApi<DocumentNative> {
                 .content(Arrays.stream(response.getContent()).map(DocumentNative::toDomain).toArray(Document[]::new))
                 .build();
         return Promise.resolve(page);
+    }
+
+    @Override
+    public Observable<Void> save(Set<Document> toDelete, Set<Document> toUpsert) {
+        if(workspace==null) return Observable.of((Void)null);
+        progress.next(Progress.builder().enabled(true).intermediate(true).build());
+        var request = RequestInit.create();
+        request.setMethod("POST");
+        request.setHeaders(new String[][] {
+                new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
+        });
+        DomGlobal.console.log(toUpsert);
+        var natives = Stream.concat(
+                toDelete.stream().map(document->DocumentNative.from(document, true)),
+                toUpsert.stream().map(document->DocumentNative.from(document, false))
+        ).toArray(DocumentNative[]::new);
+        request.setBody(JSON.stringify(natives));
+        return AsyncSubject.await(fetchApi
+                .request("workspace/" + workspace.id() + "/documents", request)
+                .then(this::handleResponse)
+                .then(resp -> Promise.resolve((Void)null))
+                .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
+                .catch_(this::handleException)
+        );
+    }
+    private Promise<Response> handleResponse(Response response) {
+        return switch (response.status) {
+            case 200 -> Promise.resolve(response);
+            case 204 -> Promise.reject("Empty result");
+            default  -> Promise.reject("HTTP Error: " + response.status + " - " + response.statusText);
+        };
     }
 }

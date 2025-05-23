@@ -8,6 +8,9 @@
     "documents": "Master Data",
     "Define Master Data": "Define Master Data",
     "View as Table": "View as Table",
+    "Serial": "Serial",
+    "Effect date": "Effect date",
+    "Expire date": "Expire date",
 
     "types": "Type Definition",
     "Define Types, Properties, and Relations": "Types, props, relations",
