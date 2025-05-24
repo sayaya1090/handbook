@@ -12,7 +12,8 @@ public class SaveAction implements Action {
     private final DocumentRepository typeRepository;
     private final DocumentListToDelete toDelete;
     private final DocumentListToUpsert toUpsert;
-    @AssistedInject SaveAction(DocumentRepository typeRepository, DocumentListToDelete toDelete, DocumentListToUpsert toUpsert) {
+    @AssistedInject SaveAction(DocumentRepository typeRepository,
+                               DocumentListToDelete toDelete, DocumentListToUpsert toUpsert) {
         this.typeRepository = typeRepository;
         this.toDelete = toDelete;
         this.toUpsert = toUpsert;
@@ -21,8 +22,8 @@ public class SaveAction implements Action {
     public void execute() {
         var deletes = toDelete.getValue();
         var upserts = toUpsert.getValue().stream().filter(s->!deletes.contains(s)).collect(Collectors.toSet());
-        var delete = typeRepository.delete(toDelete.getValue()).tap(complete->toDelete.clear());
-        var upsert = typeRepository.save(upserts).tap(complete->toUpsert.clear());
+        var delete = typeRepository.delete(toDelete.getValue());
+        var upsert = typeRepository.save(upserts);
         delete.concatWith(upsert).subscribe(complete-> DomGlobal.alert("저장되었습니다."));
     }
     @Override

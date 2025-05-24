@@ -22,12 +22,16 @@ public class ActionManager {
     }
     public void create() {
         var type = this.type.getValue();
-
         var document = Document.builder().id("Document-" + generateUniqueString())
                 .type(type.id())
                 .effectDateTime(type.effectDateTime()).expireDateTime(type.expireDateTime())
                 .build();
         var action = factory.add(document);
+        push(action);
+        action.execute();
+    }
+    public void edit(Document before, Document after) {
+        var action = factory.edit(before, after);
         push(action);
         action.execute();
     }

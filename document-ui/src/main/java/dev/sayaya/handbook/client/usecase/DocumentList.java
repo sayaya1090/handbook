@@ -5,7 +5,6 @@ import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Subscription;
 import dev.sayaya.rx.subject.BehaviorSubject;
-import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -36,10 +35,21 @@ public class DocumentList {
         for(var document: documents) container.remove(document);
         this.subject.next(container.stream().collect(Collectors.toUnmodifiableList()));
     }
+    public void replace(Document before, Document after) {
+        int idx = container.indexOf(before);
+        if(idx>=0) {
+            container.remove(before);
+            container.add(idx, after);
+        }
+        this.subject.next(container.stream().collect(Collectors.toUnmodifiableList()));
+    }
     public <T> Observable<T> map(Function<List<Document>, T> mapper) {
         return subject.map(mapper);
     }
     public Subscription subscribe(Consumer<List<Document>> consumer) {
         return subject.subscribe(consumer);
+    }
+    public List<Document> getValue() {
+        return subject.getValue();
     }
 }
