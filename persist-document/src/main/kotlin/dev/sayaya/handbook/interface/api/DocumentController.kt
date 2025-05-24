@@ -31,9 +31,10 @@ class DocumentController(private val svc: DocumentService) {
     @ExceptionHandler(DuplicateKeyException::class)
     @ResponseStatus(HttpStatus.CONFLICT)
     fun handleDuplicateKeyException(ex: DuplicateKeyException): Mono<String> = Mono.justOrEmpty(ex.localizedMessage)
-    @ExceptionHandler(IllegalArgumentException::class)
+
+    @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleIllegalArgumentException(ex: IllegalArgumentException): Mono<String> {
+    fun handleIllegalArgumentException(ex: Exception): Mono<String> {
         ex.printStackTrace()
         return Mono.justOrEmpty(ex.localizedMessage)
     }

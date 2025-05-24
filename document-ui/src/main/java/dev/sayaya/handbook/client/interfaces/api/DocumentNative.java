@@ -20,16 +20,19 @@ public final class DocumentNative {
     @JsProperty public String id;
     @JsProperty public String serial;
     @JsProperty public String type;
+    @JsProperty(name = "create_date_time") public Double createDateTime;
     @JsProperty(name = "effect_date_time") public Double effectDateTime;
     @JsProperty(name = "expire_date_time") public Double expireDateTime;
+    @JsProperty public String creator;
     @JsProperty public Object data;
-    @JsProperty public boolean delete;
 
     @JsOverlay @JsIgnore public Document toDomain() {
         var builder = Document.builder()
                 .id(id).serial(serial).type(type)
                 .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
-                .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null);
+                .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null)
+                .createdDateTime(createDateTime != null ? new Date(createDateTime.longValue()) : null)
+                .createdBy(creator);
         if(data!=null) {
             JsPropertyMap<String> map = Js.cast(data);
             map.forEach(key -> {
@@ -39,12 +42,10 @@ public final class DocumentNative {
         }
         return builder.build();
     }
-    @JsOverlay @JsIgnore public static DocumentNative from(Document document, boolean delete) {
+    @JsOverlay @JsIgnore public static DocumentNative from(Document document) {
         if (document == null) return null;
-        DomGlobal.console.log(document.serial());
-        DomGlobal.console.log(delete);
         var nativeDocument = new DocumentNative();
-        nativeDocument.id = document.id();
+        nativeDocument.id = document.createdBy() == null? null : document.id();
         nativeDocument.serial = document.serial();
         nativeDocument.type = document.type();
         nativeDocument.effectDateTime = document.effectDateTime()!=null?Long.valueOf(document.effectDateTime().getTime()).doubleValue():null;
@@ -56,7 +57,6 @@ public final class DocumentNative {
             });
             nativeDocument.data = map;
         }
-        nativeDocument.delete = delete;
         return nativeDocument;
     }
 }

@@ -18,6 +18,8 @@ public class Document {
     private String serial;
     private Date effectDateTime;
     private Date expireDateTime;
+    private Date createdDateTime;
+    private String createdBy;
     @Singular("value")
     private Map<String, Object> values;
     @Builder.Default
