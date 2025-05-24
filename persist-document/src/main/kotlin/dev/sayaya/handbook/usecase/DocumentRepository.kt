@@ -6,4 +6,5 @@ import java.util.UUID
 
 interface DocumentRepository {
     fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>>
+    fun deleteAll(workspace: UUID, documents: List<Document>): Mono<List<Document>>
 }

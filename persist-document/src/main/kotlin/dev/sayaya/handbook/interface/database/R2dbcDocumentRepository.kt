@@ -11,4 +11,7 @@ class R2dbcDocumentRepository: DocumentRepository {
     override fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> {
         TODO("Not yet implemented")
     }
+    override fun deleteAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> {
+        TODO("Not yet implemented")
+    }
 }

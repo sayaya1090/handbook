@@ -77,19 +77,36 @@ public class DocumentApi implements SearchApi<DocumentNative>, DocumentRepositor
     }
 
     @Override
-    public Observable<Void> save(Set<Document> toDelete, Set<Document> toUpsert) {
+    public Observable<Void> save(Set<Document> toUpsert) {
         if(workspace==null) return Observable.of((Void)null);
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
-        request.setMethod("POST");
+        request.setMethod("PUT");
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
         DomGlobal.console.log(toUpsert);
-        var natives = Stream.concat(
-                toDelete.stream().map(document->DocumentNative.from(document, true)),
-                toUpsert.stream().map(document->DocumentNative.from(document, false))
-        ).toArray(DocumentNative[]::new);
+        var natives = toUpsert.stream().map(document->DocumentNative.from(document, false)).toArray(DocumentNative[]::new);
+        request.setBody(JSON.stringify(natives));
+        return AsyncSubject.await(fetchApi
+                .request("workspace/" + workspace.id() + "/documents", request)
+                .then(this::handleResponse)
+                .then(resp -> Promise.resolve((Void)null))
+                .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
+                .catch_(this::handleException)
+        );
+    }
+    @Override
+    public Observable<Void> delete(Set<Document> toDelete) {
+        if(workspace==null) return Observable.of((Void)null);
+        progress.next(Progress.builder().enabled(true).intermediate(true).build());
+        var request = RequestInit.create();
+        request.setMethod("DELETE");
+        request.setHeaders(new String[][] {
+                new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
+        });
+        DomGlobal.console.log(toDelete);
+        var natives = toDelete.stream().map(document->DocumentNative.from(document, true)).toArray(DocumentNative[]::new);
         request.setBody(JSON.stringify(natives));
         return AsyncSubject.await(fetchApi
                 .request("workspace/" + workspace.id() + "/documents", request)

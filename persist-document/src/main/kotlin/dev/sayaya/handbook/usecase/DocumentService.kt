@@ -15,4 +15,8 @@ class DocumentService(
     else repo.saveAll(workspace, documents).delayUntil {
         eventHandler.publish(principal, workspace, it.associateBy(ExternalService.DocumentKey::of))
     }
+    fun delete(principal: Principal, workspace: UUID, documents: List<Document>): Mono<List<Document>> = if (documents.isEmpty()) Mono.empty()
+    else repo.deleteAll(workspace, documents).delayUntil {
+        eventHandler.publish(principal, workspace, it.associateBy(ExternalService.DocumentKey::of))
+    }
 }
