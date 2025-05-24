@@ -7,7 +7,7 @@ import java.time.Instant
 import java.util.UUID
 
 
-@Table("document")
+@Table("document_with_user")
 class R2dbcDocumentEntity(
     val workspace: UUID,
     val id: UUID,
@@ -16,7 +16,8 @@ class R2dbcDocumentEntity(
     @Column("effective_at") val effectDateTime: Instant,
     @Column("expire_at") val expireDateTime: Instant,
     @Column("created_at") val createDateTime: Instant,
-    @Column("created_by") val createBy: String,
+    @Column("created_by") val creatorUserId: UUID,
+    @Column("creator_name") val creatorUserName: String,
     val data: Json,
     override val count: Long = -1
 ): EntityPageable
