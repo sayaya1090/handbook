@@ -75,7 +75,7 @@ class R2dbcDocumentRepository(
         effectDateTime = entity.effectDateTime,
         expireDateTime = entity.expireDateTime,
         createDateTime = entity.createDateTime,
-        creator = entity.creatorUserName,
+        creator = entity.creator,
         data = objectMapper.readValue(entity.data.asArray(), Map::class.java) as Map<String, String?>,
     )
 }

@@ -17,7 +17,7 @@ class R2dbcDocumentEntity(
     @Column("expire_at") val expireDateTime: Instant,
     @Column("created_at") val createDateTime: Instant,
     @Column("created_by") val creatorUserId: UUID,
-    @Column("creator_name") val creatorUserName: String,
+    @Column("creator") val creator: String,
     val data: Json,
     override val count: Long = -1
 ): EntityPageable
