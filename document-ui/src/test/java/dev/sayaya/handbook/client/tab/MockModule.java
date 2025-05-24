@@ -123,13 +123,17 @@ public abstract class MockModule {
         };
     }
     @Provides static DocumentRepository documentRepositoryProvider() {
-        return (toDelete, toUpsert) -> {
-            var natives = Stream.concat(
-                    toDelete.stream().map(type-> DocumentNative.from(type, true)),
-                    toUpsert.stream().map(type->DocumentNative.from(type, false))
-            ).toArray(DocumentNative[]::new);
-            DomGlobal.console.log("save", natives);
-            return Observable.of((Void)null);
+        return new DocumentRepository() {
+            @Override
+            public Observable<Void> save(Set<Document> toUpsert) {
+                DomGlobal.console.log("save", toUpsert);
+                return Observable.of((Void)null);
+            }
+            @Override
+            public Observable<Void> delete(Set<Document> toDelete) {
+                DomGlobal.console.log("delete", toDelete);
+                return Observable.of((Void)null);
+            }
         };
     }
 }

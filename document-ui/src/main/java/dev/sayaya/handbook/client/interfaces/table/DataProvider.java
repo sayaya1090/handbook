@@ -25,7 +25,6 @@ public class DataProvider {
         return documents.stream().map(DataProvider::map).collect(Collectors.toUnmodifiableList());
     }
     private static Data map(Document document) {
-        DomGlobal.console.log("map", document);
         Data data = Data.create(document.id());
         data.put("Serial", document.serial());
         JsDate eff = JsDate.create(document.effectDateTime().getTime());
@@ -36,6 +35,19 @@ public class DataProvider {
             if(entry.getValue()!=null) data.put(entry.getKey(), String.valueOf(entry.getValue()));
             else data.put(entry.getKey(), null);
         }
+        data.onValueChange(evt->{
+            var serial = data.get("Serial");
+            document.serial(serial);
+            for(var entry: document.values().entrySet()) {
+                var value = data.get(entry.getKey());
+                document.values().put(entry.getKey(), value);
+            }
+            if(document.state()!= Document.DocumentState.DELETE) {
+                if(data.isChanged()) document.state(Document.DocumentState.CHANGE);
+                else document.state(Document.DocumentState.NOT_CHANGE);
+            }
+            DomGlobal.console.log(data);
+        });
         return data;
     }
 

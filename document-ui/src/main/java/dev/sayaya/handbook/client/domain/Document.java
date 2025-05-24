@@ -20,7 +20,8 @@ public class Document {
     private Date expireDateTime;
     @Singular("value")
     private Map<String, Object> values;
-
+    @Builder.Default
+    private DocumentState state = DocumentState.NOT_CHANGE;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -31,5 +32,9 @@ public class Document {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public enum DocumentState {
+        NOT_CHANGE, CHANGE, DELETE
     }
 }
