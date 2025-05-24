@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.`interface`.database
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.f4b6a3.ulid.Ulid
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.usecase.DocumentRepository
 import io.r2dbc.postgresql.codec.Json
@@ -36,7 +37,7 @@ class R2dbcDocumentRepository (
     private fun List<Document>.toEntity(workspace: UUID) = map { document ->
         R2dbcDocumentEntity.of (
             workspace = workspace,
-            id = document.id!!,
+            id = document.id ?: Ulid.fast().toUuid(),
             type = document.type,
             serial = document.serial,
             effectDateTime = document.effectDateTime, expireDateTime =  document.expireDateTime,
