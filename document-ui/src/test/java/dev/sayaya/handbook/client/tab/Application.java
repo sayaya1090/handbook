@@ -28,13 +28,13 @@ public class Application implements EntryPoint {
             components.typeList().next(map);
         });
         components.documentList().set(
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build(),
-                Document.builder().serial("A").effectDateTime(new Date()).expireDateTime(new Date()).build());
+                Document.builder().id("A").type("TT").serial("1").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("B").type("TT").serial("2").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("C").type("TT").serial("3").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("D").type("TT").serial("4").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("E").type("TT").serial("5").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("F").type("TT").serial("6").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("G").type("TT").serial("7").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("H").type("TT").serial("8").effectDateTime(new Date()).expireDateTime(new Date()).build());
     }
 }

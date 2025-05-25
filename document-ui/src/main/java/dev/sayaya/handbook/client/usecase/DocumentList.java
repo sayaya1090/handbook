@@ -43,6 +43,9 @@ public class DocumentList {
         }
         this.subject.next(container.stream().collect(Collectors.toUnmodifiableList()));
     }
+    public Observable<List<Document>> asObservable() {
+        return subject.asObservable();
+    }
     public <T> Observable<T> map(Function<List<Document>, T> mapper) {
         return subject.map(mapper);
     }

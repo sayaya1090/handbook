@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @JsType
 public class Data implements HasStateChangeHandlers<Data.DataState> {
@@ -24,7 +25,7 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         ObjectPropertyDescriptor<Data> hide = Js.cast(new Object());
         hide.setEnumerable(false);
         for(var field: JsObject.getOwnPropertyNames(origin).asList()) JsObject.defineProperty(origin, field, hide);
-        return proxy(origin, Data::fireValueChangeEvent);
+        return proxy(origin, origin::fireValueChangeEvent);
     }
     @JsIgnore private final String id;
     @JsIgnore private final JsPropertyMap<Object> initializedValues = JsPropertyMap.of();
@@ -66,6 +67,9 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         if(str.isEmpty()) return null;
         else return str;
     }
+    public List<String> keys() {
+        return JsObject.getOwnPropertyNames(this).asList().stream().filter(key->!key.endsWith("$")).collect(Collectors.toUnmodifiableList());
+    }
     @JsIgnore
     public boolean isChanged() {
         return JsObject.keys(initializedValues).asList().stream().anyMatch(this::isChanged);
@@ -95,16 +99,16 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     public DataState state() {
         return state;
     }
-    @JsIgnore private final JsArray<HasValueChangeHandlers.ValueChangeEventListener<Data>> valueChangeListeners = JsArray.of();
+    @JsIgnore private final JsArray<HasValueChangeHandlers.ValueChangeEventListener<String>> valueChangeListeners = JsArray.of();
     @JsIgnore
-    public HandlerRegistration onValueChange(HasValueChangeHandlers.ValueChangeEventListener<Data> listener) {
+    public HandlerRegistration onValueChange(HasValueChangeHandlers.ValueChangeEventListener<String> listener) {
         valueChangeListeners.push(listener);
         return () -> valueChangeListeners.delete(valueChangeListeners.asList().indexOf(listener));
     }
     @JsIgnore
-    private void fireValueChangeEvent() {
-        var evt = HasValueChangeHandlers.ValueChangeEvent.event(new CustomEvent<>("change"), this);
-        for (HasValueChangeHandlers.ValueChangeEventListener<Data> listener : valueChangeListeners.asList()) {
+    private void fireValueChangeEvent(String key) {
+        var evt = HasValueChangeHandlers.ValueChangeEvent.event(new CustomEvent<>("change"), key);
+        for (var listener : valueChangeListeners.asList()) {
             if (listener == null) break;
             listener.handle(evt);
         }
@@ -117,13 +121,13 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
 		set: function(target, key, value, receiver) {
 				if(target[key]==value) return true;
 				var result = Reflect.set(target, key, value, receiver);
-				if(result) consumer.@dev.sayaya.handbook.client.interfaces.table.Data.ChangeHandler::onInvoke(Ldev/sayaya/handbook/client/interfaces/table/Data;)(target);
+				if(result) consumer.@dev.sayaya.handbook.client.interfaces.table.Data.ChangeHandler::onInvoke(Ljava/lang/String;)(key);
 				return result;
 			}
 		});
 		return proxy;
 	}-*/;
     private interface ChangeHandler {
-        void onInvoke(Data data);
+        void onInvoke(String key);
     }
 }
