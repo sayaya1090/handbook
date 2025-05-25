@@ -18,7 +18,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class DocumentListToDelete {
     private final BehaviorSubject<Set<Document>> subject = behavior(Set.of());
     @Inject DocumentListToDelete(DocumentList documents) {
-        documents.subscribe(this::filter);
+        documents.asObservable().debounceTime(100).subscribe(this::filter);
     }
     private void filter(List<Document> documents) {
         var next = documents.stream().filter(doc->doc.state() == Document.DocumentState.DELETE).collect(Collectors.toSet());

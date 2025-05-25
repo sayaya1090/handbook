@@ -38,19 +38,7 @@ public class DataProvider {
         return documents.stream().map(this::map).collect(Collectors.toUnmodifiableList());
     }
     private Data map(Document document) {
-        Data data = cache.computeIfAbsent(document.id(), key ->{
-            var instance = Data.create(key);
-            var type = this.type.getValue();
-            type.attributes().stream().map(Attribute::name).forEach(attr ->{
-                Object value = document.values().get(attr);
-                if(value!=null) instance.put(attr, String.valueOf(value));
-                else instance.put(attr, null);
-            });
-            Subject<String> subject = subject(String.class);
-            subject.debounceTime(100).subscribe(s->notifyChange(instance, document));
-            instance.onValueChange(s->subject.next(s.value()));
-            return instance;
-        });
+        Data data = cache.computeIfAbsent(document.id(), key->create(document));
         data.put("Serial", document.serial());
         JsDate eff = JsDate.create(document.effectDateTime().getTime());
         JsDate exp = JsDate.create(document.expireDateTime().getTime());
@@ -63,22 +51,39 @@ public class DataProvider {
         }
         return data;
     }
+    private Data create(Document document) {
+        var instance = Data.create(document.id());
+        var type = this.type.getValue();
+        type.attributes().stream().map(Attribute::name).forEach(attr ->{
+            Object value = document.values().get(attr);
+            if(value!=null) instance.put(attr, String.valueOf(value));
+            else instance.put(attr, null);
+        });
+        Subject<String> subject = subject(String.class);
+        subject.debounceTime(100).subscribe(s->notifyChange(instance, document));
+        instance.onValueChange(s->subject.next(s.value()));
+        return instance;
+    }
     private void notifyChange(Data data, Document origin) {
         var effectDateTimeDbl = JsDate.parse(data.get("Effect date time"));
         var effectDateTime = Double.isNaN(effectDateTimeDbl) ? null : Double.valueOf(effectDateTimeDbl).longValue();
         var expireDateTimeDbl = JsDate.parse(data.get("Expire date time"));
         var expireDateTime = Double.isNaN(expireDateTimeDbl) ? null : Double.valueOf(expireDateTimeDbl).longValue();
-        var next = Document.builder().id(origin.id()).type(origin.type())
+        var builder = Document.builder().id(origin.id()).type(origin.type())
                 .createdDateTime(origin.createdDateTime())
                 .effectDateTime(effectDateTime!=null ? new Date(effectDateTime) : origin.effectDateTime())
                 .expireDateTime(expireDateTime!=null ? new Date(expireDateTime) : origin.expireDateTime())
                 .createdBy(origin.createdBy())
                 .serial(data.get("Serial"))
                 .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
-        for(var key3: data.keys()) {
-            var value = data.get(key3);
-            next.value(key3, value);
+        for(var key: data.keys()) {
+            var value = data.get(key);
+            builder.value(key, value);
         }
-        actionManager.edit(origin, next.build());
+        var next = builder.build();
+        if(!origin.equals(next)) {
+            DomGlobal.console.log("Document changed: "+origin+" -> "+next);
+            actionManager.edit(origin, next);
+        }
     }
 }
