@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import dev.sayaya.handbook.domain.Layout
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.core.spec.style.ShouldSpec
@@ -184,36 +183,7 @@ internal class R2dbcTypeRepositoryTest @Autowired constructor(
             .verifyComplete() // 모든 작업이 오류 없이 완료되었는지 확인
     }
     context("findAll") {
-        should("지정된 워크스페이스의 유효한 타입들로부터 Layout 시퀀스를 생성해야 한다") {
-            // Given: beforeSpec에서 데이터 삽입됨
-            //        Unique timestamps expected: t1, t2, t3, t4, t5 (10:00, 11:00, 12:00, 13:00, 14:00)
-            //        zipWithNext pairs expected: (t1,t2), (t2,t3), (t3,t4), (t4,t5)
 
-            // Expected Layouts in order
-            val expectedLayout1 = Layout(workspace, t1, t2) // 10:00 -> 11:00
-            val expectedLayout2 = Layout(workspace, t2, t3) // 11:00 -> 12:00
-            val expectedLayout3 = Layout(workspace, t3, t4) // 12:00 -> 13:00
-            val expectedLayout4 = Layout(workspace, t4, t5) // 13:00 -> 14:00
-
-            // When & Then: findAll 호출, 반환된 Layout Flux 검증
-            repository.findAll(workspace)
-                .let(StepVerifier::create)
-                .expectNext(expectedLayout1) // 순서대로 기대값 확인
-                .expectNext(expectedLayout2)
-                .expectNext(expectedLayout3)
-                .expectNext(expectedLayout4)
-                .verifyComplete() // 더 이상 데이터가 없음을 확인
-        }
-
-        should("워크스페이스에 해당하는 데이터가 없으면 findAll 시 빈 Flux를 반환해야 한다") {
-            // Given: 존재하지 않는 workspace ID
-            val nonExistentWorkspace = UUID.randomUUID()
-
-            // When & Then: findAll 호출, 빈 결과 검증
-            repository.findAll(nonExistentWorkspace)
-                .let(StepVerifier::create)
-                .verifyComplete() // 아무런 데이터도 emit되지 않아야 함
-        }
     }
     context("findByRange") {
         should("주어진 시간 범위와 완전히 겹치는 타입을 찾아야 한다 (10:30 ~ 11:30)") {

@@ -2,7 +2,10 @@ package dev.sayaya.handbook.`interface`.api
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -11,6 +14,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.Instant
 
 @Configuration
 class JsonConfig {
@@ -21,6 +25,11 @@ class JsonConfig {
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .registerModule(JavaTimeModule()).registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .registerModule(JavaTimeModule().addDeserializer(Instant::class.java, object : JsonDeserializer<Instant>() {
+            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant {
+                val epochMillis = p.longValue
+                return Instant.ofEpochMilli(epochMillis)
+            }
+        })).registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
         .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
 }

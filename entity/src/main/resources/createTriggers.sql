@@ -213,3 +213,20 @@ CREATE CONSTRAINT TRIGGER prevent_invalid_parent_period_update_trigger
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
 EXECUTE FUNCTION prevent_invalid_parent_period_update();
+
+-- Type 버전 관리
+CREATE OR REPLACE FUNCTION update_last_document() RETURNS TRIGGER AS
+$$
+BEGIN
+    -- 기존 데이터의 last를 false로 업데이트
+    UPDATE document
+    SET last = false
+    WHERE workspace=NEW.workspace AND type=NEW.type AND serial=NEW.serial AND last=true;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER set_last_document
+    BEFORE INSERT
+    ON document
+    FOR EACH ROW
+EXECUTE FUNCTION update_last_document();

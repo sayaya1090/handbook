@@ -29,6 +29,7 @@ internal class ExportSchema(
     tx.transactional {
         ClassPathResource("createTriggers.sql").let { em.execute(it) }          // 트리거 생성
         ClassPathResource("createMaterializedView.sql").let { em.execute(it) }  // MV 생성
+        ClassPathResource("createView.sql").let { em.execute(it) }          // 트리거 생성
     }
     expect("PostgreSQL 스키마 덤프") {
         val schemaSql = database.dump()

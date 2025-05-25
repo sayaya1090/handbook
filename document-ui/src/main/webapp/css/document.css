@@ -1,0 +1,127 @@
+.controller {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.5rem auto;
+    padding: 0.5rem;
+}
+
+.controller .label {
+    text-align: center;
+    --_leading-space: 5px;
+    --_trailing-space: 5px;
+    --_top-space: 5px;
+    --_bottom-space: 5px;
+    margin: 0.5rem 0;
+}
+/* 테이블에 모서리 둥글게 */
+.ht_master thead tr:first-child >:first-child {
+    border-top-left-radius: 0.5rem;
+}
+.ht_master thead tr:first-child td:last-child {
+    border-top-right-radius: 0.5rem;
+}
+.ht_master tbody tr:last-child >:first-child {
+    border-bottom-left-radius: 0.5rem;
+}
+.ht_master tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 0.5rem;
+}
+.ht_clone_top_left_corner thead tr:first-child >:first-child {
+    border-top-left-radius: 0.5rem;
+}
+.ht_clone_top thead tr:first-child >:first-child {
+    border-top-left-radius: 0.5rem;
+}
+.ht_clone_top thead tr:first-child >:last-child {
+    border-top-right-radius: 0.5rem;
+}
+.ht_clone_left tbody tr:last-child >:first-child {
+    border-bottom-left-radius: 0.5rem;
+}
+.ht_clone_left tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 0.5rem;
+}
+/* 보더 없이, 테이블 테두리만 */
+.handsontable tr, .handsontable td, .handsontable th {
+    border-right: hidden;
+    border-bottom: hidden;
+}
+.handsontable th:last-child {
+    border-right: hidden;
+    border-bottom: hidden;
+}
+.handsontable .htNoFrame+td, .handsontable .htNoFrame+th, .handsontable td:first-of-type, .handsontable th:first-child {
+    border-left: 1px solid var(--md-sys-color-outline);
+}
+.handsontable tr:first-child td, .handsontable tr:first-child th {
+    border-top: 1px solid var(--md-sys-color-outline);
+}
+.handsontable td:last-child, .handsontable th:last-child {
+    border-right: 1px solid var(--md-sys-color-outline);
+}
+.handsontable tr:last-child td, .handsontable tr:last-child th {
+    border-bottom: 1px solid var(--md-sys-color-outline);
+}
+/* 테이블 헤더 */
+.handsontable th {
+    color: var(--md-sys-color-primary);
+    font-family: var(--md-sys-typescale-headline-small-font);
+    transition: background-color 300ms ease-in-out;
+}
+.handsontable tr th {
+    background-color: var(--md-sys-color-surface-bright);
+    color: var(--md-sys-color-on-surface);
+}
+.handsontable thead th, .handsontable tr:nth-child(2n) th {
+    background-color: var(--md-sys-color-surface-dim);
+}
+/* 테이블 셀 */
+.handsontable td {
+    font-family: var(--md-sys-typescale-body-medium-font);
+    transition: background-color 300ms ease-in-out;
+}
+.handsontable tr td {
+    background-color: var(--md-sys-color-surface-bright);
+    color: var(--md-sys-color-on-surface);
+}
+.handsontable tr:nth-child(2n) td {
+    background-color: var(--md-sys-color-surface-dim);
+}
+/* 선택된 헤더 강조 */
+.handsontable tbody th.ht__highlight, .handsontable thead th.ht__highlight {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+.handsontable tbody th.ht__active_highlight, .handsontable thead th.ht__active_highlight {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+/* 커서 */
+.handsontable .wtBorder.current {
+    z-index: 10;
+    transition: all 300ms ease-in-out;
+    background-color: var(--md-sys-color-primary) !important;
+}
+.handsontable .wtBorder.current.corner {
+    border-color: transparent !important;
+    border-radius: 1rem;
+}
+.handsontable .wtBorder.area {
+    z-index: 10;
+    transition: all 300ms ease-in-out;
+    background-color: var(--md-sys-color-secondary) !important;
+}
+.handsontable .wtBorder.area.corner {
+    border-color: transparent !important;
+    border-radius: 1rem;
+}
+.handsontable td.area-1:before, .handsontable td.area-2:before, .handsontable td.area-3:before, .handsontable td.area-4:before, .handsontable td.area-5:before, .handsontable td.area-6:before, .handsontable td.area-7:before, .handsontable td.area:before {
+    background: var(--md-sys-color-secondary);
+}
+.handsontable .wtBorder.fill {
+    z-index: 10;
+    transition: all 300ms ease-in-out;
+    background: var(--md-sys-color-tertiary) !important;
+}

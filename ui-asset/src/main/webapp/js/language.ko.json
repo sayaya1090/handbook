@@ -5,6 +5,13 @@
     "mdSysTypescaleLabel": "'Noto Sans KR', serif",
     "mdSysTypescaleBody": "'Nanum Gothic Coding', monospace",
 
+    "documents": "기준정보 정의",
+    "Define Master Data": "기준정보를 조회, 추가합니다",
+    "View as Table": "테이블 형태로 보기",
+    "Serial": "일련번호",
+    "Effect date": "시작일",
+    "Expire date": "만료일",
+
     "types": "데이터 형식 정의",
     "Define Types, Properties, and Relations": "타입과 속성, 관계를 정의합니다",
     "View as Graph": "그래프 형태로 보기",

@@ -14,7 +14,9 @@ dependencies {
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
-
+    implementation("org.springframework.boot:spring-boot-starter-hateoas")  {
+        exclude(module = "spring-boot-starter-web")
+    }
     testImplementation(testFixtures(project(":testcontainer")))
     testImplementation(testFixtures(project(":entity")))
     testImplementation(libs.testcontainers.postgresql)

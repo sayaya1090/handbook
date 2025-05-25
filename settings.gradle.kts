@@ -13,7 +13,7 @@ pluginManagement {
     }
 }
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
 }
 dependencyResolutionManagement {
     versionCatalogs {
@@ -52,12 +52,12 @@ dependencyResolutionManagement {
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("5.9.1") }
-            library("mockk", "io.mockk", "mockk").version { require("1.13.17") }
+            library("mockk", "io.mockk", "mockk").version { require("1.14.2") }
             library("kotest-extensions-spring", "io.kotest.extensions", "kotest-extensions-spring").version { require("1.3.0") }
             library("spring-boot-test", "org.springframework.boot", "spring-boot-starter-test").withoutVersion()
             library("spring-security-test", "org.springframework.security", "spring-security-test").withoutVersion()
-            library("kubernetes-mock", "io.fabric8", "kubernetes-server-mock").version { require("7.1.0") }
-            library("kubernetes-mockserver", "io.fabric8", "mockwebserver").version { require("7.1.0") }
+            library("kubernetes-mock", "io.fabric8", "kubernetes-server-mock").version { require("7.2.0") }
+            library("kubernetes-mockserver", "io.fabric8", "mockwebserver").version { require("7.2.0") }
             bundle("test-api", listOf("reactor-test", "kotest-runner", "mockk", "kotest-extensions-spring", "spring-boot-test", "spring-security-test"))
             library("testcontainers-junit", "org.testcontainers", "junit-jupiter").withoutVersion()
             library("testcontainers-postgresql", "org.testcontainers", "postgresql").withoutVersion()
@@ -75,11 +75,11 @@ dependencyResolutionManagement {
 
             bundle("gwt", listOf("elemento-core", "elemental2-svg", "gwt-user"))
 
-            library("dagger-gwt", "com.google.dagger", "dagger-gwt").version { require("2.56.1") }
-            library("dagger-compiler", "com.google.dagger", "dagger-compiler").version { require("2.56.1") }
-            library("junit5", "org.junit.jupiter", "junit-jupiter").version { require("5.12.1") }
-            library("selenium", "org.seleniumhq.selenium", "selenium-java").version { require("4.31.0") }
-            library("selenium-driver", "org.seleniumhq.selenium", "selenium-chrome-driver").version { require("4.31.0") }
+            library("dagger-gwt", "com.google.dagger", "dagger-gwt").version { require("2.56.2") }
+            library("dagger-compiler", "com.google.dagger", "dagger-compiler").version { require("2.56.2") }
+            library("junit5", "org.junit.jupiter", "junit-jupiter").version { require("5.12.2") }
+            library("selenium", "org.seleniumhq.selenium", "selenium-java").version { require("4.32.0") }
+            library("selenium-driver", "org.seleniumhq.selenium", "selenium-chrome-driver").version { require("4.32.0") }
             bundle("test-web", listOf("kotest-runner", "selenium", "selenium-driver", "mockk", "junit5"))
         }
     }
@@ -104,3 +104,6 @@ include("login-ui")
 include("search-user")
 include("persist-user")
 include("user-ui")
+include("persist-document")
+include("search-document")
+include("document-ui")
