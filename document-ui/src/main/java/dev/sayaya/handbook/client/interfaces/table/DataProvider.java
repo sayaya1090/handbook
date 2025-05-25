@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
 import com.google.gwt.core.client.JsDate;
-import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.core.client.Scheduler;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.usecase.ActionManager;
@@ -74,8 +74,8 @@ public class DataProvider {
                 .effectDateTime(effectDateTime!=null ? new Date(effectDateTime) : origin.effectDateTime())
                 .expireDateTime(expireDateTime!=null ? new Date(expireDateTime) : origin.expireDateTime())
                 .createdBy(origin.createdBy())
-                .serial(data.get("Serial"))
-                .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
+                .serial(data.get("Serial"));
+                //.state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
         for(var key: data.keys()) {
             var value = data.get(key);
             builder.value(key, value);
@@ -83,7 +83,7 @@ public class DataProvider {
         var next = builder.build();
         if(!origin.equals(next)) {
             DomGlobal.console.log("Document changed: "+origin+" -> "+next);
-            actionManager.edit(origin, next);
+            Scheduler.get().scheduleDeferred(()->actionManager.edit(origin, next));
         }
     }
 }
