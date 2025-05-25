@@ -26,6 +26,7 @@ import static dev.sayaya.handbook.client.domain.AttributeTypeDefinition.Attribut
 import static dev.sayaya.handbook.client.domain.AttributeTypeDefinition.AttributeType.Array;
 import static dev.sayaya.handbook.client.domain.AttributeTypeDefinition.AttributeType.Value;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
+import static elemental2.core.Global.JSON;
 
 @dagger.Module
 public abstract class MockModule {
@@ -126,7 +127,17 @@ public abstract class MockModule {
         return new DocumentRepository() {
             @Override
             public Observable<Void> save(Set<Document> toUpsert) {
-                DomGlobal.console.log("save", toUpsert);
+                print(toUpsert);
+                for(var doc: toUpsert) {
+                    var nt = DocumentNative.from(doc);
+                    try {
+                        String s = JSON.stringify(nt);
+                        DomGlobal.console.log("save", s);
+                        DomGlobal.console.log(s);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 return Observable.of((Void)null);
             }
             @Override
@@ -135,5 +146,10 @@ public abstract class MockModule {
                 return Observable.of((Void)null);
             }
         };
+    }
+    private static void print(Set<Document> set) {
+        StringBuilder sb = new StringBuilder().append("Map {");
+        for(var e: set) sb.append(e).append(", ");
+        DomGlobal.console.log(sb.append("}").toString());
     }
 }

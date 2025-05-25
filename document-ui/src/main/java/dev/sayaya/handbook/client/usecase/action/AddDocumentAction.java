@@ -7,7 +7,7 @@ import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 
-public class AddDocumentAction implements Action {
+class AddDocumentAction implements Action {
     private final Document document;
     private final DocumentList documents;
     @AssistedInject AddDocumentAction(@Assisted Document document, DocumentList documents) {
@@ -24,6 +24,7 @@ public class AddDocumentAction implements Action {
     }
     @AssistedFactory
     interface AddDocumentActionFactory {
-        AddDocumentAction add(Document document);
+        AddDocumentAction _add(Document document);
+        default Action add(Document document) { return _add(document); }
     }
 }

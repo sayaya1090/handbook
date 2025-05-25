@@ -8,13 +8,12 @@ import elemental2.dom.DomGlobal;
 
 import java.util.stream.Collectors;
 
-public class SaveAction implements Action {
-    private final DocumentRepository typeRepository;
+class SaveAction implements Action {
+    private final DocumentRepository documentRepository;
     private final DocumentListToDelete toDelete;
     private final DocumentListToUpsert toUpsert;
-    @AssistedInject SaveAction(DocumentRepository typeRepository,
-                               DocumentListToDelete toDelete, DocumentListToUpsert toUpsert) {
-        this.typeRepository = typeRepository;
+    @AssistedInject SaveAction(DocumentRepository documentRepository, DocumentListToDelete toDelete, DocumentListToUpsert toUpsert) {
+        this.documentRepository = documentRepository;
         this.toDelete = toDelete;
         this.toUpsert = toUpsert;
     }
@@ -22,9 +21,9 @@ public class SaveAction implements Action {
     public void execute() {
         var deletes = toDelete.getValue();
         var upserts = toUpsert.getValue().stream().filter(s->!deletes.contains(s)).collect(Collectors.toSet());
-        var delete = typeRepository.delete(toDelete.getValue());
-        var upsert = typeRepository.save(upserts);
-        delete.concatWith(upsert).subscribe(complete-> DomGlobal.alert("저장되었습니다."));
+        var delete = documentRepository.delete(toDelete.getValue());
+        var upsert = documentRepository.save(upserts);
+        delete.combineLatest(upsert).subscribe(complete-> DomGlobal.alert("저장되었습니다."));
     }
     @Override
     public void rollback() {
@@ -32,6 +31,7 @@ public class SaveAction implements Action {
     }
     @AssistedFactory
     interface SaveActionFactory {
-        SaveAction save();
+        SaveAction _save();
+        default Action save() { return _save(); }
     }
 }

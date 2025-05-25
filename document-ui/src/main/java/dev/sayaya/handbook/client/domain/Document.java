@@ -24,6 +24,11 @@ public class Document {
     @Builder.Default
     private DocumentState state = DocumentState.NOT_CHANGE;
 
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
     public enum DocumentState {
         NOT_CHANGE, CHANGE, DELETE
     }

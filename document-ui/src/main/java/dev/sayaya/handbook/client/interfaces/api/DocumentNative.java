@@ -1,8 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.domain.Document;
-import dev.sayaya.handbook.client.domain.Type;
-import elemental2.core.JsMap;
+import elemental2.core.JsObject;
 import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
@@ -12,6 +11,7 @@ import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import static jsinterop.annotations.JsPackage.GLOBAL;
 
@@ -24,7 +24,7 @@ public final class DocumentNative {
     @JsProperty(name = "effect_date_time") public Double effectDateTime;
     @JsProperty(name = "expire_date_time") public Double expireDateTime;
     @JsProperty public String creator;
-    @JsProperty public Object data;
+    @JsProperty public JsObject data;
 
     @JsOverlay @JsIgnore public Document toDomain() {
         var builder = Document.builder()
@@ -39,7 +39,7 @@ public final class DocumentNative {
                 var value = map.get(key);
                 if(value != null) builder.value(key, value);
             });
-        }
+        } else builder.values(new HashMap<>());
         return builder.build();
     }
     @JsOverlay @JsIgnore public static DocumentNative from(Document document) {
@@ -50,12 +50,14 @@ public final class DocumentNative {
         nativeDocument.type = document.type();
         nativeDocument.effectDateTime = document.effectDateTime()!=null?Long.valueOf(document.effectDateTime().getTime()).doubleValue():null;
         nativeDocument.expireDateTime = document.expireDateTime()!=null?Long.valueOf(document.expireDateTime().getTime()).doubleValue():null;
+        nativeDocument.createDateTime = document.createdDateTime()!=null?Long.valueOf(document.createdDateTime().getTime()).doubleValue():null;
+        nativeDocument.creator = document.createdBy();
         if (document.values() != null) {
-            var map = new JsMap<String, Object>();
+            JsPropertyMap<Object> map = JsPropertyMap.of();
             document.values().forEach((key, value) -> {
                 if (value != null) map.set(key, value);
             });
-            nativeDocument.data = map;
+            nativeDocument.data = Js.cast(map);
         }
         return nativeDocument;
     }

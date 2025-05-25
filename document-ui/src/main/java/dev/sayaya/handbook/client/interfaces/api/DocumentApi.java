@@ -92,7 +92,6 @@ public class DocumentApi implements SearchApi<DocumentNative>, DocumentRepositor
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
-        DomGlobal.console.log(documents);
         var natives = documents.stream().map(DocumentNative::from).toArray(DocumentNative[]::new);
         request.setBody(JSON.stringify(natives));
         return AsyncSubject.await(fetchApi

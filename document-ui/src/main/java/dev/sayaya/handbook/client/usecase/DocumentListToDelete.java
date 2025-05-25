@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Document;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.Subscription;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -18,14 +19,19 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class DocumentListToDelete {
     private final BehaviorSubject<Set<Document>> subject = behavior(Set.of());
     @Inject DocumentListToDelete(DocumentList documents) {
-        documents.subscribe(this::filter);
+        documents.asObservable().debounceTime(10).subscribe(this::filter);
     }
     private void filter(List<Document> documents) {
-        var next = documents.stream().filter(doc->doc.state() == Document.DocumentState.DELETE).collect(Collectors.toSet());
+        var next = documents.stream()
+                .filter(doc->doc.state() == Document.DocumentState.DELETE)
+                .collect(Collectors.toSet());
         subject.next(next);
     }
     public Set<Document> getValue() {
         return subject.getValue();
+    }
+    public Observable<Set<Document>> asObservable() {
+        return subject.asObservable();
     }
     public Subscription subscribe(Observer<Set<Document>> var1) {
         return subject.subscribe(var1);

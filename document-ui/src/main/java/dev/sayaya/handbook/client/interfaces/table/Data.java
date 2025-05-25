@@ -28,11 +28,15 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         return proxy(origin, origin::fireValueChangeEvent);
     }
     @JsIgnore private final String id;
-    @JsIgnore private final JsPropertyMap<Object> initializedValues = JsPropertyMap.of();
-    @JsIgnore private final List<StateChangeEventListener<DataState>> stateChangeListeners = new LinkedList<>();
+    @JsIgnore private final JsPropertyMap<Object> initializedValues;
+    @JsIgnore private final List<StateChangeEventListener<DataState>> stateChangeListeners;
+    @JsIgnore private final JsArray<HasValueChangeHandlers.ValueChangeEventListener<String>> valueChangeListeners;
     @JsIgnore private DataState state;
     private Data(String idx) {
         this.id = idx;
+        initializedValues = JsPropertyMap.of();
+        stateChangeListeners = new LinkedList<>();
+        valueChangeListeners = JsArray.of();
     }
     @JsIgnore
     public Data put(String key, String value) {
@@ -74,17 +78,6 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     public boolean isChanged() {
         return JsObject.keys(initializedValues).asList().stream().anyMatch(this::isChanged);
     }
-    @JsIgnore @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
-    @JsIgnore @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Data data = (Data) o;
-        return Objects.equals(id, data.id);
-    }
     @JsIgnore
     public Data select(boolean select) {
         state = select?DataState.SELECTED:DataState.UNSELECTED;
@@ -99,7 +92,6 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     public DataState state() {
         return state;
     }
-    @JsIgnore private final JsArray<HasValueChangeHandlers.ValueChangeEventListener<String>> valueChangeListeners = JsArray.of();
     @JsIgnore
     public HandlerRegistration onValueChange(HasValueChangeHandlers.ValueChangeEventListener<String> listener) {
         valueChangeListeners.push(listener);
@@ -117,15 +109,14 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         UNSELECTED, SELECTED
     }
     private native static Data proxy(Data origin, ChangeHandler consumer) /*-{
-		var proxy = new Proxy(origin, {
-		set: function(target, key, value, receiver) {
-				if(target[key]==value) return true;
-				var result = Reflect.set(target, key, value, receiver);
-				if(result) consumer.@dev.sayaya.handbook.client.interfaces.table.Data.ChangeHandler::onInvoke(Ljava/lang/String;)(key);
-				return result;
-			}
-		});
-		return proxy;
+		return new Proxy(origin, {
+            set: function(target, key, value, receiver) {
+                    if(target[key]==value) return true;
+                    var result = Reflect.set(target, key, value, receiver);
+                    if(result) consumer.@dev.sayaya.handbook.client.interfaces.table.Data.ChangeHandler::onInvoke(Ljava/lang/String;)(key);
+                    return result;
+                }
+        });
 	}-*/;
     private interface ChangeHandler {
         void onInvoke(String key);

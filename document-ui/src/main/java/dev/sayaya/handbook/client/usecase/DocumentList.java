@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Document;
-import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Subscription;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -25,10 +24,7 @@ public class DocumentList {
         add(documents);
     }
     public void add(Document... documents) {
-        //var deleteCandidates = typeListToDelete.getValue();
-        Arrays.stream(documents).filter(Objects::nonNull)
-        //        .filter(type -> !deleteCandidates.contains(type))
-                .forEach(container::add);
+        Arrays.stream(documents).filter(Objects::nonNull).forEach(container::add);
         this.subject.next(container.stream().collect(Collectors.toUnmodifiableList()));
     }
     public void remove(Document... documents) {
@@ -36,12 +32,14 @@ public class DocumentList {
         this.subject.next(container.stream().collect(Collectors.toUnmodifiableList()));
     }
     public void replace(Document before, Document after) {
-        int idx = container.indexOf(before);
-        if(idx>=0) {
-            container.remove(before);
-            container.add(idx, after);
+        for(int i = 0; i < container.size(); i++) {
+            if(container.get(i).id().equals(before.id())) {
+                container.remove(i);
+                container.add(i, after);
+                break;
+            }
         }
-        this.subject.next(container.stream().collect(Collectors.toUnmodifiableList()));
+        this.subject.next(container.stream().collect(Collectors.toList()));
     }
     public Observable<List<Document>> asObservable() {
         return subject.asObservable();
