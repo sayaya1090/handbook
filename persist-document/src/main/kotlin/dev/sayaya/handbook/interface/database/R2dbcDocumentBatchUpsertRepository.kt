@@ -1,17 +1,14 @@
 package dev.sayaya.handbook.`interface`.database
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.springframework.r2dbc.core.DatabaseClient
 import reactor.core.publisher.Flux
-import java.io.Serializable
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 interface R2dbcDocumentBatchUpsertRepository {
     val databaseClient: DatabaseClient
-    val objectMapper: ObjectMapper
     val log: Logger
     fun saveAll(entities: List<R2dbcDocumentEntity>, createdBy: String, createdAt: Instant): Flux<R2dbcDocumentEntity> {
         val constantCsv = listOf(escapeSql(createdBy), formatTimestampLiteral(createdAt)).joinToString(separator = ", ", prefix = ", ")
@@ -21,11 +18,6 @@ interface R2dbcDocumentBatchUpsertRepository {
         val sql = "$INSERT_DOCUMENT_SQL VALUES $values"
         log.info(sql)
         return databaseClient.sql(sql).fetch().rowsUpdated().thenMany(Flux.fromIterable(entities))
-    }
-    private fun serialize(value: Serializable?): String {
-        if (value == null) return "NULL" // SQL의 NULL 값으로 처리
-        val escapedValue = objectMapper.writeValueAsString(value)
-        return "'$escapedValue'"
     }
     companion object {
         private const val INSERT_DOCUMENT_SQL = """

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.f4b6a3.ulid.Ulid
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.usecase.DocumentRepository
-import io.r2dbc.postgresql.codec.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.r2dbc.core.DatabaseClient
@@ -17,7 +16,7 @@ import java.util.*
 @Repository
 class R2dbcDocumentRepository (
     override val databaseClient: DatabaseClient,
-    override val objectMapper: ObjectMapper
+    val objectMapper: ObjectMapper
 ): DocumentRepository, R2dbcDocumentBatchUpsertRepository, R2dbcDocumentBatchDeleteRepository {
     override val log: Logger = LoggerFactory.getLogger(this::class.java)
     override fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = getAuthenticatedUser().flatMapMany { user ->
@@ -37,7 +36,7 @@ class R2dbcDocumentRepository (
     private fun List<Document>.toEntity(workspace: UUID) = map { document ->
         R2dbcDocumentEntity.of (
             workspace = workspace,
-            id = document.id ?: Ulid.fast().toUuid(),
+            id = Ulid.fast().toUuid(),
             type = document.type,
             serial = document.serial,
             effectDateTime = document.effectDateTime, expireDateTime =  document.expireDateTime,
