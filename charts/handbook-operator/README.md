@@ -1,5 +1,10 @@
 # 기준정보관리 시스템 CI/CD 헬름 차트
 
+privileged에서 실행되는 docker-dind 실행을 위해  
+``` shell
+oc label namespace handbook-operator pod-security.kubernetes.io/enforce=privileged --overwrite
+```
+
 ```shell
 oc create token deployer -n handbook-operator --duration=4294967296s
 ```

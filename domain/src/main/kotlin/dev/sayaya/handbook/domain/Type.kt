@@ -20,6 +20,7 @@ data class Type (
 ) {
     init {
         require(id.isNotBlank()) { "Type id cannot be blank" }
+        require(id.matches(Regex("^[a-zA-Z0-9가-힣_-]+$"))) { "Type id can only contain alphabet, 한글, numbers, hyphens, and underscores." }
         require(expireDateTime.isAfter(effectDateTime)) { "Expire date time must be after effect date time" }
         require(width > 0u) { "Width must be greater than 0. Current value: $width" }
         require(height > 0u) { "Height must be greater than 0. Current value: $height" }

@@ -10,6 +10,7 @@ import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public final class AttributeTypeDefinitionNative {
     public AttributeTypeDefinition toDomain() {
         return AttributeTypeDefinition.builder()
                 .baseType(AttributeType.valueOf(baseType))
-                .arguments(Arrays.stream(arguments).map(AttributeTypeDefinitionNative::toDomain).collect(Collectors.toList()))
+                .arguments(arguments!=null? Arrays.stream(arguments).map(AttributeTypeDefinitionNative::toDomain).collect(Collectors.toList()) : List.of())
                 .constraints(Map.of())
                 .extensions(extensions != null ? Set.of(extensions) : Set.of())
                 .referencedType(referencedType)

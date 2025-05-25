@@ -11,3 +11,7 @@ ui-asset/src/main/webapp/js/fontawesome.min.js filter=lfs diff=lfs merge=lfs -te
 ui-asset/src/main/webapp/js/sharp-light.min.js filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/js/sharp-solid.min.js filter=lfs diff=lfs merge=lfs -text
 ui-asset/src/main/webapp/js/brands.min.js filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/css/handsontable.full.min.css filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/js/handsontable.full.min.js filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/css/handsontable.full.min.css filter=lfs diff=lfs merge=lfs -text
+ui-asset/src/main/webapp/js/handsontable.full.min.js filter=lfs diff=lfs merge=lfs -text
