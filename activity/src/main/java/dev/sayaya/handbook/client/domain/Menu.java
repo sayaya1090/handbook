@@ -25,6 +25,8 @@ public final class Menu {
     private String order;
     private Tool[] tools;
     private Boolean bottom;
+    @JsProperty(name = "url_regex")
+    private String[] urlRegex;
 
     @Override @JsOverlay @JsIgnore
     public boolean equals(Object o) {
@@ -44,7 +46,9 @@ public final class Menu {
     }
     @JsOverlay @JsIgnore
     public MenuBuilder toBuilder() {
-        return new MenuBuilder().title(this.title).supportingText(this.supportingText).iconType(this.iconType).icon(this.icon).trailingText(this.trailingText).script(this.script).order(this.order).tools(this.tools).bottom(this.bottom);
+        return new MenuBuilder().title(this.title).supportingText(this.supportingText).iconType(this.iconType).icon(this.icon)
+                .trailingText(this.trailingText).script(this.script).order(this.order).tools(this.tools).bottom(this.bottom)
+                .urls(this.urlRegex);
     }
     @Setter
     @Accessors(fluent = true)
@@ -58,6 +62,7 @@ public final class Menu {
         private String order;
         private List<Tool> tools = new LinkedList<>();
         private Boolean bottom;
+        private List<String> urlRegex = new LinkedList<>();
         private MenuBuilder() {}
         public MenuBuilder tool(Tool tool) {
             this.tools.add(tool);
@@ -70,6 +75,17 @@ public final class Menu {
         public MenuBuilder tools(Tool... tools) {
             return tools(Arrays.asList(tools));
         }
+        public MenuBuilder url(String url) {
+            this.urlRegex.add(url);
+            return this;
+        }
+        public MenuBuilder urls(Collection<String> urls) {
+            this.urlRegex.addAll(urls);
+            return this;
+        }
+        public MenuBuilder urls(String... urls) {
+            return urls(Arrays.asList(urls));
+        }
         public Menu build() {
             var menu = new Menu();
             menu.title = this.title;
@@ -81,6 +97,7 @@ public final class Menu {
             menu.order = this.order;
             menu.tools = this.tools.stream().toArray(Tool[]::new);
             menu.bottom = this.bottom;
+            menu.urlRegex = this.urlRegex.stream().toArray(String[]::new);
             return menu;
         }
     }

@@ -6,7 +6,7 @@ import dev.sayaya.handbook.client.interfaces.drawer.DrawerElement;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.HostSharedModule;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
-import dev.sayaya.handbook.client.usecase.UrlBasedToolResolver;
+import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
@@ -18,7 +18,7 @@ public interface Component {
     DrawerElement drawer();
     ModuleScriptManager script();
     HistoryManager historyManager();
-    UrlBasedToolResolver urlBasedToolResolver();
+    UrlBasedMenuResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
 
     BehaviorSubject<String> uri();

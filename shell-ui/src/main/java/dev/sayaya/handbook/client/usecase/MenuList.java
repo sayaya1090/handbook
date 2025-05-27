@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.client.domain.Menu;
+import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -13,18 +13,17 @@ import java.util.List;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /*
- * 드로어가 열리면 메뉴를 다시 로딩한다.
+ * 유저 정보가 변경되면 메뉴를 다시 로딩한다.
  */
 @Singleton
 public class MenuList {
     @Delegate private final BehaviorSubject<List<Menu>> _this = behavior(List.of());
     private final MenuRepository menuRepository;
-    @Inject MenuList(DrawerMode drawerMode, MenuRepository menuRepository) {
+    @Inject MenuList(UserProvider userProvider, MenuRepository menuRepository) {
         this.menuRepository = menuRepository;
-        drawerMode.subscribe(this::update);
+        userProvider.subscribe(this::update);
     }
-    private void update(DrawerState state) {
-        if(state != DrawerState.EXPAND) return;
+    private void update(User user) {
         menuRepository.findAll().subscribe(this::updateIfChanged);
     }
     private void updateIfChanged(List<Menu> list) {

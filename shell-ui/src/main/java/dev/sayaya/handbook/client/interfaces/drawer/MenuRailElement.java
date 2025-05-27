@@ -36,7 +36,7 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
         clear();
         if(menu==null) return;
         AtomicBoolean bottom = new AtomicBoolean(false);
-        menu.stream() .sorted(MENU_COMPARATOR).map(item -> createItem(item, bottom)) .forEach(this::add);
+        menu.stream().sorted(MENU_COMPARATOR).map(item -> createItem(item, bottom)).forEach(this::add);
     }
     private MenuRailItemElement createItem(Menu menu, AtomicBoolean bottom) {
         var child = factory.item(menu);

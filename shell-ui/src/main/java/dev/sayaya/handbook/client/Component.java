@@ -17,7 +17,7 @@ public interface Component {
     ContentElement contentElement();
     HistoryManager historyManager();
     FrameUpdater frameUpdater();
-    UrlBasedToolResolver urlBasedToolResolver();
+    UrlBasedMenuResolver urlBasedMenuResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
     LanguagePackManager languagePackManager();
     WorkspaceRequireHandler workspaceRequireHandler();

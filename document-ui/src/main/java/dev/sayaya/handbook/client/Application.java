@@ -1,10 +1,13 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import dev.sayaya.handbook.client.domain.Tool;
 import dev.sayaya.rx.Observable;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLLinkElement;
+
+import java.util.Arrays;
 
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlElement;
@@ -23,12 +26,11 @@ public class Application implements EntryPoint {
             });
             return true;
         });
+        components.tools().subscribe(tools -> Arrays.stream(tools).forEach(this::toolClickHandler));
     }
     private void update(String url, HTMLElement frame) {
         switch (url) {
-            case "/", "/types?view=graph" -> {
-                frame.append(htmlElement("script", HTMLLinkElement.class).attr("src", "js/handsontable.full.min.js").element());
-                frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/handsontable.full.min.css").element());
+            case "/", "/types?view=table" -> {
                 frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/document.css").element());
                 frame.append(components.tabs().element());
                 frame.append(components.controller().element());
@@ -43,6 +45,12 @@ public class Application implements EntryPoint {
             case "/types?view=calendar" -> {
 
             }
+        }
+    }
+    private void toolClickHandler(Tool tool) {
+        switch (tool.title()) {
+            case "View as Table"    -> tool.function(()-> components.uri().next("documents?view=table"));
+            case "View as Calendar" -> tool.function(()-> components.uri().next("documents?view=calendar"));
         }
     }
 }
