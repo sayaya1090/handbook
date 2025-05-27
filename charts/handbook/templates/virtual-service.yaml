@@ -64,6 +64,8 @@ spec:
             prefix: /login/
         - uri:
             prefix: /oauth2/
+        - uri:
+            prefix: /auth/refresh
       route:
         - destination:
             host: login
@@ -135,7 +137,7 @@ spec:
         - uri:
             prefix: /
       rewrite:
-        uri: /{{ .Values.bucket.name }}/static/shell.html
+        uri: /{{ .Values.bucket.name }}/static/shell.html?
       route:
         - destination:
             host: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local

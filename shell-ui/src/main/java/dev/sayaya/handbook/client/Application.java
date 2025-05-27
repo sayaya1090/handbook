@@ -10,7 +10,7 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         components.historyManager().initialize();
-        components.urlBasedToolResolver().initialize();
+        components.urlBasedMenuResolver().initialize();
         components.toolBasedMenuResolver().initialize();
         components.frameUpdater().initialize();
         components.languagePackManager().initialize();

@@ -22,7 +22,7 @@ internal class MenuController {
             .tools(
                 Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
                 Tool.builder().title("View as Calendar").order("AH").icon("fa-calendar-range").iconType("sharp").build()
-            ).build()
+            ).url("^documents").build()
     }
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)

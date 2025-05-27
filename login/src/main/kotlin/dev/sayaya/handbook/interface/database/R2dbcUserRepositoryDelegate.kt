@@ -10,6 +10,9 @@ import java.util.*
 
 @Component
 class R2dbcUserRepositoryDelegate(private val repo: R2dbcUserRepository): UserRepository {
+    override fun findUserById(id: UUID): Mono<User> = repo.findById(id)
+        .map { User(it.id, it.provider, it.account, it.name) }
+
     override fun findUserByProviderAndAccount(provider: String, account: String): Mono<User> {
         return repo.findByProviderAndAccount(provider, account)
             .map { User(it.id, it.provider, it.account, it.name) }

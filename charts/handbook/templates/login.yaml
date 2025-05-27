@@ -38,7 +38,7 @@ data:
           logout-redirect-uri: https://{{ .Values.host }}
           jwt:
             signature-algorithm: RS256
-            duration: 36000
+            duration: 1800000 # 30 minutes
             publisher: {{ .Values.host }}
             client: {{ .Values.host }}
             secret: ${jwt.secret}

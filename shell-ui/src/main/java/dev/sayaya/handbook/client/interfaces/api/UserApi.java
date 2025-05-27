@@ -5,7 +5,9 @@ import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
+import dev.sayaya.rx.Subscription;
 import dev.sayaya.rx.subject.AsyncSubject;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
@@ -31,7 +33,28 @@ public class UserApi implements UserRepository {
         });
         Promise<User> promise = fetchApi.request("user", request)
                 .then(this::handleResponse)
-                .then(this::parse)
+                .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
+                .catch_(this::handleException);
+        return AsyncSubject.await(promise).tap(this::periodicRefresh);
+    }
+    private final static int REFRESH_INTERVAL = 10 * 1000 * 60; // 10 minutes
+    private Subscription periodicRefreshSubscription;
+    private void periodicRefresh(User user) {
+        if (periodicRefreshSubscription != null) periodicRefreshSubscription.unsubscribe();
+        if(user!=null) periodicRefreshSubscription = Observable.timer(REFRESH_INTERVAL, REFRESH_INTERVAL).subscribe(i->{
+            try {
+                DomGlobal.console.log("Refreshing repository since user exists: " + user);
+                refresh();
+            } catch (Exception e) {
+                DomGlobal.console.error("Failed to refresh repository: " + e.getMessage());
+            }
+        }); else periodicRefreshSubscription = null;
+    }
+    private Observable<Void> refresh() {
+        progress.next(Progress.builder().enabled(true).intermediate(true).build());
+        var request = RequestInit.create();
+        Promise<Void> promise = fetchApi.request("auth/refresh", request)
+                .then(response -> Promise.resolve((Void)null))
                 .finally_(()-> {
                     progress.next(Progress.builder().enabled(false).build());
                 }).catch_(this::handleException);
@@ -44,9 +67,10 @@ public class UserApi implements UserRepository {
             throw new RuntimeException("Error parsing response: " + e.getMessage());
         }
     }
-    private Promise<Response> handleResponse(Response response) {
+    private Promise<User> handleResponse(Response response) {
         return switch (response.status) {
-            case 200 -> Promise.resolve(response);
+            case 200 -> Promise.resolve(response).then(this::parse);
+            case 401 -> Promise.resolve((User)null);
             case 204 -> Promise.reject("Empty result");
             default  -> Promise.reject("HTTP Error: " + response.status + " - " + response.statusText);
         };
