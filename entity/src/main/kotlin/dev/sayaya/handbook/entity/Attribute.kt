@@ -31,7 +31,7 @@ internal class Attribute {
     }
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "attribute_type", columnDefinition = "jsonb", nullable = false)
-    lateinit var attributeType: GenericTypeDefinition
+    lateinit var attributeType: AttributeTypeDefinition
     @Column(nullable = false) var nullable: Boolean = false
     @Column var description: String? = null
 
@@ -42,7 +42,7 @@ internal class Attribute {
             @Column(name = "type", updatable = false) val typeId: UUID = UUID.randomUUID(),
             @Column(name = "name", length = 32, nullable = false, updatable = false) val name: String = ""
         ) : Serializable
-        fun of(type: Type, name: String, attributeType: GenericTypeDefinition, order: Short, nullable: Boolean = false, description: String? = null): Attribute = Attribute().apply {
+        fun of(type: Type, name: String, attributeType: AttributeTypeDefinition, order: Short, nullable: Boolean = false, description: String? = null): Attribute = Attribute().apply {
             type(type) // typeObj 및 id 설정
             name(name) // id의 name 설정
             this.attributeType = attributeType
