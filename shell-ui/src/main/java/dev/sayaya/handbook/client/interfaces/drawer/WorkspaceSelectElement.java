@@ -9,7 +9,6 @@ import dev.sayaya.rx.Observer;
 import dev.sayaya.ui.elements.SelectElementBuilder.OutlinedSelectElementBuilder;
 import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLElement;
-import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -21,7 +20,7 @@ import static dev.sayaya.ui.elements.SelectElementBuilder.select;
 
 @Singleton
 public class WorkspaceSelectElement implements IsElement<HTMLElement> {
-    @Delegate  private final OutlinedSelectElementBuilder _this = select().outlined().label("Workspace").required(true).menuPositioning(Popover);
+    private OutlinedSelectElementBuilder _this = select().outlined().label("Workspace").required(true).menuPositioning(Popover);
     private List<Workspace> workspaces;
     private Workspace selectedWorkspace;
     private final Observer<Workspace> observer;
@@ -29,22 +28,37 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         this.observer = observer;
         workspaces.subscribe(list->update(list, selectedWorkspace));
         observable.distinctUntilChanged().subscribe(workspace->update(this.workspaces, workspace));
-        onChange(evt->onSelect(value()));
         menu.subscribe(this::update);
     }
     private void update(List<Workspace> workspaces, Workspace selectedWorkspace) {
         this.workspaces = workspaces;
         this.selectedWorkspace = selectedWorkspace;
-        removeAllOptions();
-        disable(workspaces==null || workspaces.isEmpty());
-        if(workspaces!=null) for(var workspace: workspaces) {
-            var opt = option().value(workspace.id()).headline(workspace.name());
-            if(selectedWorkspace!=null && selectedWorkspace.id().equals(workspace.id())) opt.select();
+        if(workspaces==null || workspaces.isEmpty() || selectedWorkspace==null) {
+            _this.disable(true);
+            return;
         }
+        var select = select().outlined().label("Workspace").required(true).menuPositioning(Popover);
+        if(css!=null) select.css(css);
+        select.onChange(evt->onSelect(select.value()));
+        select.disable(false);
+        for (var workspace : workspaces) select.option().value(workspace.id()).headline(workspace.name()).select(workspace.id().equals(selectedWorkspace.id()));
+        var parent = _this.element().parentElement;
+        parent.replaceChild(select.element(), _this.element());
+        _this = select;
     }
     private void update(MenuRailState menu) {
         if(menu == MenuRailState.HIDE || menu == MenuRailState.COLLAPSE) mode(Mode.HIDE);
         else mode(Mode.EXPAND);
+    }
+    private String css;
+    public WorkspaceSelectElement css(String css) {
+        this.css = css;
+        _this.element().className = css;
+        return this;
+    }
+    @Override
+    public HTMLElement element() {
+        return _this.element();
     }
     private enum Mode {
         HIDE("0rem", "0rem", 0),
@@ -61,10 +75,10 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         }
     }
     private void mode(Mode mode) {
-        element().style.marginLeft = CSSProperties.MarginLeftUnionType.of(mode.marginLeft);
-        element().style.width = CSSProperties.WidthUnionType.of(mode.width);
-        element().style.opacity = CSSProperties.OpacityUnionType.of(mode.opacity);
-        element().style.pointerEvents = mode == Mode.HIDE ? "none" : "auto";
+        _this.element().style.marginLeft = CSSProperties.MarginLeftUnionType.of(mode.marginLeft);
+        _this.element().style.width = CSSProperties.WidthUnionType.of(mode.width);
+        _this.element().style.opacity = CSSProperties.OpacityUnionType.of(mode.opacity);
+        _this.element().style.pointerEvents = mode == Mode.HIDE ? "none" : "auto";
     }
 
     private void onSelect(String id) {

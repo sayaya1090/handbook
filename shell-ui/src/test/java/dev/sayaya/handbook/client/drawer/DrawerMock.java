@@ -24,7 +24,8 @@ public class DrawerMock {
                 .icon("fa-circle")
                 .iconType("sharp")
                 .script("js/scene1.js")
-                .tools(Tool.builder().title("menu1-tool1").uriRegex("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").build())
+                .urls("menu1-tool1")
+                .tools(Tool.builder().title("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").build())
                 .build(),
             Menu.builder()
                 .title("Menu 2")
@@ -34,9 +35,10 @@ public class DrawerMock {
                 .icon("fa-pen")
                 .iconType("sharp")
                 .script("js/scene2.js")
+                .urls("menu2-tool1", "menu2-tool2")
                 .tools(
-                    Tool.builder().title("menu2-tool1").uriRegex("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").build(),
-                    Tool.builder().title("menu2-tool2").uriRegex("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").build()
+                    Tool.builder().title("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").build(),
+                    Tool.builder().title("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").build()
                 ).build(),
             Menu.builder()
                 .title("Menu 3")
@@ -44,20 +46,22 @@ public class DrawerMock {
                 .icon("fa-left-from-bracket")
                 .iconType("sharp")
                 .bottom(true)
+                .urls("menu3-tool1", "menu3-tool2")
                 .tools(
-                    Tool.builder().title("menu3-tool1").uriRegex("menu3-tool1").order("1A").icon("fa-user").iconType("sharp").build(),
-                    Tool.builder().title("menu3-tool2").uriRegex("menu3-tool2").order("1B").icon("fa-user").iconType("sharp").build()
+                    Tool.builder().title("menu3-tool1").order("1A").icon("fa-user").iconType("sharp").build(),
+                    Tool.builder().title("menu3-tool2").order("1B").icon("fa-user").iconType("sharp").build()
                 ).build(),
             Menu.builder()
                 .title("Menu 4")
                 .order("0")
                 .icon("fa-right-to-bracket")
                 .iconType("sharp")
+                .urls("menu4-tool1")
                 .bottom(true)
-                .tools(Tool.builder().title("menu4-tool1").uriRegex("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
+                .tools(Tool.builder().title("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
                 .build()
     };
-    private static User user = new User();
+    private static final User user = new User();
     @Provides @Singleton MenuRepository provideMenuRepository() {
         return ()-> behavior(List.of(menu));
     }

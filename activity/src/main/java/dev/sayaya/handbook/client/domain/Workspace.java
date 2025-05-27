@@ -23,4 +23,9 @@ public final class Workspace {
     }
     @JsOverlay @JsIgnore
     public static WorkspaceBuilder builder() { return new WorkspaceBuilder(); }
+
+    @JsOverlay @JsIgnore @Override
+    public String toString() {
+        return "Workspace{id='" + id + "', name='" + name + "'}";
+    }
 }

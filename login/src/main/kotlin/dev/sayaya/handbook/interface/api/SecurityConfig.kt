@@ -51,14 +51,18 @@ class SecurityConfig(
                 val exchange = filter.exchange
                 val provider = exchange.request.path.value().split("/").last()
                 val principal = authentication.principal as OAuth2User
-                tokenPublisher.publish(provider, principal).flatMap { token -> exchange.sendAuthenticationCookie(token) }
+                tokenPublisher.publish(provider, principal).flatMap { token -> exchange.also {
+                    it.redirect()
+                }.sendAuthenticationCookie(token) }
             }
         }
         logout {
             logoutUrl = "/oauth2/logout"
             logoutHandler = DelegatingServerLogoutHandler(SecurityContextServerLogoutHandler(), WebSessionServerLogoutHandler())
             logoutSuccessHandler = ServerLogoutSuccessHandler { exchange, _ ->
-                exchange.exchange.clearAuthenticationCookie()
+                exchange.exchange.also {
+                    it.redirect()
+                }.clearAuthenticationCookie()
             }
         }
         exceptionHandling {
@@ -73,10 +77,12 @@ class SecurityConfig(
         addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
         anonymous { }
     }
-    private fun ServerWebExchange.sendAuthenticationCookie(token: String): Mono<Void> {
-        response.addCookie(ResponseCookie.from(authConfig.header, token).path("/").httpOnly(true).secure(true).maxAge(tokenConfig.duration).sameSite(LAX.attributeValue()).build())
+    fun ServerWebExchange.redirect() {
         response.statusCode = HttpStatus.FOUND
         response.headers.location = URI.create(urlConfig.loginRedirectUri)
+    }
+    fun ServerWebExchange.sendAuthenticationCookie(token: String): Mono<Void> {
+        response.addCookie(ResponseCookie.from(authConfig.header, token).path("/").httpOnly(true).secure(true).maxAge(tokenConfig.duration).sameSite(LAX.attributeValue()).build())
         return response.setComplete()
     }
     private fun ServerWebExchange.clearAuthenticationCookie(): Mono<Void> {

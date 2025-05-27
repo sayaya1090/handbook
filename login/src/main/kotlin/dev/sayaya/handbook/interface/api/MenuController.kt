@@ -3,7 +3,6 @@ package dev.sayaya.handbook.`interface`.api
 import dev.sayaya.handbook.client.domain.Menu
 import dev.sayaya.handbook.client.domain.Tool
 import org.springframework.http.HttpStatus
-import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -20,25 +19,27 @@ internal class MenuController {
             .order("0")
             .icon("fa-right-to-bracket")
             .iconType("sharp")
-            .script("js/login.nocache.js")
+            .script("js/login/login.nocache.js")
             .tools(
                 Tool.builder().title("sign in").order("Z-1").icon("fa-right-to-bracket").iconType("sharp").build(),
-            ).build()
+            ).url("login")
+            .build()
         val SIGN_OUT: Menu = Menu.builder()
             .title("sign out")
             .supportingText("Safely end session")
             .order("Z")
             .icon("fa-left-from-bracket")
             .iconType("sharp")
-            .script("js/login.nocache.js")
+            .script("js/login/login.nocache.js")
             .bottom(true)
             .tools(
                 Tool.builder().title("sign out").order("Z-1").icon("fa-left-from-bracket").iconType("sharp").build(),
-            ).build()
+            ).url("logout")
+            .build()
     }
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)
-    fun menus(principal: Principal?, request: ServerHttpRequest): Flux<Menu> =
-        if(principal==null || principal is AnonymousAuthenticationToken) Flux.just(SIGN_IN)
-        else Flux.just(SIGN_OUT)
+    fun menus(principal: Principal?): Flux<Menu> =
+        if(principal==null || principal is AnonymousAuthenticationToken) Flux.just(SIGN_IN).doOnNext { println(it) }
+        else Flux.just(SIGN_OUT).doOnNext { println(it) }
 }
