@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 interface UserRepository {
+    fun findUserById(id: UUID): Mono<User>
     fun findUserByProviderAndAccount(provider: String, account: String): Mono<User>
     fun create(user: User): Mono<User>
     fun updateLastLoginDateTime(id: UUID, lastLoginDateTime: LocalDateTime): Mono<Void>
