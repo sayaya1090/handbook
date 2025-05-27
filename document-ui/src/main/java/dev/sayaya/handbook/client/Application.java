@@ -30,7 +30,7 @@ public class Application implements EntryPoint {
     }
     private void update(String url, HTMLElement frame) {
         switch (url) {
-            case "/", "/types?view=table" -> {
+            case "/", "/documents?view=table" -> {
                 frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/document.css").element());
                 frame.append(components.tabs().element());
                 frame.append(components.controller().element());
@@ -42,7 +42,7 @@ public class Application implements EntryPoint {
                         """).add(components.table())
                 ).element());
             }
-            case "/types?view=calendar" -> {
+            case "/documents?view=calendar" -> {
 
             }
         }
