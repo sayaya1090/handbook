@@ -18,8 +18,6 @@ import java.io.Serializable
 ) @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed interface AttributeTypeDefinition: Serializable {
-    val constraints: Map<String, Serializable>
-
     companion object {
         enum class AttributeType {
             Value,  // File, Document가 아닌 1개 값(텍스트, 날짜, 숫자, ...)
@@ -29,25 +27,22 @@ sealed interface AttributeTypeDefinition: Serializable {
             Document
         }
         data class ValueType (
-            override val constraints: Map<String, Serializable> = emptyMap()
+            val validators: List<ValidatorDefinition> = emptyList()
         ): AttributeTypeDefinition
         data class ArrayType (
-            val type: AttributeTypeDefinition,
-            override val constraints: Map<String, Serializable> = emptyMap()
+            val type: AttributeTypeDefinition
         ): AttributeTypeDefinition {
             val arguments: List<AttributeTypeDefinition> = listOf(type)
         }
         data class MapType (
             val key: AttributeTypeDefinition,
             val value: AttributeTypeDefinition,
-            override val constraints: Map<String, Serializable> = emptyMap()
         ): AttributeTypeDefinition {
             val arguments: List<AttributeTypeDefinition> = listOf(key, value)
         }
         data class FileType (
-            val extensions: Set<String>
+            val extensions: Set<String>,
         ): AttributeTypeDefinition {
-            override val constraints: Map<String, Serializable> = mapOf()
             init {
                 require(extensions.all { it.matches(Regex("^[a-zA-Z0-9]+$")) }) {
                     "FileAttribute extensions must contain only alphanumeric characters."
@@ -55,8 +50,7 @@ sealed interface AttributeTypeDefinition: Serializable {
             }
         }
         data class DocumentType (
-            val referencedType: String,
-            override val constraints: Map<String, Serializable> = emptyMap()
+            val referencedType: String
         ): AttributeTypeDefinition
     }
 }

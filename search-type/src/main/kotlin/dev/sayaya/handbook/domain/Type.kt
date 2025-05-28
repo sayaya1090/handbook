@@ -2,6 +2,10 @@ package dev.sayaya.handbook.domain
 
 import java.time.Instant
 
+/*
+ Navigation을 위한 prev(이전 버전), next(다음 버전) 필드를 추가로 제공한다
+ Document-UI에서 사용한다
+ */
 @JvmRecord
 data class Type (
     val id: String,

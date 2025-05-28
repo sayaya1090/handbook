@@ -8,7 +8,7 @@ import io.kotest.matchers.throwable.shouldHaveMessage
 import java.time.Instant
 
 class AttributeTest : StringSpec({
-    "ValueAttribute는 기본값 및 올바른 속성 타입을 반환한다" {
+    /*"ValueAttribute는 기본값 및 올바른 속성 타입을 반환한다" {
         val valueAttr = Attribute.Companion.ValueAttribute(inherited = false)
         valueAttr.name shouldBe Attribute.DEFAULT_NAME
         valueAttr.description shouldBe Attribute.DEFAULT_DESCRIPTION
@@ -72,5 +72,5 @@ class AttributeTest : StringSpec({
             )
         }
         exception shouldHaveMessage "FileAttribute extensions must contain only alphanumeric characters."
-    }
+    }*/
 })

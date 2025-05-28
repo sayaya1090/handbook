@@ -34,6 +34,11 @@ internal class Document {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "data", columnDefinition = "jsonb", nullable = false)
     lateinit var data: Serializable
+    @Column(name = "validated_at") var validateDateTime: Instant? = null
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "validation_results", columnDefinition = "jsonb")
+    var validationResults: Map<String, Boolean>? = null
+
     @Column(name="\"last\"", nullable = false, columnDefinition = "boolean DEFAULT true") var last: Boolean = true
     companion object {
         data class DocumentId (
