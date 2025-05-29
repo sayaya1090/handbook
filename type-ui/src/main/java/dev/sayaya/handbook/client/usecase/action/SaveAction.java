@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.usecase.action;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
+import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.*;
 import elemental2.dom.DomGlobal;
 
@@ -19,14 +20,12 @@ public class SaveAction implements Action {
     }
     @Override
     public void execute() {
-        /*var deletes = toDelete.getValue();
-        var upserts = toUpsert.getValue().stream().filter(s->!deletes.contains(s)).collect(Collectors.toSet());
-        typeRepository.save(deletes, upserts).subscribe(complete->{
+        var deletes = typeList.getValue().stream().filter(t->t.state() == Type.TypeState.DELETE).collect(Collectors.toUnmodifiableSet());
+        var upserts = typeList.getValue().stream().filter(t->t.state() == Type.TypeState.CHANGE).collect(Collectors.toUnmodifiableSet());
+        typeRepository.delete(deletes).concatWith(typeRepository.save(upserts)).subscribe(complete->{
             DomGlobal.alert("저장되었습니다.");
-            toUpsert.clear();
-            toDelete.clear();
             typeList.reset();
-        });*/
+        });
     }
     @Override
     public void rollback() {

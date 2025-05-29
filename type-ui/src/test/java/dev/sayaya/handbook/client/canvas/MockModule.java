@@ -113,13 +113,15 @@ public abstract class MockModule {
                 }).map(t->t.toBuilder().build()).collect(Collectors.toUnmodifiableList());
                 return Observable.of(filtered);
             }
-
             @Override
-            public Observable<Void> save(Set<Type> toDelete, Set<Type> toUpsert) {
-                var natives = Stream.concat(
-                        toDelete.stream().map(type-> TypeNative.from(type, true)),
-                        toUpsert.stream().map(type->TypeNative.from(type, false))
-                ).toArray(TypeNative[]::new);
+            public Observable<Void> delete(Set<Type> toDelete) {
+                var natives = toDelete.stream().map(type-> TypeNative.from(type, true)).toArray(TypeNative[]::new);
+                DomGlobal.console.log("delete", natives);
+                return Observable.of((Void)null);
+            }
+            @Override
+            public Observable<Void> save(Set<Type> toUpsert) {
+                var natives = toUpsert.stream().map(type->TypeNative.from(type, false)).toArray(TypeNative[]::new);
                 DomGlobal.console.log("save", natives);
                 return Observable.of((Void)null);
             }

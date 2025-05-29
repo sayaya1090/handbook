@@ -33,20 +33,35 @@ public class TypeApi implements TypeRepository {
         this.progress = progress;
         workspace.distinctUntilChanged().subscribe(w-> this.workspace = w);
     }
-
     @Override
-    public Observable<Void> save(Set<Type> toDelete, Set<Type> toUpsert) {
+    public Observable<Void> delete(Set<Type> toDelete) {
         if(workspace==null) return Observable.of((Void)null);
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
-        request.setMethod("POST");
+        request.setMethod("DELETE");
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
-        var natives = Stream.concat(
-                toDelete.stream().map(type->TypeNative.from(type, true)),
-                toUpsert.stream().map(type->TypeNative.from(type, false))
-        ).toArray(TypeNative[]::new);
+        var natives = toDelete.stream().map(type->TypeNative.from(type, true)).toArray(TypeNative[]::new);
+        request.setBody(JSON.stringify(natives));
+        return AsyncSubject.await(fetchApi
+                .request("workspace/" + workspace.id() + "/types", request)
+                .then(this::handleResponse)
+                .then(resp -> Promise.resolve((Void)null))
+                .finally_(()-> progress.next(Progress.builder().enabled(false).build()))
+                .catch_(this::handleException)
+        );
+    }
+    @Override
+    public Observable<Void> save(Set<Type> toUpsert) {
+        if(workspace==null) return Observable.of((Void)null);
+        progress.next(Progress.builder().enabled(true).intermediate(true).build());
+        var request = RequestInit.create();
+        request.setMethod("PUT");
+        request.setHeaders(new String[][] {
+                new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
+        });
+        var natives = toUpsert.stream().map(type->TypeNative.from(type, false)).toArray(TypeNative[]::new);
         request.setBody(JSON.stringify(natives));
         return AsyncSubject.await(fetchApi
                 .request("workspace/" + workspace.id() + "/types", request)
