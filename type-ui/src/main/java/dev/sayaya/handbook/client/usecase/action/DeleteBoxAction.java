@@ -6,58 +6,36 @@ import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.client.usecase.TypeListToDelete;
-import dev.sayaya.handbook.client.usecase.TypeListToUpsert;
+import dev.sayaya.handbook.client.usecase.UpdatableType;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Arrays;
 
-public class DeleteBoxAction implements Action {
-    private final TypeList subject;
-    private final TypeListToDelete toDelete;
-    private final TypeListToUpsert toUpsert;
-    private final Type[] boxes;
-    private final Set<Type> tmp = new HashSet<>();
-    @AssistedInject DeleteBoxAction(TypeList typeList, TypeListToDelete toDelete, TypeListToUpsert toUpsert, @Assisted Type... boxes) {
-        this.subject = typeList;
-        this.toDelete = toDelete;
-        this.toUpsert = toUpsert;
-        this.boxes = boxes;
+class DeleteBoxAction extends ComplexAction {
+    private final UpdatableType[] updatables;
+    @AssistedInject DeleteBoxAction(TypeList typeList, @Assisted UpdatableType... types) {
+        super(
+            Arrays.stream(types)
+                .map(UpdatableType::value)
+                .map(type -> new EditBoxAction(type, type.toBuilder().state(Type.TypeState.DELETE).build(), typeList))
+                .toArray(Action[]::new)
+        );
+        this.updatables = types;
     }
-
     @Override
     public void execute() {
-        var toUpsert = this.toUpsert.getValue();
-        for(var type: boxes) {
-            toDelete.add(type);
-            if(toUpsert.contains(type)) {
-                tmp.add(type);
-                this.toUpsert.remove(type);
-            }
-        }
-        subject.remove(boxes);
+        super.execute();
+        for(UpdatableType updatable : updatables) updatable.update();
     }
-
     @Override
     public void rollback() {
-        for(var type: boxes) toDelete.remove(type);
-        for(var type: tmp) this.toUpsert.add(type);
-        subject.add(boxes);
+        super.rollback();
+        for(UpdatableType updatable : updatables) updatable.update();
     }
-
     @AssistedFactory
     interface DeleteActionFactory {
-        DeleteBoxAction deleteBox(Type... box);
-    }
-
-    private record DeleteMonoBoxAction(Type box, TypeListToDelete toDelete) implements Action {
-        @Override
-        public void execute() {
-            toDelete.add(box);
-        }
-        @Override
-        public void rollback() {
-            toDelete.remove(box);
+        DeleteBoxAction _deleteBox(UpdatableType... box);
+        default Action deleteBox(UpdatableType... box) {
+            return _deleteBox(box);
         }
     }
 }

@@ -6,14 +6,16 @@ import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
-import dev.sayaya.handbook.client.interfaces.box.BoxElement;
-import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
+import dev.sayaya.handbook.client.interfaces.box.TypeElement;
+import dev.sayaya.handbook.client.interfaces.box.TypeElementList;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.Subscription;
 import dev.sayaya.ui.elements.*;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.HTMLContainerBuilder;
+
+import java.util.stream.Collectors;
 
 import static dev.sayaya.rx.Observable.timer;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
@@ -22,8 +24,8 @@ import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
 
 public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implements ValueUpdater {
-    @AssistedInject ValueElement(@Assisted Attribute value, ActionManager actionManager, @Assisted BoxElement parent,
-                                 Lazy<BoxElementList> boxes,
+    @AssistedInject ValueElement(@Assisted Attribute value, ActionManager actionManager, @Assisted TypeElement parent,
+                                 Lazy<TypeElementList> boxes,
                                  AttributeEditorDialog attributeEditor,
                                  BoxReferenceElement.BoxReferenceElementFactory directorFactory,
                                  Lazy<CanvasElement> canvas) {
@@ -32,13 +34,13 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder title = textField().outlined().css("label");
     private final ButtonElementBuilder.OutlinedButtonElementBuilder type = button().outlined().css("type");
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder btnRem = button().icon().add(icon("remove"));
-    private final Lazy<BoxElementList> boxes;
+    private final Lazy<TypeElementList> boxes;
     private final Lazy<CanvasElement> canvas;
     private final BoxReferenceElement.BoxReferenceElementFactory directorFactory;
     private BoxReferenceElement director;
     private Subscription refSubscription;
     private ValueElement(HTMLContainerBuilder<HTMLDivElement> element, Attribute value, ActionManager actionManager,
-                         BoxElement parent, Lazy<BoxElementList> boxes,
+                         TypeElement parent, Lazy<TypeElementList> boxes,
                          AttributeEditorDialog attributeEditor,
                          BoxReferenceElement.BoxReferenceElementFactory directorFactory,
                          Lazy<CanvasElement> canvas) {
@@ -51,7 +53,12 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
                 .add(div().style("display: flex; align-items: center;").add(type).add(btnRem));
         title.onChange(evt->target.name(title.value()));
         type.onClick(evt->attributeEditor.open(value, this));
-        btnRem.onClick(evt-> actionManager.removeValue(parent, value));
+        btnRem.onClick(evt-> {
+            var before = parent.value();
+            var nextAttributes = before.attributes().stream().filter(a->!a.equals(target)).collect(Collectors.toUnmodifiableList());
+            var next = before.toBuilder().clearAttributes().attributes(nextAttributes).height(before.height() - 42).build();
+            actionManager.edit(parent, next);
+        });
     }
     private Attribute target;
     public void update(Attribute value) {
@@ -76,7 +83,7 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
             director = directorFactory.director(this, target);
             canvas.get().add(director.element());
             refSubscription = target.subscribe(t-> {
-                value.referencedType(t.box().id());
+                value.referencedType(t.value().name());
                 timer(300, -1).subscribe(i->update(this.target));
             });
         } else if(value.baseType() == AttributeTypeDefinition.AttributeType.Array) printDirector(value.arguments().get(0));
@@ -85,6 +92,6 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
     }
     @AssistedFactory
     interface ValueElementFactory {
-        ValueElement valueElement(Attribute value, BoxElement parent);
+        ValueElement valueElement(Attribute value, TypeElement parent);
     }
 }

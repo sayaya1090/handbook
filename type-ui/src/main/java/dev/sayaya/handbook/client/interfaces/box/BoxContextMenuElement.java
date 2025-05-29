@@ -51,7 +51,6 @@ public class BoxContextMenuElement implements IsElement<MdMenuElement> {
         item.headline(label);
     }
     private void handeDelete(MouseEvent evt) {
-        var targetBoxes = selected.getValue().stream().map(BoxElement::box).toArray(Type[]::new);
-        actionManager.delType(targetBoxes);
+        actionManager.delete(selected.getValue().stream().toArray(TypeElement[]::new));
     }
 }

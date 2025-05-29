@@ -3,13 +3,14 @@ package dev.sayaya.handbook.client.interfaces.box;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Attribute;
+import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.interfaces.value.ValueListElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.handbook.client.usecase.UpdatableBox;
+import dev.sayaya.handbook.client.usecase.UpdatableType;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.CardElementBuilder;
@@ -19,6 +20,7 @@ import lombok.experimental.Delegate;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +33,8 @@ import static dev.sayaya.ui.elements.CardElementBuilder.card;
 import static dev.sayaya.ui.elements.IconElementBuilder.icon;
 import static org.jboss.elemento.Elements.div;
 
-public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableBox {
-    private final Type box;
+public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements UpdatableType {
+    private Type type;
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CardElementBuilder<?, ?> card;
     private final TypeNameElement title;
@@ -45,28 +47,29 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
     private final DragShapeElement dragShapeElement;
     private final BoxContextMenuElement context;
     private final CanvasContextMenuElement canvasContext;
-    @Delegate private final BehaviorSubject<BoxElement> subject = behavior(this);
+    private final ActionManager actionManager;
+    @Delegate private final BehaviorSubject<TypeElement> subject = behavior(this);
     private double dragStartTimer;
-    @AssistedInject BoxElement(@Assisted Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
-                               TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
-                               TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
-                               BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
-        this(div(), box, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeValueFactory, typeDateValueFactory, context, canvasContext, valueListFactory);
+    @AssistedInject TypeElement(@Assisted Type type, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+                TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
+                TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
+                BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
+        this(div(), type, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeValueFactory, typeDateValueFactory, context, canvasContext, valueListFactory);
     }
-    private BoxElement(HTMLContainerBuilder<HTMLDivElement> container, Type box, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
-                       TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
-                       TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
-                       BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
+    private TypeElement(HTMLContainerBuilder<HTMLDivElement> container, Type type, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
+                        TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
+                        TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
+                        BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
         super(container.element());
-        if (box == null) throw new IllegalArgumentException("Box must not be null.");
-        this.box = box;
-
+        if (type == null) throw new IllegalArgumentException("Box must not be null.");
+        this.type = type;
+        this.actionManager = actionManager;
         this.container = container.css("type-box");
         this.card = card().outlined().css("card").attr("tabindex", "0");
         this.title = typeNameFactory.create(this);
-        this.version = typeValueFactory.create("Version", value-> actionManager.version(this, value), Type::version).alignRight();
-        this.effectDate = typeDateValueFactory.create("Effect Date", value-> actionManager.effectDateTime(this, value), Type::effectDateTime);
-        this.expireDate = typeDateValueFactory.create("Expire Date", value-> actionManager.expireDateTime(this, value), Type::expireDateTime);
+        this.version = typeValueFactory.create("Version", v->version(v), Type::version).alignRight();
+        this.effectDate = typeDateValueFactory.create("Effect Date", d->effectDateTime(d), Type::effectDateTime);
+        this.expireDate = typeDateValueFactory.create("Expire Date", d->expireDateTime(d), Type::expireDateTime);
         this.btnAdd = button().icon().add(icon("add")).css("add");
         container.add(card.add(title)
                 .add(div().style("""
@@ -88,6 +91,18 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         this.canvasContext = canvasContext;
         attachEventHandlers(container, this, actionManager);
     }
+    private void version(String value) {
+        var next = type.toBuilder().version(value).build();
+        actionManager.edit(this, next);
+    }
+    private void effectDateTime(Date value) {
+        var next = type.toBuilder().effectDateTime(value).build();
+        actionManager.edit(this, next);
+    }
+    private void expireDateTime(Date value) {
+        var next = type.toBuilder().expireDateTime(value).build();
+        actionManager.edit(this, next);
+    }
     private void setMode(BoxDisplayState mode) {
         if (mode == BoxDisplayState.SIMPLE) {
             container.attr("simple", true);
@@ -101,51 +116,59 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         if (isSelected) container.element().setAttribute("selected", "");
         else container.element().removeAttribute("selected");
     }
-    private void attachEventHandlers(HTMLContainerBuilder<HTMLDivElement> container, BoxElement boxElement, ActionManager actionManager) {
-        container.on(EventType.click, evt -> handleClick(evt, boxElement));
-        container.on(EventType.focus, evt-> handleFocus(evt, boxElement));
-        container.on(EventType.contextmenu, evt -> handleContextMenu(evt, boxElement));
-        container.on(EventType.mousedown, evt -> handleMouseDown(evt, boxElement));
+    private void attachEventHandlers(HTMLContainerBuilder<HTMLDivElement> container, TypeElement typeBoxElement, ActionManager actionManager) {
+        container.on(EventType.click, evt -> handleClick(evt, typeBoxElement));
+        container.on(EventType.focus, evt-> handleFocus(evt, typeBoxElement));
+        container.on(EventType.contextmenu, evt -> handleContextMenu(evt, typeBoxElement));
+        container.on(EventType.mousedown, evt -> handleMouseDown(evt, typeBoxElement));
         container.on(EventType.mouseup, this::clearDragStartTimer);
         container.on(EventType.mousemove, this::clearDragStartTimer);
         container.on(EventType.keydown, evt->handleKeyPress(evt, actionManager));
         btnAdd.on(EventType.click, evt -> {
-            actionManager.addValue(boxElement);
+            var attr = Attribute.builder()
+                    .id(type.id() + "$$$" + type.version() + "$$$" + type.attributes().size())
+                    .name("New Attribute")
+                    .type(AttributeTypeDefinition.builder()
+                            .baseType(AttributeTypeDefinition.AttributeType.Value)
+                            .build()
+                    ).build();
+            var next = type.toBuilder().attribute(attr).height(type.height() + 42).build();
+            actionManager.edit(this, next);
         });
     }
-    private void handleClick(MouseEvent evt, BoxElement boxElement) {
+    private void handleClick(MouseEvent evt, TypeElement typeBoxElement) {
         var element = (HTMLElement) evt.target;
         evt.stopPropagation();
-        handleSelect(boxElement, evt.ctrlKey);
+        handleSelect(typeBoxElement, evt.ctrlKey);
         context.close();
         if(element != null && element!= DomGlobal.document.activeElement && !element.contains(DomGlobal.document.activeElement)) {
             DomGlobal.document.activeElement.blur();
             element.focus();
         }
     }
-    private void handleFocus(FocusEvent evt, BoxElement boxElement) {
-        if(selected.getValue().contains(boxElement)) return;
-        else handleSelect(boxElement, false);
+    private void handleFocus(FocusEvent evt, TypeElement typeBoxElement) {
+        if(selected.getValue().contains(typeBoxElement)) return;
+        else handleSelect(typeBoxElement, false);
     }
-    private void handleSelect(BoxElement boxElement, boolean shouldMultiple) {
+    private void handleSelect(TypeElement typeBoxElement, boolean shouldMultiple) {
         if(shouldMultiple) {
             var nextSelectedBoxes = new HashSet<>(selected.getValue());
-            if(nextSelectedBoxes.contains(boxElement)) nextSelectedBoxes.remove(boxElement);
-            else nextSelectedBoxes.add(boxElement);
+            if(nextSelectedBoxes.contains(typeBoxElement)) nextSelectedBoxes.remove(typeBoxElement);
+            else nextSelectedBoxes.add(typeBoxElement);
             selected.next(nextSelectedBoxes);
-        } else selected.next(Set.of(boxElement));
+        } else selected.next(Set.of(typeBoxElement));
     }
-    private void handleContextMenu(MouseEvent evt, BoxElement boxElement) {
+    private void handleContextMenu(MouseEvent evt, TypeElement typeBoxElement) {
         evt.preventDefault();
         evt.stopPropagation();
-        handleSelect(boxElement, evt.ctrlKey);
+        handleSelect(typeBoxElement, evt.ctrlKey);
         context.offset((int) evt.clientX, (int)(evt.clientY));
         context.toggle();
         canvasContext.close();
     }
-    private void handleMouseDown(MouseEvent evt, BoxElement boxElement) {
+    private void handleMouseDown(MouseEvent evt, TypeElement typeBoxElement) {
         dragStartTimer = DomGlobal.setTimeout(v -> {
-            handleSelect(boxElement, evt.ctrlKey);
+            handleSelect(typeBoxElement, evt.ctrlKey);
             dragShapeElement.triggerDragEvent();
         }, 150);
     }
@@ -161,24 +184,34 @@ public class BoxElement extends HTMLContainerBuilder<HTMLDivElement> implements 
         if("ArrowDown".equalsIgnoreCase(evt.key)) dy = 1;
         if("ArrowLeft".equalsIgnoreCase(evt.key)) dx = -1;
         if("ArrowRight".equalsIgnoreCase(evt.key)) dx = 1;
-        actionManager.move(dx, dy, selected.getValue().stream().toArray(BoxElement[]::new));
+        actionManager.move(dx, dy, selected.getValue().stream().toArray(TypeElement[]::new));
+    }
+    public void update(Type type) {
+        if (type == null) throw new IllegalArgumentException("Type must not be null.");
+        this.type = type;
+        update();
     }
     @Override
-    public Type box() {
-        return box;
+    public Type value() {
+        return type;
     }
     @Override
     public void update() {
-        container.element().style.left = box.x() + "px";
-        container.element().style.top = box.y() + "px";
-        card.element().style.width = CSSProperties.WidthUnionType.of(box.width() + "px");
-        card.element().style.height = CSSProperties.HeightUnionType.of(box.height() + "px");
-        title.update(box);
-        version.update(box);
-        effectDate.update(box);
-        expireDate.update(box);
+        if(type == null) throw new IllegalStateException("Type is not set.");
+        if(type.state() == Type.TypeState.DELETE) {
+            container.element().remove();
+            return;
+        }
+        container.element().style.left = type.x() + "px";
+        container.element().style.top = type.y() + "px";
+        card.element().style.width = CSSProperties.WidthUnionType.of(type.width() + "px");
+        card.element().style.height = CSSProperties.HeightUnionType.of(type.height() + "px");
+        title.update(type);
+        version.update(type);
+        effectDate.update(type);
+        expireDate.update(type);
 
-        timer(300, -1).subscribe(t->values.next(box.attributes()));
+        timer(300, -1).subscribe(t->values.next(type.attributes()));
         subject.next(this);
     }
 }

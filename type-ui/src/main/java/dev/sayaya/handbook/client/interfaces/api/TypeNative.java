@@ -6,13 +6,11 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static elemental2.core.Global.JSON;
 import static jsinterop.annotations.JsPackage.GLOBAL;
 
 @JsType(isNative = true, namespace = GLOBAL, name = "Object")
@@ -31,7 +29,7 @@ public final class TypeNative {
     @JsProperty public double height;
     @JsProperty public boolean delete;
     @JsOverlay @JsIgnore public Type toDomain() {
-        return Type.builder().id(id).version(version)
+        return Type.builder().id(id).name(id).version(version)
                 .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
                 .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null)
                 .description(description).primitive(primitive)
@@ -50,7 +48,7 @@ public final class TypeNative {
             attributes[i].order = i;
         }
         var nativeType = new TypeNative();
-        nativeType.id = type.id();
+        nativeType.id = type.name();
         nativeType.version = type.version();
         nativeType.effectDateTime = type.effectDateTime()!=null?Long.valueOf(type.effectDateTime().getTime()).doubleValue():null;
         nativeType.expireDateTime = type.expireDateTime()!=null?Long.valueOf(type.expireDateTime().getTime()).doubleValue():null;

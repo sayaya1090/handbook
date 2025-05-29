@@ -9,7 +9,6 @@ import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -37,9 +36,12 @@ public class LayoutList {
         List<Period> list;
         if(periods!=null) list = periods.stream().sorted(Comparator.comparing(Period::effectDateTime)).collect(Collectors.toUnmodifiableList());
         else list = Collections.emptyList();
+        DomGlobal.console.log("LayoutList.next: " + list);
         this.subject.next(list);
     }
     public int findIndex(Period date) {
+        DomGlobal.console.log("LayoutList.findIndex: " + date);
+        DomGlobal.console.log(subject.getValue().size());
         if (date == null || getValue().isEmpty()) return -1;
         return getValue().indexOf(date);
     }

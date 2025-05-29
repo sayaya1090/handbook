@@ -42,7 +42,7 @@ public class CanvasContextMenuElement implements IsElement<MdMenuElement> {
         on(EventType.click, Event::stopPropagation);        // Canvas의 Click 호출을 차단한다
 
         load.on(EventType.click, evt->actions.load());
-        addType.on(EventType.click, evt->actions.addType(element().xOffset, element().yOffset));
+        addType.on(EventType.click, evt->actions.add(element().xOffset, element().yOffset));
         undo.on(EventType.click, evt->actions.undo());
         redo.on(EventType.click, evt->actions.redo());
 

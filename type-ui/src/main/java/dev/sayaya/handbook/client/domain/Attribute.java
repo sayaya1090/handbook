@@ -17,6 +17,8 @@ public class Attribute {
     private String description;
     private boolean nullable;
     private boolean inherited;
+    @Builder.Default
+    private AttributeState state = AttributeState.NOT_CHANGE;
 
     @Override
     public boolean equals(Object o) {
@@ -28,5 +30,8 @@ public class Attribute {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+    public enum AttributeState {
+        NOT_CHANGE, CHANGE, DELETE
     }
 }

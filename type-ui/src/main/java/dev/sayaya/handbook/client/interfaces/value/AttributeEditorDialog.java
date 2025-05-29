@@ -20,6 +20,7 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static dev.sayaya.ui.elements.DialogElementBuilder.dialog;
 import static dev.sayaya.ui.elements.SwitchElementBuilder.sw;
@@ -66,12 +67,13 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
         }));
         labels.subscribe(this::update);
     }
-    public void open(Attribute attr,ValueUpdater updater) {
+    public void open(Attribute attr, ValueUpdater updater) {
         this.attr = attr;
         this.def = attr.type();
         this.updater = updater;
         if (editor != null) editor.element().remove();
-        editor = editorFactory.attributeEditorElement(def);
+        var subject = behavior(def);
+        editor = editorFactory.attributeEditorElement(subject);
         form.add(editor).add(iptDescription.style("margin-top: 0.5rem;")).add(div().style("""
                     display: flex;
                     align-items: center;

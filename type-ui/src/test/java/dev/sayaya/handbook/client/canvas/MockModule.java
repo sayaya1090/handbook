@@ -6,7 +6,7 @@ import dagger.Provides;
 import dev.sayaya.handbook.client.domain.*;
 import dev.sayaya.handbook.client.interfaces.LanguageRepository;
 import dev.sayaya.handbook.client.interfaces.api.TypeNative;
-import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
+import dev.sayaya.handbook.client.interfaces.box.TypeElementList;
 import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
@@ -33,19 +33,13 @@ public abstract class MockModule {
     @Provides @Singleton static BehaviorSubject<Label> labels() { return ClientWindow.labels; }
     @Provides @Singleton static Observer<Workspace> workspace() { return ClientWindow.workspace; }
     @Binds abstract LanguageProvider bindLanguageProvider(LanguageRepository impl);
-    @Binds abstract UpdatableBoxList updatableBoxProvider(BoxElementList impl);
-    @Provides static BoxTailor boxTailorProvider() {
-        return box->{
-            if(box == null) return 0;
-            return 170 + box.attributes().size()*41;
-        };
-    }
+    @Binds abstract UpdatableTypeList updatableBoxProvider(TypeElementList impl);
     private static final DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss");
     @Provides static TypeRepository typeRepositoryProvider() {
         return new TypeRepository() {
             private final List<Type> types = List.of(
-                    Type.builder()
-                            .id("type_1")
+                    Type.builder().id("type_1:t1-v1")
+                            .name("type_1")
                             .version("t1-v1")
                             .effectDateTime(dtf.parse("2025-01-01 18:00:00"))
                             .expireDateTime(dtf.parse("2025-12-31 00:00:00"))
@@ -67,8 +61,8 @@ public abstract class MockModule {
                                                     .build()
                                             ).nullable(false).inherited(true).build()
                             )).x(100).y(100).width(400).height(293).build(),
-                    Type.builder()
-                            .id("type_2")
+                    Type.builder().id("type_2:t2-v1")
+                            .name("type_2")
                             .version("t2-v1")
                             .effectDateTime(dtf.parse("2025-03-01 00:00:00"))
                             .expireDateTime(dtf.parse("2025-08-01 00:00:00"))
@@ -77,8 +71,8 @@ public abstract class MockModule {
                             .parent("type_1")
                             .attributes(Collections.emptyList())
                             .x(700).y(100).width(400).height(170).build(),
-                    Type.builder()
-                            .id("type_2")
+                    Type.builder().id("type_2:t2-v2")
+                            .name("type_2")
                             .version("t2-v2")
                             .effectDateTime(dtf.parse("2025-08-01 00:00:00"))
                             .expireDateTime(dtf.parse("2025-12-31 00:00:00"))
@@ -87,8 +81,8 @@ public abstract class MockModule {
                             .parent("type_1")
                             .attributes(Collections.emptyList())
                             .x(700).y(100).width(400).height(170).build(),
-                    Type.builder()
-                            .id("type_3")
+                    Type.builder().id("type_3:t3-v1")
+                            .name("type_3")
                             .version("t3-v1")
                             .effectDateTime(dtf.parse("2025-03-01 00:00:00"))
                             .expireDateTime(dtf.parse("2025-09-01 00:00:00"))
@@ -97,8 +91,8 @@ public abstract class MockModule {
                             .parent("type_2")
                             .attributes(Collections.emptyList())
                             .x(200).y(500).width(400).height(170).build(),
-                    Type.builder()
-                            .id("type_3")
+                    Type.builder().id("type_3:t3-v2")
+                            .name("type_3")
                             .version("t3-v2")
                             .effectDateTime(dtf.parse("2025-09-01 00:00:00"))
                             .expireDateTime(dtf.parse("2025-12-31 00:00:00"))

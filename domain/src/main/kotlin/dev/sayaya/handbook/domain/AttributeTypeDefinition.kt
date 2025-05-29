@@ -27,6 +27,7 @@ sealed interface AttributeTypeDefinition: Serializable {
             Document
         }
         data class ValueType (
+            // Regex: 여러 개 추가 가능, Bool, Number, Date, Enum: 하나만 적용 가능
             val validators: List<ValidatorDefinition> = emptyList()
         ): AttributeTypeDefinition
         data class ArrayType (

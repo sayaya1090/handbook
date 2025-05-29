@@ -3,10 +3,9 @@ package dev.sayaya.handbook.client.interfaces.value;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
-import dev.sayaya.handbook.client.interfaces.box.BoxElement;
+import dev.sayaya.handbook.client.interfaces.box.TypeElement;
 import dev.sayaya.handbook.client.usecase.arrow.ArrowFactory;
 import dev.sayaya.handbook.client.usecase.arrow.Rectangle;
-import dev.sayaya.rx.Subscription;
 import dev.sayaya.ui.svg.dom.SVGElement;
 import dev.sayaya.ui.svg.elements.*;
 import elemental2.dom.DOMRectReadOnly;
@@ -15,7 +14,6 @@ import elemental2.dom.Element;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
-import static dev.sayaya.rx.Observable.timer;
 import static org.jboss.elemento.Elements.body;
 
 class BoxReferenceElement implements IsSvgElement<SVGElement, SvgBuilder> {
@@ -32,8 +30,8 @@ class BoxReferenceElement implements IsSvgElement<SVGElement, SvgBuilder> {
                             .add(SvgPathBuilder.path().d("M 0 0 L 10 5 L 0 10 z"))
                     ).add(lines));
     private final ValueElement start;
-    private final BoxElement target;
-    @AssistedInject BoxReferenceElement(@Assisted ValueElement start, @Assisted BoxElement target) {
+    private final TypeElement target;
+    @AssistedInject BoxReferenceElement(@Assisted ValueElement start, @Assisted TypeElement target) {
         this.start = start;
         this.target = target;
         paint();
@@ -113,6 +111,6 @@ class BoxReferenceElement implements IsSvgElement<SVGElement, SvgBuilder> {
 
     @AssistedFactory
     interface BoxReferenceElementFactory {
-        BoxReferenceElement director(ValueElement start, BoxElement target);
+        BoxReferenceElement director(ValueElement start, TypeElement target);
     }
 }

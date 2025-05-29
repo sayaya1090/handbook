@@ -5,19 +5,19 @@ import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.Type;
-import dev.sayaya.handbook.client.usecase.TypeListToUpsert;
-import dev.sayaya.handbook.client.usecase.UpdatableBox;
-import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
+import dev.sayaya.handbook.client.usecase.UpdatableType;
+import dev.sayaya.handbook.client.usecase.UpdatableTypeList;
+import elemental2.dom.DomGlobal;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class PushOutOverlapAction extends ComplexAction {
     // previous 영역에서 box의 이동 후 오버랩되는 box를 적절히 밀어낸다.
-    @AssistedInject PushOutOverlapAction(UpdatableBoxList previous, MoveBoxAction.MoveBoxActionFactory moveBoxActionFactory, @Assisted Type... boxes) {
+    @AssistedInject PushOutOverlapAction(UpdatableTypeList previous, MoveBoxAction.MoveBoxActionFactory moveBoxActionFactory, @Assisted Type... boxes) {
         this(calculate(
                 boxes,
-                Arrays.stream(previous.values()).collect(Collectors.toMap(e->e, UpdatableBox::box)),
+                Arrays.stream(previous.values()).collect(Collectors.toMap(e->e, UpdatableType::value)),
                 new ArrayList<>(),
                 moveBoxActionFactory
         ));
@@ -25,18 +25,19 @@ public class PushOutOverlapAction extends ComplexAction {
     private PushOutOverlapAction(Action[] moves) {
         super(moves);
     }
-    private static Action[] calculate(Type[] boxes, Map<UpdatableBox, Type> others, List<Action> actions, MoveBoxAction.MoveBoxActionFactory moveBoxActionFactory) {
+    private static Action[] calculate(Type[] boxes, Map<UpdatableType, Type> others, List<Action> actions, MoveBoxAction.MoveBoxActionFactory moveBoxActionFactory) {
         Queue<Type> queue = new LinkedList<>();
         Collections.addAll(queue, boxes);
         Set<Type> processed = new HashSet<>();
         while (!queue.isEmpty()) {
             Type currentBox = queue.poll();
-            for (Map.Entry<UpdatableBox, Type> entry : others.entrySet()) {
+            for (Map.Entry<UpdatableType, Type> entry : others.entrySet()) {
                 var otherBox = entry.getValue();
-                if (otherBox.equals(currentBox)) continue; // 동일 박스 건너뜀
+                if (otherBox.id().equals(currentBox.id())) continue; // 동일 박스 건너뜀
                 if (processed.contains(otherBox)) continue;
 
                 var otherElement = entry.getKey();
+                DomGlobal.console.log("PushOutOverlapAction: " + currentBox + " -> " + otherBox);
                 int[] overlap = calculateOverlap(currentBox, otherBox);
                 if (overlap[0] != 0 || overlap[1] != 0) {
                     var action = moveBoxActionFactory.move(otherElement, overlap[0], overlap[1]);
@@ -52,7 +53,7 @@ public class PushOutOverlapAction extends ComplexAction {
         return actions.stream().toArray(Action[]::new);
     }
     private static Type translate(Type origin, int dx, int dy) {
-        return origin.x(origin.x() + dx).y(origin.y() + dy);
+        return origin.toBuilder().x(origin.x() + dx).y(origin.y() + dy).build();
     }
     private static int[] calculateOverlap(Type boxA, Type boxB) {
         // boxA와 boxB의 각각의 경계

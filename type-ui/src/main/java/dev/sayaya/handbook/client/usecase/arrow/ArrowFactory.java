@@ -164,10 +164,8 @@ public class ArrowFactory {
     }
 
     public static Arrow createArrow(Rectangle attributeRect, Rectangle tableRect) {
-        // DomGlobal.console.log("findPath: attributeRect=" + attributeRect + ", tableRect=" + tableRect);
         List<Point> pathPointsFromFindPath = findPath(attributeRect, tableRect);
         if(pathPointsFromFindPath.isEmpty()) return null;
-        // DomGlobal.console.log("createArrow: path=" + pathPointsFromFindPath);
         return createArrow(pathPointsFromFindPath);
     }
     public static Arrow createArrow(List<Point> points) {

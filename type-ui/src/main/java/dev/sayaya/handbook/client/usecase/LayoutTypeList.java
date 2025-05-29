@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.usecase;
 import dev.sayaya.handbook.client.domain.Period;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
+// 현재 레이아웃의 타입 목록
 @Singleton
 public class LayoutTypeList {
     private final TypeList all;
@@ -21,7 +23,10 @@ public class LayoutTypeList {
         this.layoutProvider = layoutProvider;
         this.all = all;
         layoutProvider.distinctUntilChanged().subscribe(this::update);
-        all.distinctUntilChanged().subscribe(this::update);
+        all.map(set->set.stream()
+                .filter(t->t.state() != Type.TypeState.DELETE)
+                .collect(Collectors.toUnmodifiableSet())
+        ).distinctUntilChanged().subscribe(this::update);
     }
     private void update(Period period) {
         next(filter(all.getValue(), period));
@@ -32,7 +37,7 @@ public class LayoutTypeList {
     private static Set<Type> filter(Set<Type> all, Period period) {
         if(period == null) return Set.of();
         if(all == null || all.isEmpty()) return Set.of();
-        return all.stream().filter(type->contains(type, period)).collect(Collectors.toSet());
+        return all.stream().filter(type->contains(type, period)).filter(t->t.state() != Type.TypeState.DELETE).collect(Collectors.toSet());
     }
     private static boolean contains(Type type, Period period) {
         return  type.effectDateTime() != null && type.expireDateTime() != null && // null 체크 추가
