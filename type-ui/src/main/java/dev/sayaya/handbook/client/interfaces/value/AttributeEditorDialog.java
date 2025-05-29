@@ -74,6 +74,7 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
         if (editor != null) editor.element().remove();
         var subject = behavior(def);
         editor = editorFactory.attributeEditorElement(subject);
+        subject.subscribe(def->this.def = def);
         form.add(editor).add(iptDescription.style("margin-top: 0.5rem;")).add(div().style("""
                     display: flex;
                     align-items: center;

@@ -29,16 +29,14 @@ public class TypeElementList implements UpdatableTypeList {
     }
     private TypeElement findOrCreate(Type box) {
         var e = Arrays.stream(elements.getValue())
-                .filter(element -> element.value().equals(box))
+                .filter(element -> element.value().id().equals(box.id()))
                 .findFirst()
                 .orElseGet(() -> factory.getOrCreate(box));
         e.update(box);
         return e;
     }
     public TypeElement find(String typeId) {
-        var type = typeListEditing.getValue().stream().filter(t->{
-            return t.name().equals(typeId);
-        }).findAny().orElseThrow();
+        var type = typeListEditing.getValue().stream().filter(t-> t.name().equals(typeId)).findAny().orElseThrow();
         return find(type);
     }
     private TypeElement find(Type box) {

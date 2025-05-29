@@ -12,7 +12,6 @@ import dev.sayaya.handbook.client.interfaces.value.ValueListElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.UpdatableType;
 import dev.sayaya.rx.subject.BehaviorSubject;
-import dev.sayaya.rx.subject.Subject;
 import dev.sayaya.ui.elements.CardElementBuilder;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import elemental2.dom.*;
@@ -20,14 +19,10 @@ import lombok.experimental.Delegate;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
-import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import static dev.sayaya.rx.Observable.timer;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
-import static dev.sayaya.rx.subject.Subject.subject;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static dev.sayaya.ui.elements.CardElementBuilder.card;
 import static dev.sayaya.ui.elements.IconElementBuilder.icon;
@@ -37,39 +32,34 @@ public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements
     private Type type;
     private final HTMLContainerBuilder<HTMLDivElement> container;
     private final CardElementBuilder<?, ?> card;
-    private final TypeNameElement title;
-    private final TypeStringValueElement version;
-    private final TypeDateValueElement effectDate;
-    private final TypeDateValueElement expireDate;
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder btnAdd;
-    private final Subject<List<Attribute>> values = (Subject) subject(List.class);
     private final SelectedBoxElement selected;
     private final DragShapeElement dragShapeElement;
     private final BoxContextMenuElement context;
     private final CanvasContextMenuElement canvasContext;
-    private final ActionManager actionManager;
     @Delegate private final BehaviorSubject<TypeElement> subject = behavior(this);
     private double dragStartTimer;
     @AssistedInject TypeElement(@Assisted Type type, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
-                TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
-                TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
+                TypeNameElement.TypeNameElementFactory typeNameFactory, TypeVersionElement.TypeVersionElementFactory typeVersionFactory,
+                TypeEffectDateElement.TypeEffectDateElementFactory typeEffectDateFactory, TypeExpireDateElement.TypeExpireDateElementFactory typeExpireDateFactory,
                 BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
-        this(div(), type, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeValueFactory, typeDateValueFactory, context, canvasContext, valueListFactory);
+        this(div(), type, actionManager, selected, dragShapeElement, mode, typeNameFactory, typeVersionFactory, typeEffectDateFactory, typeExpireDateFactory, context, canvasContext, valueListFactory);
     }
     private TypeElement(HTMLContainerBuilder<HTMLDivElement> container, Type type, ActionManager actionManager, SelectedBoxElement selected, DragShapeElement dragShapeElement, BoxDisplayMode mode,
-                        TypeNameElement.TypeNameElementFactory typeNameFactory, TypeStringValueElement.TypeValueElementFactory typeValueFactory,
-                        TypeDateValueElement.TypeDateValueElementFactory typeDateValueFactory,
+                        TypeNameElement.TypeNameElementFactory typeNameFactory,
+                        TypeVersionElement.TypeVersionElementFactory typeVersionFactory,
+                        TypeEffectDateElement.TypeEffectDateElementFactory typeEffectDateFactory,
+                        TypeExpireDateElement.TypeExpireDateElementFactory typeExpireDateFactory,
                         BoxContextMenuElement context, CanvasContextMenuElement canvasContext, ValueListElement.ValueListElementFactory valueListFactory) {
         super(container.element());
         if (type == null) throw new IllegalArgumentException("Box must not be null.");
         this.type = type;
-        this.actionManager = actionManager;
         this.container = container.css("type-box");
         this.card = card().outlined().css("card").attr("tabindex", "0");
-        this.title = typeNameFactory.create(this);
-        this.version = typeValueFactory.create("Version", v->version(v), Type::version).alignRight();
-        this.effectDate = typeDateValueFactory.create("Effect Date", d->effectDateTime(d), Type::effectDateTime);
-        this.expireDate = typeDateValueFactory.create("Expire Date", d->expireDateTime(d), Type::expireDateTime);
+        var title = typeNameFactory.create(this);
+        var version = typeVersionFactory.create(this);
+        var effectDate = typeEffectDateFactory.create(this);
+        var expireDate = typeExpireDateFactory.create(this);
         this.btnAdd = button().icon().add(icon("add")).css("add");
         container.add(card.add(title)
                 .add(div().style("""
@@ -80,7 +70,7 @@ public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements
                         gap: 0.5rem;
                         padding: 0.5rem;
                         """).add(effectDate).add(expireDate).add(version))
-                .add(valueListFactory.valueList(this.values, this))
+                .add(valueListFactory.valueList(subject))
                 .add(btnAdd));
         update();
         mode.subscribe(this::setMode);
@@ -90,18 +80,6 @@ public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements
         this.context = context;
         this.canvasContext = canvasContext;
         attachEventHandlers(container, this, actionManager);
-    }
-    private void version(String value) {
-        var next = type.toBuilder().version(value).build();
-        actionManager.edit(this, next);
-    }
-    private void effectDateTime(Date value) {
-        var next = type.toBuilder().effectDateTime(value).build();
-        actionManager.edit(this, next);
-    }
-    private void expireDateTime(Date value) {
-        var next = type.toBuilder().expireDateTime(value).build();
-        actionManager.edit(this, next);
     }
     private void setMode(BoxDisplayState mode) {
         if (mode == BoxDisplayState.SIMPLE) {
@@ -206,12 +184,6 @@ public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements
         container.element().style.top = type.y() + "px";
         card.element().style.width = CSSProperties.WidthUnionType.of(type.width() + "px");
         card.element().style.height = CSSProperties.HeightUnionType.of(type.height() + "px");
-        title.update(type);
-        version.update(type);
-        effectDate.update(type);
-        expireDate.update(type);
-
-        timer(300, -1).subscribe(t->values.next(type.attributes()));
         subject.next(this);
     }
 }

@@ -17,11 +17,9 @@ import java.util.function.Function;
 
 import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 
-public class TypeDateValueElement implements IsElement<MdTextFieldElement.MdOutlinedTextFieldElement> {
+class TypeDateValueElement implements IsElement<MdTextFieldElement.MdOutlinedTextFieldElement> {
     @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt;
-    private final Function<Type, Date> toValue;
-    @AssistedInject TypeDateValueElement(@Assisted TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt,
-                                     @Assisted Consumer<Date> callback, @Assisted Function<Type, Date> toValue) {
+    @AssistedInject TypeDateValueElement(@Assisted TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt, @Assisted Consumer<Date> callback) {
         this.ipt = ipt.style("""
                 --_outline-width: 0;
                 --_leading-space: 5px;
@@ -29,15 +27,13 @@ public class TypeDateValueElement implements IsElement<MdTextFieldElement.MdOutl
                 --_top-space: 5px;
                 --_bottom-space: 5px;
             """);
-        this.toValue = toValue;
         ipt.on(EventType.change, evt->{
             JsDate cast = JsDate.create(ipt.element().valueAsNumber.longValue());
             var date = fromLocalDatetimeToUtc(cast);
             callback.accept(new Date(date));
         });
     }
-    void update(Type type) {
-        var date = toValue.apply(type);
+    void update(Date date) {
         if(date==null) ipt.element().valueAsNumber = null;
         else {
             JsDate cast = JsDate.create(date.getTime());
@@ -54,9 +50,9 @@ public class TypeDateValueElement implements IsElement<MdTextFieldElement.MdOutl
     }
     @AssistedFactory
     interface TypeDateValueElementFactory {
-        TypeDateValueElement create(TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt, Consumer<Date> callback, Function<Type, Date> toValue);
-        default TypeDateValueElement create(String label, Consumer<Date> callback, Function<Type, Date> toValue) {
-            return create(textField().outlined().attr("type", "datetime-local").label(label), callback, toValue);
+        TypeDateValueElement create(TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt, Consumer<Date> callback);
+        default TypeDateValueElement create(String label, Consumer<Date> callback) {
+            return create(textField().outlined().attr("type", "datetime-local").label(label), callback);
         }
     }
 }

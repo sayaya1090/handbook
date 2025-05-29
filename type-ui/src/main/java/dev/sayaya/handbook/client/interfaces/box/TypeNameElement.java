@@ -25,13 +25,14 @@ public class TypeNameElement implements IsElement<MdTextFieldElement.MdOutlinedT
         this.parent = parent;
         this.actionManager = actionManager;
         ipt.on(EventType.change, this::update);
+        parent.subscribe(evt->update(parent.value()));
     }
     private void update(Event evt) {
         var ipt = Js.asPropertyMap(evt.target);
         var next = parent.value().toBuilder().name(ipt.get("value").toString()).build();
         actionManager.edit(parent, next);
     }
-    void update(Type type) {
+    private void update(Type type) {
         ipt.value(type.name());
     }
     @AssistedFactory
