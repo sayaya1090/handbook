@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.domain;
 
+import dev.sayaya.handbook.client.domain.validator.ValidatorDefinition;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
@@ -14,9 +15,9 @@ import java.util.*;
 public class AttributeTypeDefinition {
     private AttributeType baseType;
     @Singular private List<AttributeTypeDefinition> arguments;
+    @Singular private List<ValidatorDefinition> validators;
     @Singular private Set<String> extensions;
     private String referencedType;
-    private Map<String, Serializable> constraints;
     public enum AttributeType {
         Value,  // File, Document가 아닌 1개 값(텍스트, 날짜, 숫자, ...)
         Array,  // x개 값

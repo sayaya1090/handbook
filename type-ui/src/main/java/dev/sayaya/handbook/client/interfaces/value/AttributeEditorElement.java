@@ -6,6 +6,7 @@ import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.LayoutTypeList;
+import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import lombok.experimental.Delegate;
@@ -26,9 +27,9 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
     private final SelectElementBuilder.OutlinedSelectElementBuilder reference = select().outlined().css("type").label("Reference Type").style("display: none;");
     private final LayoutTypeList typeListEditing;
     private IsElement<HTMLDivElement> child = null;
-    private AttributeTypeDefinition def;
-    @AssistedInject AttributeEditorElement(@Assisted AttributeTypeDefinition def, LayoutTypeList typeListEditing) {
-        this.def = def;
+    private BehaviorSubject<AttributeTypeDefinition> subject;
+    @AssistedInject AttributeEditorElement(@Assisted BehaviorSubject<AttributeTypeDefinition> subject, LayoutTypeList typeListEditing) {
+        this.subject = subject;
         this.typeListEditing = typeListEditing;
         elem.style("""
                 border-left: 3px solid var(--md-sys-color-primary);
@@ -42,8 +43,9 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
         updateTypes(AttributeTypeDefinition.AttributeType.values());
         typeListEditing.distinctUntilChanged().subscribe(this::updateReferences);
         type.onChange(evt->{
-            this.def.baseType(AttributeTypeDefinition.AttributeType.valueOf(type.value()));
-            switch (this.def.baseType()) {
+            var def = subject.getValue();
+            def.baseType(AttributeTypeDefinition.AttributeType.valueOf(type.value()));
+            switch (def.baseType()) {
                 case Array ->{
                     if(def.arguments().isEmpty()) def.arguments(List.of(AttributeTypeDefinition.builder().baseType(AttributeTypeDefinition.AttributeType.Value).build()));
                 } case Map -> {
@@ -57,39 +59,46 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
                     if(def.extensions() == null) def.extensions(Set.of());
                 }
             }
+            subject.next(def);
             updateParam();
         });
-        reference.onChange(evt->this.def.referencedType(reference.value()));
+        reference.onChange(evt->{
+            var def = subject.getValue();
+            def.referencedType(reference.value());
+            subject.next(def);
+        });
     }
     private void updateTypes(AttributeTypeDefinition.AttributeType[] types) {
         type.removeAllOptions();
         for(var t: types) type.option()
                 .value(t.name()).headline(t.name())
-                .select(def.baseType().equals(t));
+                .select(subject.getValue()!=null && subject.getValue().baseType().equals(t));
         updateParam();
     }
     private void updateReferences(Set<Type> types) {
         reference.removeAllOptions();
-        types.stream().map(Type::id).sorted().forEach(t->reference.option().value(t).headline(t));
+        types.stream().map(Type::name).sorted().forEach(t->reference.option().value(t).headline(t));
     }
     private void updateParam() {
-        var value = def.baseType().name();
+        var value = subject.getValue()!=null? subject.getValue().baseType().name() : null;
         switch (value) {
             case "Value" -> {
                 if (child != null) child.element().remove();
+                var regex = textField().outlined().label("Regex");
                 child = div().style("""
                     display: flex;
                     flex-direction: column;
                     align-items: stretch;
                     gap: 0.5rem;
                     margin-left: 2rem;
-                """).add( textField().outlined().label("Regex"));
+                """).add(regex);
                 elem.add(child);
                 reference.element().style.display = "none";
+                regex.onChange(evt-> {}/*def.validators(List.of(ValidatorRegex.builder().pattern(regex.value()).build()))*/);
             }
             case "Array" -> {
                 if (child != null) child.element().remove();
-                child = new AttributeEditorElement(def.arguments().get(0), typeListEditing).style("margin-left: 2rem;");
+                // child = new AttributeEditorElement(def.arguments().get(0), typeListEditing).style("margin-left: 2rem;");
                 elem.add(child);
                 reference.element().style.display = "none";
             }
@@ -101,8 +110,8 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
                     align-items: stretch;
                     gap: 0.5rem;
                     margin-left: 2rem;
-                """).add(new AttributeEditorElement(def.arguments().get(0), typeListEditing))
-                        .add(new AttributeEditorElement(def.arguments().get(1), typeListEditing));
+                """);//.add(new AttributeEditorElement(def.arguments().get(0), typeListEditing))
+                     //   .add(new AttributeEditorElement(def.arguments().get(1), typeListEditing));
                 elem.add(child);
                 reference.element().style.display = "none";
             }
@@ -126,6 +135,6 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
     }
     @AssistedFactory
     interface AttributeEditorElementFactory {
-        AttributeEditorElement attributeEditorElement(AttributeTypeDefinition def);
+        AttributeEditorElement attributeEditorElement(BehaviorSubject<AttributeTypeDefinition> subject);
     }
 }
