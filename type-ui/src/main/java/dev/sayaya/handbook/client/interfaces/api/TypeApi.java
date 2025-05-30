@@ -33,15 +33,16 @@ public class TypeApi implements TypeRepository {
         workspace.distinctUntilChanged().subscribe(w-> this.workspace = w);
     }
     @Override
-    public Observable<Void> delete(Set<Type> toDelete) {
+    public Observable<Void> delete(Set<Type> types) {
         if(workspace==null) return Observable.of((Void)null);
+        if(types.isEmpty()) return Observable.of((Void)null);
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
         request.setMethod("DELETE");
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
-        var natives = toDelete.stream().map(type->TypeNative.from(type, true)).toArray(TypeNative[]::new);
+        var natives = types.stream().map(type->TypeNative.from(type, true)).toArray(TypeNative[]::new);
         request.setBody(JSON.stringify(natives));
         return AsyncSubject.await(fetchApi
                 .request("workspace/" + workspace.id() + "/types", request)
@@ -52,15 +53,16 @@ public class TypeApi implements TypeRepository {
         );
     }
     @Override
-    public Observable<Void> save(Set<Type> toUpsert) {
+    public Observable<Void> save(Set<Type> types) {
         if(workspace==null) return Observable.of((Void)null);
+        if(types.isEmpty()) return Observable.of((Void)null);
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var request = RequestInit.create();
         request.setMethod("PUT");
         request.setHeaders(new String[][] {
                 new String[] {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
-        var natives = toUpsert.stream().map(type->TypeNative.from(type, false)).toArray(TypeNative[]::new);
+        var natives = types.stream().map(type->TypeNative.from(type, false)).toArray(TypeNative[]::new);
         request.setBody(JSON.stringify(natives));
         return AsyncSubject.await(fetchApi
                 .request("workspace/" + workspace.id() + "/types", request)
