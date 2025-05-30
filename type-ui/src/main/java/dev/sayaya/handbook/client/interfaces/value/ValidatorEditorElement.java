@@ -23,18 +23,22 @@ public class ValidatorEditorElement implements IsElement<HTMLDivElement> {
         var value = subject.getValue()!=null? subject.getValue().baseType().name() : null;
         switch (value) {
             case "Value" -> {
-                var regex = textField().outlined().label("Regex");
                 elem = div().style("""
                     display: flex;
                     flex-direction: column;
                     align-items: stretch;
                     gap: 0.5rem;
                     margin-left: 2rem;
-                """).add(regex);
-                regex.onChange(evt-> {
-                    var next = subject.getValue().toBuilder().validators(List.of(ValidatorRegex.builder().pattern(regex.value()).build())).build();
-                    subject.next(next);
-                });
+                """);
+                var validator = subject.getValue().validators().isEmpty() ? null : subject.getValue().validators().get(0);
+                if(validator instanceof ValidatorRegex cast) {
+                    var regex = textField().outlined().label("Regex").value(cast.pattern());
+                    elem.add(regex);
+                    regex.onChange(evt-> {
+                        var next = subject.getValue().toBuilder().validators(List.of(ValidatorRegex.builder().pattern(regex.value()).build())).build();
+                        subject.next(next);
+                    });
+                }
             }
             case "Array" -> {
                 var child = behavior(subject.getValue().arguments().get(0));

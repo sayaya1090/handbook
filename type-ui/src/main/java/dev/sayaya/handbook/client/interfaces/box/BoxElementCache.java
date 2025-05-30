@@ -16,10 +16,6 @@ class BoxElementCache {
         this.factory = factory;
     }
     public TypeElement getOrCreate(Type box) {
-        DomGlobal.console.log("BoxElementCache.getOrCreate: " + box.id());
-        return cache.computeIfAbsent(box.id(), key->{
-            DomGlobal.console.log("New BoxElement for: " + key);
-            return factory.create(box);
-        });
+        return cache.computeIfAbsent(box.id(), key-> factory.create(box));
     }
 }

@@ -76,7 +76,6 @@ public class AttributeEditorElement implements IsElement<HTMLDivElement> {
     }
     private IsElement<?> param = null;
     private void updateParamElement() {
-        DomGlobal.console.log("AttributeEditorElement.updateParamElement: " + subject.getValue());
         if (param != null) param.element().remove();
         var value = subject.getValue()!=null? subject.getValue().baseType().name() : null;
         if(value!=null) switch (value) {

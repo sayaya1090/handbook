@@ -41,14 +41,12 @@ public class TypeList {
         publish();
     }
     public void remove(Type... types) {
-        DomGlobal.console.log("TypeList.remove: " + Arrays.toString(types));
         for(var type: types) map.remove(type.id());
         publish();
     }
     public void replace(Type before, Type after) {
         map.put(before.id(), after);
         publish();
-        DomGlobal.console.log("TypeList.replace: " + before + " -> " + after);
     }
     public void reset() {
         visited.clear();

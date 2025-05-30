@@ -60,7 +60,6 @@ class BoxReferenceElement implements IsSvgElement<SVGElement, SvgBuilder> {
         var arrow = ArrowFactory.createArrow(startRect, targetRect);
         var points = arrow.pathPoints();
         if (points == null || points.isEmpty()) {
-            DomGlobal.console.warn("No points generated for arrow.");
             svg.attr("width", "0").attr("height", "0"); // SVG를 보이지 않게 처리
             return;
         }

@@ -4,6 +4,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import dagger.Binds;
 import dagger.Provides;
 import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.client.domain.validator.ValidatorRegex;
 import dev.sayaya.handbook.client.interfaces.LanguageRepository;
 import dev.sayaya.handbook.client.interfaces.api.TypeNative;
 import dev.sayaya.handbook.client.interfaces.box.TypeElementList;
@@ -47,7 +48,11 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent(null)
                             .attributes(List.of(
-                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(AttributeTypeDefinition.builder().baseType(Value).build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(
+                                            AttributeTypeDefinition.builder().baseType(Value).validator(
+                                                    ValidatorRegex.builder().pattern("^[a-zA-Z0-9]+$").build()
+                                            ).build()
+                                    ).nullable(false).inherited(false).build(),
                                     Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type(AttributeTypeDefinition.builder().baseType(Array)
                                                     .argument(AttributeTypeDefinition.builder().baseType(Value).build())
                                             .build()
