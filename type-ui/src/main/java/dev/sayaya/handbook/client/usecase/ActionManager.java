@@ -67,9 +67,8 @@ public class ActionManager {
     public void edit(UpdatableType boxElement, Type after) {
         var before = boxElement.value();
         var replace = factory.editBox(before, after);
-        var resize = factory.resize(boxElement, after.width(), after.height());
         var pushOutAction = factory.pushOutOverlap(after);
-        var action = factory.complex(replace, resize, pushOutAction);
+        var action = factory.complex(replace, pushOutAction);
         push(action);
         action.execute();
     }

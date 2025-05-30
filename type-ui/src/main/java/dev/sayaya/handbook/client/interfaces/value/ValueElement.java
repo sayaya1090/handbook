@@ -39,7 +39,6 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
     private final BoxReferenceElement.BoxReferenceElementFactory directorFactory;
     private final Attribute target;
     private BoxReferenceElement director;
-    private Subscription refSubscription;
     private ValueElement(HTMLContainerBuilder<HTMLDivElement> element, Attribute value, ActionManager actionManager,
                          TypeElement parent, Lazy<TypeElementList> boxes,
                          AttributeEditorDialog attributeEditor,
@@ -68,31 +67,36 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
             actionManager.edit(parent, next);
         });
     }
-    public void update() {
+    void update() {
         title.value(target.name());
         var def = target.type();
         type.text(def.simplify());
-        printDirector(def);
+        clear();
+        timer(300, -1).take(1).subscribe(t-> printDirector(def));
     }
-    private void printDirector(AttributeTypeDefinition value) {
+    private Subscription refSubscription = null;
+    void clear() {
         if(director!=null) {
             director.clear();
             director.element().remove();
+            director = null;
         }
-        if(refSubscription != null) refSubscription.unsubscribe();
+        if(refSubscription!=null) refSubscription.unsubscribe();
+    }
+    private void printDirector(AttributeTypeDefinition value) {
         if(value.baseType() == AttributeTypeDefinition.AttributeType.Document) {
-            var ref = value.referencedType();
-            var target = boxes.get().find(ref);
-            director = directorFactory.director(this, target);
+            var ref = boxes.get().find(value.referencedType());
+            director = directorFactory.director(this, ref);
             canvas.get().add(director.element());
-            // 처음 값 하나는 버리고 이후부터 업데이트
-            refSubscription = target.map(TypeElement::value).skip(1).distinctUntilChanged().subscribe(t-> {
-                value.referencedType(t.name());
-                timer(300, -1).take(1).subscribe(i->update());
-            });
+            // 처음 값 하나는 버리고 이후 값이 변경되면 지연 업데이트
+            refSubscription = ref.map(TypeElement::value).skip(1).distinctUntilChanged()
+                    .mergeMap(timer(300, -1))
+                    .take(1).subscribe(t-> {
+                        clear();
+                        printDirector(target.type());
+                    });
         } else if(value.baseType() == AttributeTypeDefinition.AttributeType.Array) printDirector(value.arguments().get(0));
         else if(value.baseType() == AttributeTypeDefinition.AttributeType.Map) printDirector(value.arguments().get(1));
-        else director = null;
     }
     @AssistedFactory
     interface ValueElementFactory {

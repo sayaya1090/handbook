@@ -101,6 +101,9 @@ public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements
         container.on(EventType.mousedown, evt -> handleMouseDown(evt, typeBoxElement));
         container.on(EventType.mouseup, this::clearDragStartTimer);
         container.on(EventType.mousemove, this::clearDragStartTimer);
+        container.on(EventType.touchstart, evt -> handleTouch(evt, typeBoxElement));
+        container.on(EventType.touchmove, this::clearDragStartTimer);
+        container.on(EventType.touchend, this::clearDragStartTimer);
         container.on(EventType.keydown, evt->handleKeyPress(evt, actionManager));
         btnAdd.on(EventType.click, evt -> {
             var attr = Attribute.builder()
@@ -150,7 +153,16 @@ public class TypeElement extends HTMLContainerBuilder<HTMLDivElement> implements
             dragShapeElement.triggerDragEvent();
         }, 150);
     }
+    private void handleTouch(TouchEvent evt, TypeElement typeBoxElement) {
+        dragStartTimer = DomGlobal.setTimeout(v -> {
+            handleSelect(typeBoxElement, evt.ctrlKey);
+            dragShapeElement.triggerDragEvent();
+        }, 150);
+    }
     private void clearDragStartTimer(MouseEvent evt) {
+        if (dragStartTimer != 0) DomGlobal.clearTimeout(dragStartTimer);
+    }
+    private void clearDragStartTimer(TouchEvent evt) {
         if (dragStartTimer != 0) DomGlobal.clearTimeout(dragStartTimer);
     }
     private void handleKeyPress(KeyboardEvent evt, ActionManager actionManager) {

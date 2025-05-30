@@ -59,7 +59,6 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
         dialog.headline(title).content(form);
         dialog.actions(div().add(btnClose.form(form)).add(btnApply.form(form)));
         btnApply.on(EventType.click, evt->dialog.close().then(msg-> {
-
             var attributes = parent.value().attributes();
             if(attributes==null) attributes = java.util.List.of();
             attributes = attributes.stream().map(a->a.equals(attr) ? a.toBuilder()
