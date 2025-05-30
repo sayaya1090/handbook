@@ -37,7 +37,6 @@ public class PushOutOverlapAction extends ComplexAction {
                 if (processed.contains(otherBox)) continue;
 
                 var otherElement = entry.getKey();
-                DomGlobal.console.log("PushOutOverlapAction: " + currentBox + " -> " + otherBox);
                 int[] overlap = calculateOverlap(currentBox, otherBox);
                 if (overlap[0] != 0 || overlap[1] != 0) {
                     var action = moveBoxActionFactory.move(otherElement, overlap[0], overlap[1]);

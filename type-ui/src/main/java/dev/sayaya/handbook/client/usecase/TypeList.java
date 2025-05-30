@@ -48,7 +48,7 @@ public class TypeList {
     public void replace(Type before, Type after) {
         map.put(before.id(), after);
         publish();
-        DomGlobal.console.log("TypeList.replace: " + before.name() + " -> " + after.name());
+        DomGlobal.console.log("TypeList.replace: " + before + " -> " + after);
     }
     public void reset() {
         visited.clear();

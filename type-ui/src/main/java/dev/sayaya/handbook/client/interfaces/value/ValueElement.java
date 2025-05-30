@@ -23,7 +23,7 @@ import static dev.sayaya.ui.elements.IconElementBuilder.icon;
 import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 import static org.jboss.elemento.Elements.div;
 
-public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implements ValueUpdater {
+public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> {
     @AssistedInject ValueElement(@Assisted Attribute value, ActionManager actionManager, @Assisted TypeElement parent,
                                  Lazy<TypeElementList> boxes,
                                  AttributeEditorDialog attributeEditor,
@@ -37,6 +37,7 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
     private final Lazy<TypeElementList> boxes;
     private final Lazy<CanvasElement> canvas;
     private final BoxReferenceElement.BoxReferenceElementFactory directorFactory;
+    private final Attribute target;
     private BoxReferenceElement director;
     private Subscription refSubscription;
     private ValueElement(HTMLContainerBuilder<HTMLDivElement> element, Attribute value, ActionManager actionManager,
@@ -48,11 +49,18 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
         this.boxes = boxes;
         this.canvas = canvas;
         this.directorFactory = directorFactory;
+        this.target = value;
         element.css("property")
                 .add(div().style("display: flex; align-items: center;").add(title))
                 .add(div().style("display: flex; align-items: center;").add(type).add(btnRem));
-        title.onChange(evt->target.name(title.value()));
-        type.onClick(evt->attributeEditor.open(value, this));
+        title.onChange(evt->{
+            var attributes = parent.value().attributes().stream()
+                    .map(a->a.equals(target) ? a.toBuilder().name(title.value()).build() : a)
+                    .collect(Collectors.toUnmodifiableList());
+            var type = parent.value().toBuilder().clearAttributes().attributes(attributes).build();
+            actionManager.edit(parent, type);
+        });
+        type.onClick(evt->attributeEditor.open(parent, value));
         btnRem.onClick(evt-> {
             var before = parent.value();
             var nextAttributes = before.attributes().stream().filter(a->!a.equals(target)).collect(Collectors.toUnmodifiableList());
@@ -60,16 +68,11 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
             actionManager.edit(parent, next);
         });
     }
-    private Attribute target;
-    public void update(Attribute value) {
-        this.target = value;
-        title.value(value.name());
-        update(value.type());
-    }
-    @Override
-    public void update(AttributeTypeDefinition value) {
-        type.text(value.toString());
-        printDirector(value);
+    public void update() {
+        title.value(target.name());
+        var def = target.type();
+        type.text(def.simplify());
+        printDirector(def);
     }
     private void printDirector(AttributeTypeDefinition value) {
         if(director!=null) {
@@ -82,9 +85,10 @@ public class ValueElement extends HTMLContainerBuilder<HTMLDivElement> implement
             var target = boxes.get().find(ref);
             director = directorFactory.director(this, target);
             canvas.get().add(director.element());
-            refSubscription = target.subscribe(t-> {
-                value.referencedType(t.value().name());
-                timer(300, -1).subscribe(i->update(this.target));
+            // 처음 값 하나는 버리고 이후부터 업데이트
+            refSubscription = target.map(TypeElement::value).skip(1).distinctUntilChanged().subscribe(t-> {
+                value.referencedType(t.name());
+                timer(300, -1).take(1).subscribe(i->update());
             });
         } else if(value.baseType() == AttributeTypeDefinition.AttributeType.Array) printDirector(value.arguments().get(0));
         else if(value.baseType() == AttributeTypeDefinition.AttributeType.Map) printDirector(value.arguments().get(1));

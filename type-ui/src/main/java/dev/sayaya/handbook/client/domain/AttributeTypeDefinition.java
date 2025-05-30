@@ -1,23 +1,23 @@
 package dev.sayaya.handbook.client.domain;
 
 import dev.sayaya.handbook.client.domain.validator.ValidatorDefinition;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.*;
 
-@Data
+@Getter
+@ToString(exclude = {"referencedType"})
+@EqualsAndHashCode(exclude = {"referencedType"})
 @Accessors(fluent = true)
-@Builder
+@Builder(toBuilder = true)
 public class AttributeTypeDefinition {
-    private AttributeType baseType;
-    @Singular private List<AttributeTypeDefinition> arguments;
-    @Singular private List<ValidatorDefinition> validators;
-    @Singular private Set<String> extensions;
-    private String referencedType;
+    private final AttributeType baseType;
+    @Singular private final List<AttributeTypeDefinition> arguments;
+    @Singular private final List<ValidatorDefinition> validators;
+    @Singular private final Set<String> extensions;
+    @Setter private String referencedType;
     public enum AttributeType {
         Value,  // File, Document가 아닌 1개 값(텍스트, 날짜, 숫자, ...)
         Array,  // x개 값
@@ -25,17 +25,16 @@ public class AttributeTypeDefinition {
         File,
         Document
     }
-    @Override
-    public String toString() {
+    public String simplify() {
         switch (baseType) {
             case Value -> {
                 return "Value";
             }
             case Array -> {
-                return "Array<" + arguments.get(0) + ">";
+                return "Array<" + arguments.get(0).simplify() + ">";
             }
             case Map -> {
-                return "Map<" + arguments.get(0) + ", " + arguments.get(1) + ">";
+                return "Map<" + arguments.get(0).simplify() + ", " + arguments.get(1).simplify() + ">";
             }
             case File -> {
                 return "File(" + String.join(", ", extensions) + ")";

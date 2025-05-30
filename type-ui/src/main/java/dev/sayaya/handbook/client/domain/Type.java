@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.domain;
 
+import elemental2.dom.DomGlobal;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -13,27 +14,27 @@ import java.util.List;
  */
 @Getter
 @ToString(exclude = {"original"})
-@EqualsAndHashCode(exclude = {"original"}) // original 필드를 equals/hashCode에서 제외
+@EqualsAndHashCode(exclude = {"original", "state"}) // original 필드를 equals/hashCode에서 제외
 @Accessors(fluent = true)
 @Builder(toBuilder = true)
 public class Type {
     private final String id;
     private final String name;
     private final String version;
-    private Date effectDateTime;
-    private Date expireDateTime;
-    private String description;
-    private boolean primitive;
+    private final Date effectDateTime;
+    private final Date expireDateTime;
+    private final String description;
+    private final boolean primitive;
     @Singular("attribute")
-    private List<Attribute> attributes;
-    private String parent;
-    private int x;
-    private int y;
-    private int width;
-    private int height;
-    private Type original; // 원본 타입, 변경 전 상태를 저장하기 위해 사용
+    private final List<Attribute> attributes;
+    private final String parent;
+    private final int x;
+    private final int y;
+    private final int width;
+    private final int height;
+    private final Type original; // 원본 타입, 변경 전 상태를 저장하기 위해 사용
     @Builder.Default
-    private TypeState state = TypeState.NOT_CHANGE;
+    private final TypeState state = TypeState.NOT_CHANGE;
 
     private Type(String id, String name, String version, Date effectDateTime, Date expireDateTime, String description, boolean primitive, List<Attribute> attributes, String parent, int x, int y, int width, int height, Type original, TypeState state) {
         this.id = validateNonNullOrEmpty(id, "id");

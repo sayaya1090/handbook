@@ -34,7 +34,7 @@ public class ValueListElement extends HTMLContainerBuilder<HTMLDivElement> {
         for(var value: values) {
             ValueElement elem = elements.computeIfAbsent(value, v->elementFactory.valueElement(v, parent));
             container.add(elem);
-            elem.update(value);
+            elem.update();
         }
     }
     @AssistedFactory
