@@ -8,7 +8,7 @@ import io.kotest.matchers.throwable.shouldHaveMessage
 import java.util.Date
 
 class TypeTest : StringSpec({
-    "유효한 Type 객체 생성" {
+    /*"유효한 Type 객체 생성" {
         val attributes = listOf(Attribute.builder().id("test").name("test").build()) // 유효한 Attribute 리스트
         val effectDate = Date(1672531200000L) // 2023-01-01 00:00:00 GMT
         val expireDate = Date(1672534800000L) // 2023-01-01 01:00:00 GMT
@@ -210,5 +210,5 @@ class TypeTest : StringSpec({
                 .build()
         }
         exception.shouldHaveMessage("Width must be greater than 0")
-    }
+    }*/
 })

@@ -2,17 +2,9 @@ package dev.sayaya.handbook.client.interfaces.box;
 
 import dagger.Binds;
 import dagger.Module;
-import dagger.Provides;
-import dev.sayaya.handbook.client.usecase.BoxTailor;
-import dev.sayaya.handbook.client.usecase.UpdatableBoxList;
+import dev.sayaya.handbook.client.usecase.UpdatableTypeList;
 
 @Module
 public interface BoxElementModule {
-    @Binds UpdatableBoxList updatableBoxProvider(BoxElementList impl);
-    @Provides static BoxTailor boxTailorProvider() {
-        return box->{
-            if(box == null) return 0;
-            return 170 + box.attributes().size()*53;
-        };
-    }
+    @Binds UpdatableTypeList updatableBoxProvider(TypeElementList impl);
 }

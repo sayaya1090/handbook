@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
 import dev.sayaya.handbook.client.interfaces.box.BoxContextMenuElement;
-import dev.sayaya.handbook.client.interfaces.box.BoxElement;
-import dev.sayaya.handbook.client.interfaces.box.BoxElementList;
+import dev.sayaya.handbook.client.interfaces.box.TypeElement;
+import dev.sayaya.handbook.client.interfaces.box.TypeElementList;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.interfaces.value.AttributeEditorDialog;
@@ -34,9 +34,9 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private final ActionManager actionManager;
     private final CanvasContextMenuElement contextElement;
     private final BoxContextMenuElement boxContextMenuElement;
-    private final List<BoxElement> children = new LinkedList<>();
+    private final List<TypeElement> children = new LinkedList<>();
 
-    @Inject CanvasElement(BoxElementList elements, CanvasMode mode, ActionManager actionManager,
+    @Inject CanvasElement(TypeElementList elements, CanvasMode mode, ActionManager actionManager,
                           CanvasContextMenuElement contextElement,
                           BoxContextMenuElement boxContextMenuElement,
                           AttributeEditorDialog attributeEditor,
@@ -53,7 +53,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         init(container, elements, dragElement, selected);
     }
     private void init(HTMLContainerBuilder<HTMLDivElement> container,
-                      BoxElementList elements,
+                      TypeElementList elements,
                       DragShapeElement dragElement,
                       SelectedBoxElement selected) {
         initEventHandlers(selected);
@@ -73,18 +73,18 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         boxContextMenuElement.on(EventType.click, evt->element().focus());
     }
 
-    private void update(BoxElement[] elems) {
-        var newElementMap = Arrays.stream(elems).collect(Collectors.toMap(e->e.box(), elem -> elem));
+    private void update(TypeElement[] elems) {
+        var newElementMap = Arrays.stream(elems).collect(Collectors.toMap(e->e.value(), elem -> elem));
         // 1. 이전 상태에서 없어진 요소 제거
         children.removeIf(child -> {
-            if (!newElementMap.containsKey(child.box())) {
+            if (!newElementMap.containsKey(child.value())) {
                 child.element().remove();
                 return true;
             } else return false; // 유지
         });
         // 2. 새로 추가할 요소만 추가
         newElementMap.forEach((domain, elem) -> {
-            if (children.stream().noneMatch(child -> child.box().equals(domain))) {
+            if (children.stream().noneMatch(child -> child.value().equals(domain))) {
                 container.add(elem);
                 children.add(elem);
             }

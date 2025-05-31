@@ -50,21 +50,18 @@ internal class TypeControllerTest(
         should("올바른 저장 요청 시 서비스의 저장 함수를 호출하고 결과를 반환해야 한다") {
             // Given: Mock된 서비스 응답 정의
             every { mockService.save(any(), any(), any()) } returns expected.toMono()
-            every { mockService.delete(any(), any(), any()) } returns expected.toMono()
             // When: API 호출
-            client.post().uri { builder ->
+            client.put().uri { builder ->
                 builder.path("/workspace/$workspace/types").build()
             }.contentType(MediaType.parseMediaType("application/vnd.sayaya.handbook.v1+json"))
                 .bodyValue("""[
-                    {"id":"type_3","version":"t3-v2","effect_date_time":1135987200000,"expire_date_time":32503593600000,"description":"type_3","primitive":true,"attributes":[],"parent":"type_2","x":700,"y":100,"width":200,"height":200,"delete":true},
-                    {"id":"type_2","version":"t2-v2","effect_date_time":946598400000,"expire_date_time":32503593600000,"description":"type_2","primitive":true,"attributes":[],"parent":"type_1","x":817,"y":136,"width":200,"height":200,"delete":false}
+                    {"id":"type_2","version":"t2-v2","effect_date_time":946598400000,"expire_date_time":32503593600000,"description":"type_2","primitive":true,"attributes":[],"parent":"type_1","x":817,"y":136,"width":200,"height":200}
                 ]""".trimIndent())
                 .exchange()
                 .expectStatus().isOk
                 .expectBody().isEmpty
 
             verify(exactly = 1) { mockService.save(any(), workspace, any()) }
-            verify(exactly = 1) { mockService.delete(any(), workspace, any()) }
         }
     }
 }) {

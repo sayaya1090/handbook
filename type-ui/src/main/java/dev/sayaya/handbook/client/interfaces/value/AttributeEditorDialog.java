@@ -3,6 +3,8 @@ package dev.sayaya.handbook.client.interfaces.value;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Label;
+import dev.sayaya.handbook.client.interfaces.box.TypeElement;
+import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdDialogElement;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
@@ -20,11 +22,13 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import java.util.stream.Collectors;
+
+import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static dev.sayaya.ui.elements.DialogElementBuilder.dialog;
 import static dev.sayaya.ui.elements.SwitchElementBuilder.sw;
 import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
-import static elemental2.dom.DomGlobal.alert;
 import static org.jboss.elemento.Elements.*;
 
 @Singleton
@@ -48,17 +52,23 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
     private AttributeEditorElement editor;
     private Attribute attr;
     private AttributeTypeDefinition def;
-    private ValueUpdater updater;
+    private TypeElement parent;
     private Label label;
-    @Inject AttributeEditorDialog(Observable<Label> labels, AttributeEditorElement.AttributeEditorElementFactory editorFactory) {
+    @Inject AttributeEditorDialog(Observable<Label> labels, AttributeEditorElement.AttributeEditorElementFactory editorFactory, ActionManager actionManager) {
         this.editorFactory = editorFactory;
         dialog.headline(title).content(form);
         dialog.actions(div().add(btnClose.form(form)).add(btnApply.form(form)));
         btnApply.on(EventType.click, evt->dialog.close().then(msg-> {
-            if(updater != null) updater.update(def);
-            if(iptDescription.value() != null && !iptDescription.value().isEmpty()) attr.description(iptDescription.value());
-            else attr.description(null);
-            attr.nullable(iptNullable.isSelected());
+            var attributes = parent.value().attributes();
+            if(attributes==null) attributes = java.util.List.of();
+            attributes = attributes.stream().map(a->a.equals(attr) ? a.toBuilder()
+                            .type(def)
+                            .nullable(iptNullable.isSelected())
+                            .description(iptDescription.value())
+                            .build() : a)
+                    .collect(Collectors.toUnmodifiableList());
+            var type = parent.value().toBuilder().clearAttributes().attributes(attributes).build();
+            actionManager.edit(parent, type);
             return null;
         }));
         btnClose.on(EventType.click, evt->dialog.close().then(msg-> {
@@ -66,12 +76,14 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
         }));
         labels.subscribe(this::update);
     }
-    public void open(Attribute attr,ValueUpdater updater) {
+    public void open(TypeElement parent, Attribute attr) {
+        this.parent = parent;
         this.attr = attr;
         this.def = attr.type();
-        this.updater = updater;
         if (editor != null) editor.element().remove();
-        editor = editorFactory.attributeEditorElement(def);
+        var subject = behavior(def);
+        editor = editorFactory.attributeEditorElement(subject);
+        subject.subscribe(def->this.def = def);
         form.add(editor).add(iptDescription.style("margin-top: 0.5rem;")).add(div().style("""
                     display: flex;
                     align-items: center;

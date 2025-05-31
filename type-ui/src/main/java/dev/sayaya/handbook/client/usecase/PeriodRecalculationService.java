@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.Period;
 import dev.sayaya.handbook.client.domain.Type;
+import elemental2.dom.DomGlobal;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,7 +17,10 @@ public class PeriodRecalculationService {
     private final CalculatedLayoutProvider provider;
     @Inject PeriodRecalculationService(CalculatedLayoutProvider provider, TypeList types) {
         this.provider = provider;
-        types.distinctUntilChanged().subscribe(this::recalculate);
+        types.map(set->set.stream()
+                .filter(t->t.state() != Type.TypeState.DELETE)
+                .collect(Collectors.toUnmodifiableSet())
+        ).distinctUntilChanged().subscribe(this::recalculate);
     }
     private void recalculate(Set<Type> types) {
         var recalculated = recalculatePeriods(types);
@@ -49,8 +53,6 @@ public class PeriodRecalculationService {
     private List<Date> extractAndSortTimePoints(Collection<Type> allTypes) {
         // Set을 사용하여 중복을 자동으로 제거하고, Comparator로 정렬
         SortedSet<Date> timePoints = new TreeSet<>(Comparator.comparingLong(Date::getTime));
-        timePoints.add(new Date(MIN_DATE.getTime())); // 전체 범위의 시작점
-        timePoints.add(new Date(MAX_DATE.getTime())); // 전체 범위의 끝점
 
         allTypes.forEach(type -> {
             if (type.effectDateTime() != null) timePoints.add(new Date(Math.max(0, type.effectDateTime().getTime())));

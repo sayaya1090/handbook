@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.`interface`.api
 
+import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.usecase.type.TypeService
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -14,18 +15,18 @@ import java.util.*
 @RestController
 class TypeController(private val svc: TypeService) {
     private val logger = LoggerFactory.getLogger(TypeController::class.java)
-
-    @PostMapping(value = ["/workspace/{workspace}/types"])
+    @PutMapping(value = ["/workspace/{workspace}/types"])
     @Transactional
-    fun save(@AuthenticationPrincipal principal: Principal, @PathVariable workspace: UUID, @RequestBody types: List<TypeParam>): Mono<Void> {
-        if (types.isEmpty()) return Mono.empty()
-        val (toDeletes, toUpserts) = types.partition { it.delete }
-        val update = if (toUpserts.isNotEmpty()) svc.save(principal, workspace, toUpserts.map(TypeParam::type)) else Mono.empty()
-        val delete = if (toDeletes.isNotEmpty()) svc.delete(principal, workspace, toDeletes.map(TypeParam::type)) else Mono.empty()
-        return update.mergeWith(delete).doOnError { error ->
-            logger.error("Error saving or deleting types for workspace {}: {}", workspace, error.message, error)
-        }.then()
-    }
+    fun save(@AuthenticationPrincipal principal: Principal, @PathVariable workspace: UUID, @RequestBody types: List<Type>): Mono<Void> = svc.save(principal, workspace, types).doOnError { error ->
+        logger.error("Error saving types for workspace {}: {}", workspace, error.message, error)
+    }.then()
+
+    @DeleteMapping(value = ["/workspace/{workspace}/types"])
+    @Transactional
+    fun delete(@AuthenticationPrincipal principal: Principal, @PathVariable workspace: UUID, @RequestBody types: List<Type>): Mono<Void> = svc.delete(principal, workspace, types).doOnError { error ->
+        logger.error("Error deleting types for workspace {}: {}", workspace, error.message, error)
+    }.then()
+
     @ExceptionHandler(DuplicateKeyException::class)
     @ResponseStatus(HttpStatus.CONFLICT)
     fun handleDuplicateKeyException(ex: DuplicateKeyException): Mono<String> = Mono.justOrEmpty(ex.localizedMessage)

@@ -95,6 +95,8 @@ CREATE TABLE IF NOT EXISTS public.document (
     effective_at timestamp(6) with time zone NOT NULL,
     expire_at timestamp(6) with time zone NOT NULL,
     data jsonb NOT NULL,
+    validated_at timestamp(6) with time zone,
+    validation_results jsonb,
     last boolean DEFAULT true NOT NULL,
     PRIMARY KEY (workspace, id)
 ) ;

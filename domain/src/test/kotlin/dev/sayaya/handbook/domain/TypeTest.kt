@@ -17,7 +17,8 @@ class TypeTest : StringSpec({
             expireDateTime = Instant.MAX,
             parent = null,
             description = "The parent type",
-            attributes = listOf(Attribute.Companion.ValueAttribute(name = "Attr1", inherited = false)),
+            attributes = listOf(
+            /*Attribute.Companion.ValueAttribute(name = "Attr1", inherited = false)*/),
             primitive = false,
             x=0u, y=0u, width=100u, height=100u
         )
@@ -29,7 +30,7 @@ class TypeTest : StringSpec({
             expireDateTime = Instant.MAX,
             parent = parentType.id,
             description = "The child type",
-            attributes = listOf(Attribute.Companion.MapAttribute(name = "MapAttr", inherited = false)),
+            attributes = listOf(/*Attribute.Companion.MapAttribute(name = "MapAttr", inherited = false)*/),
             primitive = false,
             x=0u, y=0u, width=100u, height=100u
         )

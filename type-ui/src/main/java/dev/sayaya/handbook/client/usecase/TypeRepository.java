@@ -9,5 +9,6 @@ import java.util.Set;
 
 public interface TypeRepository {
     Observable<List<Type>> list(Period period);
-    Observable<Void> save(Set<Type> toDelete, Set<Type> toUpsert);
+    Observable<Void> delete(Set<Type> types);
+    Observable<Void> save(Set<Type> types);
 }

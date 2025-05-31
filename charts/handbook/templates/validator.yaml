@@ -1,0 +1,163 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: validator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: validator
+data:
+  application.yaml: |
+    spring:
+      application.name: validator
+      main:
+        web-application-type: reactive
+      threads.virtual.enabled: true
+      config:
+        import:
+          - classpath:postgresql.yaml
+          - classpath:observability.yaml
+    management:
+      endpoint:
+        health:
+          probes:
+            enabled: true
+    server:
+      port: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: validator
+spec:
+  selector:
+    app: validator
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/validator'
+    configmap.reloader.stakater.com/reload: "validator,postgresql-ro,observability"
+    secret.reloader.stakater.com/reload: "postgresql-app"
+  name: validator
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - foregroundDeletion
+  labels:
+    app: validator
+    app.kubernetes.io/component: handbook
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/name: handbook
+    app.kubernetes.io/part-of: handbook
+    app.openshift.io/runtime: spring-boot
+    app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
+    app.openshift.io/runtime-version: latest
+spec:
+  selector:
+    matchLabels:
+      app: validator
+  template:
+    metadata:
+      labels:
+        app: validator
+        version: 0.0.1
+        deployment: validator
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: validator
+            defaultMode: 420
+        - name: postgres-config
+          configMap:
+            name: postgresql-ro
+            defaultMode: 420
+        - name: observability-config
+          configMap:
+            name: observability
+            defaultMode: 420
+      containers:
+        - name: validator
+          image: {{ index .Values "validator" "image" "name" }}:{{ index .Values "validator" "image" "tag" | default "latest" }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          env:
+            - name: postgres.username
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: postgresql-app
+            - name: postgres.password
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgresql-app
+            - name: TZ
+              value: Asia/Seoul
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/resources/application.yaml
+              subPath: application.yaml
+            - name: postgres-config
+              mountPath: /app/resources/postgresql.yaml
+              subPath: postgresql.yaml
+            - name: observability-config
+              mountPath: /app/resources/observability.yaml
+              subPath: observability.yaml
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 0
+  progressDeadlineSeconds: 600
+  paused: false

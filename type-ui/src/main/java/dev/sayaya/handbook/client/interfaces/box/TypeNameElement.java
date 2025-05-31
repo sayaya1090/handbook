@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.ui.dom.MdTextFieldElement;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.Event;
 import jsinterop.base.Js;
 import lombok.experimental.Delegate;
@@ -16,23 +17,26 @@ import org.jboss.elemento.IsElement;
 import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 
 public class TypeNameElement implements IsElement<MdTextFieldElement.MdOutlinedTextFieldElement> {
-    @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt = textField().outlined().css("label");
-    private final BoxElement parent;
+    @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt = textField().outlined()
+            .css("label").required().placeholder("Type Name");
+    private final TypeElement parent;
     private final ActionManager actionManager;
-    @AssistedInject TypeNameElement(@Assisted BoxElement parent, ActionManager actionManager) {
+    @AssistedInject TypeNameElement(@Assisted TypeElement parent, ActionManager actionManager) {
         this.parent = parent;
         this.actionManager = actionManager;
         ipt.on(EventType.change, this::update);
+        parent.subscribe(evt->update(parent.value()));
     }
     private void update(Event evt) {
         var ipt = Js.asPropertyMap(evt.target);
-        actionManager.title(parent, ipt.get("value").toString());
+        var next = parent.value().toBuilder().name(ipt.get("value").toString()).build();
+        actionManager.edit(parent, next);
     }
-    void update(Type type) {
-        ipt.value(type.id());
+    private void update(Type type) {
+        ipt.value(type.name());
     }
     @AssistedFactory
     interface TypeNameElementFactory {
-        TypeNameElement create(BoxElement parent);
+        TypeNameElement create(TypeElement parent);
     }
 }

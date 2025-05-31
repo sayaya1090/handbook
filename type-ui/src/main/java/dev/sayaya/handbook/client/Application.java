@@ -29,14 +29,11 @@ public class Application implements EntryPoint {
         components.tools().subscribe(tools -> Arrays.stream(tools).forEach(this::toolClickHandler));
     }
     private void update(String url, HTMLElement frame) {
-        switch (url) {
-            case "/", "/types?view=graph" -> {
-                frame.append(components.controller().element());
-                frame.append(components.canvas().element());
-            }
-            case "/types?view=calendar" -> {
+        if (url.equals("/types?view=calendar")) {
 
-            }
+        } else {// "/", "/types?view=graph"
+            frame.append(components.controller().element());
+            frame.append(components.canvas().element());
         }
     }
     private void toolClickHandler(Tool tool) {

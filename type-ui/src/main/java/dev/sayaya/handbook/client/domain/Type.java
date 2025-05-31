@@ -1,88 +1,58 @@
 package dev.sayaya.handbook.client.domain;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
+import elemental2.dom.DomGlobal;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
-@Data
+/*
+ * Type 클래스는 타입의 정보를 나타내며, 타입의 속성, 위치, 크기 등을 포함한다.
+ * 값을 바꾸려면 새로운 인스턴스를 생성해야 한다.
+ * 원본값이
+ */
+@Getter
+@ToString(exclude = {"original"})
+@EqualsAndHashCode(exclude = {"original", "state"}) // original 필드를 equals/hashCode에서 제외
 @Accessors(fluent = true)
 @Builder(toBuilder = true)
 public class Type {
     private final String id;
+    private final String name;
     private final String version;
-    private Date effectDateTime;
-    private Date expireDateTime;
-    private String description;
-    private boolean primitive;
+    private final Date effectDateTime;
+    private final Date expireDateTime;
+    private final String description;
+    private final boolean primitive;
     @Singular("attribute")
-    private List<Attribute> attributes;
-    private String parent;
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    private final List<Attribute> attributes;
+    private final String parent;
+    private final int x;
+    private final int y;
+    private final int width;
+    private final int height;
+    private final Type original; // 원본 타입, 변경 전 상태를 저장하기 위해 사용
+    @Builder.Default
+    private final TypeState state = TypeState.NOT_CHANGE;
 
-    private Type(String id, String version, Date effectDateTime, Date expireDateTime, String description, boolean primitive, List<Attribute> attributes, String parent, int x, int y, int width, int height) {
+    private Type(String id, String name, String version, Date effectDateTime, Date expireDateTime, String description, boolean primitive, List<Attribute> attributes, String parent, int x, int y, int width, int height, Type original, TypeState state) {
         this.id = validateNonNullOrEmpty(id, "id");
-        this.version = validateNonNullOrEmpty(version, "version");
-        effectDateTime(effectDateTime).expireDateTime(expireDateTime)
-                .description(description).primitive(primitive)
-                .attributes(attributes).parent(parent)
-                .x(x).y(y).width(width).height(height);
-        require(expireDateTime.after(effectDateTime), "Expire date time must be after effect date time");
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Type type = (Type) o;
-        return Objects.equals(id, type.id) && Objects.equals(version, type.version);
-    }
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, version);
-    }
-    public Type effectDateTime(Date effectDateTime) {
+        this.name = name;
+        this.version = version;
         this.effectDateTime = validateNonNull(effectDateTime, "Effect date time must not be null");
-        return this;
-    }
-    public Type expireDateTime(Date expireDateTime) {
         this.expireDateTime = validateNonNull(expireDateTime, "Expire date time must not be null");
-        return this;
-    }
-    public Type attributes(List<Attribute> attributes) {
+        this.description = description;
+        this.primitive = primitive;
         this.attributes = validateNonNull(attributes, "attributes");
-        return this;
-    }
-    public Type x(int x) {
+        this.parent = parent;
         this.x = validateGreaterThanOrEqualZero(x, "X must be greater than or equal 0");
-        return this;
-    }
-    public Type y(int y) {
         this.y = validateGreaterThanOrEqualZero(y, "Y must be greater than or equal 0");
-        return this;
-    }
-    public Type width(int width) {
         this.width = validateGreaterThanZero(width, "Width must be greater than 0");
-        return this;
-    }
-
-    public Type height(int height) {
         this.height = validateGreaterThanZero(height, "Height must be greater than 0");
-        return this;
-    }
-    public void copyFrom(Type other) {
-        require(other != null, "Other type must not be null");
-        effectDateTime(other.effectDateTime).expireDateTime(other.expireDateTime)
-                .description(other.description).primitive(other.primitive)
-                .attributes(new LinkedList<>(other.attributes)).parent(other.parent)
-                .x(other.x).y(other.y).width(other.width).height(other.height);
+        this.original = original!= null ? original : this;
+        if(state == TypeState.DELETE) this.state = state;
+        else this.state = this.original.equals(this) ? TypeState.NOT_CHANGE : TypeState.CHANGE;
         require(expireDateTime.after(effectDateTime), "Expire date time must be after effect date time");
     }
     private static void require(boolean condition, String message) {
@@ -103,5 +73,8 @@ public class Type {
     private static int validateGreaterThanZero(int value, String message) {
         require(value > 0, message);
         return value;
+    }
+    public enum TypeState {
+        NOT_CHANGE, CHANGE, DELETE
     }
 }

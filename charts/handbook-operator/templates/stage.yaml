@@ -55,6 +55,10 @@ spec:
           as: search-type-image
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-type") }}` }}
+        - uses: compose-output
+          as: validator-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/validator") }}` }}
         - uses: argocd-update
           as: sync
           config:
@@ -83,6 +87,8 @@ spec:
                           value: {{ `${{ outputs['persist-workspace-image'].img.tag }}@${{ outputs['persist-workspace-image'].img.digest }}` }}
                         - key: search-type.image.tag
                           value: {{ `${{ outputs['search-type-image'].img.tag }}@${{ outputs['search-type-image'].img.digest }}` }}
+                        - key: validator.image.tag
+                          value: {{ `${{ outputs['validator-image'].img.tag }}@${{ outputs['validator-image'].img.digest }}` }}
                     repoURL: https://github.com/sayaya1090/handbook.git
   verification:
     analysisTemplates:
@@ -132,7 +138,8 @@ spec:
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-document"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-document"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-workspace"),
-                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-workspace")
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-workspace"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/validator")
                     ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")
                   }
                 }) }}`}}
