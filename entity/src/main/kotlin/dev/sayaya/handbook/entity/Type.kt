@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
 import java.io.Serializable
@@ -16,7 +18,10 @@ import java.util.*
 ]) @Entity
 @IdClass(Type.Companion.TypeId::class)
 internal class Type {
-    @Id @Column(name = "workspace") lateinit var workspace: UUID
+    //@Id @Column(name = "workspace") lateinit var workspace: UUID
+    @Id @ManyToOne @JoinColumn(name = "workspace", insertable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    lateinit var workspace: Workspace
     @Id @Column(name = "id") lateinit var id: UUID
     @Column(length = 64) lateinit var name: String
     lateinit var version: String
@@ -37,7 +42,7 @@ internal class Type {
             val workspace: UUID = UUID.randomUUID(),
             val id: UUID = UUID.randomUUID(),
         ) : Serializable
-        fun of(workspace: UUID, id: UUID=UUID.randomUUID(), user: User, type: String, version: String, parent: String?, effectDateTime: Instant, expireDateTime: Instant) = Type().apply {
+        fun of(workspace: Workspace, id: UUID=UUID.randomUUID(), user: User, type: String, version: String, parent: String?, effectDateTime: Instant, expireDateTime: Instant) = Type().apply {
             this.workspace = workspace
             this.id = id
             this.name = type

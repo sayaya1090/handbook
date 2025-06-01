@@ -214,7 +214,7 @@ CREATE CONSTRAINT TRIGGER prevent_invalid_parent_period_update_trigger
     FOR EACH ROW
 EXECUTE FUNCTION prevent_invalid_parent_period_update();
 
--- Type 버전 관리
+-- Document 버전 관리
 CREATE OR REPLACE FUNCTION update_last_document() RETURNS TRIGGER AS
 $$
 BEGIN
@@ -230,3 +230,20 @@ CREATE TRIGGER set_last_document
     ON document
     FOR EACH ROW
 EXECUTE FUNCTION update_last_document();
+
+-- Document Validation Task 버전 관리
+CREATE OR REPLACE FUNCTION update_last_validation_task() RETURNS TRIGGER AS
+$$
+BEGIN
+    -- 기존 데이터의 last를 false로 업데이트
+    UPDATE validation_task
+    SET last = false
+    WHERE workspace=NEW.workspace AND document=NEW.document AND last=true;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER set_last_validation_task
+    BEFORE INSERT
+    ON validation_task
+    FOR EACH ROW
+EXECUTE FUNCTION update_last_validation_task();

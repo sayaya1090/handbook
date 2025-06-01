@@ -95,11 +95,26 @@ CREATE TABLE IF NOT EXISTS public.document (
     effective_at timestamp(6) with time zone NOT NULL,
     expire_at timestamp(6) with time zone NOT NULL,
     data jsonb NOT NULL,
-    validated_at timestamp(6) with time zone,
-    validation_results jsonb,
     last boolean DEFAULT true NOT NULL,
     PRIMARY KEY (workspace, id)
 ) ;
+
+CREATE TABLE IF NOT EXISTS public.validation_task (
+    workspace uuid NOT NULL,
+    id uuid NOT NULL,
+    document uuid NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    started_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone NOT NULL,
+    results jsonb,
+    status character varying(20) NOT NULL,
+    priority integer NOT NULL,
+    retry_count integer NOT NULL,
+    last_error text,
+    last boolean DEFAULT true NOT NULL,
+    PRIMARY KEY (workspace, id),
+    CONSTRAINT validation_task_status_check CHECK (((status)::text = ANY ((ARRAY['NEW'::character varying, 'PROCESSING'::character varying, 'DONE'::character varying, 'FAILED'::character varying])::text[])))
+);
 
 CREATE TABLE public."group" (
     workspace uuid NOT NULL,

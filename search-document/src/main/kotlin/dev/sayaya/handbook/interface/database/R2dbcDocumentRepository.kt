@@ -32,7 +32,7 @@ class R2dbcDocumentRepository(
     }
     override fun search(param: Search): Mono<Page<Document>> {
         val pageable = createPageRequest(param)
-        return template.search(SqlIdentifier.unquoted("document_with_user"), param.filters, R2dbcDocumentEntity::class.java, pageable)
+        return template.search(SqlIdentifier.unquoted("document_with_validation"), param.filters, R2dbcDocumentEntity::class.java, pageable)
             .map { it.map { toDomain(it) } }
     }
     private fun createPageRequest(param: Search): PageRequest {

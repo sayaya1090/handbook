@@ -42,8 +42,15 @@ internal class TypeChildConsistencyTest(
         em.merge(user)
     }
     Given("단일 워크스페이스에서") {
-        val workspace = UUID.randomUUID()
         When("삭제 시도를 할 때 부모와 자식의 유효기간이 겹치는 경우") {
+            val workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val parentType = Type.of(
                 workspace = workspace,
                 user = user,
@@ -77,13 +84,21 @@ internal class TypeChildConsistencyTest(
             Then("부모를 삭제하면 예외 발생") {
                 val exception = shouldThrow<SQLException> {
                     tx.transactional {
-                        em.createNativeQuery("DELETE FROM type WHERE workspace='$workspace'::uuid AND name='${parentType.name}' AND version='${parentType.version}'").executeUpdate()
+                        em.createNativeQuery("DELETE FROM type WHERE workspace='${workspace.id}'::uuid AND name='${parentType.name}' AND version='${parentType.version}'").executeUpdate()
                     }
                 }
                 exception.message shouldStartWith "ERROR: Cannot delete parent type (name=conflict_parent, version=1.0) as it still has associated children during the period"
             }
         }
         When("삭제하려는 부모의 기간 내 자식 데이터가 없는 경우") {
+            val workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val parentType = Type.of(
                 workspace = workspace,
                 user = user,
@@ -113,22 +128,30 @@ internal class TypeChildConsistencyTest(
                 em.persist(parentTypeNonOverlap)
                 em.persist(childType)
             }
-            val inserted = em.createNativeQuery("SELECT * FROM Type t WHERE workspace='$workspace'::uuid AND t.name = :type", Type::class.java)
+            val inserted = em.createNativeQuery("SELECT * FROM Type t WHERE workspace='${workspace.id}'::uuid AND t.name = :type", Type::class.java)
                 .setParameter("type", "parent")
                 .resultList
             inserted.size shouldBe 2
 
             Then("부모 삭제가 성공해야 한다") {
                 tx.transactional {
-                    em.createNativeQuery("DELETE FROM type WHERE workspace='$workspace'::uuid AND name='${parentTypeNonOverlap.name}' AND version='${parentTypeNonOverlap.version}'").executeUpdate()
+                    em.createNativeQuery("DELETE FROM type WHERE workspace='${workspace.id}'::uuid AND name='${parentTypeNonOverlap.name}' AND version='${parentTypeNonOverlap.version}'").executeUpdate()
                 }
-                val remaining = em.createNativeQuery("SELECT * FROM Type t WHERE workspace='$workspace'::uuid AND t.name = :type", Type::class.java)
+                val remaining = em.createNativeQuery("SELECT * FROM Type t WHERE workspace='${workspace.id}'::uuid AND t.name = :type", Type::class.java)
                     .setParameter("type", "parent")
                     .resultList
                 remaining.size shouldBe 1
             }
         }
         When("부모 타입의 유효기간을 업데이트할 때") {
+            val workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val parentType = Type.of(
                 workspace = workspace,
                 user = user,

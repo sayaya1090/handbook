@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.entity
 
+import dev.sayaya.handbook.entity.TypeVersionOverlapTest.Companion.transactional
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -36,14 +37,20 @@ internal class TypeParentConsistencyTest(
         provider = "handbook"
         account = "system"
     }
-
     tx.transactional {
         ClassPathResource("createTriggers.sql").let { em.execute(it) }  // 트리거 생성
         em.merge(user)
     }
     Given("단일 워크스페이스에서") {
-        val workspace = UUID.randomUUID()
         When("부모 타입이 없는 상태에서 자식 데이터를 삽입하면") {
+            var workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val childType = Type.of(
                 workspace = workspace,
                 user = user,
@@ -55,6 +62,7 @@ internal class TypeParentConsistencyTest(
             Then("예외가 발생해야 한다") {
                 val exception = shouldThrow<SQLException> {
                     tx.transactional {
+                        em.persist(workspace)
                         em.persist(childType)
                     }
                 }
@@ -63,6 +71,14 @@ internal class TypeParentConsistencyTest(
         }
 
         When("부모 타입들의 기간에 gap이 존재하는 경우") {
+            val workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val parentType1 = Type.of(
                 workspace = workspace,
                 user = user,
@@ -79,15 +95,9 @@ internal class TypeParentConsistencyTest(
                 effectDateTime = Instant.parse("2025-07-15T00:00:00Z"), // 기간 중간에 gap이 존재
                 expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
-            val childType = Type.of(
-                workspace = workspace,
-                user = user,
-                type = "child_type_2", parent = "parent_type_gapped",
-                version = "1.0",
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
-            )
+
             tx.transactional {
+                em.persist(workspace)
                 em.persist(parentType1)
                 em.persist(parentType2)
             }
@@ -95,6 +105,14 @@ internal class TypeParentConsistencyTest(
             Then("자식 데이터 삽입이 실패해야 한다") {
                 val exception = shouldThrow<SQLException> {
                     tx.transactional {
+                        val childType = Type.of(
+                            workspace = em.find(Workspace::class.java, workspace.id),
+                            user = user,
+                            type = "child_type_2", parent = "parent_type_gapped",
+                            version = "1.0",
+                            effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                            expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
+                        )
                         em.persist(childType)
                     }
                 }
@@ -103,6 +121,14 @@ internal class TypeParentConsistencyTest(
         }
 
         When("부모 유효 기간이 자식 데이터를 완전히 커버하지 않는 경우") {
+            val workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val parentType = Type.of(
                 workspace = workspace,
                 user = user,
@@ -111,21 +137,22 @@ internal class TypeParentConsistencyTest(
                 effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
                 expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
             )
-            val childType = Type.of(
-                workspace = workspace,
-                user = user,
-                type = "child_type_3", parent = "parent_type_incomplete",
-                version = "1.0",
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-12-31T23:59:59Z") // 자식이 부모 기간을 초과함
-            )
             tx.transactional {
+                em.persist(workspace)
                 em.persist(parentType)
             }
 
             Then("삽입이 실패해야 한다") {
                 val exception = shouldThrow<SQLException> {
                     tx.transactional {
+                        val childType = Type.of(
+                            workspace = em.find(Workspace::class.java, workspace.id),
+                            user = user,
+                            type = "child_type_3", parent = "parent_type_incomplete",
+                            version = "1.0",
+                            effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                            expireDateTime = Instant.parse("2025-12-31T23:59:59Z") // 자식이 부모 기간을 초과함
+                        )
                         em.persist(childType)
                     }
                 }
@@ -134,6 +161,14 @@ internal class TypeParentConsistencyTest(
         }
 
         When("유효한 부모 데이터가 삽입되고 자식 데이터도 유효한 경우") {
+            val workspace = Workspace().apply {
+                id=UUID.randomUUID()
+                name="Workspace"
+                createBy=user
+                createDateTime=Instant.now()
+                lastModifyBy=user
+                lastModifyDateTime=Instant.now()
+            }
             val validParentType = Type.of(
                 workspace = workspace,
                 user = user,
@@ -142,24 +177,25 @@ internal class TypeParentConsistencyTest(
                 effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
                 expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
             )
-            val validChildType = Type.of(
-                workspace = workspace,
-                user = user,
-                type = "child_type_4", parent = "parent_type_valid",
-                version = "1.0",
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
-            )
             tx.transactional {
+                em.persist(workspace)
                 em.persist(validParentType)
             }
 
             Then("삽입이 성공해야 한다") {
                 tx.transactional {
+                    val validChildType = Type.of(
+                        workspace = em.find(Workspace::class.java, workspace.id),
+                        user = user,
+                        type = "child_type_4", parent = "parent_type_valid",
+                        version = "1.0",
+                        effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                        expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
+                    )
                     em.persist(validChildType)
                 }
 
-                val results = em.createNativeQuery("SELECT * FROM Type t WHERE workspace='$workspace'::uuid AND t.name = :type", Type::class.java)
+                val results = em.createNativeQuery("SELECT * FROM Type t WHERE workspace='${workspace.id}'::uuid AND t.name = :type", Type::class.java)
                     .setParameter("type", "child_type_4")
                     .resultList
                 results.size shouldBe 1

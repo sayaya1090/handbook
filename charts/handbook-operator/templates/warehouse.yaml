@@ -73,6 +73,12 @@ spec:
         insecureSkipTLSVerify: true
         repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/validator'
         strictSemvers: true
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/event-broadcaster'
+        strictSemvers: true
     - git:
         repoURL: https://github.com/sayaya1090/handbook.git
         branch: main

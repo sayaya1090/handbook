@@ -48,32 +48,42 @@ internal class TypeVersionOverlapTest(
         return result.map { "${ it.id } ${ it.name } ${ it.version } -> ${ it.effectDateTime } ~ ${ it.expireDateTime } ${ it.last }" }
     }
     Given("단일 워크스페이스에서") {
-        val workspace = UUID.randomUUID()
+        var workspace = Workspace().apply {
+            id=UUID.randomUUID()
+            name="Workspace"
+            createBy=user
+            createDateTime=Instant.now()
+            lastModifyBy=user
+            lastModifyDateTime=Instant.now()
+        }
+        tx.transactional {
+            em.persist(workspace)
+        }
         When("겹치지 않는 기간의 데이터가 삽입되면") {
-            val typeVersion1 = Type.of(
-                workspace = workspace,
-                user = user,
-                type = "type_1", parent=null,
-                version = "1.0",
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
-            )
-            val typeVersion2 = Type.of(
-                workspace = workspace,
-                user = user,
-                type = "type_1", parent=null,
-                version = "2.0",
-                effectDateTime = Instant.parse("2024-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2024-12-31T23:59:59Z")
-            )
-
             tx.transactional {
+                var workspace = em.find(Workspace::class.java, workspace.id)
+                val typeVersion1 = Type.of(
+                    workspace = workspace,
+                    user = user,
+                    type = "type_1", parent=null,
+                    version = "1.0",
+                    effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                    expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
+                )
+                val typeVersion2 = Type.of(
+                    workspace = workspace,
+                    user = user,
+                    type = "type_1", parent=null,
+                    version = "2.0",
+                    effectDateTime = Instant.parse("2024-01-01T00:00:00Z"),
+                    expireDateTime = Instant.parse("2024-12-31T23:59:59Z")
+                )
                 em.persist(typeVersion1)
                 em.persist(typeVersion2)
             }
 
             Then("두 데이터가 정상 저장된다") {
-                val results = em.createNativeQuery ("SELECT * FROM Type t WHERE workspace='$workspace'::uuid AND t.name = :type AND t.last = true", Type::class.java)
+                val results = em.createNativeQuery ("SELECT * FROM Type t WHERE workspace='${workspace.id}'::uuid AND t.name = :type AND t.last = true", Type::class.java)
                     .setParameter("type", "type_1")
                     .resultList
                 results.size shouldBe 2
@@ -82,20 +92,21 @@ internal class TypeVersionOverlapTest(
         }
 
         When("겹치는 기간의 데이터를 삽입하면") {
-            val overlappingTypeVersion = Type.of(
-                workspace = workspace,
-                user = user,
-                type = "type_1", parent=null,
-                version = "3.0",
-                effectDateTime = Instant.parse("2025-06-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-12-01T23:59:59Z")
-            )
-            Then("트리거에 의해 예외가 발생해야 한다") {
-                val exception = shouldThrow<SQLException> {
-                    tx.transactional {
-                        em.persist(overlappingTypeVersion)
-                    }
+            val exception = shouldThrow<SQLException> {
+                tx.transactional {
+                    var workspace = em.find(Workspace::class.java, workspace.id)
+                    val overlappingTypeVersion = Type.of(
+                        workspace = workspace,
+                        user = user,
+                        type = "type_1", parent = null,
+                        version = "3.0",
+                        effectDateTime = Instant.parse("2025-06-01T00:00:00Z"),
+                        expireDateTime = Instant.parse("2025-12-01T23:59:59Z")
+                    )
+                    em.persist(overlappingTypeVersion)
                 }
+            }
+            Then("트리거에 의해 예외가 발생해야 한다") {
                 exception.message shouldStartWith "ERROR: Overlapping periods are not allowed for type: type_1, effective_at:" // 메시지 검증
             }
         }

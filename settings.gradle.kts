@@ -67,6 +67,8 @@ dependencyResolutionManagement {
             ).withoutVersion()
             bundle("spring-client", listOf("spring-log4j2", "spring-security"))
 
+            library("spring-kafka", "org.springframework.cloud", "spring-cloud-starter-stream-kafka").withoutVersion()
+
             library("r2dbc", "org.springframework.boot", "spring-boot-starter-data-r2dbc").withoutVersion()
             library("r2dbc-postgres", "org.postgresql", "r2dbc-postgresql").withoutVersion()
             library("r2dbc-pool", "io.r2dbc", "r2dbc-pool").withoutVersion()
@@ -108,6 +110,7 @@ dependencyResolutionManagement {
                 "io.kotest.extensions",
                 "kotest-extensions-testcontainers"
             ).version { require("2.0.2") }
+            library("testcontainers-kafka", "org.testcontainers", "kafka").version { require("1.21.1") }
             bundle("test-containers", listOf("testcontainers-junit", "kotest-extensions-testcontainers"))
 
             library("elemento-core", "org.jboss.elemento", "elemento-core").version { require("1.7.0") }
@@ -170,3 +173,4 @@ include("persist-document")
 include("search-document")
 include("document-ui")
 include("validator")
+include("event-broadcaster")
