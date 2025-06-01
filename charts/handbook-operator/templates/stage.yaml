@@ -59,6 +59,10 @@ spec:
           as: validator-image
           config:
             img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/validator") }}` }}
+        - uses: compose-output
+          as: event-broadcaster-image
+          config:
+            img: {{ `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/event-broadcaster") }}` }}
         - uses: argocd-update
           as: sync
           config:
@@ -89,6 +93,8 @@ spec:
                           value: {{ `${{ outputs['search-type-image'].img.tag }}@${{ outputs['search-type-image'].img.digest }}` }}
                         - key: validator.image.tag
                           value: {{ `${{ outputs['validator-image'].img.tag }}@${{ outputs['validator-image'].img.digest }}` }}
+                        - key: event-broadcaster.image.tag
+                          value: {{ `${{ outputs['event-broadcaster-image'].img.tag }}@${{ outputs['event-broadcaster-image'].img.digest }}` }}
                     repoURL: https://github.com/sayaya1090/handbook.git
   verification:
     analysisTemplates:
@@ -139,7 +145,8 @@ spec:
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-document"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/search-workspace"),
                       imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/persist-workspace"),
-                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/validator")
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/validator"),
+                      imageFrom("image-registry.openshift-image-registry.svc:5000/handbook-operator/event-broadcaster")
                     ],"commit": commitFrom("https://github.com/sayaya1090/handbook.git")
                   }
                 }) }}`}}

@@ -97,3 +97,12 @@ metadata:
 spec:
   lookupPolicy:
     local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: event-broadcaster
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
