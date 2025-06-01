@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.entity
 
+import dev.sayaya.handbook.entity.TypeVersionOverlapTest.Companion.transactional
 import dev.sayaya.handbook.testcontainer.Database
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -44,35 +45,55 @@ internal class TypeWorkspaceIsolationTest(
         em.merge(user)
     }
     Given("서로 다른 워크스페이스에서") {
-        val workspace1 = UUID.randomUUID()
-        val workspace2 = UUID.randomUUID()
+        var workspace1 = Workspace().apply {
+            id=UUID.randomUUID()
+            name="Workspace"
+            createBy=user
+            createDateTime=Instant.now()
+            lastModifyBy=user
+            lastModifyDateTime=Instant.now()
+        }
+        var workspace2 = Workspace().apply {
+            id=UUID.randomUUID()
+            name="Workspace"
+            createBy=user
+            createDateTime=Instant.now()
+            lastModifyBy=user
+            lastModifyDateTime=Instant.now()
+        }
+        tx.transactional {
+            workspace1 = em.merge(workspace1)
+            workspace2 = em.merge(workspace2)
+        }
         When("동일한 이름의 타입을 저장하면") {
-            val parentType1 = Type.of(
-                workspace = workspace1,
-                user = user,
-                type = "same_type_name",
-                version = "1.0", parent = null,
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
-            )
-
-            val parentType2 = Type.of(
-                workspace = workspace2,
-                user = user,
-                type = "same_type_name", // 동일한 이름
-                version = "1.0", parent = null,   // 동일한 버전
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
-            )
-            parentType1.workspace shouldNotBe parentType2.workspace
-            parentType1.name shouldBe parentType2.name
-            parentType1.version shouldBe parentType2.version
-
+            lateinit var parentType1: Type
+            lateinit var parentType2: Type
+            tx.transactional {
+                var workspace1 = em.find(Workspace::class.java, workspace1.id)
+                var workspace2 = em.find(Workspace::class.java, workspace2.id)
+                parentType1 = Type.of(
+                    workspace = workspace1,
+                    user = user,
+                    type = "same_type_name",
+                    version = "1.0", parent = null,
+                    effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                    expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
+                )
+                parentType2 = Type.of(
+                    workspace = workspace2,
+                    user = user,
+                    type = "same_type_name", // 동일한 이름
+                    version = "1.0", parent = null,   // 동일한 버전
+                    effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                    expireDateTime = Instant.parse("2025-06-30T23:59:59Z")
+                )
+                parentType1.workspace shouldNotBe parentType2.workspace
+                parentType1.name shouldBe parentType2.name
+                parentType1.version shouldBe parentType2.version
+                em.persist(parentType1)
+                em.persist(parentType2)
+            }
             Then("저장되어야 함") {
-                tx.transactional {
-                    em.persist(parentType1)
-                    em.persist(parentType2)
-                }
                 em.createQuery("SELECT t FROM Type t WHERE t.name = :type AND version = :version", Type::class.java)
                   .setParameter("type", parentType1.name)
                   .setParameter("version", parentType1.version)
@@ -84,7 +105,7 @@ internal class TypeWorkspaceIsolationTest(
                         UPDATE type 
                         SET expire_at = '2025-07-31T23:59:59Z'
                         WHERE workspace=:workspace AND name=:type AND version=:version
-                    """).setParameter("workspace", workspace1)
+                    """).setParameter("workspace", workspace1.id)
                         .setParameter("type", parentType1.name)
                         .setParameter("version", parentType1.version)
                         .executeUpdate()
@@ -94,7 +115,7 @@ internal class TypeWorkspaceIsolationTest(
                     val parentInWorkspace1After = em.createNativeQuery(
                         "SELECT * FROM Type t WHERE workspace=:workspace AND name=:type AND version=:version",
                         Type::class.java
-                    ).setParameter("workspace", workspace1)
+                    ).setParameter("workspace", workspace1.id)
                      .setParameter("type", parentType1.name)
                      .setParameter("version", parentType1.version).resultList.first() as Type
                     parentInWorkspace1After.expireDateTime.toString() shouldBe "2025-07-31T23:59:59Z"
@@ -104,7 +125,7 @@ internal class TypeWorkspaceIsolationTest(
                     val parentInWorkspace2After = em.createNativeQuery(
                         "SELECT * FROM Type t WHERE workspace=:workspace AND name=:type AND version=:version",
                         Type::class.java
-                    ).setParameter("workspace", workspace2)
+                    ).setParameter("workspace", workspace2.id)
                      .setParameter("type", parentType1.name)
                      .setParameter("version", parentType1.version).resultList.first() as Type
                     parentInWorkspace2After.expireDateTime.toString() shouldBe "2025-06-30T23:59:59Z"
@@ -114,7 +135,7 @@ internal class TypeWorkspaceIsolationTest(
                 tx.transactional {
                     em.createNativeQuery(
                         "DELETE FROM type WHERE workspace=:workspace AND name=:type AND version=:version"
-                    ).setParameter("workspace", workspace1)
+                    ).setParameter("workspace", workspace1.id)
                      .setParameter("type", parentType1.name)
                      .setParameter("version", parentType1.version)
                      .executeUpdate()
@@ -123,7 +144,7 @@ internal class TypeWorkspaceIsolationTest(
                     em.createNativeQuery(
                         "SELECT * FROM Type t WHERE workspace=:workspace AND name=:type AND version=:version",
                         Type::class.java
-                    ).setParameter("workspace", workspace1)
+                    ).setParameter("workspace", workspace1.id)
                      .setParameter("type", parentType1.name)
                      .setParameter("version", parentType1.version)
                      .resultList.size shouldBe 0  // 삭제됨
@@ -132,7 +153,7 @@ internal class TypeWorkspaceIsolationTest(
                     em.createNativeQuery(
                         "SELECT * FROM Type t WHERE workspace=:workspace AND name=:type AND version=:version",
                         Type::class.java
-                    ).setParameter("workspace", workspace2)
+                    ).setParameter("workspace", workspace2.id)
                      .setParameter("type", parentType1.name)
                      .setParameter("version", parentType1.version)
                      .resultList.size shouldBe 1  // 여전히 존재
@@ -140,33 +161,34 @@ internal class TypeWorkspaceIsolationTest(
             }
         }
         When("다른 워크스페이스의 부모를 참조하는 자식 타입 생성 시") {
-            val parentTypeInWorkspace1 = Type.of(
-                workspace = workspace1,
-                user = user,
-                type = "parent_type_from_workspace1",
-                version = "1.0", parent = null,
-                effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
-            )
-
+            lateinit var parentTypeInWorkspace1: Type
             tx.transactional {
+                var workspace1 = em.find(Workspace::class.java, workspace1.id)
+                parentTypeInWorkspace1 = Type.of(
+                    workspace = workspace1,
+                    user = user,
+                    type = "parent_type_from_workspace1",
+                    version = "1.0", parent = null,
+                    effectDateTime = Instant.parse("2025-01-01T00:00:00Z"),
+                    expireDateTime = Instant.parse("2025-12-31T23:59:59Z")
+                )
                 em.persist(parentTypeInWorkspace1)
             }
-
-            val childTypeInWorkspace2 = Type.of(
-                workspace = workspace2,
-                user = user,
-                type = "cross_workspace_child",
-                version = "1.0", parent = "parent_type_from_workspace1",
-                effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
-                expireDateTime = Instant.parse("2025-09-30T23:59:59Z")
-            )
-
-            childTypeInWorkspace2.parent shouldBe parentTypeInWorkspace1.name
 
             Then("예외가 발생해야 함") {
                 val exception = shouldThrow<SQLException> {
                     tx.transactional {
+                        var workspace2 = em.find(Workspace::class.java, workspace2.id)
+                        val childTypeInWorkspace2 = Type.of(
+                            workspace = workspace2,
+                            user = user,
+                            type = "cross_workspace_child",
+                            version = "1.0", parent = "parent_type_from_workspace1",
+                            effectDateTime = Instant.parse("2025-03-01T00:00:00Z"),
+                            expireDateTime = Instant.parse("2025-09-30T23:59:59Z")
+                        )
+
+                        childTypeInWorkspace2.parent shouldBe parentTypeInWorkspace1.name
                         em.persist(childTypeInWorkspace2)
                     }
                 }

@@ -9,6 +9,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.type.SqlTypes
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
@@ -23,7 +25,9 @@ import java.util.UUID
 ]) @Entity
 @IdClass(Document.Companion.DocumentId::class)
 internal class Document {
-    @Id @Column(name = "workspace") lateinit var workspace: UUID
+    @Id @ManyToOne @JoinColumn(name = "workspace", insertable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    lateinit var workspace: Workspace
     @Id @Column(name = "id") lateinit var id: UUID
     @Column(length = 64) lateinit var type: String
     @Column(length = 128) lateinit var serial: String
@@ -34,10 +38,6 @@ internal class Document {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "data", columnDefinition = "jsonb", nullable = false)
     lateinit var data: Serializable
-    @Column(name = "validated_at") var validateDateTime: Instant? = null
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "validation_results", columnDefinition = "jsonb")
-    var validationResults: Map<String, Boolean>? = null
 
     @Column(name="\"last\"", nullable = false, columnDefinition = "boolean DEFAULT true") var last: Boolean = true
     companion object {
@@ -45,7 +45,7 @@ internal class Document {
             val workspace: UUID = UUID.randomUUID(),
             val id: UUID = UUID.randomUUID(),
         ) : Serializable
-        fun of(workspace: UUID, id: UUID=UUID.randomUUID(), user: User, type: String, serial: String) = Document().apply {
+        fun of(workspace: Workspace, id: UUID=UUID.randomUUID(), user: User, type: String, serial: String) = Document().apply {
             this.workspace = workspace
             this.id = id
             this.type = type

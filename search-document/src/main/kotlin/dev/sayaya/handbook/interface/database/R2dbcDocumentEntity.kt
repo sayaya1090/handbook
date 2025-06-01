@@ -6,8 +6,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.UUID
 
-
-@Table("document_with_user")
+@Table("document_with_validation")
 class R2dbcDocumentEntity(
     val workspace: UUID,
     val id: UUID,
@@ -19,5 +18,9 @@ class R2dbcDocumentEntity(
     @Column("created_by") val creatorUserId: UUID,
     @Column("creator_name") val creatorUserName: String,
     val data: Json,
+    @Column("validation_requested_at") val validationRequestDateTime: Instant?,
+    @Column("validation_started_at") val validationStartDateTime: Instant?,
+    @Column("validation_status") val validationStatus: String?,
+    @Column("validation_results") val validationResult: Json?,
     override val count: Long = -1
 ): EntityPageable

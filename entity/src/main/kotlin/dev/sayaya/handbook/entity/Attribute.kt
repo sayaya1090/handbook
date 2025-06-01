@@ -21,12 +21,12 @@ internal class Attribute {
     fun name() = id.name
     fun type(newType: Type) {
         typeObj = newType
-        id = if (::id.isInitialized) AttributeId(workspace = newType.workspace, typeId = newType.id, name = id.name)
-        else AttributeId(workspace = newType.workspace, typeId = newType.id, name = "")
+        id = if (::id.isInitialized) AttributeId(workspace = newType.workspace.id, typeId = newType.id, name = id.name)
+        else AttributeId(workspace = newType.workspace.id, typeId = newType.id, name = "")
     }
     fun type() = typeObj
     fun name(newName: String) {
-        id = if (::typeObj.isInitialized) AttributeId(workspace = typeObj.workspace, typeId = typeObj.id, name = newName)
+        id = if (::typeObj.isInitialized) AttributeId(workspace = typeObj.workspace.id, typeId = typeObj.id, name = newName)
         else AttributeId(workspace = UUID.randomUUID(), typeId = UUID.randomUUID(), name = newName)
     }
     @JdbcTypeCode(SqlTypes.JSON)
