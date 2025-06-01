@@ -4,7 +4,7 @@ import dev.sayaya.handbook.usecase.Broadcaster
 import org.springframework.stereotype.Component
 import java.util.function.Consumer
 
-@Component("handbook")
+@Component("event")
 class EventMessageListener(private val emitter: Broadcaster): Consumer<String> {
     override fun accept(event: String) = emitter.broadcast(event)
 }

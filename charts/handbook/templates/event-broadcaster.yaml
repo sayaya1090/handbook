@@ -17,6 +17,14 @@ data:
           - classpath:postgresql.yaml
           - classpath:observability.yaml
           - classpath:authentication.yaml
+          - classpath:kafka.yaml
+      cloud:
+        function:
+          definition: event
+        stream:
+          bindings:
+            event-in-0:
+              destination: event
     management:
       endpoint:
         health:
@@ -48,8 +56,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/event-broadcaster'
-    configmap.reloader.stakater.com/reload: "event-broadcaster,postgresql-rw,observability,authentication"
-    secret.reloader.stakater.com/reload: "postgresql-app"
+    configmap.reloader.stakater.com/reload: "event-broadcaster,postgresql-ro,observability,authentication,kafka"
   name: event-broadcaster
   namespace: {{ .Release.Namespace }}
   finalizers:
@@ -84,7 +91,7 @@ spec:
             defaultMode: 420
         - name: postgres-config
           configMap:
-            name: postgresql-rw
+            name: postgresql-ro
             defaultMode: 420
         - name: observability-config
           configMap:
@@ -93,6 +100,10 @@ spec:
         - name: authentication-config
           configMap:
             name: authentication
+            defaultMode: 420
+        - name: kafka-config
+          configMap:
+            name: kafka
             defaultMode: 420
       containers:
         - name: event-broadcaster
@@ -141,6 +152,9 @@ spec:
             - name: authentication-config
               mountPath: /app/resources/authentication.yaml
               subPath: authentication.yaml
+            - name: kafka-config
+              mountPath: /app/resources/kafka.yaml
+              subPath: kafka.yaml
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

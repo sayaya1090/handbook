@@ -18,7 +18,6 @@ dependencies {
     testImplementation(testFixtures(project(":testcontainer")))
     testImplementation(testFixtures(project(":entity")))
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.testcontainers.kafka)
 }
 configurations { all { exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging") } }
 dependencyManagement { imports { mavenBom(libs.spring.cloud.bom.get().toString()) } }

@@ -17,6 +17,8 @@ data:
           - classpath:postgresql.yaml
           - classpath:observability.yaml
           - classpath:authentication.yaml
+          - classpath:kafka.yaml
+          - classpath:event-topic-publisher.yaml
     management:
       endpoint:
         health:
@@ -39,7 +41,6 @@ spec:
       port: 80
       targetPort: 8080
 
-
 ---
 
 kind: Deployment
@@ -49,7 +50,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/persist-workspace'
-    configmap.reloader.stakater.com/reload: "persist-workspace,postgresql-rw,observability,authentication"
+    configmap.reloader.stakater.com/reload: "persist-workspace,postgresql-rw,observability,authentication,kafka,event-topic-publisher"
     secret.reloader.stakater.com/reload: "postgresql-app"
   name: persist-workspace
   namespace: {{ .Release.Namespace }}
@@ -94,6 +95,14 @@ spec:
         - name: authentication-config
           configMap:
             name: authentication
+            defaultMode: 420
+        - name: kafka-config
+          configMap:
+            name: kafka
+            defaultMode: 420
+        - name: event-topic-publisher-config
+          configMap:
+            name: event-topic-publisher
             defaultMode: 420
       containers:
         - name: persist-workspace
@@ -142,6 +151,12 @@ spec:
             - name: authentication-config
               mountPath: /app/resources/authentication.yaml
               subPath: authentication.yaml
+            - name: kafka-config
+              mountPath: /app/resources/kafka.yaml
+              subPath: kafka.yaml
+            - name: event-topic-publisher-config
+              mountPath: /app/resources/event-topic-publisher.yaml
+              subPath: event-topic-publisher.yaml
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

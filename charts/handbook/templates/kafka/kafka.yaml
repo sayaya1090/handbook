@@ -1,0 +1,57 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+spec:
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  kafka:
+    config:
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      offsets.topic.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      transaction.state.log.replication.factor: 3
+      cluster.id: {{ .Release.Namespace }}
+    listeners:
+      - name: plain
+        port: 9092
+        tls: FALSE
+        type: internal
+      - name: tls
+        port: 9093
+        tls: TRUE
+        type: internal
+    version: 3.9.0
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: kafka-pool
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: kafka # Kafka 리소스의 이름과 일치해야 함
+spec:
+  replicas: 3 # 이 노드 풀에 속하는 노드의 수
+  roles:
+    - controller
+    - broker
+  storage:
+    type: ephemeral
+---
+kind: Console
+apiVersion: console.streamshub.github.com/v1alpha1
+metadata:
+  name: kafka-ui
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostname: {{ .Release.Namespace }}-kafka.apps.sayaya.cloud
+  kafkaClusters:
+    - name: kafka
+      namespace: {{ .Release.Namespace }}
+      listener: plain
