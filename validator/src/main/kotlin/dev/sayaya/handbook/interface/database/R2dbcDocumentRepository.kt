@@ -17,7 +17,6 @@ class R2dbcDocumentRepository(
     private val template: R2dbcEntityTemplate,
     private val objectMapper: ObjectMapper
 ): DocumentRepository {
-    @Transactional(readOnly = true)
     override fun findByType(workspace: UUID, type: String, effectDateTime: Instant, expireDateTime: Instant): Flux<Document> = template.select(
         query(where("workspace").`is`(workspace)
             .and("type").`is`(type)
