@@ -17,7 +17,7 @@ class ValidationRequestService(
 ) {
     fun request(event: TypeEvent): Disposable = repo.findByType(event.workspace, event.param.id, event.param.effectDateTime, event.param.expireDateTime)
         .collectList()
-        .delayUntil { tasks.expire(it) }
+        .delayUntil { tasks.expire(event.workspace, it) }
         .flatMapMany { Flux.fromIterable(it) }
         .parallel().runOn(virtualThreadScheduler)
         .flatMap { document ->

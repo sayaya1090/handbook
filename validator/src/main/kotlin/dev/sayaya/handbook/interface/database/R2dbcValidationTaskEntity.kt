@@ -1,13 +1,26 @@
 package dev.sayaya.handbook.`interface`.database
 
+import io.r2dbc.postgresql.codec.Json
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
+import java.time.Instant
 import java.util.UUID
 
 @Table("validation_task")
 data class R2dbcValidationTaskEntity (
     val workspace: UUID,
-    val id: UUID,
+    @Id val id: UUID,
     val document: UUID,
 ) {
-
+    val results: Json? = null
+    var status: String = "NEW"
+    var priority: Int = 0
+    @CreatedDate @Column("created_at") lateinit var createDateTime: Instant
+    @Column("started_at") var startDateTime: Instant? = null
+    @LastModifiedDate @Column("updated_at") lateinit var updateDateTime: Instant
+    var retryCount: Int = 0
+    var lastError: String? = null
 }

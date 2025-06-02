@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 @Service
 class ValidatorService {
     fun validate(event: DocumentEvent) {
-        println(event)
+        val document = event.param
+
     }
 }

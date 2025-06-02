@@ -13,6 +13,8 @@ dependencies {
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
     implementation(libs.spring.kafka)
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
     testImplementation(testFixtures(project(":testcontainer")))
     testImplementation(testFixtures(project(":entity")))
     testImplementation(libs.testcontainers.postgresql)
