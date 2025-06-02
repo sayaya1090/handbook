@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Namespace }}-redis
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: {{ .Release.Namespace }}
+    server: 'https://kubernetes.default.svc'
+  project: handbook
+  revisionHistoryLimit: 0
+  syncPolicy:
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    chart: redis-cluster
+    repoURL: registry-1.docker.io/bitnamicharts
+    targetRevision: '*'
+    helm:
+      valuesObject:
+        fullnameOverride: redis

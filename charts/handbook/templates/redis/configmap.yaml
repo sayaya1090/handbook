@@ -1,0 +1,16 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+data:
+  redis.yaml: |
+    spring:
+      data:
+        redis:
+          password: ${redis.password}
+          cluster:
+            nodes:
+              - redis-0.redis-headless.{{ .Release.Namespace }}.svc.cluster.local:6379
+              - redis-1.redis-headless.{{ .Release.Namespace }}.svc.cluster.local:6379
+              - redis-2.redis-headless.{{ .Release.Namespace }}.svc.cluster.local:6379

@@ -17,6 +17,7 @@ data:
           - classpath:postgresql.yaml
           - classpath:observability.yaml
           - classpath:kafka.yaml
+          - classpath:redis.yaml
       cloud:
         function:
           definition: event;validate-request;request-listener
@@ -52,7 +53,6 @@ spec:
       port: 80
       targetPort: 8080
 
-
 ---
 
 kind: Deployment
@@ -62,8 +62,8 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/validator'
-    configmap.reloader.stakater.com/reload: "validator,postgresql-ro,observability,kafka"
-    secret.reloader.stakater.com/reload: "postgresql-app"
+    configmap.reloader.stakater.com/reload: "validator,postgresql-rw,observability,kafka,redis"
+    secret.reloader.stakater.com/reload: "postgresql-app,redis-password"
   name: validator
   namespace: {{ .Release.Namespace }}
   finalizers:
@@ -98,7 +98,7 @@ spec:
             defaultMode: 420
         - name: postgres-config
           configMap:
-            name: postgresql-ro
+            name: postgresql-rw
             defaultMode: 420
         - name: observability-config
           configMap:
@@ -107,6 +107,10 @@ spec:
         - name: kafka-config
           configMap:
             name: kafka
+            defaultMode: 420
+        - name: redis-config
+          configMap:
+            name: redis
             defaultMode: 420
       containers:
         - name: validator
@@ -128,6 +132,11 @@ spec:
                 secretKeyRef:
                   key: password
                   name: postgresql-app
+            - name: redis.password
+              valueFrom:
+                secretKeyRef:
+                  name: redis
+                  key: redis-password
             - name: TZ
               value: Asia/Seoul
           resources:
@@ -150,6 +159,9 @@ spec:
             - name: kafka-config
               mountPath: /app/resources/kafka.yaml
               subPath: kafka.yaml
+            - name: redis-config
+              mountPath: /app/resources/redis.yaml
+              subPath: redis.yaml
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
