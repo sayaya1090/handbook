@@ -10,12 +10,14 @@ import reactor.core.scheduler.Scheduler
 
 @Service
 class ValidationRequestService(
+    private val cache: TypeRepository,
     private val repo: DocumentRepository,
     private val tasks: ValidationTaskRepository,
     private val queue: TaskQueue,
     @Qualifier(SchedulerConfig.VIRTUAL_THREAD_SCHEDULER_BEAN_NAME) private val virtualThreadScheduler: Scheduler
 ) {
-    fun request(event: TypeEvent): Disposable = repo.findByType(event.workspace, event.param.id, event.param.effectDateTime, event.param.expireDateTime)
+    fun request(event: TypeEvent): Disposable = cache.cache(event.workspace, event.param)
+        .thenMany(repo.findByType(event.workspace, event.param.id, event.param.effectDateTime, event.param.expireDateTime))
         .collectList()
         .delayUntil { tasks.expire(event.workspace, it) }
         .flatMapMany { Flux.fromIterable(it) }
