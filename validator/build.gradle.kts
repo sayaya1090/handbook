@@ -9,7 +9,6 @@ plugins {
 }
 dependencies {
     implementation(project(":domain"))
-    implementation(project(":authentication"))
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
