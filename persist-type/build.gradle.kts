@@ -13,10 +13,12 @@ dependencies {
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
+    implementation(libs.spring.kafka)
     implementation("com.github.f4b6a3:ulid-creator:5.2.3")
     testImplementation(testFixtures(project(":testcontainer")))
     testImplementation(testFixtures(project(":entity")))
     testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.kafka)
 }
 configurations { all { exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging") } }
 dependencyManagement { imports { mavenBom(libs.spring.cloud.bom.get().toString()) } }
