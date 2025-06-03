@@ -7,7 +7,6 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria.where
 import org.springframework.data.relational.core.query.Query.query
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import java.time.Instant
 import java.util.UUID
@@ -17,7 +16,6 @@ class R2dbcDocumentRepository(
     private val template: R2dbcEntityTemplate,
     private val objectMapper: ObjectMapper
 ): DocumentRepository {
-    @Transactional(readOnly = true)
     override fun findByType(workspace: UUID, type: String, effectDateTime: Instant, expireDateTime: Instant): Flux<Document> = template.select(
         query(where("workspace").`is`(workspace)
             .and("type").`is`(type)

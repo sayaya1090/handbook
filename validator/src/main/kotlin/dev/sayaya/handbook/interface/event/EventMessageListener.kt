@@ -7,6 +7,7 @@ import dev.sayaya.handbook.domain.event.TypeEvent
 import dev.sayaya.handbook.usecase.ValidationRequestService
 import dev.sayaya.handbook.usecase.ValidatorService
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.util.function.Consumer
 
 @Component("event")
@@ -15,6 +16,7 @@ class EventMessageListener(
     private val requester: ValidationRequestService,
     private val om: ObjectMapper
 ): Consumer<String> {
+    @Transactional
     override fun accept(event: String) = synchronized(this) {
         try {
             val event = om.readValue(event, Event::class.java)
