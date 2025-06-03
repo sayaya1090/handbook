@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import reactor.core.Disposable
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.scheduler.Scheduler
 
 @Service
@@ -16,7 +17,7 @@ class ValidationRequestService(
     private val queue: TaskQueue,
     @Qualifier(SchedulerConfig.VIRTUAL_THREAD_SCHEDULER_BEAN_NAME) private val virtualThreadScheduler: Scheduler
 ) {
-    fun request(event: TypeEvent): Disposable = cache.cache(event.workspace, event.param)
+    fun request(event: TypeEvent): Mono<Void> = cache.cache(event.workspace, event.param)
         .thenMany(repo.findByType(event.workspace, event.param.id, event.param.effectDateTime, event.param.expireDateTime))
         .collectList()
         .delayUntil { tasks.expire(event.workspace, it) }
@@ -24,5 +25,5 @@ class ValidationRequestService(
         .parallel().runOn(virtualThreadScheduler)
         .flatMap { document ->
             queue.publish(event.workspace, document)
-        }.then().subscribe()
+        }.then()
 }
