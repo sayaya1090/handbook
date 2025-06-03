@@ -6,6 +6,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
 import java.util.UUID
 
@@ -15,6 +16,7 @@ class R2dbcValidationTaskRepository (
 ): ValidationTaskRepository {
     private val databaseClient = template.databaseClient
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
+    @Transactional
     override fun expire(workspace: UUID, documents: List<Document>): Mono<Void> {
         val values = buildString {
             documents.joinTo(this, separator = ",") { "(${it.toCsv(workspace)})" }
