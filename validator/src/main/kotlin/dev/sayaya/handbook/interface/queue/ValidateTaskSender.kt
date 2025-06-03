@@ -31,6 +31,7 @@ class ValidateTaskSender(private val om: ObjectMapper): TaskQueue {
             type = Event.EventType.UPDATE_DOCUMENT,
             param=document
         )
+        logger.info("Publishing event for document: $document")
         if (buffer.tryEmitNext(event).isSuccess) Mono.empty()
         else Mono.error(IllegalStateException("Failed to emit event for document: $document"))
     }
