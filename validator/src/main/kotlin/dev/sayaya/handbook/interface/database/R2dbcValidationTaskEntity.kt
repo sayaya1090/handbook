@@ -15,7 +15,7 @@ data class R2dbcValidationTaskEntity (
     @Id val id: UUID,
     val document: UUID,
 ) {
-    val results: Json? = null
+    var results: Json? = null
     var status: String = "NEW"
     var priority: Int = 0
     @CreatedDate @Column("created_at") lateinit var createDateTime: Instant

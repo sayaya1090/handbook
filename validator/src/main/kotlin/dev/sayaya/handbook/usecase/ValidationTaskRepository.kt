@@ -6,4 +6,5 @@ import java.util.UUID
 
 interface ValidationTaskRepository {
     fun expire(workspace: UUID, documents: List<Document>): Mono<Void>
+    fun save(workspace: UUID, document: Document, result: Map<String, Boolean>): Mono<Void>
 }
