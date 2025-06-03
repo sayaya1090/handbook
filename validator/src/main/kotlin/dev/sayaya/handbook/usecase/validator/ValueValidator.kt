@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 @Component
 class ValueValidator: AttributeValidator<AttributeTypeDefinition.Companion.ValueType> {
     override val supportedAttributeType = AttributeTypeDefinition.Companion.ValueType::class
-    override fun validate(definition: AttributeTypeDefinition.Companion.ValueType, value: Any?): Boolean {
+    override fun validate(value: Any?, definition: AttributeTypeDefinition.Companion.ValueType): Boolean {
         return definition.validators.none { def ->
             def.validate(value).not()
         }

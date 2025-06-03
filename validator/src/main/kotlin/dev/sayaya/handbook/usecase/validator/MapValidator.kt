@@ -8,7 +8,7 @@ class MapValidator(
     private val validators: List<AttributeValidator<*>>
 ): AttributeValidator<AttributeTypeDefinition.Companion.MapType> {
     override val supportedAttributeType = AttributeTypeDefinition.Companion.MapType::class
-    override fun validate(definition: AttributeTypeDefinition.Companion.MapType, value: Any?): Boolean {
+    override fun validate(value: Any?, definition: AttributeTypeDefinition.Companion.MapType): Boolean {
         val key = definition.key
         val value = definition.value
         return validators.none { it.validate(key, null).not() } &&
