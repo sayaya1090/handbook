@@ -17,13 +17,13 @@ import static jsinterop.annotations.JsPackage.GLOBAL;
 @JsType(isNative = true, namespace = GLOBAL, name = "Object")
 public final class ValidationNative {
     @JsProperty public String status;
-    @JsProperty public JsObject data;
+    @JsProperty public JsObject result;
 
     @JsOverlay @JsIgnore public Validation toDomain() {
         var builder = Validation.builder()
                 .state(Validation.ValidationState.valueOf(status));
-        if(data!=null) {
-            JsPropertyMap<Boolean> map = Js.cast(data);
+        if(result!=null) {
+            JsPropertyMap<Boolean> map = Js.cast(result);
             map.forEach(key -> {
                 var value = map.get(key);
                 if(value != null) builder.value(key, value);
