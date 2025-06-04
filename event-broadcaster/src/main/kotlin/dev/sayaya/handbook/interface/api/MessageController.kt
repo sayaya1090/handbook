@@ -23,8 +23,8 @@ class MessageController(private val svc: Broadcaster, private val om: ObjectMapp
         logger.info("Messages requested")
         return Flux.merge(
             svc.listen().map {
-                ServerSentEvent.builder<String>().id(it.id().toString()).event(it.type().toString())
-                    .data(om.writeValueAsString(it.param())).build()
+                ServerSentEvent.builder<String>().id(it.id.toString()).event(it.type.toString())
+                    .data(om.writeValueAsString(it.param)).build()
             }, ping
         ).doOnCancel   { logger.info("Client disconnected") }
          .doOnComplete { logger.info("Complete") }

@@ -6,7 +6,8 @@ import java.security.Principal
 import java.util.*
 
 interface ExternalService {
-    fun publish(principal: Principal, workspace: UUID, types: Map<DocumentKey, Document?>): Mono<Void>
+    // Map의 값이 null인 경우는 삭제를 의미
+    fun publish(principal: Principal, workspace: UUID, documents: Map<DocumentKey, Document?>): Mono<Void>
     data class DocumentKey (
         val serial: String,
         val type: String

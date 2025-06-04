@@ -6,6 +6,7 @@ import elemental2.core.JsArray;
 import elemental2.core.JsObject;
 import elemental2.core.ObjectPropertyDescriptor;
 import elemental2.dom.CustomEvent;
+import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
@@ -15,7 +16,6 @@ import org.gwtproject.event.shared.HandlerRegistration;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @JsType
@@ -29,12 +29,14 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     }
     @JsIgnore private final String id;
     @JsIgnore private final JsPropertyMap<Object> initializedValues;
+    @JsIgnore private final JsPropertyMap<Object> validationValues;
     @JsIgnore private final List<StateChangeEventListener<DataState>> stateChangeListeners;
     @JsIgnore private final JsArray<HasValueChangeHandlers.ValueChangeEventListener<String>> valueChangeListeners;
     @JsIgnore private DataState state;
     private Data(String idx) {
         this.id = idx;
         initializedValues = JsPropertyMap.of();
+        validationValues = JsPropertyMap.of();
         stateChangeListeners = new LinkedList<>();
         valueChangeListeners = JsArray.of();
     }
@@ -64,6 +66,20 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         if(v1 == null && v2 == null) return false;
         else if(v1 == null || v2 == null) return true;
         return !Js.isTripleEqual(trim(Js.asString(v1)), trim(Js.asString(v2)));
+    }
+    @JsIgnore
+    public Data validity(String key, Boolean valid) {
+        DomGlobal.console.log(key + " : " + valid);
+        validationValues.set(key, valid);
+        return this;
+    }
+    @JsIgnore
+    public Boolean isValid(String key) {
+        DomGlobal.console.log(validationValues);
+        DomGlobal.console.log(key);
+        if(!validationValues.has(key)) return null;
+        DomGlobal.console.log(validationValues.get(key));
+        return (Boolean) validationValues.get(key);
     }
     private static String trim(String str) {
         if(str == null) return str;

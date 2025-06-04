@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain
 
+import java.io.Serializable
 import java.time.Instant
 
 @JvmRecord
@@ -17,7 +18,7 @@ data class Type (
     val y: UShort,
     val width: UShort,
     val height: UShort
-) {
+): Serializable {
     init {
         require(id.isNotBlank()) { "Type id cannot be blank" }
         require(id.matches(Regex("^[a-zA-Z0-9가-힣_-]+$"))) { "Type id can only contain alphabet, 한글, numbers, hyphens, and underscores." }

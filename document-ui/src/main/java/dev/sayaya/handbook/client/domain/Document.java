@@ -23,6 +23,7 @@ public class Document {
     private Map<String, Object> values;
     @Builder.Default
     private DocumentState state = DocumentState.NOT_CHANGE;
+    private Validation validations;
 
     @Override
     public int hashCode() {

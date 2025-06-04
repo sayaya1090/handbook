@@ -9,11 +9,13 @@ plugins {
 }
 dependencies {
     implementation(project(":domain"))
-    implementation(project(":authentication"))
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
     implementation(libs.spring.kafka)
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("com.github.f4b6a3:ulid-creator:5.2.3")
     testImplementation(testFixtures(project(":testcontainer")))
     testImplementation(testFixtures(project(":entity")))
     testImplementation(libs.testcontainers.postgresql)

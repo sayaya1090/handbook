@@ -3,6 +3,7 @@ package dev.sayaya.handbook.`interface`.database
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.Search
+import dev.sayaya.handbook.domain.Validation
 import dev.sayaya.handbook.usecase.DocumentRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -77,5 +78,10 @@ class R2dbcDocumentRepository(
         createDateTime = entity.createDateTime,
         creator = entity.creatorUserName,
         data = objectMapper.readValue(entity.data.asArray(), Map::class.java) as Map<String, String?>,
+        validations = toValidation(entity)
+    )
+    private fun toValidation(entity: R2dbcDocumentEntity): Validation? = if(entity.validationStatus==null) null else Validation(
+        status = Validation.Companion.Status.valueOf(entity.validationStatus),
+        result = if(entity.validationResult==null) null else objectMapper.readValue(entity.validationResult.asArray(), Map::class.java) as Map<String, Boolean>
     )
 }
