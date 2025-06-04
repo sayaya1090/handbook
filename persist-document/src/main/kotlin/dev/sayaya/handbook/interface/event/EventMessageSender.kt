@@ -42,7 +42,8 @@ class EventMessageSender(private val om: ObjectMapper): ExternalService {
                     expireDateTime = Instant.now(),
                     createDateTime = Instant.now(),
                     creator = null,
-                    data = emptyMap()
+                    data = emptyMap(),
+                    validations = null
                 )
             )
         }.map(buffer::tryEmitNext).filter { it.isFailure }.toList()

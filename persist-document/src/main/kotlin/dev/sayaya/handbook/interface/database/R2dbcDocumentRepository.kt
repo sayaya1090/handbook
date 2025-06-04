@@ -19,13 +19,31 @@ class R2dbcDocumentRepository (
     val objectMapper: ObjectMapper
 ): DocumentRepository, R2dbcDocumentBatchUpsertRepository, R2dbcDocumentBatchDeleteRepository {
     override val log: Logger = LoggerFactory.getLogger(this::class.java)
-    override fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = getAuthenticatedUser().flatMapMany { user ->
-        saveAll(documents.toEntity(workspace), user, Instant.now())
-    }.collectList().doOnError { error ->
+    override fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = getAuthenticatedUser().flatMap { user ->
+        val documentsAndEntities = documents.toEntity(workspace)
+        val entities = documentsAndEntities.map { it.second }
+        saveAll(entities, user, Instant.now()).collectList()
+            .map { savedEntities ->
+                val savedEntitiesMap = savedEntities.associateBy { it.id }
+                documentsAndEntities.mapNotNull { originalPair ->
+                    val originalDocument = originalPair.first
+                    val entityPreparedForSave = originalPair.second
+                    val savedEntity = savedEntitiesMap[entityPreparedForSave.id]
+                    if (savedEntity != null) originalDocument.copy (
+                        id = savedEntity.id,
+                        createDateTime = savedEntity.createDateTime,
+                        creator = user
+                    ) else {
+                        log.warn("Document with pre-save ID ${entityPreparedForSave.id} was not found in the saved entities list. It might have failed to save or was not returned by the batch save operation.")
+                        null
+                    }
+                }
+            }
+    }.doOnError { error ->
         log.error("Batch execution failed inside inConnection!", error)
-    }.thenReturn(documents)
+    }
 
-    override fun deleteAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = deleteAll(documents.toEntity(workspace)).
+    override fun deleteAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = deleteAll(documents.toEntity(workspace).map { it.second }).
     collectList().doOnError { error ->
         log.error("Batch execution failed inside inConnection!", error)
     }.thenReturn(documents)
@@ -34,7 +52,7 @@ class R2dbcDocumentRepository (
         .switchIfEmpty(Mono.error(IllegalStateException("Unable to retrieve authenticated user context")))
 
     private fun List<Document>.toEntity(workspace: UUID) = map { document ->
-        R2dbcDocumentEntity.of (
+        document to R2dbcDocumentEntity.of (
             workspace = workspace,
             id = Ulid.fast().toUuid(),
             type = document.type,
