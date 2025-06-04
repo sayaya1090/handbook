@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 interface R2dbcDocumentBatchUpsertRepository {
     val databaseClient: DatabaseClient
@@ -17,7 +18,10 @@ interface R2dbcDocumentBatchUpsertRepository {
         }
         val sql = "$INSERT_DOCUMENT_SQL VALUES $values"
         log.info(sql)
-        return databaseClient.sql(sql).fetch().rowsUpdated().thenMany(Flux.fromIterable(entities))
+        return databaseClient.sql(sql).fetch().rowsUpdated().thenMany(Flux.fromIterable(entities)).map { it.apply {
+            createBy = UUID.fromString(createdBy)
+            createDateTime = createdAt
+        } }
     }
     companion object {
         private const val INSERT_DOCUMENT_SQL = """
