@@ -42,7 +42,7 @@ class R2dbcValidationTaskRepository (
             document = document.id!!
         ).apply {
             results = jsonResult
-            status = "COMPLETED"
+            status = "DONE"
         }
         return template.insert(entity).then()
     }
