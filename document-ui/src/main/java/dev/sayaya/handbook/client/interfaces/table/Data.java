@@ -6,6 +6,7 @@ import elemental2.core.JsArray;
 import elemental2.core.JsObject;
 import elemental2.core.ObjectPropertyDescriptor;
 import elemental2.dom.CustomEvent;
+import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
@@ -73,7 +74,10 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     }
     @JsIgnore
     public Boolean isValid(String key) {
+        DomGlobal.console.log(validationValues);
+        DomGlobal.console.log(key);
         if(!validationValues.has(key)) return null;
+        DomGlobal.console.log(validationValues.get(key));
         return (Boolean) validationValues.get(key);
     }
     private static String trim(String str) {
