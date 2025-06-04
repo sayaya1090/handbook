@@ -125,3 +125,16 @@
     transition: all 300ms ease-in-out;
     background: var(--md-sys-color-tertiary) !important;
 }
+/* 검증된 데이터 강조 */
+.handsontable td.valid:not(.changed) {
+    color: var(--md-sys-color-primary-container);
+}
+.handsontable td.invalid:not(.changed) {
+    box-shadow: 0 0 0 1px var(--md-sys-color-error-container) inset;
+    color: var(--md-sys-color-error-container);
+}
+/* 변경된 데이터 강조 */
+.handsontable td.changed {
+    box-shadow: 0 0 0 1px var(--md-sys-color-tertiary-container) inset;
+    color: var(--md-sys-color-tertiary-container);
+}

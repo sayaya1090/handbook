@@ -50,6 +50,12 @@ public class DataProvider {
             if(entry.getValue()!=null) data.put(key, String.valueOf(entry.getValue()));
             else data.put(key, null);
         }
+        if(document.validations()!=null) for(var entry: document.validations().values().entrySet()) {
+            String key = entry.getKey();
+            if("$state".equals(key) || "initializedValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
+            if(entry.getValue()!=null) data.validity(key, entry.getValue());
+            else data.validity(key, null);
+        }
         return data;
     }
     private Data create(Document document) {

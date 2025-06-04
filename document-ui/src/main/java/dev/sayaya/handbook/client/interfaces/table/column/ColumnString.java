@@ -25,6 +25,7 @@ public final class ColumnString implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnString> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorConditionalHelper<ColumnString>> colorConditionalHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnString> alignHelper = new ColumnStyleAlignHelper<>(()->this);
+    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnString> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
     @Override
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);

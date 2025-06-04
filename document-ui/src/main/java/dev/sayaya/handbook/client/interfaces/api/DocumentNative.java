@@ -25,6 +25,7 @@ public final class DocumentNative {
     @JsProperty(name = "expire_date_time") public Double expireDateTime;
     @JsProperty public String creator;
     @JsProperty public JsObject data;
+    @JsProperty public ValidationNative validations;
 
     @JsOverlay @JsIgnore public Document toDomain() {
         var builder = Document.builder()
@@ -32,7 +33,8 @@ public final class DocumentNative {
                 .effectDateTime(effectDateTime != null ? new Date(effectDateTime.longValue()) : null)
                 .expireDateTime(expireDateTime != null ? new Date(expireDateTime.longValue()) : null)
                 .createdDateTime(createDateTime != null ? new Date(createDateTime.longValue()) : null)
-                .createdBy(creator);
+                .createdBy(creator)
+                .validations(validations!=null?validations.toDomain():null);
         if(data!=null) {
             JsPropertyMap<String> map = Js.cast(data);
             map.forEach(key -> {
