@@ -1,13 +1,17 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
+import dev.sayaya.handbook.client.domain.Attribute;
+import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.domain.Type;
+import dev.sayaya.handbook.client.domain.validator.*;
 import dev.sayaya.handbook.client.interfaces.table.column.ColumnBuilder;
 import dev.sayaya.handbook.client.interfaces.table.column.ColumnString;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.elements.CheckboxElementBuilder;
 import elemental2.core.JsArray;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 
@@ -54,9 +58,30 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
                                 ColumnBuilder.string("Serial").build().header(lblSerial),
                                 ColumnBuilder.string("Effect date time").build().header(lblEffectDatetime),
                                 ColumnBuilder.string("Expire date time").build().header(lblExpireDatetime)
-                        ), type.attributes().stream().map(attr-> ColumnBuilder.string(attr.name())).map(ColumnString::build)
+                        ), type.attributes().stream().map(this::toColumn).map(ColumnBuilder::build)
                 ).toArray(Column[]::new);
         table.updateSettings(config);
+    }
+    private ColumnBuilder toColumn(Attribute attr) {
+        DomGlobal.console.log(attr.type().baseType());
+        if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Value) {
+            var validators = attr.type().validators();
+            if(validators.isEmpty()) return ColumnBuilder.string(attr.name()).horizontal("center");
+            else if(validators.get(0) instanceof ValidatorRegex validator) {
+                var builder = ColumnBuilder.string(attr.name()).horizontal("center");
+                builder.pattern(validator.pattern());
+                return builder;
+            } else if(validators.get(0) instanceof ValidatorBool) {
+                return ColumnBuilder.checkbox(attr.name());
+            } else if(validators.get(0) instanceof ValidatorNumber) {
+                return ColumnBuilder.number(attr.name()).horizontal("center");
+            } else if(validators.get(0) instanceof ValidatorDate) {
+                return ColumnBuilder.date(attr.name()).horizontal("center").width(200);
+            } else if(validators.get(0) instanceof ValidatorEnum validator) {
+                return ColumnBuilder.dropdown(attr.name(), validator.options()).horizontal("center").width(200);
+            }
+        }
+        return ColumnBuilder.string(attr.name());
     }
     private void update(List<Data> data) {
         checkAll.select(false);
@@ -78,7 +103,7 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         config.afterGetRowHeaderRenderers = renderers -> {
             JsArray.asJsArray(renderers).push((row, th)->{
                 var header = rowHeaders.computeIfAbsent(row, r->{
-                    var checkbox = checkbox().style("vertical-align: bottom; --md-checkbox-outline-width: 1px;");
+                    var checkbox = checkbox().style("vertical-align: sub; --md-checkbox-outline-width: 1px;");
                     if(config.data.length > row) {
                         config.data[row].onStateChange(state->checkbox.select(state.state() == Data.DataState.SELECTED));
                         checkbox.onChange(evt->config.data[row].select(checkbox.isSelected()));

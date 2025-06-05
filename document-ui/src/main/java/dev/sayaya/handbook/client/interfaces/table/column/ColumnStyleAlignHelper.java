@@ -4,11 +4,11 @@ import elemental2.dom.HTMLElement;
 
 import java.util.function.Supplier;
 
-public final class ColumnStyleAlignHelper<SELF> implements ColumnStyleHelper<SELF> {
+final class ColumnStyleAlignHelper<SELF> implements ColumnStyleHelper<SELF> {
     private final Supplier<SELF> _self;
     private String horizontal;
     private String vertical;
-    public ColumnStyleAlignHelper(Supplier<SELF> columnBuilder) {
+    ColumnStyleAlignHelper(Supplier<SELF> columnBuilder) {
         _self = columnBuilder;
     }
     @Override

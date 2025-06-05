@@ -4,11 +4,11 @@ import elemental2.dom.HTMLElement;
 
 import java.util.function.Supplier;
 
-public final class ColumnStyleColorHelper<SELF> implements ColumnStyleHelper<SELF> {
+final class ColumnStyleColorHelper<SELF> implements ColumnStyleHelper<SELF> {
     private final Supplier<SELF> _self;
     private ColumnStyleFn<String> color;
     private ColumnStyleFn<String> colorBackground;
-    public ColumnStyleColorHelper(Supplier<SELF> columnBuilder) {
+    ColumnStyleColorHelper(Supplier<SELF> columnBuilder) {
         _self = columnBuilder;
     }
     @Override

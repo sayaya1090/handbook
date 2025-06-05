@@ -14,8 +14,8 @@ import java.time.Instant
     JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorRegex::class, name = "REGEX"),
     JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorBool::class, name = "BOOL"),
     JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorNumber::class, name = "NUMBER"),
-    JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorEnum::class, name = "DATE"),
-    JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorDate::class, name = "ENUM")
+    JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorDate::class, name = "DATE"),
+    JsonSubTypes.Type(value = ValidatorDefinition.Companion.ValidatorEnum::class, name = "ENUM")
 ) @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 sealed interface ValidatorDefinition: Serializable {
@@ -84,12 +84,12 @@ sealed interface ValidatorDefinition: Serializable {
             }
         }
         data class ValidatorEnum (
-            val allowedValues: List<String>
+            val options: List<String>
         ): ValidatorDefinition {
             constructor(vararg allowedValues: String): this(allowedValues.toList())
             private val type: ValidatorType = ValidatorType.ENUM
             override fun validate(value: Any?): Boolean = when (value) {
-                is String -> value in allowedValues
+                is String -> value in options
                 else -> false
             }
         }

@@ -75,10 +75,7 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     }
     @JsIgnore
     public Boolean isValid(String key) {
-        DomGlobal.console.log(validationValues);
-        DomGlobal.console.log(key);
         if(!validationValues.has(key)) return null;
-        DomGlobal.console.log(validationValues.get(key));
         return (Boolean) validationValues.get(key);
     }
     private static String trim(String str) {

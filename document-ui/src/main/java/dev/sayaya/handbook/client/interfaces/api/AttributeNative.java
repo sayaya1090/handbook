@@ -18,29 +18,11 @@ public final class AttributeNative {
     @JsProperty public boolean inherited;
 
     @JsOverlay @JsIgnore public Attribute toDomain(String id, String version, int i) {
-        /*type==File
-        Objects.requireNonNull(extensions, "extensions cannot be null");
-        if (extensions.stream().anyMatch(ext -> ext == null || !ext.matches("^[a-zA-Z0-9]+$"))) {
-            throw new IllegalArgumentException("FileAttribute extensions must contain only non-null alphanumeric characters.");
-        }
-        type==Document
-        Objects.requireNonNull(referencedType, "referencedType cannot be null");
-        */
-
         return Attribute.builder()
                 .id(id + "$$$" + version + "$$$" + i)
                 .name(name).description(description)
                 .type(type!=null?type.toDomain():null)
                 .nullable(nullable).inherited(inherited)
                 .build();
-    }
-    @JsOverlay @JsIgnore public static AttributeNative from(Attribute attribute) {
-        AttributeNative nativeAttribute = new AttributeNative();
-        nativeAttribute.name = attribute.name();
-        nativeAttribute.description = attribute.description();
-        nativeAttribute.type = attribute.type()!=null?AttributeTypeDefinitionNative.from(attribute.type()):null;
-        nativeAttribute.nullable = attribute.nullable();
-        nativeAttribute.inherited = attribute.inherited();
-        return nativeAttribute;
     }
 }
