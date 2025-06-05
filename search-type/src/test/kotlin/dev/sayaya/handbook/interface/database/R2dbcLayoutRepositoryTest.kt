@@ -31,18 +31,6 @@ import java.util.*
 internal class R2dbcLayoutRepositoryTest @Autowired constructor(
     private val databaseClient: DatabaseClient
 ) : ShouldSpec({
-    val objectMapper = ObjectMapper()
-        .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
-        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .registerModule(JavaTimeModule().addDeserializer(Instant::class.java, object : JsonDeserializer<Instant>() {
-            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant {
-                val epochMillis = p.longValue
-                return Instant.ofEpochMilli(epochMillis)
-            }
-        })).registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
     val repository = R2dbcLayoutRepository(databaseClient)
     // 테스트에 사용할 고정된 Workspace UUID
     val workspace = UUID.fromString("398f6038-2192-417b-914a-f74e4bf52451")
@@ -97,6 +85,23 @@ internal class R2dbcLayoutRepositoryTest @Autowired constructor(
             VALUES (:userId, NOW(), NOW(), null, 'test-user', 'handbook', 'test-account')
             ON CONFLICT (id) DO NOTHING;
         """.trimIndent())
+            .bind("userId", userId)
+            .fetch().rowsUpdated()
+
+        val insertWorkspace = databaseClient.sql("""
+            INSERT INTO public.workspace (id, created_at, created_by, last_modified_at, last_modified_by, name, description)
+            VALUES (:workspace, NOW(), :userId, NOW(), :userId, 'test-workspace', 'Test Workspace')
+            ON CONFLICT (id) DO NOTHING;
+        """.trimIndent())
+            .bind("workspace", workspace)
+            .bind("userId", userId)
+            .fetch().rowsUpdated()
+        val insertOtherWorkspace = databaseClient.sql("""
+            INSERT INTO public.workspace (id, created_at, created_by, last_modified_at, last_modified_by, name, description)
+            VALUES (:workspace, NOW(), :userId, NOW(), :userId, 'test-workspace', 'Test Workspace')
+            ON CONFLICT (id) DO NOTHING;
+        """.trimIndent())
+            .bind("workspace", otherWorkspace)
             .bind("userId", userId)
             .fetch().rowsUpdated()
 
@@ -171,6 +176,8 @@ internal class R2dbcLayoutRepositoryTest @Autowired constructor(
 
         // 모든 INSERT 문을 순차적으로 실행하고 최종 완료를 검증
         insertUser
+            .then(insertWorkspace) // 워크스페이스 데이터 삽입
+            .then(insertOtherWorkspace) // 다른 워크스페이스 데이터 삽입
             .then(insertScenario1Type1) // Scenario 1의 첫 번째 데이터
             .then(insertScenario1Type2) // Scenario 1의 두 번째 데이터
             .then(insertScenario1Type3) // Scenario 1의 세 번째 데이터
