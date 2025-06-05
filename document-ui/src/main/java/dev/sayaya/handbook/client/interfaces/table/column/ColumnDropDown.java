@@ -41,12 +41,6 @@ public final class ColumnDropDown implements ColumnBuilder {
             dataChangeHelper.apply(sheet, td, row, prop);
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value);
             Scheduler.get().scheduleDeferred(()->{
-                var label = elem.element().shadowRoot.getElementById("label");
-                label.style.paddingTop = CSSProperties.PaddingTopUnionType.of("0px");
-                label.style.paddingBottom = CSSProperties.PaddingBottomUnionType.of("0px");
-                label.style.fontSize = CSSProperties.FontSizeUnionType.of("10px");
-                label.style.lineHeight = CSSProperties.LineHeightUnionType.of("20px");
-
                 var field = elem.element().shadowRoot.getElementById("field");
                 field.style.height = CSSProperties.HeightUnionType.of("20px");
                 field.style.setProperty("--_outline-width",  "0px");
