@@ -23,6 +23,7 @@ public final class ColumnDropDown implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnDropDownStyleColorHelper colorHelper = new ColumnDropDownStyleColorHelper(()->this) ;
     private final List<ColumnDropDownStyleColorConditionalHelper> colorConditionalHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnDropDown> alignHelper = new ColumnStyleAlignHelper<>(()->this);
+    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnDropDown> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
     ColumnDropDown(String id, String... list) {
         this.id = id;
         this.list = list;
@@ -30,15 +31,17 @@ public final class ColumnDropDown implements ColumnBuilder {
     @Override
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);
-        return column.readOnly(true).renderer((sheet, td, row, col, prop, value, ci)->{
-            Data data = sheet.getSettings().data[row];
+        return column.readOnly(true).renderer((instance, td, row, col, prop, value, ci)->{
+            Data data = instance.getSettings().data[row];
             var elem = SelectElementBuilder.select().outlined().option().value(null).headline("").end();
             alignHelper.clear(td);
             colorHelper.clear(td);
             for(var helper: colorConditionalHelpers) helper.clear(td);
             alignHelper.apply(td, row, prop, value);
             colorHelper.apply(td, row, prop, value);
-            dataChangeHelper.apply(sheet, td, row, prop);
+            dataChangeHelper.apply(instance, td, row, prop);
+            dataValidateHelper.apply(instance, td, row, prop);
+
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value);
             Scheduler.get().scheduleDeferred(()->{
                 var label = elem.element().shadowRoot.getElementById("label");
@@ -61,7 +64,8 @@ public final class ColumnDropDown implements ColumnBuilder {
                 for(var helper: colorConditionalHelpers) helper.clear(td);
 
                 colorHelper.apply(td, row, prop, v);
-                dataChangeHelper.apply(sheet, td, row, prop);
+                dataChangeHelper.apply(instance, td, row, prop);
+                dataValidateHelper.apply(instance, td, row, prop);
                 for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, v);
             });
             td.innerHTML = "";

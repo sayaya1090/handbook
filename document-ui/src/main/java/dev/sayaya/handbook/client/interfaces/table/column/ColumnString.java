@@ -29,17 +29,17 @@ public final class ColumnString implements ColumnBuilder {
     @Override
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);
-        return column.renderer((sheet, td, row, col, prop, value, ci)->{
+        return column.renderer((instance, td, row, col, prop, value, ci)->{
                     textHelper.clear(td);
                     colorHelper.clear(td);
-                    for (ColumnStyleColorConditionalHelper<ColumnString> helper : colorConditionalHelpers) helper.clear(td);
+                    for (var helper : colorConditionalHelpers) helper.clear(td);
                     alignHelper.clear(td);
 
                     textHelper.apply(td, row, prop, value);
                     colorHelper.apply(td, row, prop, value);
-                    dataChangeHelper.apply(sheet, td, row, prop);
-                    dataValidateHelper.apply(sheet, td, row, prop);
-                    for (ColumnStyleColorConditionalHelper<ColumnString> helper : colorConditionalHelpers) helper.apply(td, row, prop, value);
+                    dataChangeHelper.apply(instance, td, row, prop);
+                    dataValidateHelper.apply(instance, td, row, prop);
+                    for (var helper : colorConditionalHelpers) helper.apply(td, row, prop, value);
                     alignHelper.apply(td, row, prop, value);
                     td.innerHTML = value;
                     return td;

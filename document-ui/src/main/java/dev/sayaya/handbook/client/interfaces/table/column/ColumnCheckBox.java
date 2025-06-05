@@ -27,6 +27,7 @@ public class ColumnCheckBox implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnCheckBox> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorConditionalHelper<ColumnCheckBox>> colorConditionalHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnCheckBox> alignHelper = new ColumnStyleAlignHelper<>(()->this);
+    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnCheckBox> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
     ColumnCheckBox(String id) {
         this.id = id;
         alignHelper.horizontal("center");
@@ -39,11 +40,13 @@ public class ColumnCheckBox implements ColumnBuilder {
             value = normalize(value);
             alignHelper.clear(td);
             colorHelper.clear(td);
-            for(ColumnStyleColorConditionalHelper<?> helper: colorConditionalHelpers) helper.clear(td);
+            for(var helper: colorConditionalHelpers) helper.clear(td);
             alignHelper.apply(td, row, prop, value);
             colorHelper.apply(td, row, prop, value);
             dataChangeHelper.apply(instance, td, row, prop);
-            for(ColumnStyleColorConditionalHelper<?> helper: colorConditionalHelpers) helper.apply(td, row, prop, value==null?"false":value);
+            dataValidateHelper.apply(instance, td, row, prop);
+            for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value==null?"false":value);
+
 
             var elem = CheckboxElementBuilder.checkbox().select(Boolean.parseBoolean(value)).style("vertical-align: sub; --md-checkbox-outline-width: 1px;");
             if(defaultHelper.readOnly()) elem.element().setAttribute("disabled", "true");
@@ -51,11 +54,12 @@ public class ColumnCheckBox implements ColumnBuilder {
                 data.put(id, evt!=null?String.valueOf(elem.isSelected()):"false");
                 String v = normalize(String.valueOf(elem.isSelected()));
                 colorHelper.clear(td);
-                for(ColumnStyleColorConditionalHelper<?> helper: colorConditionalHelpers) helper.clear(td);
+                for(var helper: colorConditionalHelpers) helper.clear(td);
 
                 colorHelper.apply(td, row, prop, v);
                 dataChangeHelper.apply(instance, td, row, prop);
-                for(ColumnStyleColorConditionalHelper<?> helper: colorConditionalHelpers) helper.apply(td, row, prop, v==null?"false":v);
+                dataValidateHelper.apply(instance, td, row, prop);
+                for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, v==null?"false":v);
             });
             td.innerHTML = "";
             td.appendChild(elem.element());
