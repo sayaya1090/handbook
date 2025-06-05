@@ -10,7 +10,6 @@ import dev.sayaya.handbook.client.usecase.arrow.Rectangle;
 import dev.sayaya.ui.svg.dom.SVGElement;
 import dev.sayaya.ui.svg.elements.*;
 import elemental2.dom.DOMRectReadOnly;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;

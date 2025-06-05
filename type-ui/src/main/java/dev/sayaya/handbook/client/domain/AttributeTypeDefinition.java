@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.domain;
 
-import dev.sayaya.handbook.client.domain.validator.ValidatorDefinition;
+import dev.sayaya.handbook.client.domain.validator.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -28,6 +28,10 @@ public class AttributeTypeDefinition {
     public String simplify() {
         switch (baseType) {
             case Value -> {
+                if(validators.isEmpty() || validators.get(0) instanceof ValidatorRegex) return "String";
+                else if(validators.get(0) instanceof ValidatorBool) return "Boolean";
+                else if(validators.get(0) instanceof ValidatorNumber) return "Number";
+                else if(validators.get(0) instanceof ValidatorSelect) return "Select";
                 return "Value";
             }
             case Array -> {
