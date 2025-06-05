@@ -41,12 +41,16 @@ public final class ColumnDropDown implements ColumnBuilder {
             dataChangeHelper.apply(sheet, td, row, prop);
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value);
             Scheduler.get().scheduleDeferred(()->{
+                var label = elem.element().shadowRoot.getElementById("label");
+                label.style.setProperty("--_top-space", "0px");
+                label.style.setProperty("--_bottom-space", "0px");
+
                 var field = elem.element().shadowRoot.getElementById("field");
                 field.style.height = CSSProperties.HeightUnionType.of("20px");
-                field.style.setProperty("--_outline-width",  "0px");
-                field.style.setProperty("--_hover-outline-width",  "0px");
-                field.style.setProperty("--_focus-outline-width",  "0px");
-                field.style.setProperty("--_disabled-outline-width",  "0px");
+                field.style.setProperty("--_outline-width", "0px");
+                field.style.setProperty("--_hover-outline-width", "0px");
+                field.style.setProperty("--_focus-outline-width", "0px");
+                field.style.setProperty("--_disabled-outline-width", "0px");
             });
             for(String option: list) elem.option().value(option).headline(option).select(option.equals(value));
             if(defaultHelper.readOnly()) elem.enable(false);
