@@ -3,7 +3,9 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.regexp.shared.RegExp;
 import dev.sayaya.handbook.client.interfaces.table.Column;
-import dev.sayaya.handbook.client.interfaces.table.Data;
+import dev.sayaya.handbook.client.interfaces.table.Handsontable;
+import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
+import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import elemental2.dom.*;
 import lombok.experimental.Delegate;
@@ -12,8 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.span;
+import static org.jboss.elemento.Elements.*;
 
 public final class ColumnDropDown implements ColumnBuilder {
     private final String id;
@@ -28,12 +29,87 @@ public final class ColumnDropDown implements ColumnBuilder {
         this.id = id;
         this.list = list;
     }
+    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleTextHelper<ColumnDropDown> textHelper = new ColumnStyleTextHelper<>(()->this);
     @Override
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);
-        return column.readOnly(true).renderer((instance, td, row, col, prop, value, ci)->{
-            Data data = instance.getSettings().data[row];
-            var elem = SelectElementBuilder.select().outlined().option().value(null).headline("").end();
+        return column.renderer((instance, td, row, col, prop, value, ci)->{
+                    textHelper.clear(td);
+                    colorHelper.clear(td);
+                    for (var helper : colorConditionalHelpers) helper.clear(td);
+                    alignHelper.clear(td);
+
+                    textHelper.apply(td, row, prop, value);
+                    colorHelper.apply(td, row, prop, value);
+                    dataChangeHelper.apply(instance, td, row, prop);
+                    dataValidateHelper.apply(instance, td, row, prop);
+                    for (var helper : colorConditionalHelpers) helper.apply(td, row, prop, value);
+                    alignHelper.apply(td, row, prop, value);
+                    td.innerHTML = value;
+                    return td;
+                }).editor(this::selectEditor)
+                .headerRenderer(n->span().text(defaultHelper.name()).element());
+    }
+    private CellEditor selectEditor(Object props) {
+        var impl = new SelectEditorImpl();
+        return CellEditorFactory.text(props, impl);
+    }
+    private final class SelectEditorImpl implements CellEditorFactory.CellEditorTextImpl {
+        private final SelectElementBuilder<?, ?> input = SelectElementBuilder.select()
+                .outlined().option().value(null).headline("").end()
+                .style("min-width: auto; overflow: hidden;");
+        private final List<SelectElementBuilder.SelectOptionElementBuilder<?>> options = new LinkedList<>();
+        SelectEditorImpl() {
+            for(String option: list) options.add(input.option().value(option).headline(option));
+        }
+        @Override
+        public Element createElement() {
+            return input.element();
+        }
+        @Override
+        public void init(CellEditorFactory.CellEditorText editorInstance) {
+            Scheduler.get().scheduleDeferred(()->{
+                var label = input.element().shadowRoot.getElementById("label");
+                label.style.setProperty("--_top-space", "0px");
+                label.style.setProperty("--_bottom-space", "0px");
+                label.style.setProperty("--_leading-space", "0px");
+                label.style.setProperty("--_outline-label-padding", "0px");
+
+                var field = input.element().shadowRoot.getElementById("field");
+                field.style.height = CSSProperties.HeightUnionType.of("20px");
+                field.style.setProperty("--_outline-width", "0px");
+                field.style.setProperty("--_hover-outline-width", "0px");
+                field.style.setProperty("--_focus-outline-width", "0px");
+                field.style.setProperty("--_disabled-outline-width", "0px");
+                var iconSlot = (HTMLElement) field.shadowRoot.querySelector(".end");
+                iconSlot.style.setProperty("min-width", "0px");
+            });
+            input.onChange(evt-> finishEditingInJs(editorInstance));
+        }
+        private native void finishEditingInJs(CellEditorFactory.CellEditorText editorInstance) /*-{
+            editorInstance.finishEditing();
+        }-*/;
+        @Override
+        public void beginEditing(String init, Event evt) {
+            if(evt instanceof KeyboardEvent keyboardEvent) {
+                var keyPressed = keyboardEvent.key.toLowerCase();
+                for(var opt: options) if(opt.element().value.toLowerCase().startsWith(keyPressed)) {
+                    setValue(opt.element().value);
+                    break;
+                }
+                input.element().click();
+            }
+        }
+        @Override
+        public void setValue(String stringfiedInitialValue) {
+            for(var opt: options) if(opt.element().value.equals(stringfiedInitialValue)) {
+                if(!opt.isSelected()) opt.select(true);
+                break;
+            }
+        }
+
+        @Override
+        public void prepare(Handsontable instance, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell) {
             alignHelper.clear(td);
             colorHelper.clear(td);
             for(var helper: colorConditionalHelpers) helper.clear(td);
@@ -41,46 +117,14 @@ public final class ColumnDropDown implements ColumnBuilder {
             colorHelper.apply(td, row, prop, value);
             dataChangeHelper.apply(instance, td, row, prop);
             dataValidateHelper.apply(instance, td, row, prop);
-
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value);
-            Scheduler.get().scheduleDeferred(()->{
-                var label = elem.element().shadowRoot.getElementById("label");
-                label.style.setProperty("--_top-space", "0px");
-                label.style.setProperty("--_bottom-space", "0px");
-
-                var field = elem.element().shadowRoot.getElementById("field");
-                field.style.height = CSSProperties.HeightUnionType.of("20px");
-                field.style.setProperty("--_outline-width", "0px");
-                field.style.setProperty("--_hover-outline-width", "0px");
-                field.style.setProperty("--_focus-outline-width", "0px");
-                field.style.setProperty("--_disabled-outline-width", "0px");
-            });
-            for(String option: list) elem.option().value(option).headline(option).select(option.equals(value));
-            if(defaultHelper.readOnly()) elem.enable(false);
-            else if(data!=null) elem.onChange(evt->{
-                String v = elem.value();
-                data.put(id, v);
-                colorHelper.clear(td);
-                for(var helper: colorConditionalHelpers) helper.clear(td);
-
-                colorHelper.apply(td, row, prop, v);
-                dataChangeHelper.apply(instance, td, row, prop);
-                dataValidateHelper.apply(instance, td, row, prop);
-                for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, v);
-            });
-            td.innerHTML = "";
-            td.style.padding = CSSProperties.PaddingUnionType.of("0");
-            td.style.verticalAlign = "middle";
-            td.appendChild(div().style("white-space", "initial")
-                    .style("height", "20px")
-                    .add(elem.style("width", "100%")).element());
-            return td;
-        }).headerRenderer(n->span().text(defaultHelper.name()).element());
-    }
-    public ColumnDropDownStyleColorConditionalHelper pattern(String pattern) {
-        ColumnDropDownStyleColorConditionalHelper helper = new ColumnDropDownStyleColorConditionalHelper(pattern, () -> this);
-        colorConditionalHelpers.add(helper);
-        return helper;
+            if(defaultHelper.readOnly()) input.enable(false);
+            Scheduler.get().scheduleDeferred(()->input.element().click());
+        }
+        @Override
+        public String toValue(String value) {
+            return input.value();
+        }
     }
     private final static class ColumnDropDownStyleColorHelper implements ColumnStyleHelper<ColumnDropDown> {
         private final Supplier<ColumnDropDown> _self;

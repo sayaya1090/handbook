@@ -13,6 +13,7 @@ public interface ColumnBuilder {
     static ColumnLink link(String id, Function<Data, String> url) {
         return new ColumnLink(id, url);
     }*/
+
     static ColumnNumber number(String id) { return new ColumnNumber(id); }
     static ColumnDate date(String id) { return new ColumnDate(id); }
     static ColumnCheckBox checkbox(String id) { return new ColumnCheckBox(id); }

@@ -3,7 +3,6 @@ package dev.sayaya.handbook.client.interfaces.table.function;
 import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import elemental2.dom.Element;
 import elemental2.dom.Event;
-import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLTableCellElement;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -12,7 +11,7 @@ public class CellEditorFactory {
     public native static CellEditorBase base(Object prop, CellEditorBaseImpl proxy)/*-{
 		var CustomEditor = $wnd.Handsontable.editors.BaseEditor.prototype.extend();
 		CustomEditor.prototype.prepare=function(r, c, p, t, v, e){
-		    proxy.prepare(r, c, p, t, v, e);
+		    proxy.prepare(this.instance, r, c, p, t, v, e);
 		}
 		CustomEditor.prototype.setValue=function(e){
 		    proxy.setValue(e);
@@ -33,29 +32,32 @@ public class CellEditorFactory {
 	}-*/;
     public native static CellEditorText text(Object prop, CellEditorTextImpl proxy)/*-{
 		var CustomEditorText = $wnd.Handsontable.editors.TextEditor.prototype.extend();
-		CustomEditorText.prototype.createElements = function() {
-			$wnd.Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
-			this.TEXTAREA = proxy.createElement();
-			this.TEXTAREA.className += "handsontableInput";
-			this.textareaStyle = this.TEXTAREA.style;
-			this.textareaStyle.width = 0;
-			this.textareaStyle.height = 0;
-			$wnd.Handsontable.dom.empty(this.TEXTAREA_PARENT);
-			this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
-		}
-		CustomEditorText.prototype.setValue=function(value){
-			proxy.prepare(this.row, this.col, this.prop, this.TEXTAREA, value, this.cellProperties);
+		CustomEditorText.prototype.init = function() {
+            $wnd.Handsontable.editors.TextEditor.prototype.init.apply(this, arguments);
+            this.TEXTAREA = proxy.createElement();
+            this.TEXTAREA.className += " handsontableInput"; // 기존 클래스에 추가
+            this.textareaStyle = this.TEXTAREA.style;
+            $wnd.Handsontable.dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+            proxy.init(this);
+        }
+        CustomEditorText.prototype.setValue=function(value){
+			proxy.prepare(this.instance, this.row, this.col, this.prop, this.TEXTAREA, value, this.cellProperties);
 		    $wnd.Handsontable.editors.TextEditor.prototype.setValue.apply(this, arguments);
 		    proxy.setValue(value);
 		}
 		CustomEditorText.prototype.getValue=function() {
 		    return proxy.toValue($wnd.Handsontable.editors.TextEditor.prototype.getValue.apply(this, arguments));
 		}
+		CustomEditorText.prototype.beginEditing=function(value, evt) {
+		    $wnd.Handsontable.editors.TextEditor.prototype.beginEditing.apply(this, arguments);
+		    proxy.beginEditing(value, evt);
+		}
 		return new CustomEditorText(prop);
 	}-*/;
     @JsType(isNative = true)
     public interface CellEditorBaseImpl {
-        void prepare(int row, int col, String prop, HTMLTableCellElement td, String value, Object cell);
+        void prepare(Handsontable table, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell);
         void setValue(String stringifiedInitialValue);
         String getValue();
         void open(Object e, Event event);
@@ -64,11 +66,12 @@ public class CellEditorFactory {
     }
     @JsType(isNative = true)
     public interface CellEditorTextImpl {
+        void init(CellEditorText editorInstance);
         Element createElement();
-        void initialize(Element element);
         void setValue(String stringfiedInitialValue);
-        void prepare(int row, int col, String prop, HTMLElement td, String value, Object cell);
+        void prepare(Handsontable table, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell);
         String toValue(String value);
+        void beginEditing(String value, Event evt);
     }
     @JsType(isNative = true, namespace="Handsontable.editors", name="BaseEditor")
     public static abstract class CellEditorBase implements CellEditor {

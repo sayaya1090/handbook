@@ -2,14 +2,12 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
 import elemental2.core.JsRegExp;
 import elemental2.core.RegExpResult;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.Element;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.HTMLInputElement;
+import elemental2.dom.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -109,7 +107,7 @@ public final class ColumnDate implements ColumnBuilder {
         private final HTMLInputElement elem = input("date").element();
         private final DateTimeFormat DTF = format;
         @Override
-        public void prepare(int row, int col, String prop, HTMLElement td, String value, Object cell) {
+        public void prepare(Handsontable instance, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell) {
             textHelper.clear(td);
             colorHelper.clear(td);
             for(ColumnStyleColorRangeHelper<ColumnDate> helper: colorRangeHelpers) helper.clear(td);
@@ -133,6 +131,8 @@ public final class ColumnDate implements ColumnBuilder {
             }
         }
         @Override
+        public void beginEditing(String value, Event evt) {}
+        @Override
         public void setValue(String value) {
             if(value == null || value.trim().isEmpty()) elem.value = null;
             else try {
@@ -146,8 +146,6 @@ public final class ColumnDate implements ColumnBuilder {
             return elem;
         }
         @Override
-        public void initialize(Element element) {
-            elem.showPicker();
-        }
+        public void init(CellEditorFactory.CellEditorText editorInstance) {}
     }
 }

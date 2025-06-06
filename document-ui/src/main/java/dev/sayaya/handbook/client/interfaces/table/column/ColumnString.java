@@ -1,11 +1,13 @@
 package dev.sayaya.handbook.client.interfaces.table.column;
 
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
 import elemental2.dom.Element;
-import elemental2.dom.HTMLElement;
+import elemental2.dom.Event;
 import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLTableCellElement;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -58,7 +60,7 @@ public final class ColumnString implements ColumnBuilder {
     private final class TextEditorImpl implements CellEditorFactory.CellEditorTextImpl {
         private final HTMLInputElement elem = input("text").element();
         @Override
-        public void prepare(int row, int col, String prop, HTMLElement td, String value, Object cell) {
+        public void prepare(Handsontable instance, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell) {
             textHelper.clear(td);
             colorHelper.clear(td);
             for (ColumnStyleColorConditionalHelper<ColumnString> helper : colorConditionalHelpers) helper.clear(td);
@@ -74,6 +76,8 @@ public final class ColumnString implements ColumnBuilder {
             return value;
         }
         @Override
+        public void beginEditing(String value, Event evt) {}
+        @Override
         public void setValue(String value) {
             elem.value = value;
         }
@@ -82,8 +86,6 @@ public final class ColumnString implements ColumnBuilder {
             return elem;
         }
         @Override
-        public void initialize(Element element) {
-
-        }
+        public void init(CellEditorFactory.CellEditorText editorInstance) {}
     }
 }

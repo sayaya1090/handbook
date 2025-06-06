@@ -3,11 +3,13 @@ package dev.sayaya.handbook.client.interfaces.table;
 import elemental2.dom.Element;
 import jsinterop.annotations.JsConstructor;
 import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative=true, namespace=JsPackage.GLOBAL, name="Handsontable")
 public final class Handsontable {
     @JsConstructor public Handsontable(Element element, HandsontableConfiguration setting) {}
+    @JsProperty public Element container;
     public native void render();
     public native void updateSettings(HandsontableConfiguration setting);
     public native HandsontableConfiguration getSettings();

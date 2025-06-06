@@ -2,13 +2,15 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
 import elemental2.core.JsRegExp;
 import elemental2.core.RegExpResult;
 import elemental2.dom.Element;
-import elemental2.dom.HTMLElement;
+import elemental2.dom.Event;
 import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLTableCellElement;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -105,7 +107,7 @@ public final class ColumnNumber implements ColumnBuilder {
     private final class NumberEditorImpl implements CellEditorFactory.CellEditorTextImpl {
         private final HTMLInputElement elem = input("number").element();
         @Override
-        public void prepare(int row, int col, String prop, HTMLElement td, String value, Object cell) {
+        public void prepare(Handsontable instance, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell) {
             textHelper.clear(td);
             colorHelper.clear(td);
             for(ColumnStyleColorRangeHelper<ColumnNumber> helper: colorRangeHelpers) helper.clear(td);
@@ -127,6 +129,8 @@ public final class ColumnNumber implements ColumnBuilder {
             }
         }
         @Override
+        public void beginEditing(String value, Event evt) {}
+        @Override
         public void setValue(String value) {
             elem.value = value;
         }
@@ -135,8 +139,6 @@ public final class ColumnNumber implements ColumnBuilder {
             return elem;
         }
         @Override
-        public void initialize(Element element) {
-
-        }
+        public void init(CellEditorFactory.CellEditorText editorInstance) {}
     }
 }
