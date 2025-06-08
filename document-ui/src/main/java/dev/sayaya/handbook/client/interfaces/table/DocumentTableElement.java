@@ -1,17 +1,16 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.domain.validator.*;
 import dev.sayaya.handbook.client.interfaces.table.column.ColumnBuilder;
-import dev.sayaya.handbook.client.interfaces.table.column.ColumnString;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.elements.CheckboxElementBuilder;
 import elemental2.core.JsArray;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 
@@ -55,15 +54,18 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         if(type==null || type.attributes().isEmpty()) return;
         config.columns = Stream.concat(
                         Stream.of(
-                                ColumnBuilder.string("Serial").build().header(lblSerial),
-                                ColumnBuilder.string("Effect date time").build().header(lblEffectDatetime),
-                                ColumnBuilder.string("Expire date time").build().header(lblExpireDatetime)
+                                ColumnBuilder.string("Serial")
+                                        .pattern("^\\s*$")
+                                        .than((t, r, p, v)->"transparent",
+                                              (t, r, p, v)->"var(--md-sys-color-error)")
+                                        .build().header(lblSerial),
+                                ColumnBuilder.string("Effect date time").horizontal("center").build().header(lblEffectDatetime),
+                                ColumnBuilder.string("Expire date time").horizontal("center").build().header(lblExpireDatetime)
                         ), type.attributes().stream().map(this::toColumn).map(ColumnBuilder::build)
                 ).toArray(Column[]::new);
         table.updateSettings(config);
     }
     private ColumnBuilder toColumn(Attribute attr) {
-        DomGlobal.console.log(attr.type().baseType());
         if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Value) {
             var validators = attr.type().validators();
             if(validators.isEmpty()) return ColumnBuilder.string(attr.name()).horizontal("center");

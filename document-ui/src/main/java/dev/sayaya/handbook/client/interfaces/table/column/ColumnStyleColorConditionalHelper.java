@@ -5,7 +5,7 @@ import elemental2.dom.HTMLElement;
 
 import java.util.function.Supplier;
 
-final class ColumnStyleColorConditionalHelper<SELF> implements ColumnStyleHelper<SELF> {
+public final class ColumnStyleColorConditionalHelper<SELF> implements ColumnStyleHelper<SELF> {
     private final RegExp pattern;
     private ColumnStyleFn<String> color;
     private ColumnStyleFn<String> colorBackground;

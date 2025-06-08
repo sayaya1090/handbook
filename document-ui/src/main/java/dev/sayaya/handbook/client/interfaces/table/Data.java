@@ -69,7 +69,6 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     }
     @JsIgnore
     public Data validity(String key, Boolean valid) {
-        DomGlobal.console.log(key + " : " + valid);
         validationValues.set(key, valid);
         return this;
     }

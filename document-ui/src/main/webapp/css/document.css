@@ -140,7 +140,9 @@
     --_text-field-hover-input-text-color: var(--md-sys-color-primary);
     --_text-field-focus-input-text-color: var(--md-sys-color-primary);
 }
+/* 유효하지 않은 데이터 강조(null인 경우도 고려하여 박스 테두리까지 표시한다) */
 .handsontable td.invalid:not(.changed) {
+    box-shadow: 0 0 0 1px var(--md-sys-color-error) inset;
     color: var(--md-sys-color-error);
 }
 .handsontable td.invalid:not(.changed) md-outlined-select {

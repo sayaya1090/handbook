@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
 import com.google.gwt.core.client.JsDate;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.usecase.ActionManager;
@@ -8,6 +9,7 @@ import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.rx.subject.Subject;
+import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
@@ -28,52 +30,54 @@ public class DataProvider {
     @Delegate private final BehaviorSubject<List<Data>> subject = behavior(List.of());
     private final TypeProvider type;
     private final ActionManager actionManager;
+    private final DateTimeFormat DTF = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
+    private final Map<String, Document> currentDocuments = new ConcurrentHashMap<>();
     @Inject DataProvider(DocumentList documents, TypeProvider type, ActionManager actionManager) {
         this.type = type;
         this.actionManager = actionManager;
-        documents.asObservable().debounceTime(300).map(this::map).subscribe(subject::next);
+        documents.asObservable().debounceTime(100).map(this::map).subscribe(subject::next);
     }
     private List<Data> map(List<Document> documents) {
         return documents.stream().map(this::map).collect(Collectors.toUnmodifiableList());
     }
     private Data map(Document document) {
-        Data data = cache.computeIfAbsent(document.id(), key->create(document));
-        JsDate eff = JsDate.create(document.effectDateTime().getTime());
-        JsDate exp = JsDate.create(document.expireDateTime().getTime());
+        currentDocuments.put(document.id(), document);
+        Data data = cache.computeIfAbsent(document.id(), key->create(document.id()));
         data.put("Serial", document.serial())
-            .put("Effect date time", eff.toLocaleString())
-            .put("Expire date time", exp.toLocaleString())
+            .put("Effect date time", DTF.format(document.effectDateTime()))
+            .put("Expire date time", DTF.format(document.expireDateTime()))
             .put("$state", document.state().name());
         if(document.values()!=null) for(var entry: document.values().entrySet()) {
             String key = entry.getKey();
-            if("$state".equals(key) || "initializedValues".equals(key) || "validationValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
+            if("$state".equals(key) || "state".equals(key) || "initializedValues".equals(key) || "validationValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
             if(entry.getValue()!=null) data.put(key, String.valueOf(entry.getValue()));
             else data.put(key, null);
         }
         if(document.validations()!=null) for(var entry: document.validations().values().entrySet()) {
             String key = entry.getKey();
-            if("$state".equals(key) || "initializedValues".equals(key) || "validationValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
+            if("$state".equals(key) || "state".equals(key) || "initializedValues".equals(key) || "validationValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
             if(entry.getValue()!=null) data.validity(key, entry.getValue());
             else data.validity(key, null);
         }
         return data;
     }
-    private Data create(Document document) {
-        var data = Data.create(document.id());
+    private Data create(String id) {
+        var data = Data.create(id);
         var type = this.type.getValue();
         type.attributes().stream().map(Attribute::name).forEach(attr ->{
-            Object value = document.values().get(attr);
+            Object value = currentDocuments.get(id).values().get(attr);
             if(value!=null) data.put(attr, String.valueOf(value));
             else data.put(attr, null);
         });
         Subject<String> subject = subject(String.class);
-        subject.debounceTime(100).subscribe(s->notifyChange(data, document));
+        subject.debounceTime(100).subscribe(s->notifyChange(data, id));
         data.onValueChange(s->{
             if(!"$state".equals(s.value())) subject.next(s.value());
         });
         return data;
     }
-    private void notifyChange(Data data, Document origin) {
+    private void notifyChange(Data data, String id) {
+        var origin = currentDocuments.get(id);
         var effectDateTimeDbl = JsDate.parse(data.get("Effect date time"));
         var effectDateTime = Double.isNaN(effectDateTimeDbl) ? null : Double.valueOf(effectDateTimeDbl).longValue();
         var expireDateTimeDbl = JsDate.parse(data.get("Expire date time"));
@@ -91,10 +95,13 @@ public class DataProvider {
                "validationValues".equals(key) ||
                "stateChangeListeners".equals(key) ||
                "valueChangeListeners".equals(key) ||
+               "state".equals(key) ||
                "Serial".equals(key) ||
                "Effect date time".equals(key) ||
                "Expire date time".equals(key)) continue;
+            DomGlobal.console.log(key);
             var value = data.get(key);
+            if(value!=null && value.isEmpty()) value = null;
             builder.value(key, value);
         }
         var next = builder.build();

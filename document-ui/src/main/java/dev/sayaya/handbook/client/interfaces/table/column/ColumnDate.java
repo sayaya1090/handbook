@@ -41,10 +41,15 @@ public final class ColumnDate implements ColumnBuilder {
         else if(value instanceof Integer)   return DTF.format(new Date((Integer)value));
         else if(value instanceof Double)    return DTF.format(new Date(((Double)value).longValue()));
         else if(value instanceof String cast) {
-            cast = cast.trim();
-            RegExpResult chkNumber = CHK_NUMBER.exec(cast);
-            if(chkNumber != null) return DTF.format(new Date(Long.parseLong(cast)));
-            else return DTF.format(DTF.parse(cast));
+            try {
+                cast = cast.trim();
+                RegExpResult chkNumber = CHK_NUMBER.exec(cast);
+                if (chkNumber != null) return DTF.format(new Date(Long.parseLong(cast)));
+                else return DTF.format(DTF.parse(cast));
+            } catch(IllegalArgumentException e) {
+                e.printStackTrace();
+                return cast;
+            }
         } else throw new RuntimeException();
     }
     @Override
