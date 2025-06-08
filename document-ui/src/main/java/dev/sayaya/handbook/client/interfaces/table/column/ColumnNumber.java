@@ -2,13 +2,15 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
 import elemental2.core.JsRegExp;
 import elemental2.core.RegExpResult;
 import elemental2.dom.Element;
-import elemental2.dom.HTMLElement;
+import elemental2.dom.Event;
 import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLTableCellElement;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -34,6 +36,7 @@ public final class ColumnNumber implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnNumber> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorRangeHelper<ColumnNumber>> colorRangeHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnNumber> alignHelper = new ColumnStyleAlignHelper<>(()->this);
+    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnNumber> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
     private static String toString(NumberFormat NF, Object value) throws RuntimeException {
         if(value == null) return null;
         else if(value instanceof Long) return NF.format((Long)value);
@@ -53,13 +56,14 @@ public final class ColumnNumber implements ColumnBuilder {
         return column.renderer((instance, td, row, col, prop, value, ci)->{
                     textHelper.clear(td);
                     colorHelper.clear(td);
-                    for(ColumnStyleColorRangeHelper<ColumnNumber> helper: colorRangeHelpers) helper.clear(td);
+                    for(var helper: colorRangeHelpers) helper.clear(td);
                     alignHelper.clear(td);
 
                     textHelper.apply(td, row, prop, value);
                     colorHelper.apply(td, row, prop, value);
                     dataChangeHelper.apply(instance, td, row, prop);
-                    for(ColumnStyleColorRangeHelper<ColumnNumber> helper: colorRangeHelpers) helper.apply(td, row, prop, value);
+                    dataValidateHelper.apply(instance, td, row, prop);
+                    for(var helper: colorRangeHelpers) helper.apply(td, row, prop, value);
                     alignHelper.apply(td, row, prop, value);
                     td.innerHTML = toString(format, value);
                     return td;
@@ -103,7 +107,7 @@ public final class ColumnNumber implements ColumnBuilder {
     private final class NumberEditorImpl implements CellEditorFactory.CellEditorTextImpl {
         private final HTMLInputElement elem = input("number").element();
         @Override
-        public void prepare(int row, int col, String prop, HTMLElement td, String value, Object cell) {
+        public void prepare(Handsontable instance, int row, int col, String prop, HTMLTableCellElement td, String value, Object cell) {
             textHelper.clear(td);
             colorHelper.clear(td);
             for(ColumnStyleColorRangeHelper<ColumnNumber> helper: colorRangeHelpers) helper.clear(td);
@@ -125,16 +129,16 @@ public final class ColumnNumber implements ColumnBuilder {
             }
         }
         @Override
+        public void beginEditing(String value, Event evt) {}
+        @Override
         public void setValue(String value) {
             elem.value = value;
         }
         @Override
-        public Element createElement() {
+        public Element createElement(CellEditorFactory.CellEditorText editorInstance) {
             return elem;
         }
         @Override
-        public void initialize(Element element) {
-
-        }
+        public void init(CellEditorFactory.CellEditorText editorInstance) {}
     }
 }

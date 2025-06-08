@@ -125,15 +125,36 @@
     transition: all 300ms ease-in-out;
     background: var(--md-sys-color-tertiary) !important;
 }
+/* 텍스트 편집 컴포넌트 */
+.handsontableInput {
+    box-shadow: inset 0 0 0 2px var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-surface-bright);
+}
 /* 검증된 데이터 강조 */
 .handsontable td.valid:not(.changed) {
     color: var(--md-sys-color-primary);
 }
+.handsontable td.valid:not(.changed) md-outlined-select {
+    --_text-field-input-text-color: var(--md-sys-color-primary);
+    --_text-field-hover-input-text-color: var(--md-sys-color-primary);
+    --_text-field-focus-input-text-color: var(--md-sys-color-primary);
+}
 .handsontable td.invalid:not(.changed) {
     color: var(--md-sys-color-error);
+}
+.handsontable td.invalid:not(.changed) md-outlined-select {
+    --_text-field-input-text-color: var(--md-sys-color-error);
+    --_text-field-hover-input-text-color: var(--md-sys-color-error);
+    --_text-field-focus-input-text-color: var(--md-sys-color-error);
 }
 /* 변경된 데이터 강조 */
 .handsontable td.changed {
     box-shadow: 0 0 0 1px var(--md-sys-color-tertiary) inset;
     color: var(--md-sys-color-tertiary);
+}
+.handsontable td.changed md-outlined-select {
+    --_text-field-input-text-color: var(--md-sys-color-tertiary);
+    --_text-field-hover-input-text-color: var(--md-sys-color-tertiary);
+    --_text-field-focus-input-text-color: var(--md-sys-color-tertiary);
 }
