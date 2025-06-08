@@ -56,6 +56,7 @@ public class ValidatorSelectEditorElement implements IsElement<HTMLDivElement> {
                 .toArray(String[]::new);
         return AttributeTypeDefinition.builder()
                 .baseType(AttributeTypeDefinition.AttributeType.Value)
+                .clearValidators()
                 .validators(List.of(ValidatorSelect.builder().options(options).build()))
                 .build();
     }

@@ -23,7 +23,7 @@ public class ValidatorRegexEditorElement implements IsElement<HTMLDivElement> {
         if(validator!=null) regex.value(validator.pattern());
         container.add(regex);
         regex.onChange(evt-> {
-            var next = subject.getValue().toBuilder().validators(List.of(ValidatorRegex.builder().pattern(regex.value()).build())).build();
+            var next = subject.getValue().toBuilder().clearValidators().validators(List.of(ValidatorRegex.builder().pattern(regex.value()).build())).build();
             subject.next(next);
         });
     }

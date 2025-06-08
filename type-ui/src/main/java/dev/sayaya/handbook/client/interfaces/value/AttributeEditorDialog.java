@@ -71,9 +71,7 @@ public class AttributeEditorDialog implements IsElement<MdDialogElement> {
             actionManager.edit(parent, type);
             return null;
         }));
-        btnClose.on(EventType.click, evt->dialog.close().then(msg-> {
-            return null;
-        }));
+        btnClose.on(EventType.click, evt->dialog.close());
         labels.subscribe(this::update);
     }
     public void open(TypeElement parent, Attribute attr) {

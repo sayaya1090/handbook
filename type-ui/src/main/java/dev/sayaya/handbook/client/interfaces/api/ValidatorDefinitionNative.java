@@ -22,7 +22,7 @@ public final class ValidatorDefinitionNative {
         else if ("REGEX".equals(type)) return ValidatorRegex.builder().pattern(pattern).build();
         else if ("BOOL".equals(type)) return ValidatorBool.builder().build();
         else if ("NUMBER".equals(type)) return ValidatorNumber.builder().min(min).max(max).build();
-        // else if ("DATE".equals(type)) return ValidatorDefinition.Date();
+        else if ("DATE".equals(type)) return ValidatorDate.builder().min(min).max(max).build();
         else if ("ENUM".equals(type)) return ValidatorSelect.builder().options(options).build();
         return null;
     }
@@ -32,6 +32,7 @@ public final class ValidatorDefinitionNative {
         else if(domainObj instanceof ValidatorRegex cast) return from(cast);
         else if(domainObj instanceof ValidatorBool cast) return from(cast);
         else if(domainObj instanceof ValidatorNumber cast) return from(cast);
+        else if(domainObj instanceof ValidatorDate cast) return from(cast);
         else if(domainObj instanceof ValidatorSelect cast) return from(cast);
         else return null;
     }
@@ -55,6 +56,15 @@ public final class ValidatorDefinitionNative {
         if (domainObj == null) return null;
         ValidatorDefinitionNative nativeDef = new ValidatorDefinitionNative();
         nativeDef.type = "NUMBER";
+        nativeDef.min = domainObj.min();
+        nativeDef.max = domainObj.max();
+        return nativeDef;
+    }
+    @JsOverlay @JsIgnore
+    private static ValidatorDefinitionNative from(ValidatorDate domainObj) {
+        if (domainObj == null) return null;
+        ValidatorDefinitionNative nativeDef = new ValidatorDefinitionNative();
+        nativeDef.type = "DATE";
         nativeDef.min = domainObj.min();
         nativeDef.max = domainObj.max();
         return nativeDef;
