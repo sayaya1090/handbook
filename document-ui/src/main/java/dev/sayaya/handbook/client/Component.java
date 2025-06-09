@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.interfaces.TypeTabsElement;
 import dev.sayaya.handbook.client.interfaces.api.ApiModule;
 import dev.sayaya.handbook.client.interfaces.api.DocumentApi;
 import dev.sayaya.handbook.client.interfaces.api.TypeApi;
+import dev.sayaya.handbook.client.interfaces.api.UpdateDocumentEventSource;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
 import dev.sayaya.handbook.client.interfaces.table.DocumentTableElement;
 import dev.sayaya.handbook.client.usecase.ClientSharedModule;
@@ -25,4 +26,5 @@ public interface Component {
     Observer<String> uri();
     Observer<Render> renderer();
     Observable<Tool[]> tools();
+    UpdateDocumentEventSource tmp();
 }
