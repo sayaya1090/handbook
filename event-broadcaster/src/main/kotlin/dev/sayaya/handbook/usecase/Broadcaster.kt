@@ -8,28 +8,21 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
+import java.time.Duration
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 @Service
-class Broadcaster(private val om: ObjectMapper) {
+class Broadcaster(private val om: ObjectMapper, private val sinks: WorkspaceSinkManager) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
-    private val sink: Sinks.Many<Event<*, *>> = Sinks.many().replay().limit(0)
-    private val workspaceSinks: ConcurrentHashMap<UUID, Sinks.Many<Event<*, *>>> = ConcurrentHashMap()
+    private val sink: Sinks.Many<Event<*, *>> = Sinks.many().replay().limit(Duration.ofMillis(10))
     init {
         sink.asFlux()
-            .doOnNext { event ->
-                workspaceSinks.computeIfAbsent(event.workspace) {
-                    Sinks.many().replay().limit(0)
-                }.tryEmitNext(event)
-            }.subscribe()
+            .doOnNext { event -> sinks.tryEmitNext(event) }
+            .subscribe()
     }
-
     fun broadcast(event: String) {
         val emit = sink.tryEmitNext(om.readValue(event, object : TypeReference<Event<*, *>>() {}))
         logger.info(emit.toString())
     }
-    fun listen(workspace: UUID): Flux<Event<*, *>> = workspaceSinks.computeIfAbsent(workspace) {
-        Sinks.many().replay().limit(0)
-    }.asFlux()
+    fun listen(workspace: UUID): Flux<Event<*, *>> = sinks.listen(workspace)
 }
