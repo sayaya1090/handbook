@@ -17,9 +17,10 @@ class MapValidator(
 ): AttributeValidator<AttributeTypeDefinition.Companion.MapType> {
     override val supportedAttributeType = AttributeTypeDefinition.Companion.MapType::class
     override fun validate(workspace: UUID, document: Document, value: Any?, definition: AttributeTypeDefinition.Companion.MapType): Mono<Boolean> {
+        if(value==null) return Mono.just(true)
         val key = definition.key
         val value = definition.value
-        val map = value as? Map<Any?, Any?> ?: om.convertValue(value, object : TypeReference<Map<Any?, Any?>>() {})
+        val map = value as? Map<*, *> ?: om.convertValue(value, object : TypeReference<Map<*, *>>() {})
         val validateKeys = Flux.fromIterable(map.keys)
             .flatMap { validateItem(workspace, document, it, key) }
             .all { it }

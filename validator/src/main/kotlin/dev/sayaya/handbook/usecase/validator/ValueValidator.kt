@@ -10,6 +10,7 @@ import java.util.UUID
 class ValueValidator: AttributeValidator<AttributeTypeDefinition.Companion.ValueType> {
     override val supportedAttributeType = AttributeTypeDefinition.Companion.ValueType::class
     override fun validate(workspace: UUID, document: Document, value: Any?, definition: AttributeTypeDefinition.Companion.ValueType): Mono<Boolean> {
+        if (value == null) return Mono.just(true)
         return definition.validators.none { def ->
             def.validate(value).not()
         }.let { Mono.just(it) }

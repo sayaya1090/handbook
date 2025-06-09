@@ -19,7 +19,7 @@ class ArrayValidator(
     override fun validate(workspace: UUID, document: Document, value: Any?, definition: AttributeTypeDefinition.Companion.ArrayType): Mono<Boolean> {
         if(value==null) return Mono.just(true)
         val child = definition.type
-        val list = value as? List<Any?> ?: om.convertValue(value, object : TypeReference<List<Any?>>() {})
+        val list = value as? List<*> ?: om.convertValue(value, object : TypeReference<List<*>>() {})
         return Flux.fromIterable(list).flatMap { item ->
             validateItem(workspace, document, item, child)
         }.all { it }
