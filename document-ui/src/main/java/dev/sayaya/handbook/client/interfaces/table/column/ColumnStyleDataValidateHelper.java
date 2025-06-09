@@ -15,11 +15,9 @@ public final class ColumnStyleDataValidateHelper<SELF> {
     }
     public HTMLElement apply(Handsontable instance, HTMLTableCellElement td, int row, String prop) {
         Data data = instance.getSettings().data[row];
-        DomGlobal.console.log(row);
         if(data==null) td.classList.remove("valid", "invalid");
         else {
             var valid = data.isValid(prop);
-            DomGlobal.console.log(valid);
             if(valid==null) td.classList.remove("valid", "invalid");
             else if(valid) td.classList.add("valid");
             else td.classList.add("invalid");

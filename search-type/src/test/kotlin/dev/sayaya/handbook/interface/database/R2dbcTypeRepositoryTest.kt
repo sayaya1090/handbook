@@ -100,6 +100,22 @@ internal class R2dbcTypeRepositoryTest @Autowired constructor(
         """.trimIndent())
             .bind("userId", userId)
             .fetch().rowsUpdated()
+        val insertWorkspace = databaseClient.sql("""
+            INSERT INTO public.workspace (id, created_at, created_by, last_modified_at, last_modified_by, name, description)
+            VALUES (:workspace, NOW(), :userId, NOW(), :userId, 'test-workspace', 'Test Workspace')
+            ON CONFLICT (id) DO NOTHING;
+        """.trimIndent())
+            .bind("workspace", workspace)
+            .bind("userId", userId)
+            .fetch().rowsUpdated()
+        val insertOtherWorkspace = databaseClient.sql("""
+            INSERT INTO public.workspace (id, created_at, created_by, last_modified_at, last_modified_by, name, description)
+            VALUES (:workspace, NOW(), :userId, NOW(), :userId, 'test-workspace', 'Test Workspace')
+            ON CONFLICT (id) DO NOTHING;
+        """.trimIndent())
+            .bind("workspace", otherWorkspace)
+            .bind("userId", userId)
+            .fetch().rowsUpdated()
 
         // 테스트용 Type 데이터 삽입 (Scenario 1 - 개별 INSERT 문으로 분리)
         // x, y, width, height, parent 컬럼 추가 (기본값 0, null)
@@ -172,6 +188,8 @@ internal class R2dbcTypeRepositoryTest @Autowired constructor(
 
         // 모든 INSERT 문을 순차적으로 실행하고 최종 완료를 검증
         insertUser
+            .then(insertWorkspace) // 워크스페이스 데이터 삽입
+            .then(insertOtherWorkspace) // 다른 워크스페이스 데이터 삽입
             .then(insertScenario1Type1) // Scenario 1의 첫 번째 데이터
             .then(insertScenario1Type2) // Scenario 1의 두 번째 데이터
             .then(insertScenario1Type3) // Scenario 1의 세 번째 데이터

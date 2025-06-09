@@ -9,6 +9,7 @@ import jsinterop.annotations.JsType;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,8 +27,11 @@ public final class AttributeTypeDefinitionNative {
     public AttributeTypeDefinition toDomain() {
         return AttributeTypeDefinition.builder()
                 .baseType(AttributeType.valueOf(baseType))
-                .arguments(arguments!=null? Arrays.stream(arguments).map(AttributeTypeDefinitionNative::toDomain).collect(Collectors.toList()) : List.of())
-                .validators(validators!=null? Arrays.stream(validators).map(ValidatorDefinitionNative::toDomain).collect(Collectors.toList()) : List.of())
+                .arguments(arguments!=null? Arrays.stream(arguments).filter(Objects::nonNull).map(AttributeTypeDefinitionNative::toDomain).filter(Objects::nonNull).collect(Collectors.toList()) : List.of())
+                .validators(validators!=null? Arrays.stream(validators).filter(Objects::nonNull)
+                        .map(ValidatorDefinitionNative::toDomain)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()) : List.of())
                 .extensions(extensions != null ? Set.of(extensions) : Set.of())
                 .referencedType(referencedType)
                 .build();

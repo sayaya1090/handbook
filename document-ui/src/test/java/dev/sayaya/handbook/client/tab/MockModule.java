@@ -4,9 +4,9 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import dagger.Binds;
 import dagger.Provides;
 import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.client.domain.validator.*;
 import dev.sayaya.handbook.client.interfaces.LanguageRepository;
 import dev.sayaya.handbook.client.interfaces.api.DocumentNative;
-import dev.sayaya.handbook.client.interfaces.api.TypeNative;
 import dev.sayaya.handbook.client.usecase.DocumentRepository;
 import dev.sayaya.handbook.client.usecase.LanguageProvider;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
@@ -51,7 +51,27 @@ public abstract class MockModule {
                             .primitive(true)
                             .parent(null)
                             .attributes(List.of(
-                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(AttributeTypeDefinition.builder().baseType(Value).build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$0").name("attr_1").type(AttributeTypeDefinition.builder().baseType(Value)
+                                                    .validator(ValidatorRegex.builder()
+                                                            .pattern("^[a-zA-Z0-9]+$")
+                                                            .build())
+                                            .build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$4").name("attr_4").type(AttributeTypeDefinition.builder().baseType(Value)
+                                            .validator(ValidatorBool.builder().build())
+                                            .build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$5").name("attr_5").type(AttributeTypeDefinition.builder().baseType(Value)
+                                            .validator(ValidatorNumber.builder()
+                                                    .min(0.0).max(100.0)
+                                                    .build())
+                                            .build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$6").name("attr_6").type(AttributeTypeDefinition.builder().baseType(Value)
+                                            .validator(ValidatorDate.builder().build())
+                                            .build()).nullable(false).inherited(false).build(),
+                                    Attribute.builder().id("type_1$$$t1-v1$$$7").name("attr_7").type(AttributeTypeDefinition.builder().baseType(Value)
+                                            .validator(ValidatorEnum.builder().options(new String[] {
+                                                    "Apple", "Banana", "Cherry"
+                                            }).build())
+                                            .build()).nullable(false).inherited(false).build(),
                                     Attribute.builder().id("type_1$$$t1-v1$$$1").name("attr_2").type(AttributeTypeDefinition.builder().baseType(Array)
                                             .argument(AttributeTypeDefinition.builder().baseType(Value).build())
                                             .build()

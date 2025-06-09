@@ -6,16 +6,12 @@ import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.interfaces.box.TypeElement;
 import dev.sayaya.rx.subject.BehaviorSubject;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
 
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 import static org.jboss.elemento.Elements.div;
 

@@ -1,23 +1,44 @@
 package dev.sayaya.handbook.client.interfaces.table.column;
 
-import com.google.gwt.regexp.shared.RegExp;
 import elemental2.dom.HTMLElement;
 
 import java.util.function.Supplier;
 
-public final class ColumnStyleColorConditionalHelper<SELF> implements ColumnStyleHelper<SELF> {
-    private final RegExp pattern;
+public final class ColumnStyleColorRangeHelper<SELF> implements ColumnStyleHelper<SELF> {
+    enum Operation {
+        EQ, LT, GT, LE, GE, BW, BWE
+    }
+    private final Operation op;
+    private final Double param1;
+    private final Double param2;
     private ColumnStyleFn<String> color;
     private ColumnStyleFn<String> colorBackground;
     private final Supplier<SELF> _self;
-    ColumnStyleColorConditionalHelper(String pattern, Supplier<SELF> columnBuilder) {
-        this.pattern = RegExp.compile(pattern.trim());
+    ColumnStyleColorRangeHelper(Operation op, double param1, Supplier<SELF> columnBuilder) {
+        this(op, param1, null, columnBuilder);
+    }
+    ColumnStyleColorRangeHelper(Operation op, double param1, Double param2, Supplier<SELF> columnBuilder) {
+        this.op = op;
+        this.param1 = param1;
+        this.param2 = param2;
         _self = columnBuilder;
     }
     @Override
     public HTMLElement apply(HTMLElement td, int row, String prop, String value) {
-        if(value == null) return td;
-        if(pattern.test(value.trim())) {
+        if(value == null || value.trim().isEmpty()) return td;
+        Double parse = Double.parseDouble(value);
+        boolean match = false;
+        try {switch(op) {
+            case EQ: match = (parse.equals(param1));                break;
+            case LT: match = (parse < param1);                      break;
+            case GT: match = (parse > param1);                      break;
+            case LE: match = (parse <= param1);                     break;
+            case GE: match = (parse >= param1);                     break;
+            case BW: match = (parse > param1 && parse < param2);    break;
+            case BWE: match = (parse >= param1 && parse <= param2); break;
+            default:
+        }} catch(Exception e) { return td; }
+        if(match) {
             if(color !=null)             td.style.color              = color.apply(td, row, prop, value);
             if(colorBackground !=null)   td.style.backgroundColor    = colorBackground.apply(td, row, prop, value);
         }
