@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Criteria.where
+import org.springframework.data.relational.core.query.Query.query
 import org.springframework.data.relational.core.sql.SqlIdentifier
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -31,6 +32,17 @@ class R2dbcDocumentRepository(
         if (page.content.isEmpty()) Mono.empty()
         else page.toMono()
     }
+
+    override fun find(workspace: UUID, type: String, serial: String, date: Instant): Mono<Document> = template.select(
+            query(where("workspace").`is`(workspace)
+                .and("type").`is`(type)
+                .and("serial").`is`(serial)
+                .and("effective_at").lessThanOrEquals(date)
+                .and("expire_at").greaterThan(date)
+                .and("last").`is`(true)
+            ), R2dbcDocumentEntity::class.java
+        ).singleOrEmpty().map(::toDomain)
+
     override fun search(param: Search): Mono<Page<Document>> {
         val pageable = createPageRequest(param)
         return template.search(SqlIdentifier.unquoted("document_with_validation"), param.filters, R2dbcDocumentEntity::class.java, pageable)
