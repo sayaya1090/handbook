@@ -23,7 +23,14 @@ public class WorkspaceRequireHandler {
         user.subscribe(this::update);
     }
     private void update(User user) {
-        if(user!=null && user.workspaces()!=null && user.workspaces().length > 0) drawerMode.next(DrawerState.COLLAPSE);
+        if(user==null) {
+            var existingScript = document.getElementById("module-script");
+            if (existingScript != null) existingScript.remove();
+            var script = script().attr("type", "text/javascript").id("module-script").attr("async", "true");
+            script.element().src = "js/login/login.nocache.js";
+            document.head.append(script.element());
+            drawerMode.next(DrawerState.HIDE);
+        } else if(user.workspaces()!=null && user.workspaces().length > 0) drawerMode.next(DrawerState.COLLAPSE);
         else {
             var existingScript = document.getElementById("module-script");
             if (existingScript != null) existingScript.remove();
