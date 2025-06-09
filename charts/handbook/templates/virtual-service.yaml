@@ -24,6 +24,10 @@ spec:
             regex: ^/workspace/[0-9a-fA-F-]{36}/documents
           method:
             exact: GET
+        - uri:
+            regex: ^/workspace/[0-9a-fA-F-]{36}/[^/]+/[^/]+
+          method:
+            exact: GET
       route:
         - destination:
             host: search-document

@@ -20,6 +20,7 @@ import java.util.UUID
 
 @Table(name = "document", indexes=[
     Index(columnList = "workspace, type, serial, created_at"),
+    Index(columnList = "workspace, type, serial, last, effective_at, expire_at"),
     Index(columnList = "workspace, type, last, effective_at, expire_at, created_at DESC"),
     Index(columnList = "created_by"),
 ]) @Entity
