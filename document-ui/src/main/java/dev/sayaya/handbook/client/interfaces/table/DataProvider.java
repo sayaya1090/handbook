@@ -46,16 +46,16 @@ public class DataProvider {
         var doc = evt.param();
         var prev = currentDocuments.values().stream().filter(d->d.serial().equals(doc.serial())).findFirst().orElse(null);
         if(prev == null) return;
-        var data = cache.get(prev.id());
+        var data = cache.get(prev.id());    // Document event notify때문에 무조건 data를 새로 생성하는 로직으로 고쳐야 함
         var builder = prev.toBuilder();
         for(var key: data.keys()) {
             if("$state".equals(key)) continue;
             var value = doc.values().get(key);
             data.initialize(key, value!=null? String.valueOf(value) : null);
             boolean equals = Objects.equals(prev.values().get(key), value);
-            DomGlobal.console.log(key + " : " + value + " (" + equals + ")");
-            if(!equals && !data.isChanged(key)) builder.value(key, value);
-            else data.put(key, String.valueOf(value));
+            if(equals) continue;
+            if(data.isChanged(key)) data.put(key, String.valueOf(value));
+            builder.value(key, value);
         }
         data.initialize("Serial", doc.serial())
             .initialize("Effect date time", DTF.format(doc.effectDateTime()))
