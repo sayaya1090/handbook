@@ -4,6 +4,8 @@ import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Document;
+import dev.sayaya.handbook.client.domain.HandbookEvent;
+import dev.sayaya.handbook.client.interfaces.api.UpdateDocumentEventSource;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
@@ -28,15 +30,49 @@ import static dev.sayaya.rx.subject.Subject.subject;
 public class DataProvider {
     private final Map<String, Data> cache = new ConcurrentHashMap<>();
     @Delegate private final BehaviorSubject<List<Data>> subject = behavior(List.of());
+    private final DocumentList documents;
     private final TypeProvider type;
     private final ActionManager actionManager;
     private final DateTimeFormat DTF = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
     private final Map<String, Document> currentDocuments = new ConcurrentHashMap<>();
-    @Inject DataProvider(DocumentList documents, TypeProvider type, ActionManager actionManager) {
+    @Inject DataProvider(DocumentList documents, TypeProvider type, ActionManager actionManager, UpdateDocumentEventSource eventSource) {
+        this.documents = documents;
         this.type = type;
         this.actionManager = actionManager;
         documents.asObservable().debounceTime(100).map(this::map).subscribe(subject::next);
+        eventSource.subscribe(this::synchronize);
     }
+    private void synchronize(HandbookEvent<Document> evt) {
+        var doc = evt.param();
+        var prev = currentDocuments.values().stream().filter(d->d.serial().equals(doc.serial())).findFirst().orElse(null);
+        if(prev == null) return;
+        var data = cache.get(prev.id());
+        var builder = prev.toBuilder();
+        for(var key: data.keys()) {
+            if("$state".equals(key)) continue;
+            var value = doc.values().get(key);
+            data.initialize(key, value!=null? String.valueOf(value) : null);
+            boolean equals = Objects.equals(prev.values().get(key), value);
+            if(!equals && !data.isChanged(key)) builder.value(key, value);
+        }
+        data.initialize("Serial", doc.serial())
+            .initialize("Effect date time", DTF.format(doc.effectDateTime()))
+            .initialize("Expire date time", DTF.format(doc.expireDateTime()));
+        builder.id(doc.id())
+               .serial(doc.serial())
+               .effectDateTime(doc.effectDateTime())
+               .expireDateTime(doc.expireDateTime())
+               .createdDateTime(doc.createdDateTime())
+               .createdBy(doc.createdBy())
+               .validations(doc.validations())
+               .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
+        var next = builder.build();
+        documents.replace(prev, next);  // 취소할 수 없다
+        cache.remove(prev.id());
+        cache.put(doc.id(), data);
+        currentDocuments.remove(prev.id());
+    }
+
     private List<Data> map(List<Document> documents) {
         return documents.stream().map(this::map).collect(Collectors.toUnmodifiableList());
     }
@@ -49,16 +85,16 @@ public class DataProvider {
             .put("$state", document.state().name());
         if(document.values()!=null) for(var entry: document.values().entrySet()) {
             String key = entry.getKey();
-            if("$state".equals(key) || "state".equals(key) || "initializedValues".equals(key) || "validationValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
+            if("$state".equals(key)) continue;
             if(entry.getValue()!=null) data.put(key, String.valueOf(entry.getValue()));
             else data.put(key, null);
         }
         if(document.validations()!=null) for(var entry: document.validations().values().entrySet()) {
             String key = entry.getKey();
-            if("$state".equals(key) || "state".equals(key) || "initializedValues".equals(key) || "validationValues".equals(key) || "stateChangeListeners".equals(key) || "valueChangeListeners".equals(key)) continue;
+            if("$state".equals(key)) continue;
             if(entry.getValue()!=null) data.validity(key, entry.getValue());
             else data.validity(key, null);
-        }
+        } else for(var key: data.keys()) data.validity(key, null);
         return data;
     }
     private Data create(String id) {
@@ -91,15 +127,9 @@ public class DataProvider {
                 .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
         for(var key: data.keys()) {
             if("$state".equals(key) ||
-               "initializedValues".equals(key) ||
-               "validationValues".equals(key) ||
-               "stateChangeListeners".equals(key) ||
-               "valueChangeListeners".equals(key) ||
-               "state".equals(key) ||
                "Serial".equals(key) ||
                "Effect date time".equals(key) ||
                "Expire date time".equals(key)) continue;
-            DomGlobal.console.log(key);
             var value = data.get(key);
             if(value!=null && value.isEmpty()) value = null;
             builder.value(key, value);

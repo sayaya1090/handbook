@@ -23,7 +23,6 @@ public class Application implements EntryPoint {
                 update(url, frame);
                 components.typeApi().initialize();
                 components.documentApi();
-                components.tmp();
             });
             return true;
         });

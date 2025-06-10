@@ -6,7 +6,6 @@ import elemental2.core.JsArray;
 import elemental2.core.JsObject;
 import elemental2.core.ObjectPropertyDescriptor;
 import elemental2.dom.CustomEvent;
-import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
@@ -43,7 +42,12 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
     @JsIgnore
     public Data put(String key, String value) {
         Js.asPropertyMap(this).set(key, value);
-        if(!initializedValues.has(key)) initializedValues.set(key, value);
+        if(!initializedValues.has(key)) return initialize(key, value);
+        return this;
+    }
+    @JsIgnore
+    public Data initialize(String key, String value) {
+        initializedValues.set(key, value);
         return this;
     }
     @JsIgnore
@@ -84,7 +88,14 @@ public class Data implements HasStateChangeHandlers<Data.DataState> {
         else return str;
     }
     public List<String> keys() {
-        return JsObject.getOwnPropertyNames(this).asList().stream().filter(key->!key.endsWith("$")).collect(Collectors.toUnmodifiableList());
+        return JsObject.getOwnPropertyNames(this).asList().stream()
+                .filter(key->!key.endsWith("$") &&
+                        !"state".equals(key) &&
+                        !"initializedValues".equals(key) &&
+                        !"validationValues".equals(key) &&
+                        !"stateChangeListeners".equals(key) &&
+                        !"valueChangeListeners".equals(key))
+                .collect(Collectors.toUnmodifiableList());
     }
     @JsIgnore
     public boolean isChanged() {
