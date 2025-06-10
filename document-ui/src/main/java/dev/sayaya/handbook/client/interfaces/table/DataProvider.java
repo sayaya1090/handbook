@@ -53,7 +53,9 @@ public class DataProvider {
             var value = doc.values().get(key);
             data.initialize(key, value!=null? String.valueOf(value) : null);
             boolean equals = Objects.equals(prev.values().get(key), value);
+            DomGlobal.console.log(key + " : " + value + " (" + equals + ")");
             if(!equals && !data.isChanged(key)) builder.value(key, value);
+            else data.put(key, String.valueOf(value));
         }
         data.initialize("Serial", doc.serial())
             .initialize("Effect date time", DTF.format(doc.effectDateTime()))
@@ -67,10 +69,10 @@ public class DataProvider {
                .validations(doc.validations())
                .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
         var next = builder.build();
-        documents.replace(prev, next);  // 취소할 수 없다
         cache.remove(prev.id());
         cache.put(doc.id(), data);
         currentDocuments.remove(prev.id());
+        documents.replace(prev, next);  // 취소할 수 없다
     }
 
     private List<Data> map(List<Document> documents) {

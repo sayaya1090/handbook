@@ -25,11 +25,6 @@ public class Document {
     private DocumentState state = DocumentState.NOT_CHANGE;
     private Validation validations;
 
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
-
     public enum DocumentState {
         NOT_CHANGE, CHANGE, DELETE
     }
