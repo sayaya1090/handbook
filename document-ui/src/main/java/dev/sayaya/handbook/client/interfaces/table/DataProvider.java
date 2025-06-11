@@ -11,15 +11,11 @@ import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.rx.subject.Subject;
-import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -34,117 +30,112 @@ public class DataProvider {
     private final TypeProvider type;
     private final ActionManager actionManager;
     private final DateTimeFormat DTF = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
-    private final Map<String, Document> currentDocuments = new ConcurrentHashMap<>();
     @Inject DataProvider(DocumentList documents, TypeProvider type, ActionManager actionManager, UpdateDocumentEventSource eventSource) {
         this.documents = documents;
         this.type = type;
         this.actionManager = actionManager;
-        documents.asObservable().debounceTime(100).map(this::map).subscribe(subject::next);
+        documents.asObservable().debounceTime(100).map(this::mapToList).subscribe(subject::next);
         eventSource.subscribe(this::synchronize);
     }
+    /**
+     * Document 변경 이벤트를 받아 UI 데이터를 동기화합니다.
+     * 서버에서 받은 데이터로 기존 데이터를 덮어쓰고, UI 상태(로컬 변경사항)는 초기화됩니다.
+     */
     private void synchronize(HandbookEvent<Document> evt) {
-        var doc = evt.param();
-        var prev = currentDocuments.values().stream().filter(d->d.serial().equals(doc.serial())).findFirst().orElse(null);
-        if(prev == null) return;
-        var data = cache.get(prev.id());    // Document event notify때문에 무조건 data를 새로 생성하는 로직으로 고쳐야 함
-        var builder = prev.toBuilder();
-        for(var key: data.keys()) {
-            if("$state".equals(key)) continue;
-            var value = doc.values().get(key);
-            data.initialize(key, value!=null? String.valueOf(value) : null);
-            boolean equals = Objects.equals(prev.values().get(key), value);
-            if(equals) continue;
-            if(data.isChanged(key)) data.put(key, String.valueOf(value));
-            builder.value(key, value);
-        }
-        data.initialize("Serial", doc.serial())
-            .initialize("Effect date time", DTF.format(doc.effectDateTime()))
-            .initialize("Expire date time", DTF.format(doc.expireDateTime()));
-        builder.id(doc.id())
-               .serial(doc.serial())
-               .effectDateTime(doc.effectDateTime())
-               .expireDateTime(doc.expireDateTime())
-               .createdDateTime(doc.createdDateTime())
-               .createdBy(doc.createdBy())
-               .validations(doc.validations())
-               .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
-        var next = builder.build();
-        cache.remove(prev.id());
-        cache.put(doc.id(), data);
-        currentDocuments.remove(prev.id());
-        documents.replace(prev, next);  // 취소할 수 없다
+        Document updatedDoc = evt.param();
+        documents.getValue().stream()
+                .filter(d -> Objects.equals(d.serial(), updatedDoc.serial()))
+                .findFirst()
+                .ifPresent(prevDoc -> {
+                    cache.remove(prevDoc.id()); // 이전 Document에 해당하는 캐시를 명확히 제거합니다.
+                    documents.replace(prevDoc, updatedDoc); // DocumentList에서 Document를 교체합니다. 이로 인해 반응형 스트림이 트리거되어 UI가 업데이트됩니다.
+                });
     }
 
-    private List<Data> map(List<Document> documents) {
-        return documents.stream().map(this::map).collect(Collectors.toUnmodifiableList());
+    private List<Data> mapToList(List<Document> docList) {
+        // 현재 Document 목록에 없는 Data 객체들을 캐시에서 정리합니다.
+        var currentDocIds = docList.stream().map(Document::id).collect(Collectors.toSet());
+        cache.keySet().retainAll(currentDocIds);
+        return docList.stream().map(this::mapToData).collect(Collectors.toUnmodifiableList());
     }
-    private Data map(Document document) {
-        currentDocuments.put(document.id(), document);
-        Data data = cache.computeIfAbsent(document.id(), key->create(document.id()));
+
+    private Data mapToData(Document document) {
+        // 캐시에 없으면 새로 생성하고, 있으면 기존 객체를 사용합니다.
+        Data data = cache.computeIfAbsent(document.id(), id -> createData(document));
         data.put("Serial", document.serial())
             .put("Effect date time", DTF.format(document.effectDateTime()))
             .put("Expire date time", DTF.format(document.expireDateTime()))
             .put("$state", document.state().name());
-        if(document.values()!=null) for(var entry: document.values().entrySet()) {
-            String key = entry.getKey();
-            if("$state".equals(key)) continue;
-            if(entry.getValue()!=null) data.put(key, String.valueOf(entry.getValue()));
-            else data.put(key, null);
+        if (document.values() != null) for (var entry : document.values().entrySet()) {
+            data.put(entry.getKey(), entry.getValue() != null ? String.valueOf(entry.getValue()) : null);
         }
-        if(document.validations()!=null) for(var entry: document.validations().values().entrySet()) {
-            String key = entry.getKey();
-            if("$state".equals(key)) continue;
-            if(entry.getValue()!=null) data.validity(key, entry.getValue());
-            else data.validity(key, null);
-        } else for(var key: data.keys()) data.validity(key, null);
+        if (document.validations() != null) document.validations().values().forEach(data::validity);
+        else data.keys().forEach(key -> data.validity(key, null));
         return data;
     }
-    private Data create(String id) {
-        var data = Data.create(id);
-        var type = this.type.getValue();
-        type.attributes().stream().map(Attribute::name).forEach(attr ->{
-            Object value = currentDocuments.get(id).values().get(attr);
-            if(value!=null) data.put(attr, String.valueOf(value));
-            else data.put(attr, null);
-        });
+
+    private Data createData(Document document) {
+        var data = Data.create(document.id());
+        var typeDef = this.type.getValue();
+        if (typeDef != null && typeDef.attributes() != null) typeDef.attributes().stream()
+                .map(Attribute::name)
+                .forEach(attrName -> {
+                    Object value = document.values() != null ? document.values().get(attrName) : null;
+                    data.put(attrName, value != null ? String.valueOf(value) : null);
+                });
         Subject<String> subject = subject(String.class);
-        subject.debounceTime(100).subscribe(s->notifyChange(data, id));
+        subject.debounceTime(100).subscribe(s->notifyChange(data, document.id()));
         data.onValueChange(s->{
             if(!"$state".equals(s.value())) subject.next(s.value());
         });
         return data;
     }
+
+    /**
+     * UI에서 값이 변경되었을 때 호출되어 변경사항을 처리합니다.
+     */
     private void notifyChange(Data data, String id) {
-        var origin = currentDocuments.get(id);
-        var effectDateTimeDbl = JsDate.parse(data.get("Effect date time"));
-        var effectDateTime = Double.isNaN(effectDateTimeDbl) ? null : Double.valueOf(effectDateTimeDbl).longValue();
-        var expireDateTimeDbl = JsDate.parse(data.get("Expire date time"));
-        var expireDateTime = Double.isNaN(expireDateTimeDbl) ? null : Double.valueOf(expireDateTimeDbl).longValue();
-        var builder = Document.builder().id(origin.id()).type(origin.type())
-                .createdDateTime(origin.createdDateTime())
-                .effectDateTime(effectDateTime!=null ? new Date(effectDateTime) : origin.effectDateTime())
-                .expireDateTime(expireDateTime!=null ? new Date(expireDateTime) : origin.expireDateTime())
-                .createdBy(origin.createdBy())
-                .serial(data.get("Serial"))
-                .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
-        for(var key: data.keys()) {
-            if("$state".equals(key) ||
-               "Serial".equals(key) ||
-               "Effect date time".equals(key) ||
-               "Expire date time".equals(key)) continue;
-            var value = data.get(key);
-            if(value!=null && value.isEmpty()) value = null;
-            builder.value(key, value);
-        }
-        var next = builder.build();
-        if(!equals(origin, next)) actionManager.edit(origin, next);
+        documents.getValue().stream()
+                .filter(d -> d.id().equals(id)).findFirst()
+                .ifPresent(origin -> {
+                    Document next = buildModifiedDocument(data, origin);
+                    if (!isDocumentEqual(origin, next)) actionManager.edit(origin, next);
+                });
     }
-    private boolean equals(Document a, Document b) {
+
+    /**
+     * UI의 Data 객체와 원본 Document를 기반으로 수정된 Document 객체를 생성합니다.
+     */
+    private Document buildModifiedDocument(Data data, Document origin) {
+        var effectDateTimeDbl = JsDate.parse(data.get("Effect date time"));
+        var effectDateTime = !Double.isNaN(effectDateTimeDbl) ? new Date((long) effectDateTimeDbl) : origin.effectDateTime();
+        var expireDateTimeDbl = JsDate.parse(data.get("Expire date time"));
+        var expireDateTime = !Double.isNaN(expireDateTimeDbl) ? new Date((long) expireDateTimeDbl) : origin.expireDateTime();
+        var builder = origin.toBuilder()
+                .serial(data.get("Serial"))
+                .effectDateTime(effectDateTime)
+                .expireDateTime(expireDateTime)
+                .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
+
+        for (String key : data.keys()) {
+            if (Set.of("$state", "Serial", "Effect date time", "Expire date time").contains(key)) continue;
+            String value = data.get(key);
+            builder.value(key, (value != null && !value.isEmpty()) ? value : null);
+        }
+        return builder.build();
+    }
+
+    /**
+     * 두 Document 객체의 내용이 같은지 비교합니다.
+     */
+    private boolean isDocumentEqual(Document a, Document b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
         return Objects.equals(a.id(), b.id()) &&
                 Objects.equals(a.type(), b.type()) &&
-                Objects.equals(a.effectDateTime().getTime(), b.effectDateTime().getTime()) &&
-                Objects.equals(a.expireDateTime().getTime(), b.expireDateTime().getTime()) &&
                 Objects.equals(a.serial(), b.serial()) &&
+                Objects.equals(a.effectDateTime(), b.effectDateTime()) &&
+                Objects.equals(a.expireDateTime(), b.expireDateTime()) &&
                 Objects.equals(a.values(), b.values());
     }
 }
