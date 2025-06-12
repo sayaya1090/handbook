@@ -5,7 +5,7 @@ import dev.sayaya.handbook.domain.event.Event
 import org.springframework.stereotype.Component
 import java.util.function.Consumer
 
-@Component("event")
+@Component("event-consume")
 class EventMessageListener(
     private val om: ObjectMapper,
     private val processor: EventProcessor
