@@ -31,7 +31,7 @@ class EventMessageSender(private val om: ObjectMapper): ExternalService {
         DocumentEvent(
             id = Ulid.fast().toUuid(),
             workspace = workspace,
-            type = Event.EventType.UPDATE_DOCUMENT,
+            type = Event.EventType.VALIDATE_DOCUMENT,
             param = document
         )
     }.flatMap { evt ->

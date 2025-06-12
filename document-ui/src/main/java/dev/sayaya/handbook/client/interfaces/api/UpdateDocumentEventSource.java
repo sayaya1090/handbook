@@ -3,7 +3,6 @@ package dev.sayaya.handbook.client.interfaces.api;
 import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.domain.HandbookEvent;
 import dev.sayaya.rx.subject.Subject;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.MessageEvent;
 import jsinterop.base.Js;
 import lombok.experimental.Delegate;
@@ -25,6 +24,11 @@ public class UpdateDocumentEventSource {
             var event = HandbookEvent.<Document>builder().type("UPDATE_DOCUMENT").param(param.toDomain()).build();
             subject.next(event);
         });
-        subject.subscribe(evt-> DomGlobal.console.log(evt));
+        source.addEventListener("VALIDATE_DOCUMENT", evt-> {
+            MessageEvent<String> cast = Js.cast(evt);
+            DocumentNative param = (DocumentNative) JSON.parse(cast.data);
+            var event = HandbookEvent.<Document>builder().type("VALIDATE_DOCUMENT").param(param.toDomain()).build();
+            subject.next(event);
+        });
     }
 }

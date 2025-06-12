@@ -18,6 +18,7 @@ data class DocumentEvent (
         private val ALLOWED_DOCUMENT_EVENT_TYPES = setOf(
             Event.EventType.CREATE_DOCUMENT,
             Event.EventType.UPDATE_DOCUMENT,
+            Event.EventType.VALIDATE_DOCUMENT,
             Event.EventType.DELETE_DOCUMENT
         )
     }

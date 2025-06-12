@@ -16,7 +16,9 @@ class EventProcessor (
 ) {
     @Transactional
     fun processEvent(event: Event<*, *>): Mono<Void> = when {
-        event is DocumentEvent && event.type!= Event.EventType.DELETE_DOCUMENT  -> validator.validate(event)
+        event is DocumentEvent &&
+                 event.type!= Event.EventType.DELETE_DOCUMENT &&
+                 event.type!=Event.EventType.VALIDATE_DOCUMENT -> validator.validate(event)
         event is TypeEvent && event.type!= Event.EventType.DELETE_TYPE          -> requester.request(event)
         else -> Mono.error { IllegalArgumentException("unsupported event type: ${event.type}") }
     }

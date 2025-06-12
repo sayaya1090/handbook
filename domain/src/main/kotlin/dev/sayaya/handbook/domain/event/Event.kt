@@ -28,6 +28,7 @@ interface Event<T: Serializable, N: Event<T, N>>: Serializable {
     enum class EventType {
         CREATE_DOCUMENT,
         UPDATE_DOCUMENT,
+        VALIDATE_DOCUMENT,
         DELETE_DOCUMENT,
 
         CREATE_TYPE,
