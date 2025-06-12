@@ -15,7 +15,7 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 @Singleton
 class RemoveButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
-            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-square-minus")
+            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-circle-minus")
     );
     @Inject RemoveButton(Observable<Label> labels) {
         labels.subscribe(this::update);

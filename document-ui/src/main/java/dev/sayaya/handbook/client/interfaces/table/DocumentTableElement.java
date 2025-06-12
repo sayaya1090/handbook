@@ -1,25 +1,25 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.domain.validator.*;
 import dev.sayaya.handbook.client.interfaces.table.column.ColumnBuilder;
+import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.elements.CheckboxElementBuilder;
 import elemental2.core.JsArray;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.KeyboardEvent;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static dev.sayaya.ui.elements.CheckboxElementBuilder.checkbox;
@@ -27,6 +27,7 @@ import static org.jboss.elemento.Elements.label;
 
 @Singleton
 public class DocumentTableElement implements IsElement<HTMLDivElement> {
+    private static final String KEY_Z = "KeyZ";
     private final CheckboxElementBuilder checkAll = checkbox().style("vertical-align: bottom; --md-checkbox-outline-width: 1px;");
     private final Map<Integer, CheckboxElementBuilder> rowHeaders = new HashMap<>();
     private final HandsontableConfiguration config = new HandsontableConfiguration();
@@ -35,13 +36,16 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
     private String lblEffectDatetime = "Effect date";
     private String lblExpireDatetime = "Expire date";
     private final TypeProvider typeProvider;
-    @Inject DocumentTableElement(TypeProvider type, DataProvider data, Observable<Label> labels) {
+    private final ActionManager actionManager;
+    @Inject DocumentTableElement(TypeProvider type, DataProvider data, ActionManager actionManager, Observable<Label> labels) {
         this.typeProvider = type;
+        this.actionManager = actionManager;
         setting();
         table = new HandsontableElement(config);
         type.subscribe(this::update);
         data.subscribe(this::update);
         labels.subscribe(this::update);
+        initEventHandlers();
     }
     private void update(Label label) {
         if (label == null) return;
@@ -58,6 +62,7 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
                                         .pattern("^\\s*$")
                                         .than((t, r, p, v)->"transparent",
                                               (t, r, p, v)->"var(--md-sys-color-error)")
+                                        .horizontal("center")
                                         .build().header(lblSerial),
                                 ColumnBuilder.string("Effect date time").horizontal("center").build().header(lblEffectDatetime),
                                 ColumnBuilder.string("Expire date time").horizontal("center").build().header(lblExpireDatetime)
@@ -131,6 +136,18 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
             if(checkAll.isSelected()) table.selectRows(0, config.data.length-1);
             else table.deselectCell();
         });
+    }
+    private void initEventHandlers() {
+        table.on(EventType.keydown, this::handleKeyPress);
+    }
+    private void handleKeyPress(KeyboardEvent evt) {
+        if(evt.ctrlKey) {
+            if(evt.code.equals(KEY_Z)) {
+                if (evt.shiftKey) actionManager.redo();
+                else actionManager.undo();
+                element().focus();
+            }
+        }
     }
     @Override
     public HTMLDivElement element() {

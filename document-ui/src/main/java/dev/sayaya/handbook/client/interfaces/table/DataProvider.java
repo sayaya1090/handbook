@@ -66,6 +66,13 @@ public class DataProvider {
             .put("Effect date time", DTF.format(document.effectDateTime()))
             .put("Expire date time", DTF.format(document.expireDateTime()))
             .put("$state", document.state().name());
+        var documentValues = document.values() != null ? document.values() : Collections.<String, Object>emptyMap();
+        // data 객체에 있지만 새 document 값에는 없는 키 삭제
+        data.keys().stream()
+            .filter(key -> !Set.of("Serial", "Effect date time", "Expire date time", "$state").contains(key))
+            .filter(key -> !documentValues.containsKey(key))
+            .forEach(data::delete);
+        // document 값으로 data 객체 업데이트/추가
         if (document.values() != null) for (var entry : document.values().entrySet()) {
             data.put(entry.getKey(), entry.getValue() != null ? String.valueOf(entry.getValue()) : null);
         }
