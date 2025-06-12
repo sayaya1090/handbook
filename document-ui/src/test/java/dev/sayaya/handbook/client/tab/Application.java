@@ -20,7 +20,7 @@ public class Application implements EntryPoint {
         body().add(components.controller());
         body().add(div().style("""
                     width: calc(100vw - 2rem);
-                    padding: 1rem;
+                    padding: 0 1rem;
                     height: fit-content;
                 """).add(components.table()));
         components.typeRepository().list().subscribe(list->{
