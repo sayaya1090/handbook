@@ -14,13 +14,19 @@ import java.util.UUID
 class ValidatorService(
     private val typeRepo: TypeRepository,
     private val taskRepo: ValidationTaskRepository,
-    private val validators: List<AttributeValidator<*>>
+    private val validators: List<AttributeValidator<*>>,
+    private val documentRepo: DocumentRepository,
+    private val eventHandler: ExternalServiceHandler
 ) {
     fun validate(event: DocumentEvent): Mono<Void> {
         val document = event.param
         return typeRepo.find(event.workspace, document.type, document.effectDateTime, document.expireDateTime)
             .flatMap { document.validate(event.workspace, it) }
             .flatMap { taskRepo.save(event.workspace, document, it) }
+            .then (documentRepo.findById(event.workspace, document.id!!))
+            .flatMap { eventHandler.publish(event.workspace, it) }
+            .then()
+
     }
     private fun Document.validate(workspace: UUID, type: Type): Mono<Map<String, Boolean>> = Flux.fromIterable(type.attributes).flatMap { attr ->
         val key = attr.name

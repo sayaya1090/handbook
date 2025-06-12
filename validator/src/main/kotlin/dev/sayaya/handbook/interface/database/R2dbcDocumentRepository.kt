@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.query.Criteria.where
 import org.springframework.data.relational.core.query.Query.query
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.time.Instant
 import java.util.UUID
 
@@ -25,6 +26,13 @@ class R2dbcDocumentRepository(
             .and("last").`is`(true) // 최신 버전만 조회
         ), R2dbcDocumentEntity::class.java
     ).map(::toDomain)
+
+    override fun findById(workspace: UUID, id: UUID): Mono<Document> = template.select(
+        query(where("workspace").`is`(workspace)
+            .and("id").`is`(id)
+            .and("last").`is`(true) // 최신 버전만 조회
+        ), R2dbcDocumentEntity::class.java
+    ).singleOrEmpty().map(::toDomain)
 
     private fun toDomain(entity: R2dbcDocumentEntity): Document = Document (
         id = entity.id,
