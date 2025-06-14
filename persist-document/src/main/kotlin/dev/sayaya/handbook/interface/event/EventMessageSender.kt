@@ -13,7 +13,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import java.security.Principal
-import java.time.Instant
 import java.util.UUID
 import java.util.function.Supplier
 
@@ -27,24 +26,15 @@ class EventMessageSender(private val om: ObjectMapper): ExternalService {
             Flux.empty()
         }
     }
-    override fun publish(principal: Principal, workspace: UUID, documents: Map<ExternalService.DocumentKey, Document?>): Mono<Void> = synchronized(buffer) {
-        val failures = documents.entries.stream().map {
-            (key, document) ->
+    override fun update(principal: Principal, workspace: UUID, documents: List<Document>): Mono<Void> = publish(workspace, documents, Event.EventType.UPDATE_DOCUMENT)
+    override fun delete(principal: Principal, workspace: UUID, documents: List<Document>): Mono<Void> = publish(workspace, documents, Event.EventType.DELETE_DOCUMENT)
+    private fun publish(workspace: UUID, documents: List<Document>, type: Event.EventType): Mono<Void> = synchronized(buffer) {
+        val failures = documents.stream().map { document ->
             DocumentEvent(
                 id = Ulid.fast().toUuid(),
                 workspace = workspace,
-                type = if(document!=null) Event.EventType.UPDATE_DOCUMENT else Event.EventType.DELETE_DOCUMENT,
-                param = document ?: Document(
-                    id = Ulid.fast().toUuid(),
-                    type = key.type,
-                    serial = key.serial,
-                    effectDateTime = Instant.now(),
-                    expireDateTime = Instant.now(),
-                    createDateTime = Instant.now(),
-                    creator = null,
-                    data = emptyMap(),
-                    validations = null
-                )
+                type = type,
+                param = document
             )
         }.map(buffer::tryEmitNext).filter { it.isFailure }.toList()
 

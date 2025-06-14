@@ -41,6 +41,20 @@ public class DocumentList {
         }
         this.subject.next(container.stream().collect(Collectors.toList()));
     }
+    public void replaces(Map<Document, Document> beforeAfter) {
+        var map = new HashMap<String, Document>();
+        for(var entry: beforeAfter.entrySet()) map.put(entry.getKey().id(), entry.getValue());
+        for(int i = 0; i < container.size(); i++) {
+            String id = container.get(i).id();
+            if(map.containsKey(id)) {
+                container.remove(i);
+                container.add(i, map.get(id));
+                map.remove(id);
+                if(map.isEmpty()) break;
+            }
+        }
+        this.subject.next(container.stream().collect(Collectors.toList()));
+    }
     public Observable<List<Document>> asObservable() {
         return subject.asObservable();
     }

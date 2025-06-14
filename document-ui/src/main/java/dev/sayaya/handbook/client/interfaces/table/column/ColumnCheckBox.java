@@ -19,7 +19,7 @@ public class ColumnCheckBox implements ColumnBuilder {
         str = str.trim().toLowerCase();
         RegExpResult chkBool = CHK_BOOLEAN.exec(str);
         if(chkBool != null) return str;
-        else return str;
+        else return "false";
     }
     private final String id;
     @Delegate(excludes = ColumnBuilder.class) private final ColumnBuilderDefaultHelper<ColumnCheckBox> defaultHelper = new ColumnBuilderDefaultHelper<>(()->this);
@@ -27,7 +27,8 @@ public class ColumnCheckBox implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnCheckBox> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorConditionalHelper<ColumnCheckBox>> colorConditionalHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnCheckBox> alignHelper = new ColumnStyleAlignHelper<>(()->this);
-    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnCheckBox> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataValidateHelper<ColumnCheckBox> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataDeleteHelper<ColumnCheckBox> dataDeleteHelper = new ColumnStyleDataDeleteHelper<>(()->this);
     ColumnCheckBox(String id) {
         this.id = id;
         alignHelper.horizontal("center");
@@ -45,11 +46,11 @@ public class ColumnCheckBox implements ColumnBuilder {
             colorHelper.apply(td, row, prop, value);
             dataChangeHelper.apply(instance, td, row, prop);
             dataValidateHelper.apply(instance, td, row, prop);
+            dataDeleteHelper.apply(instance, td, row, prop);
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value==null?"false":value);
 
-
             var elem = CheckboxElementBuilder.checkbox().select(Boolean.parseBoolean(value)).style("vertical-align: sub; --md-checkbox-outline-width: 1px;");
-            if(defaultHelper.readOnly()) elem.element().setAttribute("disabled", "true");
+            if(defaultHelper.readOnly() || dataDeleteHelper.deleted(data)) elem.element().setAttribute("disabled", "true");
             else if(data!=null) elem.onChange(evt->{
                 data.put(id, evt!=null?String.valueOf(elem.isSelected()):"false");
                 String v = normalize(String.valueOf(elem.isSelected()));
@@ -59,6 +60,7 @@ public class ColumnCheckBox implements ColumnBuilder {
                 colorHelper.apply(td, row, prop, v);
                 dataChangeHelper.apply(instance, td, row, prop);
                 dataValidateHelper.apply(instance, td, row, prop);
+                dataDeleteHelper.apply(instance, td, row, prop);
                 for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, v==null?"false":v);
             });
             td.innerHTML = "";

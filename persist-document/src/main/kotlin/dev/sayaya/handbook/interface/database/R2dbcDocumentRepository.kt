@@ -20,7 +20,7 @@ class R2dbcDocumentRepository (
 ): DocumentRepository, R2dbcDocumentBatchUpsertRepository, R2dbcDocumentBatchDeleteRepository {
     override val log: Logger = LoggerFactory.getLogger(this::class.java)
     override fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = getAuthenticatedUser().flatMap { user ->
-        val documentsAndEntities = documents.toEntity(workspace)
+        val documentsAndEntities = documents.toEntity(workspace).map { it.first to it.second.copy(id=Ulid.fast().toUuid()) }
         val entities = documentsAndEntities.map { it.second }
         saveAll(entities, user, Instant.now()).collectList()
             .map { savedEntities ->
@@ -54,7 +54,7 @@ class R2dbcDocumentRepository (
     private fun List<Document>.toEntity(workspace: UUID) = map { document ->
         document to R2dbcDocumentEntity.of (
             workspace = workspace,
-            id = Ulid.fast().toUuid(),
+            id = document.id ?: Ulid.fast().toUuid(),
             type = document.type,
             serial = document.serial,
             effectDateTime = document.effectDateTime, expireDateTime =  document.expireDateTime,

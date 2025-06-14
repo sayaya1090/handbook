@@ -34,7 +34,7 @@ public class Application implements EntryPoint {
                 frame.append(htmlElement("link", HTMLLinkElement.class).attr("rel", "stylesheet").attr("href", "css/document.css").element());
                 frame.append(components.tabs().element());
                 frame.append(components.controller().element());
-                frame.append(div().style("padding: 1rem;")
+                frame.append(div().style("padding: 0 1rem;")
                         .add(div().style("""
                         overflow: hidden;
                         height: calc(100dvh - 2rem);

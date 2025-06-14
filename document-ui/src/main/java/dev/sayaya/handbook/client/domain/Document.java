@@ -21,11 +21,14 @@ public class Document {
     private String createdBy;
     @Singular("value")
     private Map<String, Object> values;
-    @Builder.Default
-    private DocumentState state = DocumentState.NOT_CHANGE;
+    @Builder.Default private DocumentChangeState isChange = DocumentChangeState.NOT_CHANGE;
+    @Builder.Default private DocumentDeleteState isDelete = DocumentDeleteState.NOT_DELETE;
     private Validation validations;
 
-    public enum DocumentState {
-        NOT_CHANGE, CHANGE, DELETE
+    public enum DocumentChangeState {
+        NOT_CHANGE, CHANGE
+    }
+    public enum DocumentDeleteState {
+        NOT_DELETE, DELETE
     }
 }

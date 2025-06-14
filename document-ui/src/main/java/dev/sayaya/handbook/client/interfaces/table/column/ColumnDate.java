@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Data;
 import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
@@ -34,7 +35,8 @@ public final class ColumnDate implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnDate> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorRangeHelper<ColumnDate>> colorRangeHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnDate> alignHelper = new ColumnStyleAlignHelper<>(()->this);
-    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnDate> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataValidateHelper<ColumnDate> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataDeleteHelper<ColumnDate> dataDeleteHelper = new ColumnStyleDataDeleteHelper<>(()->this);
     private static String toString(DateTimeFormat DTF, Object value) throws RuntimeException {
         if(value == null)                   return null;
         else if(value instanceof Long)      return DTF.format(new Date((Long)value));
@@ -65,6 +67,7 @@ public final class ColumnDate implements ColumnBuilder {
                     colorHelper.apply(td, row, prop, value);
                     dataChangeHelper.apply(instance, td, row, prop);
                     dataValidateHelper.apply(instance, td, row, prop);
+                    dataDeleteHelper.apply(instance, td, row, prop);
                     Date parse = null;
                     try {parse = format.parse(value);}catch(Exception ignore) {}
                     for(var helper: colorRangeHelpers) helper.apply(td, row, prop, parse!=null?String.valueOf(parse.getTime()):null);

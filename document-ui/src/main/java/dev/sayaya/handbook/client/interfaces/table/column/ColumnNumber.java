@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Data;
 import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
@@ -36,7 +37,8 @@ public final class ColumnNumber implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnNumber> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorRangeHelper<ColumnNumber>> colorRangeHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnNumber> alignHelper = new ColumnStyleAlignHelper<>(()->this);
-    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnNumber> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataValidateHelper<ColumnNumber> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataDeleteHelper<ColumnNumber> dataDeleteHelper = new ColumnStyleDataDeleteHelper<>(()->this);
     private static String toString(NumberFormat NF, Object value) throws RuntimeException {
         if(value == null) return null;
         else if(value instanceof Long) return NF.format((Long)value);
@@ -63,6 +65,7 @@ public final class ColumnNumber implements ColumnBuilder {
                     colorHelper.apply(td, row, prop, value);
                     dataChangeHelper.apply(instance, td, row, prop);
                     dataValidateHelper.apply(instance, td, row, prop);
+                    dataDeleteHelper.apply(instance, td, row, prop);
                     for(var helper: colorRangeHelpers) helper.apply(td, row, prop, value);
                     alignHelper.apply(td, row, prop, value);
                     td.innerHTML = toString(format, value);

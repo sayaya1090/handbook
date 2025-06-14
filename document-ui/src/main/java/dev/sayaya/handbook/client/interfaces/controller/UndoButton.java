@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.domain.Label;
+import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdIconButtonElement;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
@@ -17,8 +18,9 @@ class UndoButton implements IconButtonElementBuilder<MdIconButtonElement, IconBu
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
             IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate-left")
     );
-    @Inject UndoButton(Observable<Label> labels) {
+    @Inject UndoButton(ActionManager actionManager, Observable<Label> labels) {
         labels.subscribe(this::update);
+        submit.onClick(evt-> actionManager.undo());
     }
     private void update(Label label) {
         //submitLabel.element().innerHTML = findLabelOrDefault(label, "undo");

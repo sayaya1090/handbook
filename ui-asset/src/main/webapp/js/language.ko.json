@@ -23,6 +23,7 @@
     "undo": "실행 취소",
     "redo": "다시 실행",
     "save": "저장",
+    "Version": "버전",
 
     "Edit %type%'s Attribute": "%type% 속성 편집",
     "Apply": "적용",

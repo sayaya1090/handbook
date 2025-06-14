@@ -50,7 +50,7 @@ class R2dbcDocumentRepository(
     }
     private fun createPageRequest(param: Search): PageRequest {
         val sortBy = param.sortBy?.let(::property) ?: "serial"
-        val sortOrder = param.asc?.let { if (it) Sort.Order.asc(sortBy) else Sort.Order.desc(sortBy) } ?: Sort.Order.desc(sortBy)
+        val sortOrder = param.asc?.let { if (it) Sort.Order.asc(sortBy) else Sort.Order.desc(sortBy) } ?: Sort.Order.asc(sortBy)
         return PageRequest.of(param.page, param.limit, Sort.by(sortOrder))
     }
     override fun R2dbcEntityTemplate.predicate(key: String, value: Any?): Criteria = when (key) {
