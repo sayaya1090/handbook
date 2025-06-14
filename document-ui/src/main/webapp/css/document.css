@@ -157,3 +157,7 @@
 .handsontable td.changed {
     box-shadow: 0 0 0 1px var(--md-sys-color-tertiary) inset;
 }
+/* 삭제 예정인 데이터 강조 */
+.handsontable td.deleted {
+    text-decoration: line-through;
+}

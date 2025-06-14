@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.interfaces.table.column;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.regexp.shared.RegExp;
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Data;
 import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
@@ -24,7 +25,8 @@ public final class ColumnDropDown implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnDropDownStyleColorHelper colorHelper = new ColumnDropDownStyleColorHelper(()->this) ;
     private final List<ColumnDropDownStyleColorConditionalHelper> colorConditionalHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnDropDown> alignHelper = new ColumnStyleAlignHelper<>(()->this);
-    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnDropDown> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataValidateHelper<ColumnDropDown> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataDeleteHelper<ColumnDropDown> dataDeleteHelper = new ColumnStyleDataDeleteHelper<>(()->this);
     ColumnDropDown(String id, String... list) {
         this.id = id;
         this.list = list;
@@ -34,6 +36,9 @@ public final class ColumnDropDown implements ColumnBuilder {
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);
         return column.renderer((instance, td, row, col, prop, value, ci)->{
+                    Data data = instance.getSettings().data[row];
+                    column.readOnly(defaultHelper.readOnly() || dataDeleteHelper.deleted(data));
+
                     textHelper.clear(td);
                     colorHelper.clear(td);
                     for (var helper : colorConditionalHelpers) helper.clear(td);
@@ -43,6 +48,7 @@ public final class ColumnDropDown implements ColumnBuilder {
                     colorHelper.apply(td, row, prop, value);
                     dataChangeHelper.apply(instance, td, row, prop);
                     dataValidateHelper.apply(instance, td, row, prop);
+                    dataDeleteHelper.apply(instance, td, row, prop);
                     for (var helper : colorConditionalHelpers) helper.apply(td, row, prop, value);
                     alignHelper.apply(td, row, prop, value);
                     td.innerHTML = value;
@@ -125,6 +131,7 @@ public final class ColumnDropDown implements ColumnBuilder {
             colorHelper.apply(td, row, prop, value);
             dataChangeHelper.apply(instance, td, row, prop);
             dataValidateHelper.apply(instance, td, row, prop);
+            dataDeleteHelper.apply(instance, td, row, prop);
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value);
             if(defaultHelper.readOnly()) input.enable(false);
         }

@@ -23,7 +23,7 @@ public class DocumentListToDelete {
     }
     private void filter(List<Document> documents) {
         var next = documents.stream()
-                .filter(doc->doc.state() == Document.DocumentState.DELETE)
+                .filter(doc->doc.isDelete() == Document.DocumentDeleteState.DELETE)
                 .collect(Collectors.toSet());
         subject.next(next);
     }

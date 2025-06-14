@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.table.column;
 
 import dev.sayaya.handbook.client.interfaces.table.Column;
+import dev.sayaya.handbook.client.interfaces.table.Data;
 import dev.sayaya.handbook.client.interfaces.table.Handsontable;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditor;
 import dev.sayaya.handbook.client.interfaces.table.function.CellEditorFactory;
@@ -27,11 +28,15 @@ public final class ColumnString implements ColumnBuilder {
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleColorHelper<ColumnString> colorHelper = new ColumnStyleColorHelper<>(()->this);
     private final List<ColumnStyleColorConditionalHelper<ColumnString>> colorConditionalHelpers = new LinkedList<>();
     @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleAlignHelper<ColumnString> alignHelper = new ColumnStyleAlignHelper<>(()->this);
-    @Delegate(excludes = ColumnStyleHelper.class) private final ColumnStyleDataValidateHelper<ColumnString> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataValidateHelper<ColumnString> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
+    private final ColumnStyleDataDeleteHelper<ColumnString> dataDeleteHelper = new ColumnStyleDataDeleteHelper<>(()->this);
     @Override
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);
         return column.renderer((instance, td, row, col, prop, value, ci)->{
+                    Data data = instance.getSettings().data[row];
+                    column.readOnly(defaultHelper.readOnly() || dataDeleteHelper.deleted(data));
+
                     textHelper.clear(td);
                     colorHelper.clear(td);
                     for (var helper : colorConditionalHelpers) helper.clear(td);
@@ -41,6 +46,7 @@ public final class ColumnString implements ColumnBuilder {
                     colorHelper.apply(td, row, prop, value);
                     dataChangeHelper.apply(instance, td, row, prop);
                     dataValidateHelper.apply(instance, td, row, prop);
+                    dataDeleteHelper.apply(instance, td, row, prop);
                     for (var helper : colorConditionalHelpers) helper.apply(td, row, prop, value);
                     alignHelper.apply(td, row, prop, value);
                     td.innerHTML = value;

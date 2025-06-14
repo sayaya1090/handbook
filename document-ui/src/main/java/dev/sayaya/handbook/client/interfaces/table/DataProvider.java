@@ -27,11 +27,13 @@ public class DataProvider {
     private final Map<String, Data> cache = new ConcurrentHashMap<>();
     @Delegate private final BehaviorSubject<List<Data>> subject = behavior(List.of());
     private final DocumentList documents;
+    private final DocumentSelectedList selections;
     private final TypeProvider type;
     private final ActionManager actionManager;
     private final DateTimeFormat DTF = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
-    @Inject DataProvider(DocumentList documents, TypeProvider type, ActionManager actionManager, UpdateDocumentEventSource eventSource) {
+    @Inject DataProvider(DocumentList documents, DocumentSelectedList selections, TypeProvider type, ActionManager actionManager, UpdateDocumentEventSource eventSource) {
         this.documents = documents;
+        this.selections = selections;
         this.type = type;
         this.actionManager = actionManager;
         documents.asObservable().debounceTime(100).map(this::mapToList).subscribe(subject::next);
@@ -65,7 +67,7 @@ public class DataProvider {
         data.put("Serial", document.serial())
             .put("Effect date time", DTF.format(document.effectDateTime()))
             .put("Expire date time", DTF.format(document.expireDateTime()))
-            .put("$state", document.state().name());
+            .put("$state", document.isDelete().name());
         var documentValues = document.values() != null ? document.values() : Collections.<String, Object>emptyMap();
         // data 객체에 있지만 새 document 값에는 없는 키 삭제
         data.keys().stream()
@@ -95,6 +97,10 @@ public class DataProvider {
         data.onValueChange(s->{
             if(!"$state".equals(s.value())) subject.next(s.value());
         });
+        data.onStateChange(s->{
+            if(data.state() == Data.DataState.SELECTED) selections.add(document);
+            else selections.remove(document);
+        });
         return data;
     }
 
@@ -122,7 +128,7 @@ public class DataProvider {
                 .serial(data.get("Serial"))
                 .effectDateTime(effectDateTime)
                 .expireDateTime(expireDateTime)
-                .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
+                .isChange(data.isChanged() ? Document.DocumentChangeState.CHANGE : Document.DocumentChangeState.NOT_CHANGE);
 
         for (String key : data.keys()) {
             if (Set.of("$state", "Serial", "Effect date time", "Expire date time").contains(key)) continue;

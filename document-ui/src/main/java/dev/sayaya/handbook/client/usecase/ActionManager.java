@@ -8,6 +8,7 @@ import elemental2.dom.DomGlobal;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.LinkedList;
+import java.util.List;
 
 @Singleton
 public class ActionManager {
@@ -32,6 +33,11 @@ public class ActionManager {
     }
     public void edit(Document before, Document after) {
         var action = factory.edit(before, after);
+        push(action);
+        action.execute();
+    }
+    public void remove(List<Document> docs) {
+        var action = factory.delete(docs);
         push(action);
         action.execute();
     }
