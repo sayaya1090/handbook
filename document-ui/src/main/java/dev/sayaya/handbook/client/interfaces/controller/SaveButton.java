@@ -19,8 +19,8 @@ import java.util.Set;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
 @Singleton
-class SaveButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
-    @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
+class SaveButton implements IconButtonElementBuilder<MdIconButtonElement.MdFilledTonalIconButtonElement, IconButtonElementBuilder.FilledTonalIconButtonElementBuilder> {
+    @Delegate private final FilledTonalIconButtonElementBuilder submit = button().icon().filledTonal().add(
             IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-cloud-arrow-up")
     );
     @Inject SaveButton(ActionManager actionManager, DocumentListToUpsert toUpdate, DocumentListToDelete toDelete, Observable<Label> labels) {

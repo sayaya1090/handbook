@@ -23,6 +23,7 @@
     "undo": "Undo",
     "redo": "Redo",
     "save": "Save",
+    "Version": "Version",
 
     "Edit %type%'s Attribute": "Edit %type%'s Attribute",
     "Apply": "Apply",
