@@ -7,10 +7,7 @@ import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdTextFieldElement;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
-import elemental2.dom.Event;
-import jsinterop.base.Js;
 import lombok.experimental.Delegate;
-import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -22,7 +19,7 @@ import static dev.sayaya.ui.elements.TextFieldElementBuilder.textField;
 @Singleton
 public class EffectDatetimeElement implements IsElement<MdTextFieldElement.MdOutlinedTextFieldElement> {
     @Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder ipt = textField().outlined().attr("type", "datetime-local")
-            .css("label").style("width: auto;").enable(false);
+            .css("label").style("width: auto; pointer-events: none;").enable(false);
     @Inject EffectDatetimeElement(TypeProvider typeProvider, Observable<Label> labels) {
         labels.subscribe(this::update);
         ipt.element().readOnly = true;
