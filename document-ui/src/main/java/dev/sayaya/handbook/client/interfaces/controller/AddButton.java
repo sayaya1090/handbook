@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.domain.Label;
-import dev.sayaya.handbook.client.interfaces.table.DocumentTableElement;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdIconButtonElement;
@@ -17,7 +16,7 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 @Singleton
 class AddButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
-            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-square-plus")
+            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-circle-plus")
     );
     @Inject AddButton(ActionManager actionManager, Observable<Label> labels) {
         labels.subscribe(this::update);

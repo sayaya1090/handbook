@@ -1,10 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.client.domain.Label;
 import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
-import dev.sayaya.rx.Observable;
 import dev.sayaya.ui.dom.MdIconButtonElement;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;

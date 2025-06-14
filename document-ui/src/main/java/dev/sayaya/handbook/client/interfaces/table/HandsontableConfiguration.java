@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.table;
 
 import dev.sayaya.handbook.client.interfaces.table.function.AfterGetColumnHeaderRenderers;
 import dev.sayaya.handbook.client.interfaces.table.function.AfterGetRowHeaderRenderers;
+import dev.sayaya.handbook.client.interfaces.table.function.Cells;
 import dev.sayaya.handbook.client.interfaces.table.function.MouseEventHandler;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
@@ -32,6 +33,7 @@ public final class HandsontableConfiguration {
     public boolean autoRowSize;
     public boolean autoColSize;
     public Column[] columns;
+    public Cells cells;
     public Object colHeaders;
     public boolean formulas;
     public String preventOverflow;

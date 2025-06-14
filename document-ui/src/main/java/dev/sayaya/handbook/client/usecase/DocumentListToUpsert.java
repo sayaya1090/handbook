@@ -22,7 +22,7 @@ public class DocumentListToUpsert {
     }
     private void filter(List<Document> documents) {
         var next = documents.stream()
-                .filter(doc-> doc.state() == Document.DocumentState.CHANGE)
+                .filter(doc-> doc.isChange() == Document.DocumentChangeState.CHANGE)
                 .collect(Collectors.toSet());
         subject.next(next);
     }

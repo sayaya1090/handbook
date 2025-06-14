@@ -5,6 +5,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.domain.Attribute;
 import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.domain.HandbookEvent;
+import dev.sayaya.handbook.client.interfaces.api.DeleteDocumentEventSource;
 import dev.sayaya.handbook.client.interfaces.api.UpdateDocumentEventSource;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.DocumentList;
@@ -27,15 +28,24 @@ public class DataProvider {
     private final Map<String, Data> cache = new ConcurrentHashMap<>();
     @Delegate private final BehaviorSubject<List<Data>> subject = behavior(List.of());
     private final DocumentList documents;
+    private final DocumentSelectedList selections;
     private final TypeProvider type;
     private final ActionManager actionManager;
     private final DateTimeFormat DTF = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
-    @Inject DataProvider(DocumentList documents, TypeProvider type, ActionManager actionManager, UpdateDocumentEventSource eventSource) {
+    @Inject DataProvider(DocumentList documents, DocumentSelectedList selections, TypeProvider type, ActionManager actionManager, UpdateDocumentEventSource eventSource, DeleteDocumentEventSource deleteEventSource) {
         this.documents = documents;
+        this.selections = selections;
         this.type = type;
         this.actionManager = actionManager;
         documents.asObservable().debounceTime(100).map(this::mapToList).subscribe(subject::next);
         eventSource.subscribe(this::synchronize);
+        deleteEventSource.subscribe(evt->{
+            if(evt.param() == null) return;
+            documents.getValue().stream()
+                    .filter(d -> Objects.equals(d.serial(), evt.param().serial()))
+                    .findFirst()
+                    .ifPresent(documents::remove);
+        });
     }
     /**
      * Document 변경 이벤트를 받아 UI 데이터를 동기화합니다.
@@ -65,7 +75,14 @@ public class DataProvider {
         data.put("Serial", document.serial())
             .put("Effect date time", DTF.format(document.effectDateTime()))
             .put("Expire date time", DTF.format(document.expireDateTime()))
-            .put("$state", document.state().name());
+            .put("$state", document.isDelete().name());
+        var documentValues = document.values() != null ? document.values() : Collections.<String, Object>emptyMap();
+        // data 객체에 있지만 새 document 값에는 없는 키 삭제
+        data.keys().stream()
+            .filter(key -> !Set.of("Serial", "Effect date time", "Expire date time", "$state").contains(key))
+            .filter(key -> !documentValues.containsKey(key))
+            .forEach(data::delete);
+        // document 값으로 data 객체 업데이트/추가
         if (document.values() != null) for (var entry : document.values().entrySet()) {
             data.put(entry.getKey(), entry.getValue() != null ? String.valueOf(entry.getValue()) : null);
         }
@@ -87,6 +104,10 @@ public class DataProvider {
         subject.debounceTime(100).subscribe(s->notifyChange(data, document.id()));
         data.onValueChange(s->{
             if(!"$state".equals(s.value())) subject.next(s.value());
+        });
+        data.onStateChange(s->{
+            if(data.state() == Data.DataState.SELECTED) selections.add(document);
+            else selections.remove(document);
         });
         return data;
     }
@@ -115,7 +136,7 @@ public class DataProvider {
                 .serial(data.get("Serial"))
                 .effectDateTime(effectDateTime)
                 .expireDateTime(expireDateTime)
-                .state(data.isChanged() ? Document.DocumentState.CHANGE : Document.DocumentState.NOT_CHANGE);
+                .isChange(data.isChanged() ? Document.DocumentChangeState.CHANGE : Document.DocumentChangeState.NOT_CHANGE);
 
         for (String key : data.keys()) {
             if (Set.of("$state", "Serial", "Effect date time", "Expire date time").contains(key)) continue;
