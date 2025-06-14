@@ -160,4 +160,5 @@
 /* 삭제 예정인 데이터 강조 */
 .handsontable td.deleted {
     text-decoration: line-through;
+    color: color-mix(in srgb, currentColor 25%, transparent) !important;
 }

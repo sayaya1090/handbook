@@ -49,7 +49,6 @@ public class ColumnCheckBox implements ColumnBuilder {
             dataDeleteHelper.apply(instance, td, row, prop);
             for(var helper: colorConditionalHelpers) helper.apply(td, row, prop, value==null?"false":value);
 
-
             var elem = CheckboxElementBuilder.checkbox().select(Boolean.parseBoolean(value)).style("vertical-align: sub; --md-checkbox-outline-width: 1px;");
             if(defaultHelper.readOnly() || dataDeleteHelper.deleted(data)) elem.element().setAttribute("disabled", "true");
             else if(data!=null) elem.onChange(evt->{

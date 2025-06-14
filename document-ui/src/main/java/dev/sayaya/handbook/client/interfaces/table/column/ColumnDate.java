@@ -58,9 +58,6 @@ public final class ColumnDate implements ColumnBuilder {
     public Column build() {
         Column column = defaultHelper.build().data(id).header(id);
         return column.renderer((instance, td, row, col, prop, value, ci)->{
-                    Data data = instance.getSettings().data[row];
-                    column.readOnly(defaultHelper.readOnly() || dataDeleteHelper.deleted(data));
-
                     textHelper.clear(td);
                     colorHelper.clear(td);
                     for(var helper: colorRangeHelpers) helper.clear(td);

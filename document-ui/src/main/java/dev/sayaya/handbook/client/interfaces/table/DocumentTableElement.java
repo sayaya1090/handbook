@@ -13,6 +13,7 @@ import dev.sayaya.ui.elements.CheckboxElementBuilder;
 import elemental2.core.JsArray;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.KeyboardEvent;
+import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
@@ -68,6 +69,13 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
                                 ColumnBuilder.string("Expire date time").horizontal("center").build().header(lblExpireDatetime)
                         ), type.attributes().stream().map(this::toColumn).map(ColumnBuilder::build)
                 ).toArray(Column[]::new);
+        config.cells = (row, col, prop) -> {
+            var cellProperties = Js.asPropertyMap(new Object());
+            Data data = config.data[row];
+            var isDeleted = "DELETE".equals(data.get("$state"));
+            if(isDeleted) cellProperties.set("readOnly", true);
+            return cellProperties;
+        };
         table.updateSettings(config);
     }
     private ColumnBuilder toColumn(Attribute attr) {
