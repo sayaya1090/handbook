@@ -21,7 +21,7 @@ class R2dbcDocumentRepository (
     override val log: Logger = LoggerFactory.getLogger(this::class.java)
     override fun saveAll(workspace: UUID, documents: List<Document>): Mono<List<Document>> = getAuthenticatedUser().flatMap { user ->
         val documentsAndEntities = documents.toEntity(workspace)
-        val entities = documentsAndEntities.map { it.second }
+        val entities = documentsAndEntities.map { it.second.copy(id = Ulid.fast().toUuid()) }
         saveAll(entities, user, Instant.now()).collectList()
             .map { savedEntities ->
                 val savedEntitiesMap = savedEntities.associateBy { it.id }
@@ -54,7 +54,7 @@ class R2dbcDocumentRepository (
     private fun List<Document>.toEntity(workspace: UUID) = map { document ->
         document to R2dbcDocumentEntity.of (
             workspace = workspace,
-            id = Ulid.fast().toUuid(),
+            id = document.id ?: Ulid.fast().toUuid(),
             type = document.type,
             serial = document.serial,
             effectDateTime = document.effectDateTime, expireDateTime =  document.expireDateTime,
