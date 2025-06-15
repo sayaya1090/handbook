@@ -55,6 +55,7 @@ public class DocumentApi implements SearchApi<DocumentNative>, DocumentRepositor
                 .filter("type", type.getValue().id())
                 .filter("effect_date_time", String.valueOf(type.getValue().effectDateTime().getTime()))
                 .filter("expire_date_time", String.valueOf(type.getValue().expireDateTime().getTime()))
+                .sortBy("serial").asc(true).limit(999999)
                 .build();
         return search("workspace/" + workspace.id() + "/documents", param)
                         .then(this::parse)

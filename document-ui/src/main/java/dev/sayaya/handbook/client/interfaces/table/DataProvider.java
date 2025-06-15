@@ -66,7 +66,10 @@ public class DataProvider {
         // 현재 Document 목록에 없는 Data 객체들을 캐시에서 정리합니다.
         var currentDocIds = docList.stream().map(Document::id).collect(Collectors.toSet());
         cache.keySet().retainAll(currentDocIds);
-        return docList.stream().map(this::mapToData).collect(Collectors.toUnmodifiableList());
+        return docList.stream()
+                .filter(doc->doc.isDelete() != Document.DocumentDeleteState.DELETE || doc.createdBy()!=null)    // 새로 만들었는데 삭제요청은 바로 화면에서 지우자. 어차피 업데이트/삭제 요청이 날아가지 않는다.
+                .map(this::mapToData)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private Data mapToData(Document document) {
