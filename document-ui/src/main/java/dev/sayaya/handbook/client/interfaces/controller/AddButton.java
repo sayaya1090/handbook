@@ -16,7 +16,7 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 @Singleton
 class AddButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
-            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-circle-plus")
+            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-plus")
     );
     @Inject AddButton(ActionManager actionManager, Observable<Label> labels) {
         labels.subscribe(this::update);
