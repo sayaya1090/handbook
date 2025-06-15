@@ -24,6 +24,7 @@ public class DocumentListToDelete {
     private void filter(List<Document> documents) {
         var next = documents.stream()
                 .filter(doc->doc.isDelete() == Document.DocumentDeleteState.DELETE)
+                .filter(doc->doc.id()!=null)
                 .collect(Collectors.toSet());
         subject.next(next);
     }
