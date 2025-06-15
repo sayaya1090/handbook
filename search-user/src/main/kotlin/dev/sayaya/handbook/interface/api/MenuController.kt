@@ -24,7 +24,7 @@ internal class MenuController {
             .bottom(true)
             .tools(
                 Tool.builder().title("user info").order("U1").icon("fa-information").iconType("sharp").build()
-            ).build()
+            ).url("^users").build()
     }
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)

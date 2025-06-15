@@ -21,7 +21,7 @@ internal class MenuController {
             .script("js/type.nocache.js")
             .tools(
                 Tool.builder().title("View as Graph").order("BE").icon("fa-diagram-project").iconType("sharp").build(),
-                Tool.builder().title("View as Calendar").order("BH").icon("fa-calendar-range").iconType("sharp").build()
+                //Tool.builder().title("View as Calendar").order("BH").icon("fa-calendar-range").iconType("sharp").build()
             ).url("^types").build()
     }
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
