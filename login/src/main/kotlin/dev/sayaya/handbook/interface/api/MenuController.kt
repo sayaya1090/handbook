@@ -30,7 +30,7 @@ internal class MenuController {
             .order("Z")
             .icon("fa-left-from-bracket")
             .iconType("sharp")
-            .script("js/login/login.nocache.js")
+            .script("js/logout/logout.nocache.js")
             .bottom(true)
             .tools(
                 Tool.builder().title("sign out").order("Z-1").icon("fa-left-from-bracket").iconType("sharp").build(),

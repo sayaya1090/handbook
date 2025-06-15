@@ -11,9 +11,6 @@ public interface FetchApi {
         return request(url, null);
     }
     default Promise<Response> request(String url, RequestInit param) {
-        return DomGlobal.fetch(url, param).then(response -> {
-            if (response.status == 401) DomGlobal.location.assign("login?redirectUrl=" + Global.encodeURIComponent(DomGlobal.location.href));
-            return Promise.resolve(response);
-        });
+        return DomGlobal.fetch(url, param);
     }
 }

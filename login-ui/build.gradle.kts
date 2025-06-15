@@ -15,7 +15,7 @@ dependencies {
 }
 gwt {
     gwtVersion = "2.12.2"
-    modules = listOf("dev.sayaya.handbook.Login")
+    modules = listOf("dev.sayaya.handbook.Login", "dev.sayaya.handbook.Logout")
     sourceLevel = "auto"
     war = file("src/main/webapp")
     devMode {
