@@ -77,14 +77,14 @@ class BoxReferenceElement implements IsSvgElement<SVGElement, SvgBuilder> {
 
         // 5. SVG 요소의 절대 위치 및 크기 설정
         // SVG의 left, top은 canvasRect를 기준으로 한 minX, minY에 canvasRect의 페이지 좌표를 더한 값입니다.
-        double svgLeft = canvasRect.x + minX;
-        double svgTop = canvasRect.y + minY;
+        double svgLeft = minX;
+        double svgTop = minY;
         double svgWidth = Math.max(1, (maxX - minX));
         double svgHeight = Math.max(1, (maxY - minY));
 
         svg.attr("width", String.valueOf(svgWidth))
                 .attr("height", String.valueOf(svgHeight))
-                .style("position: fixed; left: " + svgLeft + "px; top: " + svgTop + "px; pointer-events: none;");
+                .style("position: absolute; left: " + svgLeft + "px; top: " + svgTop + "px; pointer-events: none;");
 
         // 6. 경로를 SVG 내부 좌표로 변환하여 Path 데이터 생성
         List<Point> svgPoints = new ArrayList<>();
