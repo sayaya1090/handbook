@@ -5,7 +5,6 @@ import dev.sayaya.handbook.client.domain.Type;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.ui.dom.MdTabsElement;
 import dev.sayaya.ui.elements.TabsElementBuilder;
-import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
@@ -34,7 +33,7 @@ public class TypeTabsElement implements IsElement<MdTabsElement> {
         String firstTypeId = null;
         for (var typeId : types.keySet()) {
             if (firstTypeId == null) firstTypeId = typeId;
-            tabs.tab().add(typeId).on(EventType.click, evt-> update(typeId, types));
+            tabs.tab().add(typeId).active(firstTypeId.equals(typeId)).on(EventType.click, evt-> update(typeId, types));
         }
         if(firstTypeId!=null) update(firstTypeId, types);
     }
