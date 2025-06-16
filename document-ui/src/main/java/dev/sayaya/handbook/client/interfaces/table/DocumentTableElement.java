@@ -72,6 +72,7 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         config.cells = (row, col, prop) -> {
             var cellProperties = Js.asPropertyMap(new Object());
             Data data = config.data[row];
+            if(data == null) return cellProperties;
             var isDeleted = "DELETE".equals(data.get("$state"));
             if(isDeleted) cellProperties.set("readOnly", true);
             return cellProperties;

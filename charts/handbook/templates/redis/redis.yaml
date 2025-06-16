@@ -21,3 +21,5 @@ spec:
     helm:
       valuesObject:
         fullnameOverride: redis
+        existingSecret: redis
+        existingSecretPasswordKey: redis-password

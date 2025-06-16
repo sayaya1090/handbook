@@ -17,7 +17,7 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 @Singleton
 class RemoveButton implements IconButtonElementBuilder<MdIconButtonElement, IconButtonElementBuilder.PlainIconButtonElementBuilder> {
     @Delegate private final PlainIconButtonElementBuilder submit = button().icon().add(
-            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-circle-minus")
+            IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-minus")
     );
     private final ActionManager actionManager;
     private final DocumentSelectedList selections;

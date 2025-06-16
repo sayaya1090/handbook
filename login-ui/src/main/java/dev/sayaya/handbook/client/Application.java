@@ -1,7 +1,10 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import dev.sayaya.handbook.client.domain.Tool;
 import elemental2.dom.HTMLLinkElement;
+
+import java.util.Arrays;
 
 import static org.jboss.elemento.Elements.htmlElement;
 import static org.jboss.elemento.Elements.script;

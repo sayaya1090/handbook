@@ -9,7 +9,6 @@ import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
@@ -18,7 +17,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static elemental2.core.Global.JSON;
 
@@ -49,12 +47,13 @@ public class DocumentApi implements SearchApi<DocumentNative>, DocumentRepositor
         throw new RuntimeException("Request failed: " + throwable);
     }
     public Promise<Page<Document>> search() {
-        if(workspace==null) return Promise.resolve(Page.<Document>builder().content(new Document[0]).build());
+        if(workspace==null || type.getValue()==null) return Promise.resolve(Page.<Document>builder().content(new Document[0]).build());
         progress.next(Progress.builder().enabled(true).intermediate(true).build());
         var param = Search.builder()
                 .filter("type", type.getValue().id())
                 .filter("effect_date_time", String.valueOf(type.getValue().effectDateTime().getTime()))
                 .filter("expire_date_time", String.valueOf(type.getValue().expireDateTime().getTime()))
+                .sortBy("serial").asc(true).limit(999999)
                 .build();
         return search("workspace/" + workspace.id() + "/documents", param)
                         .then(this::parse)

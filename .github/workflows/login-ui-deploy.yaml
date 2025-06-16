@@ -32,6 +32,7 @@ jobs:
           mkdir -p static/js
           unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.css" -d static
           mv static/login static/js/login
+          mv static/logout static/js/logout
       - name: Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.AWS_ACCESS_KEY_ID || secrets.AWS_ACCESS_KEY_ID_CANDIDATE }}
