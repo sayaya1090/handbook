@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import java.io.Serializable
 import java.time.Instant
+import java.time.format.DateTimeParseException
 
 @JsonTypeInfo(use = NAME, property = "type")
 @JsonSubTypes(
@@ -61,6 +62,10 @@ sealed interface ValidatorDefinition: Serializable {
                 is Number -> {
                     (min == null || value.toDouble() >= min.toDouble()) &&
                     (max == null || value.toDouble() <= max.toDouble())
+                } is String -> try {
+                    validate(value.toDouble())
+                } catch(_: NumberFormatException) {
+                    false
                 } else -> false
             }
         }
@@ -80,6 +85,10 @@ sealed interface ValidatorDefinition: Serializable {
                 is Instant -> {
                     (before == null || value.isBefore(before)) &&
                     (after == null || value.isAfter(after))
+                } is String -> try {
+                    validate(Instant.parse(value))
+                } catch(_: DateTimeParseException) {
+                    false
                 } else -> false
             }
         }
