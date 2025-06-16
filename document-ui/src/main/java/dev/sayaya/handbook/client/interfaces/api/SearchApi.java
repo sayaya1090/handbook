@@ -4,6 +4,8 @@ import elemental2.dom.Response;
 import elemental2.dom.URLSearchParams;
 import elemental2.promise.Promise;
 
+import java.util.List;
+
 public interface SearchApi<T> {
     default URLSearchParams searchParams(Search search) {
         var params = new URLSearchParams();
@@ -28,8 +30,7 @@ public interface SearchApi<T> {
     }
     private Promise<Response> handleResponse(Response response) {
         return switch (response.status) {
-            case 200 -> Promise.resolve(response);
-            case 204 -> Promise.reject("Empty result");
+            case 200, 204 -> Promise.resolve(response);
             default  -> Promise.reject("HTTP Error: " + response.status + " - " + response.statusText);
         };
     }
@@ -37,7 +38,11 @@ public interface SearchApi<T> {
     private Promise<Page<T>> parse(Response response) {
         String totalPages = response.headers.get("X-Total-Pages");
         String totalElements = response.headers.get("X-Total-Count");
-        return response.json().then(values-> Promise.resolve(new Page<>(
+        if(response.status == 204) return Promise.resolve(new Page<>(
+                (T[]) new Object[0],
+                totalPages!=null?Long.parseLong(totalPages):0,
+                totalElements!=null?Long.parseLong(totalElements):0
+        )); else return response.json().then(values-> Promise.resolve(new Page<>(
                 (T[])values,
                 totalPages!=null?Long.parseLong(totalPages):0,
                 totalElements!=null?Long.parseLong(totalElements):0
