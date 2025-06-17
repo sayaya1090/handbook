@@ -74,6 +74,7 @@
 .handsontable th {
     color: var(--md-sys-color-primary);
     font-family: var(--md-sys-typescale-headline-small-font);
+    font-size: var(--md-sys-typescale-headline-small-size);
     transition: background-color 300ms ease-in-out;
 }
 .handsontable tr th {
@@ -83,6 +84,7 @@
 /* 테이블 셀 */
 .handsontable td {
     font-family: var(--md-sys-typescale-body-medium-font);
+    font-size: var(--md-sys-typescale-body-medium-size);
     transition: background-color 300ms ease-in-out;
 }
 .handsontable tr td {
