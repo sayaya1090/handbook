@@ -44,12 +44,12 @@ public final class ColumnNumber implements ColumnBuilder {
         else if(value instanceof Long) return NF.format((Long)value);
         else if(value instanceof Integer) return NF.format((Integer)value);
         else if(value instanceof Double) return NF.format((Double)value);
-        else if(value instanceof String) {
-            String cast = (String)value;
-            cast = cast.trim();
-            RegExpResult chkNumber = CHK_NUMBER.exec(cast);
-            if(chkNumber != null) return NF.format(Double.parseDouble(cast));
-            else throw new RuntimeException();
+        else if(value instanceof String cast) {
+            var tmp = cast.trim();
+            if(tmp.contains(",")) tmp = tmp.replace(",", "");
+            RegExpResult chkNumber = CHK_NUMBER.exec(tmp);
+            if(chkNumber != null) return NF.format(Double.parseDouble(tmp));
+            else return cast;
         } else throw new RuntimeException();
     }
     @Override

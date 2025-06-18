@@ -38,19 +38,18 @@ public final class ColumnDate implements ColumnBuilder {
     private final ColumnStyleDataValidateHelper<ColumnDate> dataValidateHelper = new ColumnStyleDataValidateHelper<>(()->this);
     private final ColumnStyleDataDeleteHelper<ColumnDate> dataDeleteHelper = new ColumnStyleDataDeleteHelper<>(()->this);
     private static String toString(DateTimeFormat DTF, Object value) throws RuntimeException {
-        if(value == null)                   return null;
-        else if(value instanceof Long)      return DTF.format(new Date((Long)value));
-        else if(value instanceof Integer)   return DTF.format(new Date((Integer)value));
-        else if(value instanceof Double)    return DTF.format(new Date(((Double)value).longValue()));
-        else if(value instanceof String cast) {
+        if(value == null)                     return null;
+        else if(value instanceof Long l)      return DTF.format(new Date(l));
+        else if(value instanceof Integer i)   return DTF.format(new Date(i));
+        else if(value instanceof Double d)    return DTF.format(new Date((d).longValue()));
+        else if(value instanceof String s) {
             try {
-                cast = cast.trim();
-                RegExpResult chkNumber = CHK_NUMBER.exec(cast);
-                if (chkNumber != null) return DTF.format(new Date(Long.parseLong(cast)));
-                else return DTF.format(DTF.parse(cast));
+                var tmp = s.trim();
+                RegExpResult chkNumber = CHK_NUMBER.exec(tmp);
+                if (chkNumber != null) return DTF.format(new Date(Long.parseLong(tmp)));
+                else return DTF.format(DTF.parse(tmp));
             } catch(IllegalArgumentException e) {
-                e.printStackTrace();
-                return cast;
+                return s;
             }
         } else throw new RuntimeException();
     }
