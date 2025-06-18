@@ -48,7 +48,7 @@ public final class ColumnNumber implements ColumnBuilder {
             var tmp = cast.trim();
             if(tmp.contains(",")) tmp = tmp.replace(",", "");
             RegExpResult chkNumber = CHK_NUMBER.exec(tmp);
-            if(chkNumber != null) return NF.format(Double.parseDouble(tmp));
+            if(chkNumber != null) return tmp;
             else return cast;
         } else throw new RuntimeException();
     }

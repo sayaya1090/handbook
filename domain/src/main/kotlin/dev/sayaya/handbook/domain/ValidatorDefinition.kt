@@ -42,8 +42,10 @@ sealed interface ValidatorDefinition: Serializable {
         }
         class ValidatorBool: ValidatorDefinition {
             private val type: ValidatorType = ValidatorType.BOOL
-            override fun validate(value: Any?): Boolean {
-                return value is Boolean
+            override fun validate(value: Any?): Boolean =  when (value) {
+                is Boolean -> true
+                is String -> value.lowercase().toBooleanStrictOrNull() != null
+                else -> false
             }
         }
         data class ValidatorNumber (

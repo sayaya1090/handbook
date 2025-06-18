@@ -63,10 +63,10 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
                                         .pattern("^\\s*$")
                                         .than((t, r, p, v)->"transparent",
                                               (t, r, p, v)->"var(--md-sys-color-error)")
-                                        .horizontal("center")
+                                        .horizontal("center").vertical("middle")
                                         .build().header(lblSerial),
-                                ColumnBuilder.string("Effect date time").horizontal("center").build().header(lblEffectDatetime),
-                                ColumnBuilder.string("Expire date time").horizontal("center").build().header(lblExpireDatetime)
+                                ColumnBuilder.string("Effect date time").horizontal("center").vertical("middle").build().header(lblEffectDatetime),
+                                ColumnBuilder.string("Expire date time").horizontal("center").vertical("middle").build().header(lblExpireDatetime)
                         ), type.attributes().stream().map(this::toColumn).map(ColumnBuilder::build)
                 ).toArray(Column[]::new);
         config.cells = (row, col, prop) -> {
@@ -82,19 +82,19 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
     private ColumnBuilder toColumn(Attribute attr) {
         if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Value) {
             var validators = attr.type().validators();
-            if(validators.isEmpty()) return ColumnBuilder.string(attr.name()).horizontal("center");
+            if(validators.isEmpty()) return ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
             else if(validators.get(0) instanceof ValidatorRegex validator) {
-                var builder = ColumnBuilder.string(attr.name()).horizontal("center");
+                var builder = ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
                 builder.pattern(validator.pattern());
                 return builder;
             } else if(validators.get(0) instanceof ValidatorBool) {
-                return ColumnBuilder.checkbox(attr.name());
+                return ColumnBuilder.checkbox(attr.name()).horizontal("center").vertical("middle");
             } else if(validators.get(0) instanceof ValidatorNumber) {
-                return ColumnBuilder.number(attr.name()).horizontal("center");
+                return ColumnBuilder.number(attr.name()).horizontal("center").vertical("middle");
             } else if(validators.get(0) instanceof ValidatorDate) {
-                return ColumnBuilder.date(attr.name()).horizontal("center").width(200);
+                return ColumnBuilder.date(attr.name()).horizontal("center").vertical("middle").width(200);
             } else if(validators.get(0) instanceof ValidatorEnum validator) {
-                return ColumnBuilder.dropdown(attr.name(), validator.options()).horizontal("center").width(200);
+                return ColumnBuilder.dropdown(attr.name(), validator.options()).horizontal("center").vertical("middle").width(200);
             }
         }
         return ColumnBuilder.string(attr.name());
