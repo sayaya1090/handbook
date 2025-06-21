@@ -11,7 +11,7 @@ import java.util.UUID
 @Service
 class DocumentService(private val repo: DocumentRepository) {
     fun search(workspace: UUID, param: Search): Mono<Page<Document>> = repo.search(workspace, param)
-    fun find(workspace: UUID, type: String, serial: String, _date: Instant?): Mono<Map<String, String?>> {
+    fun find(workspace: UUID, type: String, serial: String, _date: Instant?): Mono<Map<String, *>> {
         val date = _date ?: Instant.now()
         return repo.find(workspace, type, serial, date).map { document ->
             document.data

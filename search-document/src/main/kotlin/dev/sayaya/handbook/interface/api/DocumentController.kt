@@ -23,7 +23,7 @@ class DocumentController(private val svc: DocumentService) {
     fun find(@PathVariable workspace: UUID,
              @PathVariable type: String,
              @PathVariable serial: String,
-             @RequestParam(required = false) date: String?): Mono<Map<String, String?>> = svc.find(workspace, type, serial, toInstant(date))
+             @RequestParam(required = false) date: String?): Mono<Map<String, *>> = svc.find(workspace, type, serial, toInstant(date))
 
     private fun toInstant(dateString: String?): Instant? {
         if (dateString.isNullOrBlank()) return null
