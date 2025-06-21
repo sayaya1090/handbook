@@ -89,7 +89,7 @@ class R2dbcDocumentRepository(
         expireDateTime = entity.expireDateTime,
         createDateTime = entity.createDateTime,
         creator = entity.creatorUserName,
-        data = objectMapper.readValue(entity.data.asArray(), Map::class.java) as Map<String, String?>,
+        data = objectMapper.readValue(entity.data.asArray(), Map::class.java) as Map<String, *>,
         validations = toValidation(entity)
     )
     private fun toValidation(entity: R2dbcDocumentEntity): Validation? = if(entity.validationStatus==null) null else Validation(

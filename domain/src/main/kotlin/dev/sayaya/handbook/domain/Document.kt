@@ -15,7 +15,7 @@ data class Document (
     val expireDateTime: Instant,
     val createDateTime: Instant?,
     val creator: String?,
-    val data: Map<String, String?>,
+    val data: Map<String, *>,
     val validations: Validation?
 ): Serializable {
     init {

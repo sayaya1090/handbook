@@ -28,7 +28,11 @@ public class Application implements EntryPoint {
             components.typeList().next(map);
         });
         components.documentList().set(
-                Document.builder().id("A").type("TT").serial("1").effectDateTime(new Date()).expireDateTime(new Date()).build(),
+                Document.builder().id("A").type("TT").serial("1").effectDateTime(new Date()).expireDateTime(new Date())
+                        .value("attr_4", true)
+                        .value("attr_2", new String[] {"a", "a\\,55", "b"})
+                        .value("attr_7", "Apple")
+                        .build(),
                 Document.builder().id("B").type("TT").serial("2").effectDateTime(new Date()).expireDateTime(new Date()).build(),
                 Document.builder().id("C").type("TT").serial("3").effectDateTime(new Date()).expireDateTime(new Date()).build(),
                 Document.builder().id("D").type("TT").serial("4").effectDateTime(new Date()).expireDateTime(new Date()).build(),
