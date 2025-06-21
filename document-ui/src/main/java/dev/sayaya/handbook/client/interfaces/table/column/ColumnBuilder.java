@@ -20,7 +20,7 @@ public interface ColumnBuilder {
     static ColumnDropDown dropdown(String id, String... list) {
         return new ColumnDropDown(id, list);
     }
-    /*static ColumnChip chip(String id) {
+    static ColumnChip chip(String id) {
         return new ColumnChip(id);
-    }*/
+    }
 }

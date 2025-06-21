@@ -24,12 +24,13 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static dev.sayaya.ui.elements.CheckboxElementBuilder.checkbox;
+import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.label;
 
 @Singleton
 public class DocumentTableElement implements IsElement<HTMLDivElement> {
     private static final String KEY_Z = "KeyZ";
-    private final CheckboxElementBuilder checkAll = checkbox().style("vertical-align: bottom; --md-checkbox-outline-width: 1px;");
+    private final CheckboxElementBuilder checkAll = checkbox().style("--md-checkbox-outline-width: 1px;");
     private final Map<Integer, CheckboxElementBuilder> rowHeaders = new HashMap<>();
     private final HandsontableConfiguration config = new HandsontableConfiguration();
     private final HandsontableElement table;
@@ -83,21 +84,34 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Value) {
             var validators = attr.type().validators();
             if(validators.isEmpty()) return ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
-            else if(validators.get(0) instanceof ValidatorRegex validator) {
-                var builder = ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
-                builder.pattern(validator.pattern());
-                return builder;
-            } else if(validators.get(0) instanceof ValidatorBool) {
-                return ColumnBuilder.checkbox(attr.name()).horizontal("center").vertical("middle");
-            } else if(validators.get(0) instanceof ValidatorNumber) {
-                return ColumnBuilder.number(attr.name()).horizontal("center").vertical("middle");
-            } else if(validators.get(0) instanceof ValidatorDate) {
-                return ColumnBuilder.date(attr.name()).horizontal("center").vertical("middle").width(200);
-            } else if(validators.get(0) instanceof ValidatorEnum validator) {
-                return ColumnBuilder.dropdown(attr.name(), validator.options()).horizontal("center").vertical("middle").width(200);
+            else {
+                var _validator = validators.get(0);
+                if(_validator instanceof ValidatorRegex validator) {
+                    var builder = ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
+                    builder.pattern(validator.pattern());
+                    return builder;
+                } else if(_validator instanceof ValidatorBool) {
+                    return ColumnBuilder.checkbox(attr.name()).horizontal("center").vertical("middle");
+                } else if(_validator instanceof ValidatorNumber) {
+                    return ColumnBuilder.number(attr.name()).horizontal("center").vertical("middle");
+                } else if(_validator instanceof ValidatorDate) {
+                    return ColumnBuilder.date(attr.name()).horizontal("center").vertical("middle").width(200);
+                } else if(_validator instanceof ValidatorEnum validator) {
+                    return ColumnBuilder.dropdown(attr.name(), validator.options()).horizontal("center").vertical("middle").width(200);
+                } else throw new RuntimeException("Unsupported attribute type: "+attr.type().baseType());
             }
-        }
-        return ColumnBuilder.string(attr.name());
+        } else if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Array) {
+            return ColumnBuilder.string(attr.name()).horizontal("left").vertical("middle");
+        } else if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Map) {
+            var builder = ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
+            return builder;
+        } else if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.File) {
+            var builder = ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
+            return builder;
+        } else if(attr.type().baseType() == AttributeTypeDefinition.AttributeType.Document) {
+            var builder = ColumnBuilder.string(attr.name()).horizontal("center").vertical("middle");
+            return builder;
+        } else throw new RuntimeException("Unsupported attribute type: "+attr.type().baseType());
     }
     private void update(List<Data> data) {
         checkAll.select(false);
@@ -119,14 +133,20 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         config.afterGetRowHeaderRenderers = renderers -> {
             JsArray.asJsArray(renderers).push((row, th)->{
                 var header = rowHeaders.computeIfAbsent(row, r->{
-                    var checkbox = checkbox().style("vertical-align: sub; --md-checkbox-outline-width: 1px;");
+                    var checkbox = checkbox().style("--md-checkbox-outline-width: 1px;");
                     if(config.data.length > row) {
                         config.data[row].onStateChange(state->checkbox.select(state.state() == Data.DataState.SELECTED));
                         checkbox.onChange(evt->config.data[row].select(checkbox.isSelected()));
                     }
                     return checkbox;
                 });
-                th.append(header.element());
+                th.innerHTML = "";
+                th.append(div().style("""
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: calc(100% - 2px);
+                        """).add(header).element());
             });
         };
     }
@@ -134,7 +154,12 @@ public class DocumentTableElement implements IsElement<HTMLDivElement> {
         config.afterGetColumnHeaderRenderers = renderers -> {
             var defaultRenderer = renderers[0];
             renderers[0] = (col, th) -> {
-                if(col == -1) th.append(checkAll.element());
+                if(col == -1) {
+                    th.style.setProperty("display", "flex");
+                    th.style.setProperty("align-items", "center");
+                    th.style.setProperty("justify-content", "center");
+                    th.append(checkAll.element());
+                }
                 else if(defaultRenderer!=null) defaultRenderer.accept(col, th);
                 else th.innerHTML = label(config.columns[col].header).element().outerHTML;
                 return th;

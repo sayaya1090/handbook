@@ -3,15 +3,19 @@ package dev.sayaya.handbook.client.interfaces.table;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import dev.sayaya.handbook.client.domain.Attribute;
+import dev.sayaya.handbook.client.domain.AttributeTypeDefinition;
 import dev.sayaya.handbook.client.domain.Document;
 import dev.sayaya.handbook.client.domain.HandbookEvent;
+import dev.sayaya.handbook.client.domain.validator.*;
 import dev.sayaya.handbook.client.interfaces.api.DeleteDocumentEventSource;
 import dev.sayaya.handbook.client.interfaces.api.UpdateDocumentEventSource;
+import dev.sayaya.handbook.client.interfaces.table.column.ColumnBuilder;
 import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.rx.subject.Subject;
+import elemental2.dom.DomGlobal;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
@@ -86,8 +90,12 @@ public class DataProvider {
             .filter(key -> !documentValues.containsKey(key))
             .forEach(data::delete);
         // document 값으로 data 객체 업데이트/추가
+        var attrs = this.type.getValue().attributes().stream().collect(Collectors.toMap(Attribute::name, Attribute::type));
         if (document.values() != null) for (var entry : document.values().entrySet()) {
-            data.put(entry.getKey(), entry.getValue() != null ? String.valueOf(entry.getValue()) : null);
+            Object value = entry.getValue();
+            var attr = attrs.get(entry.getKey());
+            String valueStr = toDataValue(value, attr);
+            data.put(entry.getKey(), valueStr);
         }
         if (document.validations() != null) document.validations().values().forEach(data::validity);
         else data.keys().forEach(key -> data.validity(key, null));
@@ -98,10 +106,10 @@ public class DataProvider {
         var data = Data.create(document.id());
         var typeDef = this.type.getValue();
         if (typeDef != null && typeDef.attributes() != null) typeDef.attributes().stream()
-                .map(Attribute::name)
-                .forEach(attrName -> {
-                    Object value = document.values() != null ? document.values().get(attrName) : null;
-                    data.put(attrName, value != null ? String.valueOf(value) : null);
+                .forEach(attr -> {
+                    Object value = document.values() != null ? document.values().get(attr.name()) : null;
+                    String valueStr = toDataValue(value, attr.type());
+                    data.put(attr.name(), valueStr);
                 });
         Subject<String> subject = subject(String.class);
         subject.debounceTime(100).subscribe(s->notifyChange(data, document.id()));
@@ -140,13 +148,86 @@ public class DataProvider {
                 .effectDateTime(effectDateTime)
                 .expireDateTime(expireDateTime)
                 .isChange(data.isChanged() ? Document.DocumentChangeState.CHANGE : Document.DocumentChangeState.NOT_CHANGE);
-
+        var type = this.type.getValue();
+        var attrs = type.attributes().stream().collect(Collectors.toMap(Attribute::name, Attribute::type));
         for (String key : data.keys()) {
+            var attr = attrs.get(key);
             if (Set.of("$state", "Serial", "Effect date time", "Expire date time").contains(key)) continue;
             String value = data.get(key);
-            builder.value(key, (value != null && !value.isEmpty()) ? value : null);
+            builder.value(key, toDocumentValue(value, attr));
         }
         return builder.build();
+    }
+    private Object toDocumentValue(String value, AttributeTypeDefinition attr) {
+        if(value==null || value.isEmpty()) return null;
+        if(attr.baseType() == AttributeTypeDefinition.AttributeType.Value) {
+            var validators = attr.validators();
+            if(validators.isEmpty()) return value;
+            else {
+                var _validator = validators.get(0);
+                if(_validator instanceof ValidatorRegex) return value;
+                else if(_validator instanceof ValidatorBool) return Boolean.parseBoolean(value);
+                else if(_validator instanceof ValidatorNumber) return Double.parseDouble(value);
+                else if(_validator instanceof ValidatorDate) {
+                    return value;
+                } else if(_validator instanceof ValidatorEnum) {
+                    return value;
+                } else throw new RuntimeException("Unsupported attribute type: "+attr.baseType());
+            }
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.Array) {
+            return splitAndUnescape(value);
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.Map) {
+            return value;
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.File) {
+            return value;
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.Document) {
+            return value;
+        } else throw new RuntimeException("Unsupported attribute type: "+attr.baseType());
+    }
+    private String toDataValue(Object value, AttributeTypeDefinition attr) {
+        if(value==null) return null;
+        if(attr.baseType() == AttributeTypeDefinition.AttributeType.Value) {
+            var validators = attr.validators();
+            if(validators.isEmpty()) return value.toString();
+            else {
+                var _validator = validators.get(0);
+                if(_validator instanceof ValidatorRegex) return value.toString();
+                else if(_validator instanceof ValidatorBool) return Boolean.toString((Boolean) value);
+                else if(_validator instanceof ValidatorNumber) return Double.toString((Double) value);
+                else if(_validator instanceof ValidatorDate) {
+                    return value.toString();
+                } else if(_validator instanceof ValidatorEnum) {
+                    return value.toString();
+                } else throw new RuntimeException("Unsupported attribute type: "+attr.baseType());
+            }
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.Array) {
+            return Arrays.stream((String[])value).map(s->s.replace(",", "\\,")).collect(Collectors.joining(","));
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.Map) {
+            return value.toString();
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.File) {
+            return value.toString();
+        } else if(attr.baseType() == AttributeTypeDefinition.AttributeType.Document) {
+            return value.toString();
+        } else throw new RuntimeException("Unsupported attribute type: "+attr.baseType());
+    }
+    private String[] splitAndUnescape(String value) {
+        if (value == null) return new String[0];
+        List<String> parts = new ArrayList<>();
+        StringBuilder currentPart = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '\\' && i + 1 < value.length() && value.charAt(i + 1) == ',') {
+                currentPart.append(',');
+                i++; // 이스케이프된 쉼표를 처리했으므로 인덱스를 하나 더 증가시킵니다.
+            } else if (c == ',') {
+                parts.add(currentPart.toString().trim());
+                currentPart.setLength(0);
+            } else {
+                currentPart.append(c);
+            }
+        }
+        parts.add(currentPart.toString().trim());
+        return parts.toArray(new String[0]);
     }
 
     /**
