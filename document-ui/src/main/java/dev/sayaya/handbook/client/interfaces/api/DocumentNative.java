@@ -36,7 +36,7 @@ public final class DocumentNative {
                 .createdBy(creator)
                 .validations(validations!=null?validations.toDomain():null);
         if(data!=null) {
-            JsPropertyMap<String> map = Js.cast(data);
+            JsPropertyMap<?> map = Js.cast(data);
             map.forEach(key -> {
                 var value = map.get(key);
                 if(value != null) builder.value(key, value);
