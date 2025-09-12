@@ -24,7 +24,7 @@ spec:
         - /metadata/finalizers
       kind: RoleBinding
   source:
-    path: charts/github-actions-runner-set
+    path: charts/handbook-operator/github-actions-runner-set
     repoURL: 'https://github.com/sayaya1090/handbook.git'
     targetRevision: HEAD
     helm:
