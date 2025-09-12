@@ -1,0 +1,132 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handbook-github-actions-runner-set
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: {{ .Release.Namespace }}
+    server: 'https://kubernetes.default.svc'
+  project: handbook
+  revisionHistoryLimit: 0
+  syncPolicy:
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+      - ServerSideApply=true
+  ignoreDifferences:
+    - group: rbac.authorization.k8s.io
+      jsonPointers:
+        - /metadata/finalizers
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      jsonPointers:
+        - /metadata/finalizers
+      kind: RoleBinding
+  source:
+    path: charts/github-actions-runner-set
+    repoURL: 'https://github.com/sayaya1090/handbook.git'
+    targetRevision: HEAD
+    helm:
+      values: |
+        ubi9:
+          runnerScaleSetName: {{ .Release.Namespace }}
+          githubConfigUrl: https://github.com/sayaya1090/handbook
+          githubConfigSecret: github-secret
+          minRunners: 1
+          maxRunners: 1
+          template:
+            spec:
+              initContainers:
+                - name: init-dind-externals
+                  image: image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/handbook-actions-runner:latest
+                  command: [ "cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/" ]
+                  volumeMounts:
+                    - name: dind-externals
+                      mountPath: /home/runner/tmpDir
+                  resources:
+                    limits:
+                      cpu: "1"
+                      memory: 500Mi
+                    requests:
+                      cpu: "1"
+                      memory: 500Mi
+              containers:
+                - name: runner
+                  image: image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/handbook-actions-runner:latest
+                  command: [ "/home/runner/run.sh" ]
+                  securityContext:
+                    runAsUser: 1000
+                    privileged: true
+                  resources:
+                    requests:
+                      cpu: "1"
+                      memory: 500Mi
+                    limits:
+                      cpu: "2"
+                      memory: 4Gi
+                  env:
+                    - name: DOCKER_HOST
+                      value: unix:///var/run/docker.sock
+                  volumeMounts:
+                    - name: cache
+                      subPath: _work
+                      mountPath: /home/runner/_work
+                    - name: cache
+                      subPath: .gradle
+                      mountPath: /home/runner/.gradle
+                    - name: cache
+                      subPath: gradle-installations/installs
+                      mountPath: /home/runner/gradle-installations/installs
+                    - name: dind-sock
+                      mountPath: /var/run
+                    - name: cache
+                      mountPath: /home/runner/cache
+                - name: dind
+                  image: image-registry.openshift-image-registry.svc:5000/github-actions-runner/docker:dind
+                  args: [ "dockerd", "--host=unix:///var/run/docker.sock", "--group=$(DOCKER_GROUP_GID)" ]
+                  env:
+                    - name: DOCKER_GROUP_GID
+                      value: "123"
+                  securityContext:
+                    privileged: true
+                  volumeMounts:
+                    - name: cache
+                      subPath: _work
+                      mountPath: /home/runner/_work
+                    - name: cache
+                      subPath: fuse-overlayfs
+                      mountPath: /var/lib/docker/fuse-overlayfs
+                    - mountPath: /var/lib/docker/image
+                      name: cache
+                      subPath: image
+                    - name: dind-sock
+                      mountPath: /var/run
+                    - name: dind-externals
+                      mountPath: /home/runner/externals
+                    - name: daemon-json
+                      mountPath: /etc/docker/daemon.json
+                      subPath: daemon.json
+                      readOnly: true
+                  resources:
+                    requests:
+                      cpu: "1"
+                      memory: 500Mi
+                    limits:
+                      cpu: "2"
+                      memory: 4Gi
+              volumes:
+                - name: dind-sock
+                  emptyDir: { }
+                - name: dind-externals
+                  emptyDir: { }
+                - name: daemon-json
+                  configMap:
+                    name: docker-daemon-config
+                - name: cache
+                  persistentVolumeClaim:
+                    claimName: handbook-runner-cache
+              serviceAccountName: arc
+          controllerServiceAccount:
+            namespace: github-actions-runner
+            name: arc
