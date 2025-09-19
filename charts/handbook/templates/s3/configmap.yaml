@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: s3
+  namespace: {{ .Release.Namespace }}
+data:
+  s3.yaml: |
+    spring:
+      cloud:
+        aws:
+          credentials:
+            accessKey: ${s3.accessKey}
+            secretKey: ${s3.secretKey}
+          region:
+            static: local
+          s3:
+            endpoint: http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+            bucket: {{ .Values.bucket.name }}
+            path-style-access-enabled: true
