@@ -18,7 +18,7 @@ spec:
     spec:
       serviceAccountName: openshift-gitops-argocd-application-controller
       containers:
-        - name: generate-token
+        - name: dind-authority-promotion
           image: registry.redhat.io/openshift4/ose-cli
           command:
             - "/bin/sh"
