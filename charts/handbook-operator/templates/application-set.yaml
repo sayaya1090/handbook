@@ -7,23 +7,22 @@ spec:
   generators:
     - list:
         elements:
-          - bucket: handbook-test
+          - name: handbook-test
+            bucket: handbook-test
             database: 192.168.1.211
             host: handbook.sayaya.cloud
             mode: test
-            name: handbook-test
-            # stage: test
-
-          - bucket: handbook
+            stage: test
+          - name: handbook
+            bucket: handbook
             database: 192.168.1.210
             host: handbook.sayaya.dev
             mode: ''
-            name: handbook
-            # stage: prod
+            stage: prod
   template:
     metadata:
-      #annotations:
-      #  kargo.akuity.io/authorized-stage: handbook-operator:handbook-{{`{{ stage }}`}}
+      annotations:
+        kargo.akuity.io/authorized-stage: handbook-operator:handbook-{{`{{ stage }}`}}
       name: '{{`{{ name }}`}}'
     spec:
       project: handbook
