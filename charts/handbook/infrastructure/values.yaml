@@ -1,0 +1,7 @@
+s3:
+  bucket:
+    name: ''
+    maxSize: 10G
+
+rbac:
+  # RBAC configuration

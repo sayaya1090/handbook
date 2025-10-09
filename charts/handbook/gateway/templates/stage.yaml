@@ -1,0 +1,74 @@
+{{- if .Values.stage.name }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: gateway-{{ .Values.stage.name }}
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.stage.color }}
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: gateway
+      sources:
+        {{- if .Values.stage.prev }}
+        direct: false
+        stages:
+          - gateway-{{ .Values.stage.prev }}
+        {{- else }}
+        direct: true
+        {{- end }}
+  promotionTemplate:
+    spec:
+      steps:
+        {{- if or (eq .Values.stage.name "dev") (eq .Values.stage.name "staging") }}
+        - uses: compose-output
+          as: gateway-image
+          config:
+            img: {{ printf `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/gateway") }}` }}
+        - uses: argocd-update
+          as: sync
+          config:
+            apps:
+              - name: gateway-{{ .Values.stage.name }}
+                sources:
+                  - helm:
+                      images:
+                        - key: image.tag
+                          value: {{ printf `${{ outputs['gateway-image'].img.tag }}@${{ outputs['gateway-image'].img.digest }}` }}
+                    repoURL: https://github.com/sayaya1090/handbook.git
+        {{- else }}
+        - uses: http
+          as: add-tag
+          config:
+              url: https://api.github.com/repos/sayaya1090/handbook/dispatches
+              method: POST
+              headers:
+                - name: Authorization
+                  value: token {{`${{ secrets.github.token }}`}}
+                - name: Accept
+                  value: application/vnd.github.v3+json
+              body: |
+                {{`${{ quote({
+                  "event_type": "release",
+                  "client_payload": {
+                    "ctx": ctx,
+                    "service": "gateway",
+                    "image": imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/gateway"),
+                    "commit": commitFrom("https://github.com/sayaya1090/handbook.git")
+                  }
+                }) }}`}}
+              successExpression: response.status == 204
+        {{- end }}
+  {{- if eq .Values.stage.name "dev" }}
+  verification:
+    analysisTemplates:
+    - name: gateway-dev
+  {{- else if eq .Values.stage.name "staging" }}
+  verification:
+    analysisTemplates:
+    - name: gateway-staging
+  {{- end }}
+{{- end }}

@@ -1,0 +1,70 @@
+{{- if .Values.stage.name }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: event-broadcaster-{{ .Values.stage.name }}
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.stage.color }}
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: event-broadcaster
+      sources:
+        {{- if .Values.stage.prev }}
+        direct: false
+        stages:
+          - event-broadcaster-{{ .Values.stage.prev }}
+        {{- else }}
+        direct: true
+        {{- end }}
+  promotionTemplate:
+    spec:
+      steps:
+        {{- if eq .Values.stage.name "dev" }}
+        - uses: compose-output
+          as: event-broadcaster-image
+          config:
+            img: {{ printf `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/event-broadcaster") }}` }}
+        - uses: argocd-update
+          as: sync
+          config:
+            apps:
+              - name: event-broadcaster-{{ .Values.stage.name }}
+                sources:
+                  - helm:
+                      images:
+                        - key: image.tag
+                          value: {{ printf `${{ outputs['event-broadcaster-image'].img.tag }}@${{ outputs['event-broadcaster-image'].img.digest }}` }}
+                    repoURL: https://github.com/sayaya1090/handbook.git
+        {{- else }}
+        - uses: http
+          as: add-tag
+          config:
+              url: https://api.github.com/repos/sayaya1090/handbook/dispatches
+              method: POST
+              headers:
+                - name: Authorization
+                  value: token {{`${{ secrets.github.token }}`}}
+                - name: Accept
+                  value: application/vnd.github.v3+json
+              body: |
+                {{`${{ quote({
+                  "event_type": "release",
+                  "client_payload": {
+                    "ctx": ctx,
+                    "service": "event-broadcaster",
+                    "image": imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/event-broadcaster"),
+                    "commit": commitFrom("https://github.com/sayaya1090/handbook.git")
+                  }
+                }) }}`}}
+              successExpression: response.status == 204
+        {{- end }}
+  {{- if eq .Values.stage.name "dev" }}
+  verification:
+    analysisTemplates:
+    - name: event-broadcaster-dev
+  {{- end }}
+{{- end }}

@@ -25,7 +25,6 @@ spec:
             - "-c"
             - |
               # 변수 설정
-              SECRET_NAME="image-registry-secret"
               NAMESPACE="{{ .Release.Namespace }}"
               LABEL_KEY="pod-security.kubernetes.io/enforce"
               LABEL_VALUE="privileged"
@@ -38,44 +37,6 @@ spec:
                 oc label namespace "$NAMESPACE" "$LABEL_KEY=$LABEL_VALUE" --overwrite
               else
                 echo "=> Label is already set correctly. Skipping."
-              fi
-
-              # 시크릿 존재 여부 확인
-              echo "=> Checking for secret '$SECRET_NAME' in namespace '$NAMESPACE'..."
-              if oc get secret "$SECRET_NAME" -n "$NAMESPACE" > /dev/null 2>&1; then
-                echo "=> Secret already exists. Skipping creation."
-              else
-                # 시크릿이 존재하지 않으면 생성 절차 진행
-                echo "=> Secret does not exist. Proceeding with creation..."
-
-                # 토큰 생성
-                echo "=> Creating token for 'deployer' service account in namespace '$NAMESPACE'..."
-                TOKEN=$(oc create token deployer -n "$NAMESPACE" --duration=4294967296s)
-
-                if [ -z "$TOKEN" ]; then
-                    echo "=> Failed to create token. Check if 'deployer' service account exists in namespace '$NAMESPACE'."
-                    exit 1
-                fi
-                echo "=> Token created successfully."
-
-                # 생성된 토큰으로 시크릿 생성
-                echo "=> Creating secret '$SECRET_NAME' in namespace '$NAMESPACE'..."
-                oc apply -f - <<EOF
-              kind: Secret
-              apiVersion: v1
-              metadata:
-                name: ${SECRET_NAME}
-                namespace: ${NAMESPACE}
-                labels:
-                  kargo.akuity.io/cred-type: image
-              stringData:
-                repoURL: ^image-registry\.openshift-image-registry\.svc
-                repoURLIsRegex: "true"
-                username: deployer
-                password: "${TOKEN}"
-              type: Opaque
-              EOF
-                echo "=> Secret creation complete."
               fi
       restartPolicy: Never
   backoffLimit: 2

@@ -15,5 +15,5 @@ data:
             static: local
           s3:
             endpoint: http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
-            bucket: {{ .Values.bucket.name }}
+            bucket: {{ .Values.s3.bucket.name }}
             path-style-access-enabled: true

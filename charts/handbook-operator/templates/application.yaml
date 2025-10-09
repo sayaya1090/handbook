@@ -1,0 +1,27 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+  name: handbook
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handbook
+  namespace: openshift-gitops
+spec:
+  project: handbook
+  destination:
+    namespace: handbook
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: charts/handbook
+    repoURL: 'https://github.com/sayaya1090/handbook.git'
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -2,8 +2,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: ProjectConfig
 metadata:
   name: {{ .Release.Namespace }}
-  namespace: {{ .Release.Namespace }}
 spec:
   promotionPolicies:
     - autoPromotionEnabled: true
-      stage: handbook-test
+      stage: handbook-dev

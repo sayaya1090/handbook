@@ -1,0 +1,7 @@
+annotations:
+  charts.openshift.io/name: infrastructure
+apiVersion: v2
+kubeVersion: '>= 1.20.0-0'
+name: infrastructure
+version: 0.1.0
+description: Infrastructure components (S3, RBAC) for handbook application

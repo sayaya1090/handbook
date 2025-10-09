@@ -2,8 +2,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: argocd-role-{{ .Release.Namespace }}
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
+  namespace: {{ .Release.Namespace }}
 rules:
   - verbs:
       - '*'
@@ -17,8 +16,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: argocd-{{ .Release.Namespace }}
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
+  namespace: {{ .Release.Namespace }}
 subjects:
   - kind: ServiceAccount
     name: openshift-gitops-argocd-application-controller
@@ -28,50 +26,3 @@ roleRef:
   kind: Role
   name: argocd-role-{{ .Release.Namespace }}
 
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: image-puller
-rules:
-  - apiGroups:
-      - image.openshift.io
-    resources:
-      - imagestreams
-      - imagestreams/layers
-    verbs:
-      - get
----
-
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: arc-argocd-{{ .Release.Namespace }}
-  namespace: openshift-gitops
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
-rules:
-  - verbs:
-      - get
-      - patch
-    apiGroups:
-      - argoproj.io
-    resources:
-      - applications
----
-
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: arc-argocd-{{ .Release.Namespace }}
-  namespace: openshift-gitops
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
-subjects:
-  - kind: ServiceAccount
-    name: arc
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: arc-argocd-{{ .Release.Namespace }}

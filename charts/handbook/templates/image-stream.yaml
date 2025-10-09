@@ -1,0 +1,15 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: gateway
+spec:
+  lookupPolicy:
+    local: false
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: event-broadcaster
+spec:
+  lookupPolicy:
+    local: false

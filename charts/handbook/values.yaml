@@ -1,9 +1,26 @@
-host: handbook.sayaya.dev
-mode: ''
-revision: main
-persistence:
-  size: 3Gi
-  storageClass: lvms-local-storage
-bucket:
-  name: handbook
-  maxSize: 10Gi
+# 스테이지별 설정
+stages:
+  dev:
+    database: 192.168.1.212
+    host: handbook-dev.sayaya.cloud
+    color: green
+  staging:
+    database: 192.168.1.211
+    host: handbook.sayaya.cloud
+    color: red
+  prod:
+    database: 192.168.1.210
+    host: handbook.sayaya.dev
+    color: blue
+
+# 서비스 목록 및 스테이지 설정
+services:
+  - name: gateway
+    stages:
+      - dev
+      - staging
+      - prod
+  - name: event-broadcaster
+    stages:
+      - dev
+      - prod

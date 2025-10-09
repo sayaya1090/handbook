@@ -1,0 +1,9 @@
+image:
+  name: image-registry.openshift-image-registry.svc:5000/handbook/gateway
+  tag: latest
+
+stage:
+  name: ""
+  color: ""
+  prev: ""
+

@@ -4,7 +4,7 @@ metadata:
   name: bucket
   namespace: {{ .Release.Namespace }}
 spec:
-  bucketName: {{ .Values.bucket.name }}
+  bucketName: {{ .Values.s3.bucket.name }}
   storageClassName: ocs-storagecluster-ceph-rgw
   additionalConfig:
-    maxSize: {{ .Values.bucket.maxSize }}
+    maxSize: {{ .Values.s3.bucket.maxSize }}

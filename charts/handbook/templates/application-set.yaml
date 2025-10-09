@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: handbook-infrastructure
+  namespace: openshift-gitops
+spec:
+  generators:
+    - list:
+        elements:
+{{- range $stageName, $stageConfig := .Values.stages }}
+          - stage: {{ $stageName }}
+{{- end }}
+  template:
+    metadata:
+      name: handbook-infra-{{`{{ stage }}`}}
+      labels:
+        app.kubernetes.io/name: infra
+        app.kubernetes.io/instance: handbook-infra-{{`{{ stage }}`}}
+        handbook.sayaya.dev/service: infra
+        handbook.sayaya.dev/stage: '{{`{{ stage }}`}}'
+    spec:
+      project: handbook
+      destination:
+        namespace: handbook-{{`{{ stage }}`}}
+        server: https://kubernetes.default.svc
+      source:
+        path: charts/handbook/infrastructure
+        repoURL: https://github.com/sayaya1090/handbook.git
+        targetRevision: HEAD
+        helm:
+          parameters:
+            - name: s3.bucket.name
+              value: handbook-{{`{{ stage }}`}}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+
+{{- range $service := .Values.services }}
+{{- range $index, $stageName := $service.stages }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handbook-{{ $service.name }}-{{ $stageName }}
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: '{{ $service.name }}'
+    app.kubernetes.io/instance: {{ $service.name }}-{{ $stageName }}
+    handbook.sayaya.dev/service: '{{ $service.name }}'
+    handbook.sayaya.dev/stage: '{{ $stageName }}'
+  annotations:
+    kargo.akuity.io/authorized-stage: handbook:{{ $service.name }}-{{ $stageName }}
+spec:
+  project: handbook
+  destination:
+    namespace: handbook-{{ $stageName }}
+    server: https://kubernetes.default.svc
+  source:
+    path: charts/handbook/{{ $service.name }}
+    repoURL: https://github.com/sayaya1090/handbook.git
+    targetRevision: HEAD
+    helm:
+      parameters:
+        - name: stage.name
+          value: {{ $stageName }}
+        - name: stage.color
+          value: {{ (index $.Values.stages $stageName).color }}
+        {{- if gt $index 0 }}
+        - name: stage.prev
+          value: {{ index $service.stages (sub $index 1) }}
+        {{- end }}
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}
+{{- end }}
+
