@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: initialize-{{ .Release.Namespace }}-job
+  namespace: openshift-gitops
+  annotations:
+    # 이 리소스를 ArgoCD의 Sync Hook으로 지정합니다.
+    argocd.argoproj.io/hook: Sync
+    # Hook(Job)이 성공적으로 완료되면, ArgoCD가 이 리소스를 자동으로 삭제하도록 합니다.
+    argocd.argoproj.io/hook-delete-policy: HookSucceede
+    # 대신 Sync Wave를 지정하여 순서를 제어합니다.
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  # Job 완료 후 30초가 지나면 자동으로 삭제되도록 설정합니다.
+  # Job 완료 후 자체 삭제 기능은 Hook 정책과 중복될 수 있지만, 안전장치로 남겨둡니다.
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      serviceAccountName: openshift-gitops-argocd-application-controller
+      containers:
+        - name: kargo-cred-image-registry-secret
+          image: registry.redhat.io/openshift4/ose-cli
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              # 변수 설정
+              SECRET_NAME="image-registry-secret"
+              NAMESPACE="{{ .Release.Namespace }}"
+
+              # 시크릿 존재 여부 확인
+              echo "=> Checking for secret '$SECRET_NAME' in namespace '$NAMESPACE'..."
+              if oc get secret "$SECRET_NAME" -n "$NAMESPACE" > /dev/null 2>&1; then
+                echo "=> Secret already exists. Skipping creation."
+              else
+                # 시크릿이 존재하지 않으면 생성 절차 진행
+                echo "=> Secret does not exist. Proceeding with creation..."
+
+                # 토큰 생성
+                echo "=> Creating token for 'deployer' service account in namespace '$NAMESPACE'..."
+                TOKEN=$(oc create token deployer -n "$NAMESPACE" --duration=4294967296s)
+
+                if [ -z "$TOKEN" ]; then
+                    echo "=> Failed to create token. Check if 'deployer' service account exists in namespace '$NAMESPACE'."
+                    exit 1
+                fi
+                echo "=> Token created successfully."
+
+                # 생성된 토큰으로 시크릿 생성
+                echo "=> Creating secret '$SECRET_NAME' in namespace '$NAMESPACE'..."
+                oc apply -f - <<EOF
+              kind: Secret
+              apiVersion: v1
+              metadata:
+                name: ${SECRET_NAME}
+                namespace: ${NAMESPACE}
+                labels:
+                  kargo.akuity.io/cred-type: image
+              stringData:
+                repoURL: ^image-registry\.openshift-image-registry\.svc
+                repoURLIsRegex: "true"
+                username: deployer
+                password: "${TOKEN}"
+              type: Opaque
+              EOF
+                echo "=> Secret creation complete."
+              fi
+      restartPolicy: Never
+  backoffLimit: 2
