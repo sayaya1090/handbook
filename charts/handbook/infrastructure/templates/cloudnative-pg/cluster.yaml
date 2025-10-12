@@ -7,10 +7,10 @@ spec:
     labels:
       istio.io/dataplane-mode: none
   imageName: ghcr.io/cloudnative-pg/postgresql:18
+  {{- if and .Values.s3.bucket.name .Values.database.backup.schedule }}
   backup:
-    {{- with .Values.s3.bucket.name }}
     barmanObjectStore:
-      destinationPath: 's3://{{ . }}'
+      destinationPath: 's3://{{ .Values.s3.bucket.name }}'
       endpointURL: 'http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local'
       s3Credentials:
         accessKeyId:
@@ -22,9 +22,9 @@ spec:
       wal:
         compression: bzip2
         maxParallel: 8
-    {{- end }}
     retentionPolicy: 7d
     target: prefer-standby
+  {{- end }}
   instances: 3
   minSyncReplicas: 1
   maxSyncReplicas: 2

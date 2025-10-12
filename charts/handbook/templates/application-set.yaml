@@ -9,6 +9,9 @@ spec:
         elements:
 {{- range $stageName, $stageConfig := .Values.stages }}
           - stage: {{ $stageName }}
+            bucket: {{ $stageConfig.bucket.maxSize | default "10G" | quote }}
+            ip: {{ $stageConfig.database | quote }}
+            schedule: {{ $stageConfig.backup.schedule | quote }}
 {{- end }}
   template:
     metadata:
@@ -32,15 +35,12 @@ spec:
             - name: s3.bucket.name
               value: handbook-{{`{{ stage }}`}}
             - name: s3.bucket.maxSize
-              value: {{ (index $.Values.stages (printf "%s" "{{stage}}")).bucket.maxSize | default "10G" | quote }}
+              value: "{{`{{ bucket }}`}}"
             - name: database.ip
-              value: {{ (index $.Values.stages (printf "%s" "{{stage}}")).database | quote }}
+              value: "{{`{{ ip }}`}}"
             - name: database.backup.schedule
-              value: {{ (index $.Values.stages (printf "%s" "{{stage}}")).backup.schedule | default "0 3 * * *" | quote }}
+              value: "{{`{{ schedule }}`}}"
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
         syncOptions:
           - CreateNamespace=true
         managedNamespaceMetadata:
