@@ -19,9 +19,3 @@ spec:
     path: charts/handbook
     repoURL: 'https://github.com/sayaya1090/handbook.git'
     targetRevision: HEAD
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
