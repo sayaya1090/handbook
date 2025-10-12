@@ -1,0 +1,95 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/event-broadcaster'
+    configmap.reloader.stakater.com/reload: "event-broadcaster,postgresql-ro,observability,authentication,kafka"
+  name: event-broadcaster
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - foregroundDeletion
+  labels:
+    app: event-broadcaster
+    app.kubernetes.io/component: handbook
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/name: handbook
+    app.kubernetes.io/part-of: handbook
+    app.openshift.io/runtime: spring-boot
+    app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
+    app.openshift.io/runtime-version: latest
+spec:
+  selector:
+    matchLabels:
+      app: event-broadcaster
+  template:
+    metadata:
+      labels:
+        app: event-broadcaster
+        version: 0.0.1
+        deployment: event-broadcaster
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: event-broadcaster
+            defaultMode: 420
+      containers:
+        - name: event-broadcaster
+          image: {{ index .Values "event-broadcaster" "image" "name" }}:{{ index .Values "event-broadcaster" "image" "tag" | default "latest" }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          env:
+            - name: TZ
+              value: Asia/Seoul
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/resources/application.yaml
+              subPath: application.yaml
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 0
+  progressDeadlineSeconds: 600
+  paused: false

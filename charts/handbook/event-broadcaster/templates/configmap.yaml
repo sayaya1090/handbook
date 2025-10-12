@@ -1,0 +1,28 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: event-broadcaster
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: event-broadcaster
+data:
+  application.yaml: |
+    spring:
+      application.name: event-broadcaster
+      main:
+        web-application-type: reactive
+      threads.virtual.enabled: true
+      cloud:
+        function:
+          definition: event
+        stream:
+          bindings:
+            event-in-0:
+              destination: event
+    management:
+      endpoint:
+        health:
+          probes:
+            enabled: true
+    server:
+      port: 8080
