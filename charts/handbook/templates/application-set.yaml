@@ -37,7 +37,10 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-
+        managedNamespaceMetadata:
+          labels:
+            istio.io/dataplane-mode: ambient
+            istio-discovery: enabled
 {{- range $service := .Values.services }}
 {{- range $index, $stageName := $service.stages }}
 ---
@@ -75,6 +78,10 @@ spec:
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        istio.io/dataplane-mode: ambient
+        istio-discovery: enabled
 {{- end }}
 {{- end }}
 
