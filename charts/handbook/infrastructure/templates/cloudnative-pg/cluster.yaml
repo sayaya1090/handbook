@@ -1,0 +1,63 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:18
+  backup:
+    {{- with .Values.s3.bucket.name }}
+    barmanObjectStore:
+      destinationPath: 's3://{{ . }}'
+      endpointURL: 'http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local'
+      s3Credentials:
+        accessKeyId:
+          key: AWS_ACCESS_KEY_ID
+          name: bucket
+        secretAccessKey:
+          key: AWS_SECRET_ACCESS_KEY
+          name: bucket
+      wal:
+        compression: bzip2
+        maxParallel: 8
+    {{- end }}
+    retentionPolicy: 7d
+    target: prefer-standby
+  instances: 3
+  minSyncReplicas: 1
+  maxSyncReplicas: 2
+  storage:
+    {{- with .Values.persistence.size }}
+    size: {{ . | quote }}
+    {{- end }}
+    {{- with .Values.persistence.storageClass }}
+    storageClass: {{ . | quote }}
+    {{- end }}
+  postgresql:
+    parameters:
+      max_connections: "500"
+      max_slot_wal_keep_size: "1GB"
+      timezone: "Asia/Seoul"
+  superuserSecret:
+    name: postgres
+  enableSuperuserAccess: true
+  {{- if and .Values.s3.bucket.name .Values.database.bootstrap.restore }}
+  externalClusters:
+    - name: postgresql-backup-source
+      barmanObjectStore:
+        destinationPath: {{ printf "s3://%s/%s" .Values.s3.bucket.name .Values.database.bootstrap.restorePath | quote }}
+        serverName: postgresql
+        endpointURL: 'http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local'
+        s3Credentials:
+          accessKeyId:
+            key: AWS_ACCESS_KEY_ID
+            name: bucket
+          secretAccessKey:
+            key: AWS_SECRET_ACCESS_KEY
+            name: bucket
+  bootstrap:
+    recovery:
+      database: handbook
+      owner: postgres
+      source: postgresql-backup-source
+  {{- end }}
+
