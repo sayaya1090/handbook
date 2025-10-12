@@ -62,9 +62,4 @@ spec:
                 }) }}`}}
               successExpression: response.status == 204
         {{- end }}
-  {{- if eq .Values.stage.name "dev" }}
-  verification:
-    analysisTemplates:
-    - name: event-broadcaster-dev
-  {{- end }}
 {{- end }}
