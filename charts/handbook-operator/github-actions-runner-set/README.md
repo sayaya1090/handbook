@@ -14,3 +14,5 @@ type: Opaque
 
 oc annotate rolebinding -n handbook-operator handbook-operator-6559f6d7-listener argocd.argoproj.io/compare-options=IgnoreExtraneous
 oc annotate role handbook-operator-6559f6d7-listener argocd.argoproj.io/compare-options=IgnoreExtraneous
+
+oc adm policy add-scc-to-user privileged -z arc -n handbook-operator
