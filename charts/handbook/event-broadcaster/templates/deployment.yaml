@@ -38,6 +38,10 @@ spec:
           configMap:
             name: event-broadcaster
             defaultMode: 420
+        - name: observability-config
+          configMap:
+            name: observability
+            defaultMode: 420
       containers:
         - name: event-broadcaster
           image: {{ .Values.image.name }}:{{ .Values.image.tag | default "latest" }}
@@ -61,6 +65,9 @@ spec:
             - name: config
               mountPath: /app/resources/application.yaml
               subPath: application.yaml
+            - name: observability-config
+              mountPath: /app/resources/observability.yaml
+              subPath: observability.yaml
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
