@@ -4,5 +4,7 @@ metadata:
   name: {{ .Release.Namespace }}
 spec:
   promotionPolicies:
+    {{- range $service := .Values.services }}
     - autoPromotionEnabled: true
-      stage: handbook-dev
+      stage: {{ $service.name }}-{{ index $service.stages 0 }}
+    {{- end }}
