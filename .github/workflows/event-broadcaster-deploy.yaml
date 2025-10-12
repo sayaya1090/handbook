@@ -10,7 +10,7 @@ jobs:
     env:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
-      BASE_IMAGE: eclipse-temurin:21-jre-ubi9-minimal
+      BASE_IMAGE: eclipse-temurin:21-jre-ubi10-minimal
       SUBMODULE: event-broadcaster
     steps:
       - name: Checkout

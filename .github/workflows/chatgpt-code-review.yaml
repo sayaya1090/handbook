@@ -1,0 +1,17 @@
+name: ChatGPT Code Review
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+jobs:
+  code_review_job:
+    runs-on: ubuntu-latest
+    name: ChatGPT Code Review
+    steps:
+      - uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
+          MODEL: gpt-5-codex
