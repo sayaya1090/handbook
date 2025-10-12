@@ -19,3 +19,8 @@ spec:
     path: charts/handbook
     repoURL: 'https://github.com/sayaya1090/handbook.git'
     targetRevision: HEAD
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jqPathExpressions:
+        - .spec.source.helm.parameters[] | select(.name == "image.tag")
