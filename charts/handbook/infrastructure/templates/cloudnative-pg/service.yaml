@@ -1,0 +1,22 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {{ .Values.database.ip }}
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  internalTrafficPolicy: Cluster
+  allocateLoadBalancerNodePorts: true
+  type: LoadBalancer
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    cnpg.io/instanceRole: primary
