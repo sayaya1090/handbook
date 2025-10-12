@@ -65,7 +65,7 @@ dependencyResolutionManagement {
                 "org.springframework.cloud",
                 "spring-cloud-starter-kubernetes-fabric8"
             ).withoutVersion()
-            bundle("spring-client", listOf("spring-log4j2", "spring-security"))
+            bundle("spring-client", listOf("spring-log4j2", /*"spring-security"*/))
 
             library("spring-kafka", "org.springframework.cloud", "spring-cloud-starter-stream-kafka").withoutVersion()
 
