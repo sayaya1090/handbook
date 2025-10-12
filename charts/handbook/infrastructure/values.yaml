@@ -1,7 +1,14 @@
+database:
+  ip: ''
+  persistence:
+    size: 10Gi
+    storageClass: ''
+  backup:
+    schedule: ''
+  bootstrap:
+    restore: false
+    restorePath: ''  # 예: 'old' 또는 'backup/2024-01-01'
 s3:
   bucket:
     name: ''
     maxSize: 10G
-
-rbac:
-  # RBAC configuration

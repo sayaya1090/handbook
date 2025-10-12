@@ -31,6 +31,12 @@ spec:
           parameters:
             - name: s3.bucket.name
               value: handbook-{{`{{ stage }}`}}
+            - name: s3.bucket.maxSize
+              value: {{ (index $.Values.stages (printf "%s" "{{stage}}")).bucket.maxSize | default "10G" | quote }}
+            - name: database.ip
+              value: {{ (index $.Values.stages (printf "%s" "{{stage}}")).database | quote }}
+            - name: database.backup.schedule
+              value: {{ (index $.Values.stages (printf "%s" "{{stage}}")).backup.schedule | default "0 3 * * *" | quote }}
       syncPolicy:
         automated:
           prune: true
