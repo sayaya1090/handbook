@@ -1,3 +1,7 @@
+image:
+  name: image-registry.openshift-image-registry.svc:5000/handbook/event-broadcaster
+  tag: latest
+
 stage:
   name: ""
   color: ""

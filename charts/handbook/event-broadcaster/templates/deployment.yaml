@@ -40,7 +40,7 @@ spec:
             defaultMode: 420
       containers:
         - name: event-broadcaster
-          image: {{ index .Values "event-broadcaster" "image" "name" }}:{{ index .Values "event-broadcaster" "image" "tag" | default "latest" }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag | default "latest" }}
           ports:
             - containerPort: 8080
               protocol: TCP
