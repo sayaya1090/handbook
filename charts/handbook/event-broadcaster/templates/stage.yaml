@@ -32,7 +32,7 @@ spec:
           as: sync
           config:
             apps:
-              - name: event-broadcaster-{{ .Values.stage.name }}
+              - name: handbook-event-broadcaster-{{ .Values.stage.name }}
                 sources:
                   - helm:
                       images:

@@ -32,7 +32,7 @@ spec:
           as: sync
           config:
             apps:
-              - name: gateway-{{ .Values.stage.name }}
+              - name: handbook-gateway-{{ .Values.stage.name }}
                 sources:
                   - helm:
                       images:
