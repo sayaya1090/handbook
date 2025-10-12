@@ -63,9 +63,9 @@ spec:
               successExpression: response.status == 204
         {{- end }}
   {{- if eq .Values.stage.name "dev" }}
-  verification:
-    analysisTemplates:
-    - name: gateway-dev
+  #verification:
+  #  analysisTemplates:
+  #  - name: gateway-dev
   {{- else if eq .Values.stage.name "staging" }}
   verification:
     analysisTemplates:

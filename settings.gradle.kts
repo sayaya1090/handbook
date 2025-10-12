@@ -149,5 +149,5 @@ dependencyResolutionManagement {
         }
     }
 }
-//include("gateway")
+include("gateway")
 include("event-broadcaster")
