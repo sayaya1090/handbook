@@ -3,6 +3,9 @@ kind: Cluster
 metadata:
   name: postgresql
 spec:
+  inheritedMetadata:
+    labels:
+      istio.io/dataplane-mode: none
   imageName: ghcr.io/cloudnative-pg/postgresql:18
   backup:
     {{- with .Values.s3.bucket.name }}
