@@ -82,34 +82,18 @@ dependencyResolutionManagement {
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("6.0.3") }
+            library("kotest-assertions-core", "io.kotest", "kotest-assertions-core").version { require("6.0.3") }
+            library("kotest-framework-engine", "io.kotest", "kotest-framework-engine").version { require("6.0.3") }
             library("mockk", "io.mockk", "mockk").version { require("1.14.6") }
-            library(
-                "kotest-extensions-spring",
-                "io.kotest.extensions",
-                "kotest-extensions-spring"
-            ).version { require("1.3.0") }
+            library("kotest-extensions-spring", "io.kotest.extensions", "kotest-extensions-spring").version { require("1.3.0") }
             library("spring-boot-test", "org.springframework.boot", "spring-boot-starter-test").withoutVersion()
             library("spring-security-test", "org.springframework.security", "spring-security-test").withoutVersion()
             library("kubernetes-mock", "io.fabric8", "kubernetes-server-mock").version { require("7.4.0") }
             library("kubernetes-mockserver", "io.fabric8", "mockwebserver").version { require("7.4.0") }
-            bundle(
-                "test-api",
-                listOf(
-                    "reactor-test",
-                    "kotest-runner",
-                    "mockk",
-                    "kotest-extensions-spring",
-                    "spring-boot-test",
-                    "spring-security-test"
-                )
-            )
+            bundle("test-api", listOf("reactor-test", "kotest-runner", "kotest-assertions-core", "kotest-framework-engine", "mockk", "kotest-extensions-spring", "spring-boot-test", "spring-security-test"))
             library("testcontainers-junit", "org.testcontainers", "junit-jupiter").withoutVersion()
             library("testcontainers-postgresql", "org.testcontainers", "postgresql").withoutVersion()
-            library(
-                "kotest-extensions-testcontainers",
-                "io.kotest.extensions",
-                "kotest-extensions-testcontainers"
-            ).version { require("2.0.2") }
+            library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").version { require("2.0.2") }
             library("testcontainers-kafka", "org.testcontainers", "kafka").version { require("1.21.3") }
             bundle("test-containers", listOf("testcontainers-junit", "kotest-extensions-testcontainers"))
 
@@ -149,5 +133,6 @@ dependencyResolutionManagement {
         }
     }
 }
+include("domain")
 include("gateway")
 include("event-broadcaster")
