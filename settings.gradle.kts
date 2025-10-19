@@ -81,11 +81,11 @@ dependencyResolutionManagement {
             bundle("jjwt-runtime", listOf("jjwt-impl", "jjwt-jackson"))
 
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
-            library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("6.0.3") }
-            library("kotest-assertions-core", "io.kotest", "kotest-assertions-core").version { require("6.0.3") }
-            library("kotest-framework-engine", "io.kotest", "kotest-framework-engine").version { require("6.0.3") }
+            library("kotest-runner", "io.kotest", "kotest-runner-junit5").version { require("6.0.4") }
+            library("kotest-assertions-core", "io.kotest", "kotest-assertions-core").version { require("6.0.4") }
+            library("kotest-framework-engine", "io.kotest", "kotest-framework-engine").version { require("6.0.4") }
+            library("kotest-extensions-spring", "io.kotest", "kotest-extensions-spring").version { require("6.0.4") }
             library("mockk", "io.mockk", "mockk").version { require("1.14.6") }
-            library("kotest-extensions-spring", "io.kotest.extensions", "kotest-extensions-spring").version { require("1.3.0") }
             library("spring-boot-test", "org.springframework.boot", "spring-boot-starter-test").withoutVersion()
             library("spring-security-test", "org.springframework.security", "spring-security-test").withoutVersion()
             library("kubernetes-mock", "io.fabric8", "kubernetes-server-mock").version { require("7.4.0") }
@@ -134,5 +134,6 @@ dependencyResolutionManagement {
     }
 }
 include("domain")
+include("authentication")
 include("gateway")
 include("event-broadcaster")
