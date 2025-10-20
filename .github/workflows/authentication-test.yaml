@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - authentication/**
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -21,6 +22,12 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-      - name: Test & Report
+        uses: gradle/actions/setup-gradle@v5
+      - name: Test
         run: gradle $SUBMODULE:koverXmlReport
+      - name: Report
+        uses: ./.github/actions/coverage-summary
+        with:
+          module-name: ${{ env.SUBMODULE }}
+          good-threshold: 80
+          warn-threshold: 50
