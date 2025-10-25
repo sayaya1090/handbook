@@ -5,7 +5,6 @@ inputs:
   report-path:
     description: 'Path to the Kover XML report file.'
     required: false
-    default: '${{ inputs.module-name }}/build/reports/kover/report.xml'
   module-name:
     description: 'Name of the submodule to display in the summary title.'
     required: true
@@ -25,10 +24,16 @@ runs:
       shell: bash
       run: |
         # 입력값들을 변수로 받습니다. (env 대신 inputs 사용)
-        REPORT_FILE="${{ inputs.report-path }}"
         MODULE_NAME="${{ inputs.module-name }}"
         GOOD_THRESHOLD=${{ inputs.good-threshold }}
         WARN_THRESHOLD=${{ inputs.warn-threshold }}
+        
+        # report-path가 제공되지 않았을 경우, module-name을 이용해 기본 경로를 설정합니다.
+        if [ -z "${{ inputs.report-path }}" ]; then
+          REPORT_FILE="$MODULE_NAME/build/reports/kover/report.xml"
+        else
+          REPORT_FILE="${{ inputs.report-path }}"
+        fi
 
         # --- 1. 전체 요약 생성 ---
         echo "### Kover Coverage Summary (\`$MODULE_NAME\`)" >> $GITHUB_STEP_SUMMARY
