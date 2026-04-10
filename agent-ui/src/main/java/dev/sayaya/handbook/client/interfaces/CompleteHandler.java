@@ -12,7 +12,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * complete 커맨드 → 프로그레스 숨김 + 범용 ToastContainer로 완료 요약 표시.
+ * complete 커맨드를 처리하여 프로그레스를 숨기고 완료 토스트를 표시하는 핸들러.
+ *
+ * <p><b>책임:</b> 완료 커맨드 수신 시 Shell의 프로그레스 바를 숨기고, ToastContainer로 완료 요약을 SUCCESS 토스트로 표시한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link AgentCommandDispatcher} — 완료 스트림 구독</li>
+ *   <li>{@link Observer}&lt;{@link Progress}&gt; — Shell 프로그레스 바 제어</li>
+ *   <li>{@link ToastContainer} — 완료 메시지 표시</li>
+ * </ul></p>
  */
 @Singleton
 public class CompleteHandler implements IsElement<HTMLDivElement> {

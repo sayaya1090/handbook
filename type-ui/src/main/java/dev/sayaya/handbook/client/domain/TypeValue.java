@@ -6,9 +6,16 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * 타입 스키마. backend Type의 GWT 호환 표현.
- * 캔버스 위치(x/y/w/h)는 포함하지 않는다 — PositionMap에서 별도 관리.
- * 변경 상태(NOT_CHANGE/CHANGE/DELETE)도 포함하지 않는다 — ChangeTracker에서 별도 관리.
+ * 타입 스키마를 표현하는 불변 스타일 값 객체(GWT JsInterop native).
+ *
+ * <p><b>책임:</b> 백엔드 Type 엔티티의 GWT 호환 표현. id, version, 유효기간, 속성 배열 등
+ * 타입 메타데이터를 보유하며, with* 메서드로 새 인스턴스를 생성하는 copy-on-write 패턴을 제공한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link AttributeValue} — 속성 배열 보유</li>
+ * </ul></p>
+ * <p><b>주의:</b> 캔버스 위치(x/y/w/h)는 {@link dev.sayaya.handbook.client.usecase.PositionMap}에서,
+ * 변경 상태는 {@link dev.sayaya.handbook.client.components.ChangeTracker}에서 별도 관리한다.
+ * key()는 "id:version" 형식으로 타입을 유일하게 식별한다.</p>
  */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 public final class TypeValue {
@@ -22,6 +29,7 @@ public final class TypeValue {
     public boolean primitive;
     public String parent;
     public AttributeValue[] attributes;
+    public double rev;
 
     @JsOverlay
     public static TypeValue create(String id, String version, double effectDateTime, double expireDateTime) {
@@ -32,6 +40,7 @@ public final class TypeValue {
         t.expireDateTime = expireDateTime;
         t.primitive = false;
         t.attributes = new AttributeValue[0];
+        t.rev = 0;
         return t;
     }
 
@@ -72,6 +81,7 @@ public final class TypeValue {
         t.primitive = this.primitive;
         t.parent = this.parent;
         t.attributes = this.attributes;
+        t.rev = this.rev;
         return t;
     }
 }

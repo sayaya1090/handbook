@@ -19,13 +19,26 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * 워크스페이스 SSE 이벤트를 구독하여 타입 목록을 자동 갱신한다.
+ * 워크스페이스 SSE 이벤트를 구독하여 타입 관련 이벤트를 처리한다.
  *
- * <p>TYPE_CREATED, TYPE_DELETED 이벤트 수신 시:
- * <ol>
- *   <li>현재 레이아웃 기간의 타입을 다시 조회한다.</li>
- *   <li>토스트 알림을 표시한다.</li>
- * </ol>
+ * <p><b>책임:</b>
+ * <ul>
+ *   <li>TYPE_CREATED/DELETED — 현재 레이아웃 기간의 타입 목록 재조회 + ChangeTracker/ActionManager 초기화 + 토스트</li>
+ *   <li>PRESENCE — JSON 파싱 후 {@link PresenceTracker}에 편집 위치 전달</li>
+ * </ul></p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link WorkspaceEventReceiver} — SSE 이벤트 스트림</li>
+ *   <li>{@link TypeRepository} — 타입 재조회 (PATCH 지원)</li>
+ *   <li>{@link ChangeTracker} — 더티 상태 초기화 (타입 갱신 시)</li>
+ *   <li>{@link ActionManager} — Undo/Redo 스택 초기화</li>
+ *   <li>{@link PresenceTracker} — 프레즌스 상태 관리</li>
+ *   <li>{@link LabelProvider} — 토스트 메시지 다국어 처리</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> {@link #init()}을 Application에서 호출해야 구독이 시작된다.
+ * 타입 갱신 시 ChangeTracker와 ActionManager를 모두 초기화하므로 미저장 변경은 소실된다.</p>
  */
 @Singleton
 public class TypeEventHandler {

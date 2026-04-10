@@ -20,8 +20,17 @@ import java.util.*;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * Document 참조 타입 간 SVG 화살표를 그린다.
- * TypeList와 PositionMap을 구독하여 참조 관계가 변경될 때 자동 갱신한다.
+ * Document 참조 타입 간 SVG 화살표를 렌더링하는 오버레이 요소.
+ *
+ * <p><b>책임:</b> TypeList와 PositionMap을 구독하여 document 타입 속성의 referencedType을
+ * 기반으로 타입 박스 간 방향 화살표를 SVG로 그린다. 참조 관계 변경 시 자동 갱신한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link TypeList} — 타입 목록 구독 (속성의 document 참조 탐색)</li>
+ *   <li>{@link PositionMap} — 타입 위치 구독 (화살표 좌표 계산)</li>
+ *   <li>{@link ArrowFactory} — 사각형 간 최적 화살표 경로 계산</li>
+ * </ul></p>
+ * <p><b>주의:</b> SVG는 pointer-events:none으로 설정되어 마우스 이벤트를 투과한다.
+ * 화살표 색상은 --md-sys-color-primary CSS 변수를 사용한다.</p>
  */
 @Singleton
 public class BoxReferenceElement implements IsElement<HTMLDivElement> {

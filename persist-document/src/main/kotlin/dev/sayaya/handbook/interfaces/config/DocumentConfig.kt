@@ -19,6 +19,17 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
 
+/**
+ * persist-document 모듈의 Spring Bean 설정.
+ *
+ * **책임:** usecase 계층의 서비스/포트 구현체를 Spring Bean으로 등록하고,
+ * Jackson ObjectMapper를 snake_case + JavaTime 지원으로 구성한다.
+ *
+ * **의존관계:**
+ * - [R2dbcDocumentRepositoryAdapter] — 문서 영속화 어댑터
+ * - [KafkaDocumentEventPublisher] — Kafka 이벤트 발행 어댑터
+ * - [DocumentService] — 문서 비즈니스 로직
+ */
 @Configuration
 class DocumentConfig {
     @Bean

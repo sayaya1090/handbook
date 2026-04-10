@@ -19,7 +19,19 @@ import java.util.function.Consumer;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * 속성 편집 다이얼로그. 타입 셀렉터(9종), 타입별 validator 에디터, nullable 스위치, 설명 입력.
+ * 속성 편집 다이얼로그.
+ *
+ * <p><b>책임:</b> 타입 셀렉터(text/number/date/enum/bool/array/map/file/document 9종),
+ * 타입별 validator 에디터({@link ValidatorEditor} 구현체), 이름/설명 입력 필드를 제공하며,
+ * Apply 시 편집된 {@link AttributeValue}를 콜백으로 반환한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link TextValidatorEditor}, {@link NumberValidatorEditor} 등 — 타입별 검증 에디터</li>
+ *   <li>{@link DocumentValidatorEditor} — document 타입 참조 선택 (TypeList 의존)</li>
+ *   <li>{@link LabelProvider} — 다국어 레이블</li>
+ *   <li>{@link TypeList} — DocumentValidatorEditor에 전달</li>
+ * </ul></p>
+ * <p><b>주의:</b> 싱글턴이므로 동시에 하나의 다이얼로그만 표시된다.
+ * show() 호출 시 현재 속성 값을 로드하고, hide() 시 상태를 초기화한다.</p>
  */
 @Singleton
 public class AttributeEditorDialog implements IsElement<HTMLDivElement> {

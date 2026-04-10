@@ -11,7 +11,17 @@ import java.util.function.Consumer;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
-/** Undo/Redo 스택을 관리하는 Command 패턴 매니저. */
+/**
+ * Undo/Redo 스택을 관리하는 Command 패턴 매니저.
+ *
+ * <p><b>책임:</b> {@link Action}을 실행하고 undo/redo 스택에 저장.
+ * canUndo/canRedo 상태를 {@link BehaviorSubject}로 발행하여 버튼 활성화를 반응형으로 제어한다.</p>
+ *
+ * <p><b>의존관계:</b> 없음 (순수 상태 관리). document-ui, type-ui의 버튼과 SaveAction이 사용한다.</p>
+ *
+ * <p><b>주의:</b> 스택 최대 크기 100. 새 액션 실행 시 redo 스택이 초기화된다.
+ * {@link #clear()}는 Save 성공 시 호출하여 양쪽 스택을 모두 비운다.</p>
+ */
 @Singleton
 public class ActionManager {
     private static final int MAX_STACK = 100;

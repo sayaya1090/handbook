@@ -13,7 +13,16 @@ import java.util.List;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
-/** 에이전트 활동 타임라인. 시간순으로 에이전트 이벤트를 표시한다. */
+/**
+ * 에이전트 활동 타임라인 UI 요소.
+ *
+ * <p><b>책임:</b> AgentActivityList를 구독하여 에이전트 이벤트를 시간순 타임라인으로 렌더링한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link AgentActivityList} — 에이전트 활동 목록 상태 구독</li>
+ *   <li>{@link LabelProvider} — 패널 제목 및 빈 상태 메시지 다국어 처리</li>
+ * </ul></p>
+ * <p><b>주의:</b> formatTimestamp()는 JSNI로 구현되어 브라우저 Date 객체를 사용한다.</p>
+ */
 @Singleton
 public class ActivityLogElement implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLDivElement element;

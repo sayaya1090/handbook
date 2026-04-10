@@ -13,6 +13,17 @@ import javax.inject.Singleton;
 
 import static org.jboss.elemento.Elements.div;
 
+/**
+ * 그리드 스냅 활성화/비활성화 체크박스.
+ *
+ * <p><b>책임:</b> HTML checkbox를 통해 {@link GridSnap}의 활성화 상태를 토글한다.
+ * 스냅이 활성화되면 박스 이동/리사이즈 시 그리드 단위로 정렬된다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link GridSnap} — 스냅 활성화 상태 관리</li>
+ *   <li>{@link LabelProvider} — 다국어 레이블 텍스트</li>
+ * </ul></p>
+ * <p><b>주의:</b> 네이티브 HTML input[type=checkbox]를 사용한다(MD3 컴포넌트 아님).</p>
+ */
 @Singleton
 public class SnapCheckbox implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;

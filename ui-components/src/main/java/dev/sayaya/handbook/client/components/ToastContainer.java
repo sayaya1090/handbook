@@ -8,8 +8,10 @@ import org.jboss.elemento.IsElement;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * 범용 토스트 메시지 컨테이너.
- * info/success는 3초 후 자동 닫힘, warning/error는 수동 닫힘.
+ * 범용 토스트 메시지 컨테이너 컴포넌트.
+ *
+ * <p><b>책임:</b> ToastLevel별 토스트 메시지를 렌더링한다. INFO/SUCCESS는 3초 후 페이드아웃, WARNING/ERROR는 수동 닫기 버튼으로 닫는다.</p>
+ * <p><b>의존관계:</b> <ul><li>{@link ToastLevel} — 토스트 심각도 열거형</li></ul></p>
  */
 public class ToastContainer implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;

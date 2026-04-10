@@ -17,6 +17,18 @@ import java.time.ZoneOffset
 import java.util.*
 import java.util.regex.Pattern
 
+/**
+ * JWT 토큰 생성 팩토리.
+ *
+ * **책임:** [User] 도메인 객체를 받아 RSA 서명된 JWT 문자열을 생성한다.
+ * PEM 형식의 개인키를 파싱하여 JJWT 라이브러리로 서명한다.
+ *
+ * **의존관계:**
+ * - [TokenFactoryConfig] — RSA 개인키, 만료 시간, 발행자 설정
+ * - [ObjectMapper] — (현재 미사용, 향후 확장용)
+ *
+ * **주의:** PEM 개인키는 PKCS#8 형식이어야 한다. PKCS#1 형식은 지원하지 않는다.
+ */
 class TokenFactory(
     private val config: TokenFactoryConfig,
     private val objectMapper: ObjectMapper,

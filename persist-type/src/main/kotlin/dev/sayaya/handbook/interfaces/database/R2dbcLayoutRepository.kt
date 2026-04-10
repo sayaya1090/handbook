@@ -9,10 +9,20 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
 
+/** Spring Data R2DBC 자동 구현 인터페이스. type_layouts 테이블에 대한 기본 CRUD + 워크스페이스별 조회를 제공한다. */
 interface R2dbcLayoutEntityRepository : ReactiveCrudRepository<R2dbcLayoutEntity, UUID> {
     fun findByWorkspace(workspace: UUID): Flux<R2dbcLayoutEntity>
 }
 
+/**
+ * [LayoutRepository] 포트의 R2DBC 어댑터.
+ *
+ * **책임:** 레이아웃 도메인 객체와 R2DBC 엔티티 간 변환, positions JSONB 직렬화/역직렬화를 담당한다.
+ *
+ * **의존관계:**
+ * - [R2dbcLayoutEntityRepository] — Spring Data 기본 CRUD
+ * - [ObjectMapper] — positions JSONB 직렬화/역직렬화
+ */
 class R2dbcLayoutRepositoryAdapter(
     private val repository: R2dbcLayoutEntityRepository,
     private val objectMapper: ObjectMapper,

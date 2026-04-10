@@ -19,7 +19,21 @@ import jsinterop.base.JsPropertyMap;
 
 import java.util.List;
 
-/** DocumentRepository 구현. FetchApi를 사용하여 HTTP 요청을 보낸다. */
+/**
+ * {@link DocumentRepository} 포트의 HTTP 어댑터.
+ *
+ * <p><b>책임:</b> Fetch API를 사용하여 persist-document 백엔드와 통신.
+ * search(GET), save(PUT), patch(PATCH), delete(DELETE) 엔드포인트 호출.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link FetchApi} — HTTP 요청 실행 (인증 쿠키 자동 포함)</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> workspace는 {@link #setWorkspace(String)}으로 설정해야 한다.
+ * patch() 실패 시 409 Conflict를 Promise.reject로 전파하여 호출자가 충돌 UI를 표시할 수 있게 한다.
+ * Content-Type은 항상 {@code application/vnd.sayaya.handbook.v1+json}.</p>
+ */
 @Singleton
 public class DocumentApi implements DocumentRepository {
     private final FetchApi fetchApi;

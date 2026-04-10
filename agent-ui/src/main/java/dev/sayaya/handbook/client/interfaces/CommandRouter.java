@@ -14,8 +14,14 @@ import javax.inject.Singleton;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
- * SSE로 수신된 JSON 문자열을 파싱하여 타입별 BehaviorSubject에 발행한다.
- * GWT 환경에서는 Jackson이 아닌 native JSON.parse()로 처리한다.
+ * SSE로 수신된 JSON 커맨드를 파싱하여 타입별 BehaviorSubject에 발행하는 라우터.
+ *
+ * <p><b>책임:</b> JSNI JSON.parse()로 커맨드 타입을 판별하고, navigate/highlight/attention/scroll/preview/mutate/notify/progress/await_confirm/complete를 각각의 Subject에 발행한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link AgentSession} — await_confirm/complete 시 세션 상태 전이</li>
+ *   <li>{@link BehaviorSubject} — 커맨드별 반응형 스트림</li>
+ * </ul></p>
+ * <p><b>주의:</b> JSON 파싱은 JSNI로 수행되므로 브라우저 환경에서만 동작한다.</p>
  */
 @Singleton
 public class CommandRouter implements AgentCommandDispatcher {

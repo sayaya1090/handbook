@@ -13,7 +13,22 @@ import javax.inject.Singleton;
 
 import static org.jboss.elemento.Elements.button;
 
-/** 새 문서 추가 버튼. */
+/**
+ * 새 문서 추가 버튼.
+ *
+ * <p><b>책임:</b> 클릭 시 빈 {@link DocumentValue}를 생성하고
+ * {@link AddDocumentAction}을 통해 {@link DocumentList}에 추가한다.
+ * ActionManager를 경유하므로 Undo/Redo가 지원된다.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link ActionManager} — 액션 실행 및 Undo/Redo 스택 관리</li>
+ *   <li>{@link DocumentList} — 현재 문서 목록 상태</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.LabelProvider} — 버튼 레이블 다국어 처리</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> 싱글턴으로 관리되며, 레이블은 LabelProvider 구독을 통해 언어 변경 시 자동 갱신된다.</p>
+ */
 @Singleton
 public class AddButton implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLElement element;

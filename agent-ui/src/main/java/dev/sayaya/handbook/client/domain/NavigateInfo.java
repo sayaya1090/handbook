@@ -1,8 +1,10 @@
 package dev.sayaya.handbook.client.domain;
 
 /**
- * 화면 이동 정보.
- * NavigateCommand를 UI에 전달하기 위한 값 객체.
+ * 화면 이동 정보 값 객체.
+ *
+ * <p><b>책임:</b> navigate 커맨드의 메뉴(menu), 도구(tool), URL을 UI에 전달한다.</p>
+ * <p><b>의존관계:</b> <ul><li>없음 (순수 도메인 VO)</li></ul></p>
  */
 public class NavigateInfo {
     private final String menu;

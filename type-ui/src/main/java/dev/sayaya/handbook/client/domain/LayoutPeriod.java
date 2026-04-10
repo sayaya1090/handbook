@@ -4,7 +4,15 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
-/** 레이아웃 기간. effectDateTime ~ expireDateTime 범위를 나타낸다. */
+/**
+ * 레이아웃 기간을 나타내는 값 객체(GWT JsInterop native).
+ *
+ * <p><b>책임:</b> effectDateTime ~ expireDateTime 범위를 표현하며,
+ * 두 기간 간 겹침(overlap) 계산 기능을 제공한다.
+ * 타입 목록 조회 시 기간 파라미터로 사용된다.</p>
+ * <p><b>의존관계:</b> 없음 (자립 값 객체)</p>
+ * <p><b>주의:</b> 시각값은 epoch 밀리초(double)로 저장된다. JsDate 변환 시 정밀도에 주의.</p>
+ */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 public final class LayoutPeriod {
     public double effectDateTime;

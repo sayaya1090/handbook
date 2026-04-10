@@ -1,6 +1,11 @@
 package dev.sayaya.handbook.domain;
 
-/** 오버레이 안내 스타일 */
+/**
+ * 오버레이 안내 스타일 열거형.
+ *
+ * <p><b>책임:</b> COACHMARK, SPOTLIGHT, PULSE, ARROW, BADGE 5가지 오버레이 렌더링 스타일을 정의한다.</p>
+ * <p><b>의존관계:</b> <ul><li>없음 (순수 도메인 열거형, OverlayContainer가 사용)</li></ul></p>
+ */
 public enum OverlayStyle {
     /** 반투명 배경 + 말풍선 팝업 */
     COACHMARK,

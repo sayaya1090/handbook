@@ -10,9 +10,15 @@ import org.jboss.elemento.IsElement;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * 범용 변경사항 Diff 패널.
- * "before → after" 형식의 변경 내역을 MD3 카드로 표시한다.
- * 버전 비교, 변경 이력, 에이전트 미리보기 등에 공통으로 사용한다.
+ * 범용 변경사항 Diff 패널 컴포넌트.
+ *
+ * <p><b>책임:</b> "before → after" 형식의 변경 내역을 MD3 Outlined Card로 렌더링한다. 화살표 포함 시 before/after 스타일을 분리 적용한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link CardElementBuilder} — MD3 카드 렌더링</li>
+ *   <li>{@link DividerElementBuilder} — 헤더와 콘텐츠 구분선</li>
+ *   <li>{@link IconElementBuilder} — 비교 아이콘, 화살표 아이콘</li>
+ * </ul></p>
+ * <p><b>주의:</b> 버전 비교, 변경 이력, 에이전트 미리보기 등에 공통으로 사용한다.</p>
  */
 public class DiffPanel implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;

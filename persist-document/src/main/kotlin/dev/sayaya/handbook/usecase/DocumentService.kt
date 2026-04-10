@@ -7,8 +7,16 @@ import reactor.core.publisher.Mono
 import java.util.*
 
 /**
- * 문서 CRUD 비즈니스 로직.
- * Spring 어노테이션 없음 — interfaces.config에서 Bean 등록.
+ * 문서 CUD 비즈니스 로직 (유스케이스 계층).
+ *
+ * **책임:** save(전체 저장), patch(부분 업데이트), delete 실행 후 Kafka 이벤트 발행.
+ *
+ * **의존관계:**
+ * - [DocumentRepository] — 영속화 포트 (R2DBC 어댑터가 구현)
+ * - [DocumentEventPublisher] — Kafka 이벤트 발행 (DOCUMENT_CREATED/DELETED)
+ *
+ * **주의:** Spring 어노테이션 없음 — interfaces.config.DocumentConfig에서 Bean 등록.
+ * patch() 성공 시에도 DOCUMENT_CREATED 이벤트를 발행한다 (변경을 다른 사용자에게 알림).
  */
 class DocumentService(
     private val documentRepository: DocumentRepository,

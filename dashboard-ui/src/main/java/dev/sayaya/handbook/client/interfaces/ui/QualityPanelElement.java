@@ -13,7 +13,15 @@ import java.util.List;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
-/** 품질 이슈 목록 패널. severity 배지와 함께 이슈를 표시한다. */
+/**
+ * 품질 이슈 목록 패널 UI 요소.
+ *
+ * <p><b>책임:</b> QualityIssueList를 구독하여 severity 배지 + 이슈 메시지를 목록으로 렌더링한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link QualityIssueList} — 품질 이슈 목록 상태 구독</li>
+ *   <li>{@link LabelProvider} — 패널 제목 및 빈 상태 메시지 다국어 처리</li>
+ * </ul></p>
+ */
 @Singleton
 public class QualityPanelElement implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLDivElement element;

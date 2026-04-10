@@ -19,7 +19,13 @@ import org.springframework.web.reactive.function.client.WebClient
 
 /**
  * 게이트웨이 인프라 설정.
- * ObjectMapper, WebClient, 서비스 디스커버리, MenuService를 Bean으로 등록한다.
+ *
+ * **책임:** Jackson ObjectMapper(snake_case + JavaTime), WebClient(커스텀 코덱),
+ * 서비스 디스커버리([ServiceDiscovery]), [MenuService]를 Bean으로 등록한다.
+ *
+ * **의존관계:**
+ * - [ServiceListProperties] — 메뉴 제공 서비스 목록 (application.yml)
+ * - [ServiceDiscovery] — WebClient 기반 메뉴 조회 어댑터
  */
 @Configuration
 @EnableConfigurationProperties(ServiceListProperties::class)

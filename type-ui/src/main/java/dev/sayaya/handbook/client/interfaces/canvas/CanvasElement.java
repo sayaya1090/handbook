@@ -30,6 +30,26 @@ import java.util.*;
 
 import static org.jboss.elemento.Elements.div;
 
+/**
+ * 타입 스키마 편집기의 메인 캔버스 컴포넌트.
+ *
+ * <p><b>책임:</b> 타입 박스({@link TypeElement})들을 배치/렌더링하고,
+ * 드래그 이동, 키보드 단축키(Ctrl+Z Undo, Delete 삭제, Arrow 이동),
+ * 컨텍스트 메뉴, 선택 상태를 관리한다.
+ * TypeList를 구독하여 타입 추가/제거 시 DOM 요소를 동기화한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link BoxElementFactory} — TypeElement 생성 팩토리</li>
+ *   <li>{@link TypeList} — 타입 목록 상태 구독</li>
+ *   <li>{@link PositionMap} — 타입 위치 조회</li>
+ *   <li>{@link ActionManager} — Move/Delete/ComplexAction 실행</li>
+ *   <li>{@link SelectedBoxElement} — 선택 상태</li>
+ *   <li>{@link DragShapeElement} — 드래그 시각 피드백</li>
+ *   <li>{@link CanvasMode}, {@link GridSnap} — 모드/스냅 설정</li>
+ *   <li>{@link CanvasContextMenuElement}, {@link BoxContextMenuElement} — 컨텍스트 메뉴</li>
+ * </ul></p>
+ * <p><b>주의:</b> elementMap으로 typeKey → TypeElement 매핑을 유지한다.
+ * 드래그 종료 시 스냅이 활성화되면 첫 번째 선택 박스 기준으로 스냅 델타를 계산한다.</p>
+ */
 @Singleton
 public class CanvasElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;

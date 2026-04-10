@@ -7,9 +7,12 @@ import java.io.Serializable
 import java.util.*
 
 /**
- * 도메인 변경 시 발행되는 이벤트를 나타내는 인터페이스.
+ * 도메인 변경 시 발행되는 이벤트를 나타내는 공통 인터페이스.
  *
- * 불변 이력 모델에 따라, 변경은 항상 "새 버전 생성" 또는 "삭제"로 표현되므로
+ * **책임:** 모든 도메인 이벤트([DocumentEvent], [TypeEvent], [ValidationEvent], [AgentCommandEvent], [PresenceEvent])의
+ * 공통 구조를 정의한다. Jackson @JsonTypeInfo로 event_type 기반 다형적 역직렬화를 지원한다.
+ *
+ * **주의:** 불변 이력 모델에 따라, 변경은 항상 "새 버전 생성" 또는 "삭제"로 표현되므로
  * UPDATE 이벤트는 존재하지 않는다.
  *
  * @param T 이벤트 페이로드 타입

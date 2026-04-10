@@ -21,6 +21,7 @@ data class Type (
     val attributes: List<Attribute> = emptyList(),
     // 부모 타입의 ID를 값으로 직접 참조하여 다른 Aggregate 간의 느슨한 결합을 유지합니다.
     val parent: String? = null,
+    val rev: Long? = null,
 
     ): Serializable {
     init {

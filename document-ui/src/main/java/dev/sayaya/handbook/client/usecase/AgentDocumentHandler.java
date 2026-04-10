@@ -11,7 +11,26 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
-/** MutationReceiver를 구독하여 에이전트 명령을 Action으로 변환한다. */
+/**
+ * AI 에이전트의 문서 조작 명령을 처리하는 핸들러.
+ *
+ * <p><b>책임:</b> {@link dev.sayaya.handbook.usecase.MutationReceiver}를 구독하여 에이전트로부터
+ * 수신된 문자열 명령(DOC_SELECT, DOC_ADD, DOC_EDIT, DOC_DELETE, DOC_SAVE)을
+ * 대응하는 {@link dev.sayaya.handbook.domain.Action}으로 변환하고 실행한다.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link TypeProvider} — DOC_SELECT 시 타입 선택 변경</li>
+ *   <li>{@link TypeList} — 타입 이름으로 TypeInfo 조회</li>
+ *   <li>{@link dev.sayaya.handbook.client.components.ActionManager} — 액션 실행 및 Undo/Redo 관리</li>
+ *   <li>{@link DocumentList} — 문서 목록 상태 조회/갱신</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.MutationReceiver} — 에이전트 명령 수신 채널</li>
+ *   <li>{@link DocumentRepository} — DOC_SAVE 시 서버 저장</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> init()을 호출해야 구독이 시작된다. DOC_EDIT 명령 형식은
+ * "DOC_EDIT &lt;serial&gt; &lt;field&gt; &lt;value&gt;"이며, 인식되지 않는 명령은 무시한다.</p>
+ */
 @Singleton
 public class AgentDocumentHandler {
     private final TypeProvider typeProvider;

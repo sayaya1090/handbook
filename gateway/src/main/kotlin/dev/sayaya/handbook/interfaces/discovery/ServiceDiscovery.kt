@@ -10,6 +10,14 @@ import java.time.Duration
 /**
  * WebClient를 통해 개별 서비스로부터 메뉴를 조회하는 어댑터.
  *
+ * **책임:** [MenuSupplier] 포트를 구현하여, 지정된 서비스의 `/menus` 엔드포인트로
+ * HTTP GET 요청을 보내고 [Menu] 리스트를 반환한다.
+ *
+ * **의존관계:**
+ * - [WebClient] — HTTP 통신 (서비스 이름 기반 base URL)
+ *
+ * **주의:** 타임아웃은 1200ms로, 응답 지연 시 빈 결과로 대체된다 (graceful degradation은 [MenuService] 참조).
+ *
  * @param service 서비스 이름 (Kubernetes 서비스 DNS 등)
  */
 class ServiceDiscovery(

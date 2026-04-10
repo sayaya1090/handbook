@@ -13,9 +13,15 @@ import org.jboss.elemento.IsElement;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * 범용 오버레이 컨테이너.
- * coachmark, spotlight, pulse, arrow, badge 5가지 스타일을 지원한다.
- * 온보딩, 정합성 경고, 협업 공유, 에이전트 안내 등에 공통으로 사용한다.
+ * 범용 오버레이 컨테이너 컴포넌트.
+ *
+ * <p><b>책임:</b> CSS 선택자 대상 요소에 coachmark/spotlight/pulse/arrow/badge 5가지 스타일의 오버레이를 렌더링한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link OverlayStyle} — 오버레이 스타일 열거형</li>
+ *   <li>{@link CardElementBuilder} — 툴팁/메시지 카드 렌더링</li>
+ *   <li>{@link BadgeElementBuilder} — 뱃지 스타일 렌더링</li>
+ * </ul></p>
+ * <p><b>주의:</b> positionNear()는 JSNI로 구현되어 getBoundingClientRect() 기반으로 fixed 위치를 계산한다.</p>
  */
 public class OverlayContainer implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;

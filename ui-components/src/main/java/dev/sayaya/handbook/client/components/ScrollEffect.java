@@ -4,8 +4,11 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
 
 /**
- * 범용 스크롤 + 도착 강조 효과.
- * CSS 선택자로 요소를 찾아 부드럽게 스크롤하고, 도착 후 잠깐 강조한다.
+ * 범용 스크롤 + 도착 강조 효과 컴포넌트.
+ *
+ * <p><b>책임:</b> CSS 선택자로 DOM 요소를 찾아 scrollIntoView({ behavior: 'smooth' })로 스크롤하고, 2초간 도착 강조 클래스를 부여한다.</p>
+ * <p><b>의존관계:</b> <ul><li>{@link elemental2.dom.DomGlobal#document} — DOM 요소 쿼리</li></ul></p>
+ * <p><b>주의:</b> scrollSmooth()는 JSNI로 구현되어 브라우저 scrollIntoView + focus를 호출한다.</p>
  */
 public class ScrollEffect {
     private static final String ARRIVED_CLASS = "ui-scroll-arrived";

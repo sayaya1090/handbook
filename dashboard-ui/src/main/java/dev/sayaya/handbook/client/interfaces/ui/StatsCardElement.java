@@ -10,7 +10,15 @@ import javax.inject.Singleton;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
-/** 통계 카드 3종 (타입 수, 문서 수, 사용자 수). MD3 Card 패턴. */
+/**
+ * 워크스페이스 통계 카드 3종 (타입 수, 문서 수, 사용자 수) UI 요소.
+ *
+ * <p><b>책임:</b> StatsProvider를 구독하여 통계 값을 실시간 갱신하고, LabelProvider를 통해 라벨을 다국어 처리한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link StatsProvider} — 워크스페이스 통계 상태 구독</li>
+ *   <li>{@link LabelProvider} — 카드 라벨 다국어 텍스트</li>
+ * </ul></p>
+ */
 @Singleton
 public class StatsCardElement implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLDivElement element;

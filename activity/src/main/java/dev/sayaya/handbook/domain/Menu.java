@@ -8,6 +8,15 @@ import lombok.experimental.Accessors;
 
 import java.util.*;
 
+/**
+ * 네비게이션 메뉴 항목 도메인 객체.
+ *
+ * <p><b>책임:</b> Gateway에서 수신한 메뉴 JSON을 JsInterop으로 매핑하고, 제목/아이콘/스크립트/도구 배열/URL 패턴 등을 보유한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link Tool} — 메뉴 하위 도구 항목</li>
+ * </ul></p>
+ * <p><b>주의:</b> 네이티브 JsType이므로 equals/hashCode/toBuilder는 @JsOverlay로 구현된다.</p>
+ */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})

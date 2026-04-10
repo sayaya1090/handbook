@@ -191,6 +191,7 @@ workspace, schema, document → (독립, 상호 의존 없음)
 | 값 객체는 data class 기본 equals | 모든 속성이 동일해야 같은 값 |
 | Type은 id+version 복합키 | 불변 이력 모델에서 버전별 고유 식별 |
 | Document.id는 nullable | 영속화 전(new) 상태 표현 |
+| Document.rev / Type.rev 전파 | DB `@Version` 값을 도메인 → API 응답 → 프론트엔드로 전달하여 패치 기반 낙관적 잠금 지원 |
 | sealed interface로 다형성 표현 | 컴파일 타임 안전성 + 패턴 매칭 |
 | Event에 UPDATE 타입 없음 | 불변 이력 모델: 변경 = 새 버전 생성 |
 | Compliance에 compatible/violations 일관성 검증 | 호환이면 violations 비어야 하고, 비호환이면 사유 필수 |
@@ -713,7 +714,7 @@ client/
 ```
 ├── usecase/         DocumentService, DocumentRepository, DocumentEventPublisher
 └── interfaces/
-    ├── api/         DocumentController (PUT/DELETE)
+    ├── api/         DocumentController (PUT/PATCH/DELETE), ImportExportController (POST /import, GET /export)
     ├── database/    R2dbcDocumentEntity (@Version), R2dbcDocumentEntityRepository, R2dbcDocumentRepositoryAdapter
     ├── event/       KafkaDocumentEventPublisher
     └── config/      DocumentConfig (Bean 등록, TransactionalOperator)
@@ -842,7 +843,8 @@ client/
     ├── api/         AssistantController (요청/실행/중단),
     │                QualityController (품질 스캔 트리거),
     │                AuditController (감사 이력 조회)
-    ├── event/       KafkaAgentCommandEventPublisher (Kafka 발행 어댑터)
+    ├── event/       KafkaAgentCommandEventPublisher (Kafka 발행 어댑터),
+    │                ValidationEventListener (VALIDATION_REQUESTED Kafka 소비 → QualityMonitorService 위임)
     ├── quality/     DefaultQualityMonitor (결측치/중복/이상값 검출)
     └── database/    InMemoryAuditRepository (감사 저장소 인메모리 구현)
 ```
@@ -927,6 +929,7 @@ sequenceDiagram
 | 독립 서비스로 배포 | LLM 지연이 큰 워크로드를 별도 스케일링, 다른 서비스에 영향 없음 |
 | Kafka 이벤트로 커맨드 브로드캐스트 | 워크스페이스 이벤트 채널을 공유하여 에이전트를 "세 번째 협업자"로 통합. 별도 SSE 엔드포인트 불필요 |
 | await_confirm으로 사용자 확인 | 자동 실행이 아닌 사용자 통제 하의 실행 |
+| Sinks.One 기반 응답 대기 | AWAIT_CONFIRM 시 커맨드 스트림을 일시정지하고, POST /assistant/respond로 사용자 응답이 도착하면 재개 또는 취소 |
 | attention 커맨드를 범용 메커니즘으로 | 에이전트 외에 온보딩, 경고, 협업 공유에도 동일 프로토콜 사용 |
 | 대화형 워크스페이스 설계 | 비개발자가 자연어로 시스템 구조를 설명하면 타입 구조 제안 |
 | 워크스페이스 권한 그대로 적용 | Gateway가 인증 검증 — 자연어 요청이라도 권한 밖 작업 거부 |
@@ -1188,7 +1191,7 @@ sequenceDiagram
 | DOCUMENT_DELETED | persist-document | DocumentEventHandler | 문서 목록 갱신 |
 | TYPE_CREATED | persist-type | TypeEventHandler | 타입 목록 갱신 |
 | TYPE_DELETED | persist-type | TypeEventHandler | 타입 목록 갱신 |
-| VALIDATION_REQUESTED | - | (향후 확장) | - |
+| VALIDATION_REQUESTED | persist-document | assistant (ValidationEventListener → QualityMonitorService.validate()) | 이슈 발견 시 AGENT_COMMAND NOTIFY 발행 |
 | AGENT_COMMAND | assistant | AgentSseClient (agent-ui) | 에이전트 커맨드 실행 |
 
 ### 설계 결정

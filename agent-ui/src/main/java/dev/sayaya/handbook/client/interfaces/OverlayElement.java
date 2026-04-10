@@ -11,7 +11,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * attention 커맨드 → 범용 OverlayContainer 위임.
+ * attention 커맨드를 범용 OverlayContainer에 위임하는 UI 요소.
+ *
+ * <p><b>책임:</b> AgentCommandDispatcher의 overlayRequests를 구독하고, OverlayContainer로 coachmark/spotlight/pulse/arrow/badge 오버레이를 렌더링한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link AgentCommandDispatcher} — 오버레이 요청 스트림 구독</li>
+ *   <li>{@link OverlayContainer} — 범용 오버레이 렌더링</li>
+ * </ul></p>
  */
 @Singleton
 public class OverlayElement implements IsElement<HTMLDivElement> {

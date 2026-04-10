@@ -24,6 +24,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * TypeRepository의 HTTP 어댑터 구현체.
+ *
+ * <p><b>책임:</b> REST API를 통해 타입 목록 조회(list), 전체 저장(save), 부분 패치(patch),
+ * 삭제(delete) 요청을 수행하고, 응답 JSON을 {@link TypeValue} 도메인 객체로 변환한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link FetchApi} — HTTP 요청 실행</li>
+ *   <li>{@link dev.sayaya.handbook.domain.Progress} — 요청 시작/종료 시 프로그레스 바 제어</li>
+ *   <li>{@link TypeNative} — JSON ↔ TypeValue 변환 매개 객체</li>
+ * </ul></p>
+ * <p><b>주의:</b> workspace 필드를 setWorkspace()로 설정한 후에 API 호출해야 한다.</p>
+ */
 @Singleton
 public class TypeApi implements TypeRepository {
     private final FetchApi fetchApi;

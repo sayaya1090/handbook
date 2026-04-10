@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * JWT 토큰 갱신 컨트롤러.
+ *
+ * **책임:** 인증된 사용자의 기존 토큰을 검증하고 새 JWT를 발급하여 쿠키로 설정한다.
+ * SPA에서 토큰 만료 전에 주기적으로 호출하여 세션을 유지한다.
+ *
+ * **의존관계:**
+ * - [TokenPublisher] — 토큰 검증 및 재발급
+ * - [LoginSecurityConfig] — 인증 쿠키 설정
+ */
 @RestController
 class TokenRefreshController(
     private val tokenPublisher: TokenPublisher,

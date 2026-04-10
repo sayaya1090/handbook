@@ -11,6 +11,12 @@ import javax.inject.Singleton;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
+/**
+ * AgentSession의 BehaviorSubject 기반 구현체.
+ *
+ * <p><b>책임:</b> BehaviorSubject로 에이전트 세션 상태를 관리하고, Observable/Observer 인터페이스를 제공한다.</p>
+ * <p><b>의존관계:</b> <ul><li>{@link BehaviorSubject} — 반응형 상태 관리</li></ul></p>
+ */
 @Singleton
 public class AgentSessionImpl implements AgentSession {
     private final BehaviorSubject<AgentSessionState> subject = behavior(AgentSessionState.IDLE);

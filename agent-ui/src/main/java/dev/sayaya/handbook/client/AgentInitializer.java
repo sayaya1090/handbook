@@ -7,6 +7,17 @@ import javax.inject.Singleton;
 
 import static org.jboss.elemento.Elements.body;
 
+/**
+ * 에이전트 UI 모듈 초기화 담당.
+ *
+ * <p><b>책임:</b> 에이전트 관련 UI 요소(오버레이, 확인 다이얼로그, 프리뷰 패널, 핸들러 등)를 body에 부착하여 활성화한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link OverlayElement}, {@link ConfirmDialogElement}, {@link PreviewPanelElement} — 오버레이 UI</li>
+ *   <li>{@link HighlightHandler}, {@link ScrollHandler}, {@link ProgressHandler} — DOM 효과 핸들러</li>
+ *   <li>{@link NavigateHandler}, {@link NotifyHandler}, {@link CompleteHandler}, {@link MutateHandler} — 커맨드 핸들러</li>
+ *   <li>{@link AgentInputElement} — 사용자 입력 UI</li>
+ * </ul></p>
+ */
 @Singleton
 public class AgentInitializer {
     private final HighlightHandler highlightHandler;

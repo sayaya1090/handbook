@@ -21,6 +21,24 @@ import javax.inject.Singleton;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
+/**
+ * document-ui 모듈의 Dagger DI 모듈.
+ *
+ * <p><b>책임:</b> 뷰포트 감지, 프로그레스 상태, 토스트 알림, 다국어 감지/로딩 등
+ * 모듈 전역에서 사용되는 싱글턴 의존성을 생성하고 바인딩한다.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link dev.sayaya.handbook.usecase.ViewportObserver} — 뷰포트 크기 변경 감지</li>
+ *   <li>{@link dev.sayaya.handbook.client.components.ToastContainer} — 사용자 알림 표시</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.LanguageDetector} — 브라우저 언어 감지</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.LanguagePackRepository} — 언어 팩 JSON 로딩</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.WindowMutationBridge} — 에이전트 명령 수신</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge} — 워크스페이스 이벤트 수신</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> detectLanguage()는 JSNI로 구현되어 localStorage와 navigator.language를 직접 참조한다.</p>
+ */
 @Module
 public class DocumentModule {
     @Provides @Singleton static ViewportObserver viewport() {

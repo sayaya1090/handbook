@@ -20,6 +20,7 @@ data class Document (
     val createDateTime: Instant?,
     val creator: String?,
     val data: Map<String, String?>,
+    val rev: Long? = null,
 ): Serializable {
     init {
         require(serial.matches(Regex("^[a-zA-Z0-9-_]+$"))) { "Document serial must be alphanumeric and may include hyphens and underscores." }

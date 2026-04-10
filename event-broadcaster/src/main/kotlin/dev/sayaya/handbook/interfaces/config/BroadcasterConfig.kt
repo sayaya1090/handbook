@@ -12,7 +12,13 @@ import org.springframework.context.annotation.Configuration
 
 /**
  * 이벤트 브로드캐스터의 인프라 설정.
- * usecase 계층의 객체들을 Spring Bean으로 등록하고, Jackson ObjectMapper를 구성한다.
+ *
+ * **책임:** usecase 계층의 [WorkspaceSinkManager], [Broadcaster]를 Spring Bean으로 등록하고,
+ * Jackson ObjectMapper를 snake_case + JavaTime 지원으로 구성한다.
+ *
+ * **의존관계:**
+ * - [WorkspaceSinkManager] — 워크스페이스별 Sink 관리
+ * - [Broadcaster] — 이벤트 수신 및 분배
  */
 @Configuration
 class BroadcasterConfig {

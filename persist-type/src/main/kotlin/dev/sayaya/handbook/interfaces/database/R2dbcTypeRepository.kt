@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 import java.util.*
 
+/** Spring Data R2DBC 자동 구현 인터페이스. types 테이블에 대한 기본 CRUD + 기간별 조회를 제공한다. */
 interface R2dbcTypeEntityRepository : ReactiveCrudRepository<R2dbcTypeEntity, String> {
     @Query("""
         SELECT * FROM types
@@ -31,6 +32,20 @@ interface R2dbcTypeEntityRepository : ReactiveCrudRepository<R2dbcTypeEntity, St
     ): Flux<R2dbcTypeEntity>
 }
 
+/**
+ * [TypeRepository] 포트의 R2DBC 어댑터.
+ *
+ * **책임:** 타입+속성 도메인 객체와 R2DBC 엔티티 간 변환, 트랜잭션 관리, 속성 upsert 패치.
+ *
+ * **의존관계:**
+ * - [R2dbcTypeEntityRepository] — 타입 엔티티 CRUD
+ * - [R2dbcAttributeEntityRepository] — 속성 엔티티 CRUD + 이름 기준 삭제
+ * - [DatabaseClient] — 커스텀 SQL (rev 체크 + 증가)
+ * - [ObjectMapper] — attribute_type JSONB 직렬화/역직렬화
+ *
+ * **주의:** save()는 기존 속성을 전체 삭제 후 재삽입. patch()는 변경 속성만 이름 기준 삭제 후 삽입 (비충돌 병합).
+ * rev 불일치 시 [DuplicateKeyException]으로 409 Conflict 변환.
+ */
 class R2dbcTypeRepositoryAdapter(
     private val typeRepo: R2dbcTypeEntityRepository,
     private val attrRepo: R2dbcAttributeEntityRepository,

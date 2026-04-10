@@ -15,7 +15,16 @@ import dev.sayaya.handbook.usecase.FetchApi;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/** DashboardRepository 구현. FetchApi를 사용하여 HTTP 요청을 보낸다. */
+/**
+ * DashboardRepository의 HTTP 구현체.
+ *
+ * <p><b>책임:</b> FetchApi를 사용하여 Gateway로부터 통계, 품질 이슈, 에이전트 활동 데이터를 조회한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link FetchApi} — HTTP 요청 전송</li>
+ *   <li>{@link AsyncSubject} — Promise를 Observable로 변환</li>
+ * </ul></p>
+ * <p><b>주의:</b> 요청 실패 시 null 또는 빈 배열을 반환하며, GWT.log로 오류를 기록한다.</p>
+ */
 @Singleton
 public class DashboardApi implements DashboardRepository {
     private final FetchApi fetchApi;

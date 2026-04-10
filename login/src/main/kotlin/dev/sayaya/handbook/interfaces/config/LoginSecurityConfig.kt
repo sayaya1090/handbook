@@ -24,6 +24,21 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import java.net.URI
 
+/**
+ * Spring Security 웹 필터 체인 및 OAuth2/JWT 인증 설정.
+ *
+ * **책임:** OAuth2 로그인 성공 시 JWT를 발급하여 HttpOnly 쿠키로 설정하고,
+ * 로그아웃 시 쿠키를 삭제한다. JWT 인증 필터를 SecurityWebFilterChain에 등록하여
+ * 이후 요청에서 쿠키 기반 인증을 수행한다.
+ *
+ * **의존관계:**
+ * - [AuthenticationConfig][dev.sayaya.handbook.interfaces.authentication.AuthenticationConfig] — JWT 쿠키 헤더명
+ * - [AuthenticationUrlConfig] — 인증 후 리다이렉트 URL
+ * - [TokenPublisher] — OAuth2 사용자 → JWT 발급
+ * - [TokenFactoryConfig] — JWT 만료 시간 (쿠키 maxAge)
+ *
+ * **주의:** CSRF는 비활성화되어 있으며, `/oauth2/`, `/auth/`, `/menus`는 인증 없이 접근 가능하다.
+ */
 @Configuration
 class LoginSecurityConfig(
     private val authConfig: AuthenticationConfig,

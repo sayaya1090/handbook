@@ -6,6 +6,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * 도구 모음(ToolRail) 항목 도메인 객체.
+ *
+ * <p><b>책임:</b> 메뉴 하위의 개별 도구 정보(아이콘, 제목, 정렬 순서, 실행 함수)를 보유한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link ToolFunction} — 도구 클릭 시 실행되는 콜백</li>
+ * </ul></p>
+ * <p><b>주의:</b> 네이티브 JsType이므로 빌더는 @JsOverlay로 구현된다.</p>
+ */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})

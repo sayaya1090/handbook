@@ -12,8 +12,13 @@ import javax.inject.Singleton;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * mutate 커맨드를 처리한다.
- * 변경 내역을 화면에 표시하고, WindowMutationBridge를 통해 편집 모듈(type-ui/workspace-ui)에 전달한다.
+ * mutate 커맨드를 처리하여 변경 로그를 표시하고 편집 모듈에 전파하는 핸들러.
+ *
+ * <p><b>책임:</b> WindowMutationBridge를 통해 변경사항을 편집 모듈에 CustomEvent로 전달하고, 변경 로그를 화면에 3초간 표시 후 페이드아웃한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link AgentCommandDispatcher} — mutation 스트림 구독</li>
+ *   <li>{@link WindowMutationBridge} — CustomEvent 기반 모듈 간 통신</li>
+ * </ul></p>
  */
 @Singleton
 public class MutateHandler implements IsElement<HTMLDivElement> {

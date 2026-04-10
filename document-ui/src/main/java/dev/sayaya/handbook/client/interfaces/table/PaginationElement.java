@@ -11,7 +11,20 @@ import static org.jboss.elemento.Elements.button;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
-/** 페이지네이션 UI 컴포넌트. 이전/다음 버튼과 현재 페이지 정보를 표시한다. */
+/**
+ * 페이지네이션 UI 컴포넌트.
+ *
+ * <p><b>책임:</b> 이전/다음 버튼과 현재 페이지 번호를 표시하며,
+ * 버튼 클릭 시 {@link PageState}의 페이지 번호를 증감시켜 문서 목록 조회를 트리거한다.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link PageState} — 현재 검색/페이지 상태 구독 및 갱신</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> 페이지 번호는 0-base이며, UI에는 1-base로 표시된다.
+ * 첫 페이지에서는 이전 버튼에 "disabled" CSS 클래스가 추가된다.</p>
+ */
 @Singleton
 public class PaginationElement implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLDivElement element;

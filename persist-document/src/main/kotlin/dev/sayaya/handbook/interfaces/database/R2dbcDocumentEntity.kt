@@ -10,6 +10,15 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
+/**
+ * documents 테이블에 매핑되는 R2DBC 엔티티.
+ *
+ * **책임:** 문서 도메인 객체와 DB 행 간의 양방향 변환을 담당한다.
+ * data 컬럼은 JSONB 문자열로 저장되며, JSON 역직렬화는 [R2dbcDocumentRepositoryAdapter][dev.sayaya.handbook.interfaces.database.R2dbcDocumentRepositoryAdapter]에서 처리한다.
+ *
+ * **주의:** [toDomain]은 data를 빈 맵으로 반환한다. 실제 데이터가 필요하면
+ * Adapter의 toDomainWithData()를 사용해야 한다.
+ */
 @Table("documents")
 data class R2dbcDocumentEntity(
     @Id val id: UUID,
@@ -32,6 +41,7 @@ data class R2dbcDocumentEntity(
         createDateTime = createDateTime,
         creator = creator,
         data = emptyMap(), // JSON 역직렬화는 Adapter에서 처리
+        rev = rev,
     )
 
     companion object {

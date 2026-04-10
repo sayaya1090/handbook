@@ -12,8 +12,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 변경/삭제된 타입과 레이아웃 위치를 서버에 저장한다.
- * 저장 후 ChangeTracker를 초기화한다.
+ * 변경/삭제된 타입과 레이아웃 위치를 서버에 저장하는 액션.
+ *
+ * <p><b>책임:</b> ChangeTracker에서 변경/삭제 키를 조회하여 변경된 타입은 save(),
+ * 삭제된 타입은 delete(), 레이아웃 위치는 savePositions()로 서버에 전송한다.
+ * 저장 후 ChangeTracker와 ActionManager를 초기화한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link TypeRepository} — 타입 저장/삭제 API</li>
+ *   <li>{@link LayoutRepository} — 위치 저장 API</li>
+ *   <li>{@link TypeList} — 변경된 타입 조회</li>
+ *   <li>{@link PositionMap} — 위치 데이터</li>
+ *   <li>{@link ChangeTracker} — 변경/삭제 키 조회 및 초기화</li>
+ *   <li>{@link ActionManager} — Undo/Redo 스택 초기화</li>
+ *   <li>{@link LayoutProvider} — 현재 기간 조회</li>
+ * </ul></p>
+ * <p><b>주의:</b> rollback()은 no-op이다. 저장은 서버 상태를 변경하므로 되돌릴 수 없다.</p>
  */
 public class SaveAction implements Action {
     private final TypeRepository typeRepository;

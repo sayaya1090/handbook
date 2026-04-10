@@ -28,8 +28,25 @@ import java.util.Arrays;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * 캔버스 위의 타입 카드. MD3 Card 스타일.
- * 드래그/선택/속성 목록 표시/인라인 편집을 지원한다.
+ * 캔버스 위의 타입 카드 요소(MD3 Card 스타일).
+ *
+ * <p><b>책임:</b> 타입 이름/버전 표시, 속성 목록 렌더링, 드래그 선택,
+ * 인라인 이름/버전 편집, 속성 편집/삭제, 리사이즈 핸들을 지원한다.
+ * PositionMap을 구독하여 위치 변경 시 자동 반영하고,
+ * SelectedBoxElement을 구독하여 선택 시각 상태를 토글한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link PositionMap} — 위치 구독 및 리사이즈 반영</li>
+ *   <li>{@link SelectedBoxElement} — 선택 상태 구독/토글</li>
+ *   <li>{@link ActionManager} — EditBoxAction/ResizeBoxAction 실행</li>
+ *   <li>{@link TypeList} — 타입 갱신</li>
+ *   <li>{@link ChangeTracker} — 변경 마킹</li>
+ *   <li>{@link AttributeEditorDialog} — 속성 편집 다이얼로그</li>
+ *   <li>{@link CanvasMode} — LAYOUT/TYPE 모드에 따른 동작 분기</li>
+ *   <li>{@link GridSnap} — 리사이즈 시 스냅 적용</li>
+ *   <li>{@link ValueListElement} — 속성 목록 렌더링</li>
+ * </ul></p>
+ * <p><b>주의:</b> Dagger AssistedInject로 생성된다(TypeValue, Position이 Assisted 파라미터).
+ * TYPE 모드에서 이름/버전 더블클릭 시 인라인 input 편집이 시작된다.</p>
  */
 public class TypeElement implements IsElement<HTMLDivElement> {
     public enum DisplayMode { SIMPLE, DETAIL }

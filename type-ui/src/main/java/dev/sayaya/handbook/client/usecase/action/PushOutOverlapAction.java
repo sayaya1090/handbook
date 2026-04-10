@@ -7,9 +7,16 @@ import dev.sayaya.handbook.client.usecase.PositionMap;
 import java.util.*;
 
 /**
- * 겹치는 타입 박스를 밀어낸다.
- * BFS 큐 기반으로 연쇄 충돌(A→B→C)을 해소하며,
- * 최소 이동 방향(상하좌우)을 선택하여 박스를 밀어낸다.
+ * 겹치는 타입 박스를 밀어내는 Command 패턴 액션.
+ *
+ * <p><b>책임:</b> BFS 큐 기반으로 sourceKey 박스와 겹치는 다른 박스들을 감지하고,
+ * 최소 이동 방향(상하좌우)을 선택하여 밀어낸다. 연쇄 충돌(A→B→C)도 재귀적으로 해소한다.
+ * rollback 시 원래 위치맵을 복원한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link PositionMap} — 위치 조회/갱신/복원</li>
+ * </ul></p>
+ * <p><b>주의:</b> padding 값만큼 추가 간격을 확보한다.
+ * 보통 {@link ComplexAction}을 통해 Move/Create 액션과 함께 묶여 실행된다.</p>
  */
 public class PushOutOverlapAction implements Action {
     private final PositionMap positionMap;

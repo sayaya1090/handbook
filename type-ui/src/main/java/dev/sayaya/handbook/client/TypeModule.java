@@ -20,6 +20,19 @@ import javax.inject.Singleton;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
+/**
+ * type-ui 공통 싱글턴을 제공하는 Dagger 모듈.
+ *
+ * <p><b>책임:</b> Progress, Render, URI Observer, MutationReceiver, WorkspaceEventReceiver,
+ * ToastContainer, 다국어(LanguageDetector, LanguagePackRepository) 등 모듈 전반에서 사용하는
+ * 공유 인스턴스를 DI 그래프에 바인딩한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link dev.sayaya.handbook.usecase.WindowMutationBridge} — agent-bridge 기반 모듈 간 CustomEvent 수신</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge} — 워크스페이스 이벤트 수신</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.FetchApi} — 언어팩 JSON fetch</li>
+ * </ul></p>
+ * <p><b>주의:</b> detectLanguage()는 JSNI로 localStorage/navigator.language를 읽는다.</p>
+ */
 @Module
 public class TypeModule {
     @Provides @Singleton static BehaviorSubject<Progress> progress() {

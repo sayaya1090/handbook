@@ -24,7 +24,21 @@ import java.util.Arrays;
 import static dev.sayaya.handbook.client.interfaces.ContextMenuHelper.menuItem;
 import static org.jboss.elemento.Elements.div;
 
-/** 타입 박스 우클릭 시 표시되는 컨텍스트 메뉴. */
+/**
+ * 타입 박스 우클릭 시 표시되는 컨텍스트 메뉴.
+ *
+ * <p><b>책임:</b> 대상 타입 박스에 "속성 추가"와 "삭제" 메뉴 항목을 표시하며,
+ * 속성 추가 시 {@link AttributeEditorDialog}를 열고 {@link EditBoxAction}으로 속성을 추가한다.
+ * 삭제 시 {@link DeleteBoxAction}을 실행한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link ActionManager} — 액션 실행</li>
+ *   <li>{@link TypeList} — 대상 타입 조회</li>
+ *   <li>{@link ChangeTracker} — 변경 상태 마킹</li>
+ *   <li>{@link AttributeEditorDialog} — 속성 편집 다이얼로그</li>
+ *   <li>{@link LabelProvider} — 다국어 메뉴 텍스트</li>
+ * </ul></p>
+ * <p><b>주의:</b> show() 호출 시 대상 typeKey를 설정하고, document 클릭 시 자동으로 hide()된다.</p>
+ */
 @Singleton
 public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;

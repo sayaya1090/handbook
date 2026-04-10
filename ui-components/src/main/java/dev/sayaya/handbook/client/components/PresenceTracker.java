@@ -6,8 +6,17 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * 다른 사용자의 편집 위치(프레즌스)를 추적한다.
- * 30초 타임아웃으로 자동 해제.
+ * 다른 사용자의 편집 위치(프레즌스)를 추적하는 싱글턴 상태 저장소.
+ *
+ * <p><b>책임:</b> 사용자별 편집 위치(타입, 문서 serial, 필드)를 Map으로 관리.
+ * type이 null이면 해당 사용자의 프레즌스를 해제한다.
+ * 리스너 패턴으로 UI 렌더러에 변경을 통지한다.</p>
+ *
+ * <p><b>의존관계:</b> 없음 (순수 상태 저장소). document-ui, type-ui의 EventHandler가 update()를 호출하고,
+ * SpreadsheetElement/CanvasElement가 subscribe()로 렌더링한다.</p>
+ *
+ * <p><b>주의:</b> GWT 싱글 스레드이므로 동기화 불필요. {@link #cleanExpired(long)}은
+ * Timer 등으로 주기적 호출이 필요하다 (30초 권장).</p>
  */
 @Singleton
 public class PresenceTracker {
