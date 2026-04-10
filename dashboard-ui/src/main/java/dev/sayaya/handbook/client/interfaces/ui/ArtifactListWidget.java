@@ -4,6 +4,8 @@ import dev.sayaya.handbook.client.domain.ArtifactData;
 import dev.sayaya.handbook.client.usecase.ArtifactList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -27,7 +29,7 @@ import static org.jboss.elemento.Elements.span;
  */
 @Singleton
 public class ArtifactListWidget implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLDivElement element;
+    @Delegate private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> _this = div();
     private final elemental2.dom.HTMLDivElement listContainer;
     private Labels labels = Labels.empty();
 
@@ -41,10 +43,9 @@ public class ArtifactListWidget implements IsElement<elemental2.dom.HTMLElement>
 
         listContainer = div().css("dash-artifact-items").element();
 
-        element = div().css("dash-artifact-list")
+        _this.css("dash-artifact-list")
                 .add(header)
-                .add(listContainer)
-                .element();
+                .add(listContainer);
 
         artifactList.subscribe(this::renderArtifacts);
     }
@@ -110,6 +111,4 @@ public class ArtifactListWidget implements IsElement<elemental2.dom.HTMLElement>
              + (m < 10 ? "0" + m : "" + m);
     }
 
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

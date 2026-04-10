@@ -4,6 +4,8 @@ import dev.sayaya.handbook.client.domain.ExecutionStatusData;
 import dev.sayaya.handbook.client.usecase.ExecutionStatusList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -26,7 +28,7 @@ import static org.jboss.elemento.Elements.span;
  */
 @Singleton
 public class ActiveExecutionsWidget implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLDivElement element;
+    @Delegate private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> _this = div();
     private final elemental2.dom.HTMLDivElement listContainer;
     private Labels labels = Labels.empty();
 
@@ -40,10 +42,9 @@ public class ActiveExecutionsWidget implements IsElement<elemental2.dom.HTMLElem
 
         listContainer = div().css("dash-executions-list").element();
 
-        element = div().css("dash-active-executions")
+        _this.css("dash-active-executions")
                 .add(header)
-                .add(listContainer)
-                .element();
+                .add(listContainer);
 
         executionStatusList.subscribe(this::renderExecutions);
     }
@@ -84,6 +85,4 @@ public class ActiveExecutionsWidget implements IsElement<elemental2.dom.HTMLElem
         }
     }
 
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

@@ -12,6 +12,7 @@ import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -45,19 +46,18 @@ import java.util.Set;
  */
 @Singleton
 public class BulkDeleteButton implements IsElement<HTMLElement> {
-    private final HTMLElement root;
+    @Delegate private final ButtonElementBuilder.OutlinedButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
     BulkDeleteButton(ActionManager actionManager, TypeList typeList, ChangeTracker tracker,
                      SelectedBoxElement selection, ConfirmDialog confirmDialog,
                      LabelProvider labelProvider) {
-        root = ButtonElementBuilder.button().outlined()
+        _this = ButtonElementBuilder.button().outlined()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash-can"))
-                .css("type-ctrl-btn").css("type-ctrl-btn-bulk-delete")
-                .element();
+                .css("type-ctrl-btn", "type-ctrl-btn-bulk-delete");
 
-        root.addEventListener("click", e -> {
+        _this.onClick(e -> {
             Set<String> selected = selection.getValue();
             if (selected.isEmpty()) return;
 
@@ -82,10 +82,7 @@ public class BulkDeleteButton implements IsElement<HTMLElement> {
 
         labelProvider.subscribe(labels -> {
             currentLabels = labels;
-            root.textContent = labels.getOrDefault("type.bulk_delete", "Bulk Delete");
+            _this.text(labels.getOrDefault("type.bulk_delete", "Bulk Delete"));
         });
     }
-
-    @Override
-    public HTMLElement element() { return root; }
 }

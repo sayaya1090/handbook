@@ -8,6 +8,7 @@ import dev.sayaya.handbook.client.usecase.action.ChangeLayoutAction;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -28,16 +29,15 @@ import java.util.List;
  */
 @Singleton
 public class AfterButton implements IsElement<HTMLElement> {
-    private final HTMLElement root;
+    @Delegate private final ButtonElementBuilder.TextButtonElementBuilder _this;
 
     @Inject
     AfterButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
-        root = ButtonElementBuilder.button().text()
+        _this = ButtonElementBuilder.button().text()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-right"))
-                .css("type-ctrl-btn").css("type-ctrl-btn-after")
-                .element();
+                .css("type-ctrl-btn", "type-ctrl-btn-after");
 
-        root.addEventListener("click", e -> navigate(layoutProvider, layoutList, actionManager, 1));
+        _this.onClick(e -> navigate(layoutProvider, layoutList, actionManager, 1));
 
         layoutList.subscribe(periods -> updateEnabled(layoutProvider, periods));
         layoutProvider.subscribe(period -> updateEnabled(layoutProvider, layoutList.getValue()));
@@ -57,13 +57,10 @@ public class AfterButton implements IsElement<HTMLElement> {
     private void updateEnabled(LayoutProvider provider, List<LayoutPeriod> periods) {
         LayoutPeriod current = provider.getValue();
         if (current == null || periods.isEmpty()) {
-            root.toggleAttribute("disabled", true);
+            _this.disabled(true);
             return;
         }
         int idx = periods.indexOf(current);
-        root.toggleAttribute("disabled", idx >= periods.size() - 1);
+        _this.disabled(idx >= periods.size() - 1);
     }
-
-    @Override
-    public HTMLElement element() { return root; }
 }

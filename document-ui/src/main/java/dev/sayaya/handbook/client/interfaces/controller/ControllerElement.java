@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -30,13 +32,13 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class ControllerElement implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLDivElement element;
+    @Delegate private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> _this = div();
 
     @Inject
     public ControllerElement(TypeTabsElement tabs, AddButton addButton, DeleteButton deleteButton,
                               SaveButton saveButton, UndoButton undoButton, RedoButton redoButton,
                               BulkDeleteButton bulkDeleteButton, BulkStatusButton bulkStatusButton) {
-        this.element = div().css("doc-controller")
+        _this.css("doc-controller")
                 .add(tabs)
                 .add(div().css("doc-ctrl-actions")
                         .add(addButton)
@@ -45,10 +47,6 @@ public class ControllerElement implements IsElement<elemental2.dom.HTMLElement> 
                         .add(redoButton)
                         .add(saveButton)
                         .add(bulkDeleteButton)
-                        .add(bulkStatusButton))
-                .element();
+                        .add(bulkStatusButton));
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

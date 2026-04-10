@@ -15,6 +15,7 @@ import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -37,17 +38,16 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class AddTypeButton implements IsElement<HTMLElement> {
-    private final HTMLElement root;
+    @Delegate private final ButtonElementBuilder.FilledButtonElementBuilder _this;
 
     @Inject
     AddTypeButton(ActionManager actionManager, TypeList typeList, PositionMap positionMap,
                   ChangeTracker tracker, LayoutProvider layoutProvider, LabelProvider labelProvider) {
-        root = ButtonElementBuilder.button().filled()
+        _this = ButtonElementBuilder.button().filled()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-plus"))
-                .css("type-ctrl-btn", "type-ctrl-btn-add")
-                .element();
+                .css("type-ctrl-btn", "type-ctrl-btn-add");
 
-        root.addEventListener("click", e -> {
+        _this.onClick(e -> {
             LayoutPeriod period = layoutProvider.getValue();
             if (period == null) return;
             String id = ContextMenuHelper.uniqueTypeId(typeList);
@@ -60,9 +60,6 @@ public class AddTypeButton implements IsElement<HTMLElement> {
         });
 
         labelProvider.subscribe(labels ->
-                root.textContent = labels.getOrDefault("type.add", "Add"));
+                _this.text(labels.getOrDefault("type.add", "Add")));
     }
-
-    @Override
-    public HTMLElement element() { return root; }
 }

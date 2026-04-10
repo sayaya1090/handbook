@@ -8,6 +8,7 @@ import dev.sayaya.handbook.client.usecase.action.ChangeLayoutAction;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -28,16 +29,15 @@ import java.util.List;
  */
 @Singleton
 public class BeforeButton implements IsElement<HTMLElement> {
-    private final HTMLElement root;
+    @Delegate private final ButtonElementBuilder.TextButtonElementBuilder _this;
 
     @Inject
     BeforeButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
-        root = ButtonElementBuilder.button().text()
+        _this = ButtonElementBuilder.button().text()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-left"))
-                .css("type-ctrl-btn").css("type-ctrl-btn-before")
-                .element();
+                .css("type-ctrl-btn", "type-ctrl-btn-before");
 
-        root.addEventListener("click", e -> navigate(layoutProvider, layoutList, actionManager, -1));
+        _this.onClick(e -> navigate(layoutProvider, layoutList, actionManager, -1));
 
         layoutList.subscribe(periods -> updateEnabled(layoutProvider, periods));
         layoutProvider.subscribe(period -> updateEnabled(layoutProvider, layoutList.getValue()));
@@ -57,13 +57,10 @@ public class BeforeButton implements IsElement<HTMLElement> {
     private void updateEnabled(LayoutProvider provider, List<LayoutPeriod> periods) {
         LayoutPeriod current = provider.getValue();
         if (current == null || periods.isEmpty()) {
-            root.toggleAttribute("disabled", true);
+            _this.disabled(true);
             return;
         }
         int idx = periods.indexOf(current);
-        root.toggleAttribute("disabled", idx <= 0);
+        _this.disabled(idx <= 0);
     }
-
-    @Override
-    public HTMLElement element() { return root; }
 }

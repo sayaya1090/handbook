@@ -4,12 +4,12 @@ import dev.sayaya.handbook.client.domain.Search;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.PageState;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static org.jboss.elemento.Elements.button;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
@@ -45,9 +45,9 @@ public class PaginationElement implements IsElement<elemental2.dom.HTMLElement> 
     public PaginationElement(PageState pageState, DocumentList documentList, LabelProvider labelProvider) {
         this.pageState = pageState;
         this.pageInfo = span().css("doc-page-info").element();
-        this.prevButton = button().css("doc-page-btn", "doc-page-prev").element();
+        this.prevButton = ButtonElementBuilder.button().text().css("doc-page-btn", "doc-page-prev").element();
         this.prevButton.textContent = "\u25C0";
-        this.nextButton = button().css("doc-page-btn", "doc-page-next").element();
+        this.nextButton = ButtonElementBuilder.button().text().css("doc-page-btn", "doc-page-next").element();
         this.nextButton.textContent = "\u25B6";
         this.emptyMessage = span().css("doc-page-empty").element();
         this.emptyMessage.textContent = "No results";

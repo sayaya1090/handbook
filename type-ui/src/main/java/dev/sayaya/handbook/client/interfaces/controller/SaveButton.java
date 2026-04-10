@@ -11,6 +11,7 @@ import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -34,7 +35,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class SaveButton implements IsElement<HTMLElement> {
-    private final HTMLElement root;
+    @Delegate private final ButtonElementBuilder.FilledButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -42,22 +43,18 @@ public class SaveButton implements IsElement<HTMLElement> {
                TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                ActionManager actionManager, LayoutProvider layoutProvider,
                ToastContainer toastContainer, LabelProvider labelProvider) {
-        root = ButtonElementBuilder.button().filled()
+        _this = ButtonElementBuilder.button().filled()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-floppy-disk"))
-                .css("type-ctrl-btn").css("type-ctrl-btn-save")
-                .element();
+                .css("type-ctrl-btn", "type-ctrl-btn-save");
 
-        root.addEventListener("click", e ->
+        _this.onClick(e ->
                 new SaveAction(typeRepository, layoutRepository, typeList, positionMap,
                         tracker, actionManager, layoutProvider, toastContainer, currentLabels).execute()
         );
 
         labelProvider.subscribe(labels -> {
             currentLabels = labels;
-            root.textContent = labels.getOrDefault("type.save", "Save");
+            _this.text(labels.getOrDefault("type.save", "Save"));
         });
     }
-
-    @Override
-    public HTMLElement element() { return root; }
 }

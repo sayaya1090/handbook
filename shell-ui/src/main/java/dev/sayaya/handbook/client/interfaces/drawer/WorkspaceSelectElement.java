@@ -29,13 +29,9 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
             _this.disabled(true);
             return;
         }
-        var newSelect = select().outlined().label("Workspace").required(true).menuPositioning("popover");
-        if(css != null) newSelect.css(css);
-        newSelect.disabled(false);
-        for (var workspace : workspaces) newSelect.option().value(workspace.id()).headline(workspace.name());
-        var parent = _this.element().parentElement;
-        if(parent != null) parent.replaceChild(newSelect.element(), _this.element());
-        _this = newSelect;
+        _this.removeAllOptions();
+        _this.disabled(false);
+        for (var workspace : workspaces) _this.option().value(workspace.id()).headline(workspace.name());
     }
     private void update(MenuRailState menu) {
         if(menu == MenuRailState.HIDE || menu == MenuRailState.COLLAPSE) mode(Mode.HIDE);
@@ -44,7 +40,7 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
     private String css;
     public WorkspaceSelectElement css(String css) {
         this.css = css;
-        _this.element().className = css;
+        _this.css(css);
         return this;
     }
     @Override

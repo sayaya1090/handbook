@@ -2,6 +2,8 @@ package dev.sayaya.handbook.client.interfaces.ui;
 
 import dev.sayaya.handbook.client.usecase.StatsProvider;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -21,10 +23,13 @@ import static org.jboss.elemento.Elements.span;
  */
 @Singleton
 public class StatsCardElement implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLDivElement element;
+    @Delegate private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> _this = div();
     private final elemental2.dom.HTMLElement typeCountValue;
     private final elemental2.dom.HTMLElement docCountValue;
     private final elemental2.dom.HTMLElement userCountValue;
+    private final elemental2.dom.HTMLElement typeLabelEl;
+    private final elemental2.dom.HTMLElement docLabelEl;
+    private final elemental2.dom.HTMLElement userLabelEl;
 
     @Inject
     public StatsCardElement(StatsProvider statsProvider, LabelProvider labelProvider) {
@@ -35,26 +40,25 @@ public class StatsCardElement implements IsElement<elemental2.dom.HTMLElement> {
         userCountValue = span().css("dash-stat-value").element();
         userCountValue.textContent = "0";
 
-        element = div().css("dash-stats-row")
+        typeLabelEl = span().css("dash-stat-label").element();
+        docLabelEl = span().css("dash-stat-label").element();
+        userLabelEl = span().css("dash-stat-label").element();
+
+        _this.css("dash-stats-row")
                 .add(div().css("dash-stat-card")
                         .add(typeCountValue)
-                        .add(span().css("dash-stat-label").element()))
+                        .add(typeLabelEl))
                 .add(div().css("dash-stat-card")
                         .add(docCountValue)
-                        .add(span().css("dash-stat-label").element()))
+                        .add(docLabelEl))
                 .add(div().css("dash-stat-card")
                         .add(userCountValue)
-                        .add(span().css("dash-stat-label").element()))
-                .element();
+                        .add(userLabelEl));
 
-        // 라벨 텍스트 설정
-        var cards = element.querySelectorAll(".dash-stat-label");
         labelProvider.subscribe(labels -> {
-            if (cards.length >= 3) {
-                cards.getAt(0).textContent = labels.getOrDefault("dashboard.stats.types", "Types");
-                cards.getAt(1).textContent = labels.getOrDefault("dashboard.stats.documents", "Documents");
-                cards.getAt(2).textContent = labels.getOrDefault("dashboard.stats.users", "Users");
-            }
+            typeLabelEl.textContent = labels.getOrDefault("dashboard.stats.types", "Types");
+            docLabelEl.textContent = labels.getOrDefault("dashboard.stats.documents", "Documents");
+            userLabelEl.textContent = labels.getOrDefault("dashboard.stats.users", "Users");
         });
 
         statsProvider.subscribe(stats -> {
@@ -65,7 +69,4 @@ public class StatsCardElement implements IsElement<elemental2.dom.HTMLElement> {
             }
         });
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

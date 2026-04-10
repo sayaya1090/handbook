@@ -8,6 +8,8 @@ import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.SelectedRows;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -15,8 +17,6 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import static org.jboss.elemento.Elements.button;
 
 /**
  * 선택된 모든 문서를 일괄 삭제하는 버튼.
@@ -40,20 +40,20 @@ import static org.jboss.elemento.Elements.button;
  */
 @Singleton
 public class BulkDeleteButton implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLElement element;
+    @Delegate private final ButtonElementBuilder.OutlinedButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
     public BulkDeleteButton(ActionManager actionManager, DocumentList documentList,
                             SelectedRows selectedRows, ConfirmDialog confirmDialog,
                             LabelProvider labelProvider) {
-        this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-bulk-delete").element();
+        this._this = ButtonElementBuilder.button().outlined().css("doc-ctrl-btn", "doc-ctrl-btn-bulk-delete");
         labelProvider.subscribe(labels -> {
             currentLabels = labels;
-            element.textContent = labels.getOrDefault("document.bulk_delete", "Bulk Delete");
+            _this.text(labels.getOrDefault("document.bulk_delete", "Bulk Delete"));
         });
 
-        element.addEventListener("click", e -> {
+        _this.onClick(e -> {
             Set<Integer> selected = selectedRows.getValue();
             if (selected.isEmpty()) return;
 
@@ -81,7 +81,4 @@ public class BulkDeleteButton implements IsElement<elemental2.dom.HTMLElement> {
             });
         });
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

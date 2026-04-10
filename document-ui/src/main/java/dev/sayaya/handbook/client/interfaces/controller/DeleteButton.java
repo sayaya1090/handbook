@@ -6,13 +6,13 @@ import dev.sayaya.handbook.client.usecase.DeleteDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-
-import static org.jboss.elemento.Elements.button;
 
 /**
  * 선택 문서 삭제 버튼.
@@ -34,18 +34,18 @@ import static org.jboss.elemento.Elements.button;
  */
 @Singleton
 public class DeleteButton implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLElement element;
+    @Delegate private final ButtonElementBuilder.OutlinedButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
     public DeleteButton(ActionManager actionManager, DocumentList documentList,
                         ConfirmDialog confirmDialog, LabelProvider labelProvider) {
-        this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-delete").element();
+        this._this = ButtonElementBuilder.button().outlined().css("doc-ctrl-btn", "doc-ctrl-btn-delete");
         labelProvider.subscribe(labels -> {
             currentLabels = labels;
-            element.textContent = labels.getOrDefault("document.delete", "Delete");
+            _this.text(labels.getOrDefault("document.delete", "Delete"));
         });
-        element.addEventListener("click", e -> {
+        _this.onClick(e -> {
             var docs = documentList.getValue();
             if (!docs.isEmpty()) {
                 String headline = currentLabels.getOrDefault("confirm.delete", "Are you sure you want to delete?");
@@ -64,7 +64,4 @@ public class DeleteButton implements IsElement<elemental2.dom.HTMLElement> {
             }
         });
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

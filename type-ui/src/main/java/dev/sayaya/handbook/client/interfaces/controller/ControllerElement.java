@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import elemental2.dom.HTMLDivElement;
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -25,7 +27,7 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class ControllerElement implements IsElement<HTMLDivElement> {
-    private final HTMLDivElement root;
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div();
 
     @Inject
     ControllerElement(BeforeButton beforeBtn, AfterButton afterBtn,
@@ -33,7 +35,7 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
                       UndoButton undoBtn, RedoButton redoBtn,
                       SaveButton saveBtn, ReloadButton reloadBtn,
                       SnapCheckbox snapCheckbox, ModeToggleButton modeToggle) {
-        root = div().css("type-controller")
+        _this.css("type-controller")
                 .add(modeToggle)
                 .add(div().css("type-ctrl-group")
                         .add(beforeBtn).add(afterBtn))
@@ -43,10 +45,6 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
                         .add(undoBtn).add(redoBtn))
                 .add(div().css("type-ctrl-group")
                         .add(saveBtn).add(reloadBtn))
-                .add(snapCheckbox)
-                .element();
+                .add(snapCheckbox);
     }
-
-    @Override
-    public HTMLDivElement element() { return root; }
 }

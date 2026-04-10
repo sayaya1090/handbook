@@ -4,10 +4,8 @@ import dev.sayaya.handbook.client.domain.CompleteInfo;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import elemental2.dom.Element;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
-import jsinterop.base.Js;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -32,6 +30,7 @@ import static org.jboss.elemento.Elements.span;
 public class ArtifactSummaryPanel implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
     private final HTMLDivElement contentArea;
+    private final HTMLElement titleEl;
     private Labels labels = Labels.empty();
 
     @Inject
@@ -42,8 +41,9 @@ public class ArtifactSummaryPanel implements IsElement<HTMLDivElement> {
         closeBtn.textContent = "close";
         closeBtn.addEventListener("click", e -> hide());
 
+        titleEl = span().css("agent-artifact-title").element();
         HTMLDivElement header = div().css("agent-artifact-header")
-                .add(span().css("agent-artifact-title"))
+                .add(titleEl)
                 .add(closeBtn)
                 .element();
 
@@ -73,10 +73,8 @@ public class ArtifactSummaryPanel implements IsElement<HTMLDivElement> {
             contentArea.appendChild(summaryEl);
         }
 
-        // Title
-        String titleText = labels.getOrDefault("agent.artifact.title", "Execution Result");
-        Element rawTitleEl = root.querySelector(".agent-artifact-title");
-        if (rawTitleEl != null) Js.<HTMLElement>uncheckedCast(rawTitleEl).textContent = titleText;
+        // Title — 생성 시 저장한 참조 사용 (DOM 쿼리 불필요)
+        titleEl.textContent = labels.getOrDefault("agent.artifact.title", "Execution Result");
 
         // Change list
         if (artifact.changeCount() > 0) {

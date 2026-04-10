@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -23,13 +25,13 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class DashboardElement implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLDivElement element;
+    @Delegate private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> _this = div();
 
     @Inject
     public DashboardElement(StatsCardElement statsCard, QualityPanelElement qualityPanel, ActivityLogElement activityLog,
                             ActiveExecutionsWidget activeExecutions, ArtifactListWidget artifactList,
                             AuditLogWidget auditLog) {
-        element = div().css("dash-container")
+        _this.css("dash-container")
                 .add(statsCard)
                 .add(div().css("dash-panels")
                         .add(qualityPanel)
@@ -37,10 +39,6 @@ public class DashboardElement implements IsElement<elemental2.dom.HTMLElement> {
                 .add(div().css("dash-panels")
                         .add(activeExecutions)
                         .add(artifactList))
-                .add(auditLog)
-                .element();
+                .add(auditLog);
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

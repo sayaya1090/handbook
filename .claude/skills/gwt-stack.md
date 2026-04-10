@@ -508,6 +508,39 @@ public class DrawerElement implements IsElement<HTMLElement> {
 }
 ```
 
+**4. sayaya-ui 컴포넌트 빌더 위임 (MD3 컴포넌트 간소화)**
+
+모든 sayaya-ui 컴포넌트 빌더에 `@Delegate`를 적용하면 수동 `element()`, `addEventListener`, `textContent`, disabled 캐스팅을 모두 제거할 수 있다.
+
+```java
+// Button — .filled() / .outlined() / .text()
+@Singleton
+public class UndoButton implements IsElement<HTMLElement> {
+    @Delegate private final ButtonElementBuilder.TextButtonElementBuilder _this;
+    @Inject UndoButton(ActionManager actionManager) {
+        _this = ButtonElementBuilder.button().text().css("my-btn", "my-btn-undo");
+        _this.onClick(e -> actionManager.undo());
+        actionManager.onCanUndo(can -> _this.disabled(!can));
+    }
+}
+
+// Select — .outlined() / .filled()
+@Delegate private final SelectElementBuilder.OutlinedSelectElementBuilder _this;
+_this = SelectElementBuilder.select().outlined().label("Type")
+        .option().value("v").text("t").done();
+
+// Checkbox
+@Delegate private final CheckboxElementBuilder _this;
+_this = CheckboxElementBuilder.checkbox().select(true).ariaLabel("Snap");
+
+// TextField — .outlined() / .filled()
+@Delegate private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder _this;
+_this = TextFieldElementBuilder.textField().outlined().label("Name");
+```
+
+**원칙:** sayaya-ui 빌더에서 `.element()` 호출 후 raw HTMLElement에 직접 조작하는 대신,
+빌더 자체를 `@Delegate`로 유지하면 빌더 API(`.text()`, `.onClick()`, `.disabled()`, `.select()` 등)를 직접 사용할 수 있다.
+
 ### @Getter(onMethod_) + @JsOverlay — native JS 타입 getter
 ```java
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")

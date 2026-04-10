@@ -12,6 +12,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import elemental2.dom.MouseEvent;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -54,8 +55,35 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
         root = div().css("box-reference-container").element();
         root.appendChild(svg);
 
+        // 이벤트 위임: SVG 전체에 한 번만 등록, data 속성으로 대상 판별
+        svg.addEventListener("mouseenter", e -> handleHover((MouseEvent) e, true), true);
+        svg.addEventListener("mouseleave", e -> handleHover((MouseEvent) e, false), true);
+
         typeList.subscribe(types -> redraw());
         positionMap.subscribe(positions -> redraw());
+    }
+
+    /** 이벤트 위임 핸들러 — 개별 화살표 요소가 아닌 SVG 루트에서 처리 */
+    private void handleHover(MouseEvent e, boolean highlight) {
+        Element target = (Element) e.target;
+        // 가장 가까운 arrow 그룹(g.box-ref-arrow)을 찾기
+        Element group = findAncestor(target, "box-ref-arrow");
+        if (group == null) return;
+        String fromKey = group.getAttribute("data-from-key");
+        String toKey = group.getAttribute("data-to-key");
+        String attrName = group.getAttribute("data-attr-name");
+        if (fromKey != null && toKey != null && attrName != null) {
+            highlightRelation(fromKey, toKey, attrName, highlight);
+        }
+    }
+
+    /** 상위 요소 중 해당 CSS 클래스를 가진 요소를 찾는다 */
+    private static Element findAncestor(Element el, String className) {
+        while (el != null) {
+            if (el.classList != null && el.classList.contains(className)) return el;
+            el = el.parentElement;
+        }
+        return null;
     }
 
     private void redraw() {
@@ -124,17 +152,7 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
                 head.classList.add("box-ref-head");
                 group.appendChild(head);
 
-                // 호버 이벤트 — 히트 영역에 직접 바인딩 (SVG <g>는 자체 면적이 없음)
-                String fromKey = type.key();
-                String attrName = attr.name;
-                hitArea.addEventListener("mouseenter", e -> highlightRelation(fromKey, toKey, attrName, true));
-                hitArea.addEventListener("mouseleave", e -> highlightRelation(fromKey, toKey, attrName, false));
-                // 실제 선분과 화살표 머리에도 바인딩
-                path.addEventListener("mouseenter", e -> highlightRelation(fromKey, toKey, attrName, true));
-                path.addEventListener("mouseleave", e -> highlightRelation(fromKey, toKey, attrName, false));
-                head.addEventListener("mouseenter", e -> highlightRelation(fromKey, toKey, attrName, true));
-                head.addEventListener("mouseleave", e -> highlightRelation(fromKey, toKey, attrName, false));
-
+                // 이벤트는 SVG 루트에서 위임 처리 (handleHover) — 개별 리스너 불필요
                 svg.appendChild(group);
             }
         }
@@ -181,46 +199,27 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
             "g[data-from-key='" + fromKey + "'][data-attr-name='" + attrName + "']");
         for (int i = 0; i < arrows.length; i++) {
             Element g = (Element) arrows.item(i);
-            if (highlight) g.classList.add("box-ref-hover");
-            else g.classList.remove("box-ref-hover");
+            g.classList.toggle("box-ref-hover", highlight);
         }
 
-        // 참조받는 타입 박스 하이라이트
-        elemental2.dom.NodeList toBoxes = DomGlobal.document.querySelectorAll(".type-box");
-        for (int i = 0; i < toBoxes.length; i++) {
-            HTMLElement box = (HTMLElement) toBoxes.item(i);
-            // type-box 안의 header에서 key를 비교
-            if (isBoxForKey(box, toKey)) {
-                if (highlight) box.classList.add("ref-highlight-target");
-                else box.classList.remove("ref-highlight-target");
-            }
-        }
+        // 참조받는 타입 박스 하이라이트 — data-type-key 속성으로 직접 선택
+        HTMLElement toBox = (HTMLElement) DomGlobal.document.querySelector(
+            ".type-box[data-type-key='" + toKey + "']");
+        if (toBox != null) toBox.classList.toggle("ref-highlight-target", highlight);
 
         // 참조하는 속성 행 하이라이트
-        elemental2.dom.NodeList fromBoxes = DomGlobal.document.querySelectorAll(".type-box");
-        for (int i = 0; i < fromBoxes.length; i++) {
-            HTMLElement box = (HTMLElement) fromBoxes.item(i);
-            if (isBoxForKey(box, fromKey)) {
-                elemental2.dom.NodeList rows = box.querySelectorAll(".type-attr-row");
-                for (int j = 0; j < rows.length; j++) {
-                    HTMLElement row = (HTMLElement) rows.item(j);
-                    HTMLElement nameEl = (HTMLElement) row.querySelector(".type-attr-name");
-                    if (nameEl != null && attrName.equals(nameEl.textContent)) {
-                        if (highlight) row.classList.add("ref-highlight-source");
-                        else row.classList.remove("ref-highlight-source");
-                    }
+        HTMLElement fromBox = (HTMLElement) DomGlobal.document.querySelector(
+            ".type-box[data-type-key='" + fromKey + "']");
+        if (fromBox != null) {
+            elemental2.dom.NodeList rows = fromBox.querySelectorAll(".type-attr-row");
+            for (int j = 0; j < rows.length; j++) {
+                HTMLElement row = (HTMLElement) rows.item(j);
+                HTMLElement nameEl = (HTMLElement) row.querySelector(".type-attr-name");
+                if (nameEl != null && attrName.equals(nameEl.textContent)) {
+                    row.classList.toggle("ref-highlight-source", highlight);
                 }
             }
         }
-    }
-
-    /** 타입 박스가 특정 key에 해당하는지 확인한다. data-key 속성 또는 header 텍스트로 판별. */
-    private boolean isBoxForKey(HTMLElement box, String key) {
-        String dataKey = box.getAttribute("data-type-key");
-        if (dataKey != null) return dataKey.equals(key);
-        // fallback: header 텍스트에서 id:version 형태를 확인
-        HTMLElement header = (HTMLElement) box.querySelector(".type-box-header, .type-box-title");
-        return header != null && key.equals(header.textContent);
     }
 
     @Override

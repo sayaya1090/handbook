@@ -51,7 +51,7 @@ public class DrawerElement implements IsElement<HTMLElement> {
         scrim.addEventListener("click", e -> mode.toggleOverlay());
 
         _this.css("drawer")
-                .add(div().css("header")
+                .add(div().css("header", "drawer-header")
                         .add(workspace.css("workspace"))
                         .add(themeToggle.style("margin: 4px;"))
                         .add(btnToggle.style("margin: 8px;"))

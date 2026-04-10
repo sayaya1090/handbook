@@ -35,7 +35,7 @@ public class SnapCheckbox implements IsElement<HTMLDivElement> {
         labelProvider.subscribe(labels ->
                 checkbox.ariaLabel(labels.getOrDefault("type.snap", "Snap")));
 
-        root = div().css("type-ctrl-group").css("type-snap-checkbox").element();
+        root = div().css("type-ctrl-group", "type-snap-checkbox").element();
         root.appendChild(checkbox.element());
     }
 

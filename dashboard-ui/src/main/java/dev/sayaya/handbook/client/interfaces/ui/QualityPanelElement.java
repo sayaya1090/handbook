@@ -4,6 +4,8 @@ import dev.sayaya.handbook.client.domain.QualityIssue;
 import dev.sayaya.handbook.client.usecase.QualityIssueList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import lombok.experimental.Delegate;
+import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -24,7 +26,7 @@ import static org.jboss.elemento.Elements.span;
  */
 @Singleton
 public class QualityPanelElement implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLDivElement element;
+    @Delegate private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> _this = div();
     private final elemental2.dom.HTMLDivElement listContainer;
     private Labels labels = Labels.empty();
 
@@ -38,10 +40,9 @@ public class QualityPanelElement implements IsElement<elemental2.dom.HTMLElement
 
         listContainer = div().css("dash-quality-list").element();
 
-        element = div().css("dash-quality-panel")
+        _this.css("dash-quality-panel")
                 .add(header)
-                .add(listContainer)
-                .element();
+                .add(listContainer);
 
         qualityIssueList.subscribe(this::renderIssues);
     }
@@ -69,6 +70,4 @@ public class QualityPanelElement implements IsElement<elemental2.dom.HTMLElement
         }
     }
 
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

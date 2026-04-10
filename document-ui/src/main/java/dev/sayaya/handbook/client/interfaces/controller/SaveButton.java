@@ -7,12 +7,12 @@ import dev.sayaya.handbook.client.usecase.DocumentRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import static org.jboss.elemento.Elements.button;
 
 /**
  * 변경사항 저장 버튼.
@@ -34,19 +34,19 @@ import static org.jboss.elemento.Elements.button;
  */
 @Singleton
 public class SaveButton implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLElement element;
+    @Delegate private final ButtonElementBuilder.FilledButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
     public SaveButton(ActionManager actionManager, DocumentList documentList,
                       DocumentRepository documentRepository, ToastContainer toastContainer,
                       LabelProvider labelProvider) {
-        this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-save").element();
+        this._this = ButtonElementBuilder.button().filled().css("doc-ctrl-btn", "doc-ctrl-btn-save");
         labelProvider.subscribe(labels -> {
             currentLabels = labels;
-            element.textContent = labels.getOrDefault("document.save", "Save");
+            _this.text(labels.getOrDefault("document.save", "Save"));
         });
-        element.addEventListener("click", e ->
+        _this.onClick(e ->
             documentRepository.save(documentList.getValue()).subscribe(v -> {
                 actionManager.clear();
                 toastContainer.show(ToastLevel.SUCCESS,
@@ -54,7 +54,4 @@ public class SaveButton implements IsElement<elemental2.dom.HTMLElement> {
             })
         );
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

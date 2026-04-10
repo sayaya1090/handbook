@@ -63,6 +63,14 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
         headerRow.appendChild(closeBtn);
 
         listContainer = div().css("version-history-list").element();
+        // 이벤트 위임: 개별 row가 아닌 listContainer에서 클릭 처리
+        listContainer.addEventListener("click", e -> {
+            HTMLElement target = (HTMLElement) e.target;
+            HTMLElement row = findAncestorWithClass(target, "version-history-row");
+            if (row == null) return;
+            HTMLElement versionEl = (HTMLElement) row.querySelector(".version-history-version");
+            if (versionEl != null) toggleVersionSelection(versionEl.textContent, row);
+        });
         diffContainer = div().css("version-history-diff").element();
 
         root = div().css("version-history-panel")
@@ -138,10 +146,7 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
             row.appendChild(effectDate);
             row.appendChild(attrCount);
 
-            row.addEventListener("click", e -> {
-                toggleVersionSelection(version.version, row);
-            });
-
+            // 클릭 이벤트는 listContainer에서 위임 처리
             listContainer.appendChild(row);
         }
     }
@@ -247,6 +252,15 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
         var errDiv = div().css("version-history-diff-error").element();
         errDiv.textContent = labels.getOrDefault("type.version_history.diff_error", "Diff failed") + ": " + error;
         diffContainer.appendChild(errDiv);
+    }
+
+    /** 상위 요소 중 해당 CSS 클래스를 가진 요소를 찾는다 */
+    private static HTMLElement findAncestorWithClass(HTMLElement el, String className) {
+        while (el != null) {
+            if (el.classList.contains(className)) return el;
+            el = (HTMLElement) el.parentElement;
+        }
+        return null;
     }
 
     /** 타임스탬프(ms)를 "yyyy-MM-dd" 형식으로 변환한다. */

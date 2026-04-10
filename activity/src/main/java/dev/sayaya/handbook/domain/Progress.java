@@ -4,6 +4,9 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * 프로그레스 바 상태를 나타내는 값 객체.
@@ -17,23 +20,18 @@ import jsinterop.annotations.JsType;
  * </pre>
  */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
 public final class Progress {
-    private boolean enabled;
+    @Getter(AccessLevel.NONE) private boolean enabled;
     private boolean intermediate;
     private double value;
     private double max;
     private String description;
 
+    /** enabled 필드는 boolean이므로 isEnabled() 대신 enabled()로 접근하기 위해 수동 정의 */
     @JsOverlay @JsIgnore
     public boolean enabled() { return enabled; }
-    @JsOverlay @JsIgnore
-    public boolean intermediate() { return intermediate; }
-    @JsOverlay @JsIgnore
-    public double value() { return value; }
-    @JsOverlay @JsIgnore
-    public double max() { return max; }
-    @JsOverlay @JsIgnore
-    public String description() { return description; }
 
     /** API 로딩용 — 무한 프로그레스 */
     @JsOverlay @JsIgnore

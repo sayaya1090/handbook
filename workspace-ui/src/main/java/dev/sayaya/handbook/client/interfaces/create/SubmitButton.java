@@ -12,6 +12,7 @@ import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import elemental2.dom.HTMLElement;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -44,19 +45,19 @@ public class SubmitButton implements IsElement<HTMLElement> {
     /** 워크스페이스 이름 검증: 영문/한글/숫자/하이픈/언더스코어, 1~255자 */
     private static final RegExp NAME_PATTERN = RegExp.compile("^[a-zA-Z0-9가-힣\\-_]{1,255}$");
 
-    private final HTMLElement root;
+    @Delegate private final ButtonElementBuilder.FilledButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
     SubmitButton(CreateWorkspaceMode mode, CreateWorkspaceParam param,
                  WorkspaceRepository api, ToastContainer toastContainer,
                  LabelProvider labelProvider) {
-        root = ButtonElementBuilder.button().filled().css("ws-submit").element();
-        root.textContent = "Create";
+        _this = ButtonElementBuilder.button().filled().css("ws-submit");
+        _this.text("Create");
 
         labelProvider.subscribe(labels -> currentLabels = labels);
 
-        root.addEventListener("click", e -> {
+        _this.onClick(e -> {
             String value = param.getValue();
             if (value == null || value.trim().isEmpty()) return;
             String trimmed = value.trim();
@@ -81,7 +82,7 @@ public class SubmitButton implements IsElement<HTMLElement> {
 
         param.subscribe(value -> {
             boolean disabled = (value == null || value.trim().isEmpty());
-            root.toggleAttribute("disabled", disabled);
+            _this.disabled(disabled);
         });
 
         mode.subscribe(m -> updateLabel(m, labelProvider));
@@ -89,10 +90,8 @@ public class SubmitButton implements IsElement<HTMLElement> {
     }
 
     private void updateLabel(Mode m, LabelProvider labelProvider) {
-        if (m == Mode.CREATE) root.textContent = "Create";
-        else root.textContent = "Request to join";
+        if (m == Mode.CREATE) _this.text("Create");
+        else _this.text("Request to join");
     }
 
-    @Override
-    public HTMLElement element() { return root; }
 }

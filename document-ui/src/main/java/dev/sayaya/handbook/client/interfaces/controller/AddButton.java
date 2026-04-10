@@ -6,12 +6,12 @@ import dev.sayaya.handbook.client.usecase.AddDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import jsinterop.base.JsPropertyMap;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import static org.jboss.elemento.Elements.button;
 
 /**
  * 새 문서 추가 버튼.
@@ -31,19 +31,16 @@ import static org.jboss.elemento.Elements.button;
  */
 @Singleton
 public class AddButton implements IsElement<elemental2.dom.HTMLElement> {
-    private final elemental2.dom.HTMLElement element;
+    @Delegate private final ButtonElementBuilder.TextButtonElementBuilder _this;
 
     @Inject
     public AddButton(ActionManager actionManager, DocumentList documentList, LabelProvider labelProvider) {
-        this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-add").element();
-        labelProvider.subscribe(labels -> element.textContent = labels.getOrDefault("document.add", "Add"));
-        element.addEventListener("click", e -> {
+        this._this = ButtonElementBuilder.button().text().css("doc-ctrl-btn", "doc-ctrl-btn-add");
+        labelProvider.subscribe(labels -> _this.text(labels.getOrDefault("document.add", "Add")));
+        _this.onClick(e -> {
             DocumentValue newDoc = new DocumentValue();
             newDoc.data = JsPropertyMap.of();
             actionManager.execute(new AddDocumentAction(documentList, newDoc));
         });
     }
-
-    @Override
-    public elemental2.dom.HTMLElement element() { return element; }
 }

@@ -17,7 +17,7 @@ public abstract class NavigationRailItemElement implements IsElement<HTMLElement
     private final IconButtonElementBuilder.PlainIconButtonElementBuilder collapse = new IconButtonElementBuilder.PlainIconButtonElementBuilder().css("collapse").toggle(true);
     private final HTMLContainerBuilder<HTMLLIElement> expand = li().css("expand").attr("tabindex", "0");
     private final HTMLContainerBuilder<HTMLElement> item = mdItem();
-    private final HTMLContainerBuilder<HTMLElement> _this = span().css("item").add(collapse).add(expand.add(ripple()).add(focusRing()).add(item));
+    private final HTMLContainerBuilder<HTMLElement> _this = span().css("item", "nav-rail-item").add(collapse).add(expand.add(ripple()).add(focusRing()).add(item));
     private static HTMLContainerBuilder<HTMLElement> mdItem() {
         var style = htmlElement("style", HTMLStyleElement.class);
         style.element().innerHTML = ICON_CSS;
