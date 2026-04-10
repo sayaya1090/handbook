@@ -245,6 +245,7 @@ sequenceDiagram
 | **액터** | 사용자 |
 | **선행조건** | 문서 수가 페이지 크기를 초과 |
 | **정상 흐름** | 1. 페이지네이션 컨트롤에서 이전/다음 버튼을 클릭한다.<br>2. `PageState`가 새 page 번호로 업데이트된다.<br>3. DocumentApi로 해당 페이지의 문서를 다시 검색한다.<br>4. 스프레드시트가 갱신된다. |
+| **경계 처리** | 마지막 페이지에서 Next 버튼 비활성화. API 응답에 totalElements 또는 hasMore 플래그를 포함하여 페이지 인디케이터 업데이트. 결과가 없는 경우 빈 상태 UI 표시. (요구사항 6.4) |
 
 ## UC-D9: 에이전트에 의한 문서 조작
 
@@ -311,6 +312,46 @@ sequenceDiagram
 | **대안 흐름** | 해당 시점에 문서가 존재하지 않으면 404 Not Found가 반환되고, 사용자에게 안내 메시지를 표시한다. |
 | **요구사항** | 3.7 이력 조회 — 문서의 변경 이력을 시간 기반으로 추적 |
 
+## UC-D16: 타입 인식 입력 위젯
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 타입이 선택되고 스프레드시트에 컬럼이 렌더링됨 |
+| **정상 흐름** | 1. `ColumnFactory.create(type, allTypes)`가 `TypeInfo`의 속성 목록을 순회하며 `ColumnDef.fromAttribute(attr, typeNames)`로 속성 타입별 컬럼을 생성한다. `allTypes`는 현재 레이아웃의 전체 타입 목록(`TypeList`)에서 제공된다.<br>2. **enum** 속성: `dropdown` 타입 컬럼으로 변환. `allowedValues`가 드롭다운 source로 설정되어 사용자가 허용 값 중 하나를 선택한다.<br>3. **date** 속성: `date` 타입 컬럼으로 변환. `YYYY-MM-DD HH:mm` 포맷의 날짜/시간 선택기가 활성화된다.<br>4. **number** 속성: `numeric` 타입 컬럼으로 변환. 숫자 입력만 허용되며 소수점/음수 지원.<br>5. **bool** 속성: `checkbox` 타입 컬럼으로 변환. 체크박스로 true/false를 토글한다.<br>6. **document** 속성: `dropdown` 타입 컬럼으로 변환. 현재 레이아웃의 전체 타입 이름 목록(`TypeList`에서 추출한 `typeNames`)이 드롭다운 source로 설정되어 참조할 타입을 선택한다.<br>7. **text/기타** 속성: `text` 타입 컬럼으로 변환. 자유 텍스트 입력. |
+| **결과** | 속성 타입에 맞는 전용 입력 위젯이 셀 편집 시 활성화되어 데이터 품질을 보장한다. document 속성은 타입 목록 드롭다운으로 참조 대상을 선택할 수 있다. |
+
+```mermaid
+sequenceDiagram
+    participant TL as TypeList
+    participant TI as TypeInfo
+    participant CF as ColumnFactory
+    participant CD as ColumnDef
+    participant Sheet as SpreadsheetElement (Handsontable)
+
+    CF->>TL: getValue() → allTypes
+    CF->>TL: allTypes.stream().map(id) → typeNames[]
+    CF->>TI: attributes 순회
+    loop 각 속성
+        CF->>CD: fromAttribute(attr, typeNames)
+        alt type = "enum"
+            CD-->>CF: dropdown + source=allowedValues
+        else type = "date"
+            CD-->>CF: date + dateFormat="YYYY-MM-DD HH:mm"
+        else type = "number"
+            CD-->>CF: numeric
+        else type = "bool"
+            CD-->>CF: checkbox
+        else type = "document"
+            CD-->>CF: dropdown + source=typeNames
+        else 기타
+            CD-->>CF: text
+        end
+    end
+    CF-->>Sheet: ColumnDef[] 전달
+    Sheet->>Sheet: toColumns() → Handsontable Column[] 변환
+```
+
 ## UC-D13: 실시간 협업
 
 | 항목 | 내용 |
@@ -357,25 +398,82 @@ sequenceDiagram
 
 ---
 
+## UC-D17: 에이전트 + 사용자 동시 문서 편집
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자, AI 에이전트 |
+| **선행조건** | 사용자가 셀을 편집 중, 에이전트가 DOC_ADD 명령을 실행 |
+| **정상 흐름** | 1. 사용자가 스프레드시트에서 셀을 선택하여 편집 중이다.<br>2. 에이전트가 `WindowMutationBridge`를 통해 DOC_ADD 명령을 실행한다.<br>3. `AgentDocumentHandler`가 `AddDocumentAction`을 `ActionManager`에서 실행하여 새 행이 추가된다.<br>4. 사용자의 편집 중인 셀과 스프레드시트가 정상 유지된다. |
+| **결과** | 에이전트의 동시 문서 추가가 사용자의 편집 상태를 방해하지 않는다. |
+
+## UC-D18: 다중 사용자 프레즌스 — 같은 문서 다른 필드
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 다른 사용자 (복수) |
+| **선행조건** | 같은 워크스페이스에 복수 사용자 접속, 같은 문서를 편집 중 |
+| **정상 흐름** | 1. 사용자 B가 CUST-001 문서의 name 필드를 편집한다.<br>2. 사용자 C가 같은 CUST-001 문서의 age 필드를 편집한다.<br>3. SSE를 통해 각각의 PRESENCE 이벤트가 수신된다.<br>4. 스프레드시트에서 각 사용자별 프레즌스가 해당 셀에 표시된다.<br>5. 스프레드시트가 정상적으로 유지된다. |
+| **결과** | 같은 문서의 서로 다른 필드에 대한 다중 프레즌스가 동시에 표시된다. |
+
+## UC-D19: DOCUMENT_CREATED 연속 수신 (이벤트 폭주)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 다른 사용자 (이벤트 발행자) |
+| **선행조건** | document-ui 모듈 로딩 완료, `DocumentEventHandler`가 `WorkspaceEventReceiver`를 구독 중 |
+| **정상 흐름** | 1. 다른 사용자가 빠르게 연속으로 여러 문서를 생성한다 (5건 이상).<br>2. SSE를 통해 DOCUMENT_CREATED 이벤트가 연속으로 수신된다.<br>3. `DocumentEventHandler`가 각 이벤트마다 `DocumentRepository.search()`를 재호출한다.<br>4. 연속 갱신에도 스프레드시트와 컨트롤러가 정상적으로 유지된다. |
+| **결과** | 이벤트 폭주 상황에서도 UI가 깨지거나 오류가 발생하지 않는다. |
+
+## UC-D20: 에이전트 편집 + 다른 사용자 삭제 동시 발생
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | AI 에이전트, 다른 사용자 |
+| **선행조건** | 에이전트가 DOC_ADD/DOC_EDIT를 실행하는 중, 다른 사용자가 문서를 삭제 |
+| **정상 흐름** | 1. 에이전트가 `WindowMutationBridge`를 통해 DOC_ADD를 실행한다.<br>2. 거의 동시에 다른 사용자가 문서를 삭제하여 DOCUMENT_DELETED 이벤트가 SSE로 수신된다.<br>3. `AgentDocumentHandler`와 `DocumentEventHandler`가 각각 독립적으로 처리한다.<br>4. 스프레드시트가 정상적으로 유지된다. |
+| **결과** | 에이전트 조작과 다른 사용자의 이벤트가 동시에 발생해도 UI가 안정적으로 동작한다. |
+
+## UC-D21: 벌크 작업 (다중 선택 일괄 삭제/상태 변경)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 문서 목록 로딩 완료 |
+| **정상 흐름** | 1. 체크박스 또는 Shift+클릭으로 문서를 다중 선택한다.<br>2. 일괄 삭제 또는 일괄 상태 변경을 실행한다.<br>3. 확인 다이얼로그 후 선택된 문서에 대해 일괄 처리가 수행된다. |
+| **요구사항** | 6.10 벌크 작업 |
+| **상태** | 구현 완료 (BulkDeleteButton, BulkStatusButton, SelectedRows) |
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
 |----|---|---|---|
 | UC-D1 (조회) | 초기 로딩 | Application, TypeApi, DocumentApi, TypeList, TypeProvider, DocumentList, ColumnFactory, SpreadsheetElement | DocumentTest: 스프레드시트 렌더링, 타입 탭 표시 |
-| UC-D2 (생성) | 문서 편집 → 저장 | AddDocumentAction, ActionManager, DocumentList, AddButton | DocumentTest: Add 클릭 → 행 추가 |
+| UC-D2 (생성) | 문서 편집 → 저장 | AddDocumentAction, ActionManager, DocumentList, AddButton | DocumentTest: Add 클릭 → 행 추가, DocumentUndoRedoTest: Add → .created 클래스 적용, Save 버튼 활성화 |
 | UC-D3 (편집) | 문서 편집 → 저장 | EditDocumentAction, ActionManager, SpreadsheetElement, DocumentList | DocumentTest: 셀 변경 검증 |
-| UC-D4 (삭제) | 문서 편집 → 저장 | DeleteDocumentAction, ActionManager, DocumentList, DeleteButton | DocumentTest: 행 삭제 검증 |
-| UC-D5 (저장) | 문서 편집 → 저장 (후반) | SaveAction, DocumentApi, ActionManager | DocumentTest: Save 버튼 존재 확인 |
-| UC-D6 (타입전환) | 타입 탭 전환 | TypeTabsElement, TypeProvider, ColumnFactory, DocumentApi, PageState | DocumentTest: 탭 전환 → 컬럼 변경 검증 |
-| UC-D7 (Undo) | — | ActionManager, UndoButton, RedoButton | DocumentTest: Ctrl+Z/Ctrl+Shift+Z 검증 |
-| UC-D8 (페이지) | 페이지네이션 | PaginationElement, PageState, DocumentApi, DocumentList | DocumentTest: 페이지 이동 검증 |
-| UC-D9 (에이전트) | 에이전트 문서 조작 | AgentDocumentHandler, DocumentStateProvider, MutationReceiver, WindowMutationBridge | ❌ 미구현 |
-| UC-D10 (모바일) | 모바일 레이아웃 전환 | ViewportObserver, SpreadsheetElement(fixedColumnsLeft), CardViewElement, ControllerElement(flex-wrap), TypeTabsElement(overflow-x) | ❌ 미구현 |
-| UC-D11 (RBAC) | — | RbacGuard (계획), SpreadsheetElement(readOnly) (계획) | ❌ 미구현 (계획) |
-| UC-D12 (이력조회) | — | DocumentApi(date param), HistoryDialog (계획) | ❌ 미구현 (계획) |
-| UC-D13 (실시간협업) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository, DocumentList, ToastContainer | DocumentTest: DOCUMENT_CREATED 이벤트 디스패치 → 문서 목록 갱신 검증 |
-| UC-D14 (충돌방지) | — | @Version 낙관적 잠금 (계획) | ❌ 미구현 (계획) |
-| UC-D15 (프레즌스) | 프레즌스 시퀀스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentTest: PRESENCE 이벤트 수신/해제 검증 |
+| UC-D4 (삭제) | 문서 편집 → 저장 | DeleteDocumentAction, ActionManager, DocumentList, DeleteButton | DocumentTest: 행 삭제 검증, DocumentEdgeCaseTest: 행 미선택 Delete → 행 수 불변 |
+| UC-D5 (저장) | 문서 편집 → 저장 (후반) | SaveAction, DocumentApi, ActionManager | DocumentTest: Save 버튼 존재 확인, DocumentUndoRedoTest: Undo 후 Save 비활성화 검증 |
+| UC-D6 (타입전환) | 타입 탭 전환 | TypeTabsElement, TypeProvider, ColumnFactory, DocumentApi, PageState | DocumentTest: 탭 전환 → 컬럼 변경 검증, DocumentEdgeCaseTest: 빠른 탭 전환 → 스프레드시트/컬럼 유지 |
+| UC-D7 (Undo) | — | ActionManager, UndoButton, RedoButton | DocumentTest: Ctrl+Z/Ctrl+Shift+Z 검증, DocumentUndoRedoTest: Add→Undo→Redo 버튼 활성화 전이, Undo→Save 비활성화 |
+| UC-D8 (페이지) | 페이지네이션 | PaginationElement, PageState, DocumentApi, DocumentList | DocumentTest: 페이지 이동 검증, DocumentEdgeCaseTest: 첫/마지막 페이지 경계 클릭 → 스프레드시트 유지 |
+| UC-D9 (에이전트) | 에이전트 문서 조작 | AgentDocumentHandler, DocumentStateProvider, MutationReceiver, WindowMutationBridge | DocumentCollaborationTest: DOC_ADD → Undo 활성화, DOC_SELECT → 타입 탭 유지 |
+| UC-D10 (모바일) | 모바일 레이아웃 전환 | ViewportObserver, SpreadsheetElement(fixedColumnsLeft), CardViewElement, ControllerElement(flex-wrap), TypeTabsElement(overflow-x) | DocumentMobileTest: 모바일 뷰포트 컨트롤러 존재 확인 |
+| UC-D11 (RBAC) | — | RbacGuard (ui-components 구현 완료), SpreadsheetElement(readOnly) (UI 연동 미완) | ❌ UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
+| UC-D12 (이력조회) | — | DocumentApi(date param), search-document DocumentController.history() (백엔드 구현 완료), HistoryDialog (프론트엔드 미구현) | ❌ 프론트엔드 미구현 (백엔드 history API 구현 완료) |
+| UC-D13 (실시간협업) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository, DocumentList, ToastContainer | DocumentCollaborationTest: DOCUMENT_CREATED/DELETED 이벤트 수신 → 셀 수/컬럼 수/탭 수 유지 검증, DocumentEdgeCaseTest: malformed DOCUMENT 이벤트 → 스프레드시트 에러 없이 유지 |
+| UC-D14 (충돌방지) | — | @Version 낙관적 잠금 (계획) | DocumentCollaborationTest: DOC_ADD→DOC_SAVE → 스프레드시트/컨트롤러/버튼 유지 검증 |
+| UC-D15 (프레즌스) | 프레즌스 시퀀스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentCollaborationTest: PRESENCE 이벤트 수신/해제 → 셀 수/컬럼 수 유지, 컨트롤러 버튼 유지 |
+| UC-D16 (타입 인식 위젯) | 타입 인식 입력 위젯 | ColumnDef, ColumnFactory, TypeList, AttributeInfo, SpreadsheetElement | DocumentInputTest: 컬럼 헤더 렌더링, 고정 컬럼 존재, number→숫자 입력, bool→체크박스, enum→드롭다운, date→날짜 입력, document→참조 드롭다운, 총 9개 컬럼 |
+| UC-D17 (동시편집) | — | AgentDocumentHandler, AddDocumentAction, ActionManager, SpreadsheetElement, WindowMutationBridge | DocumentCollaborationTest: 사용자 셀 편집 중 에이전트 DOC_ADD → 컬럼 수/HTML 유지 검증 |
+| UC-D18 (다중프레즌스) | — | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentCollaborationTest: 같은 문서 다른 필드에 2명 PRESENCE 동시 수신 → 셀 수/컬럼 수 유지 검증 |
+| UC-D19 (이벤트폭주) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository | DocumentCollaborationTest: DOCUMENT_CREATED 5건 연속 수신 → 스프레드시트/컨트롤러/버튼/HTML 정상 유지 검증 |
+| UC-D20 (동시조작) | — | AgentDocumentHandler, DocumentEventHandler, WindowMutationBridge, WorkspaceEventReceiver | DocumentCollaborationTest: 에이전트 DOC_ADD + DOCUMENT_DELETED 동시 → 컬럼 수/컨트롤러 유지, DocumentEdgeCaseTest: 빈 mutate 이벤트 → 스프레드시트 유지 |
+| UC-D21 (벌크작업) | — | BulkDeleteButton, BulkStatusButton, SelectedRows, DeleteDocumentAction, ChangeStatusAction | ❌ 테스트 미작성 (BulkDeleteButton, BulkStatusButton, SelectedRows 구현 완료) |
+| UC-D22 (빈 상태 UI) | — | SpreadsheetElement (empty overlay) | ✅ 구현 완료 |
+| UC-D23 (삭제 확인) | — | ConfirmDialog (document-ui) | ✅ 구현 완료 |
+| UC-D24 (성공 피드백) | — | SaveButton, SubmitButton (SUCCESS 토스트) | ✅ 구현 완료 |
 
 ### 글로벌 UC 매핑
 
@@ -387,5 +485,6 @@ sequenceDiagram
 | UC-53 (문서 조회) | UC-D1 | 타입 선택 → 문서 로딩 |
 | UC-54 (문서 검색) | UC-D8 | 페이지네이션 + 필터 |
 | UC-55 (이력 조회) | UC-D12 | 계획 |
-| UC-58 (프레즌스) | UC-D15 | 셀 선택 → SSE → 프레즌스 표시 |
-| UC-59 (협업 충돌) | UC-D13, UC-D14 | SSE 갱신 + 낙관적 잠금 |
+| UC-58 (프레즌스) | UC-D15, UC-D18 | 셀 선택 → SSE → 프레즌스 표시, 같은 문서 다른 필드 다중 프레즌스 |
+| UC-59 (협업 충돌) | UC-D13, UC-D14, UC-D17, UC-D19, UC-D20 | SSE 갱신 + 낙관적 잠금 + 에이전트/사용자 동시 편집 + 이벤트 폭주 |
+| UC-51 (문서 변경) | UC-D16 | 속성 타입별 전용 입력 위젯 |

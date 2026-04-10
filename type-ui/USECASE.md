@@ -153,6 +153,45 @@ sequenceDiagram
     TL-->>Box: 속성 목록 다시 그리기
 ```
 
+## 재귀 서브 에디터 시퀀스 (Array/Map)
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant Dialog as AttributeEditorDialog
+    participant Factory as ValidatorEditorFactory (depth=0)
+    participant ArrayEd as ArrayValidatorEditor
+    participant Factory1 as ValidatorEditorFactory (depth=1)
+    participant MapEd as MapValidatorEditor
+    participant Factory2 as ValidatorEditorFactory (depth=2)
+    participant NumEd as NumberValidatorEditor
+
+    User->>Dialog: 타입 "array" 선택
+    Dialog->>Factory: create("array")
+    Factory->>ArrayEd: new ArrayValidatorEditor(nested())
+    Factory-->>Factory1: depth=1 팩토리
+
+    User->>ArrayEd: 원소 타입 "map" 선택
+    ArrayEd->>Factory1: create("map")
+    Factory1->>MapEd: new MapValidatorEditor(nested())
+    Factory1-->>Factory2: depth=2 팩토리
+
+    User->>MapEd: 값 타입 "number" 선택
+    MapEd->>Factory2: create("number")
+    Factory2-->>NumEd: new NumberValidatorEditor
+    NumEd-->>MapEd: min/max 입력 UI 표시
+
+    Note over Factory2: depth=2 → array/map 옵션 제외 (MAX_DEPTH=3)
+
+    User->>Dialog: Apply 클릭
+    Dialog->>ArrayEd: collect()
+    ArrayEd->>MapEd: collect()
+    MapEd->>NumEd: collect()
+    NumEd-->>MapEd: AttributeTypeValue(number, min, max)
+    MapEd-->>ArrayEd: AttributeTypeValue(map, keyType, valueType)
+    ArrayEd-->>Dialog: AttributeTypeValue(array, elementType=map<...>)
+```
+
 ## 리사이즈 시퀀스
 
 ```mermaid
@@ -235,8 +274,8 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | TYPE 모드 또는 컨텍스트 메뉴 사용 |
-| **정상 흐름 (추가)** | 1. 타입 박스 우클릭 → "Add Attribute" 선택.<br>2. `AttributeEditorDialog`가 열린다. 이름, 타입(9종), 검증기, nullable, 설명을 입력한다.<br>3. Apply → `EditBoxAction`으로 타입에 속성이 추가된다. |
-| **정상 흐름 (편집)** | 1. TYPE 모드에서 속성 행을 클릭한다.<br>2. 기존 값이 채워진 `AttributeEditorDialog`가 열린다.<br>3. 수정 후 Apply. |
+| **정상 흐름 (추가)** | 1. 타입 박스 우클릭 → "Add Attribute" 선택.<br>2. `AttributeEditorDialog`가 열린다. 이름, 타입(9종), 검증기, nullable, 설명을 입력한다.<br>3. **array 타입 선택 시** `ArrayValidatorEditor`가 활성화된다. `ValidatorEditorFactory`가 원소 타입용 서브 에디터를 재귀적으로 생성한다. 모든 서브 타입(number→min/max, date→after/before, enum→allowedValues 등)에 대해 각각의 ValidatorEditor가 인라인 표시된다. 중첩 예: `Array<Map<Text, Number(0~100)>>`.<br>4. **map 타입 선택 시** `MapValidatorEditor`가 활성화된다. 키 타입과 값 타입을 각각 MD3 Select 드롭다운(`SelectElementBuilder.select().outlined()`)으로 선택하며, 선택된 타입의 서브 에디터가 해당 드롭다운 아래에 재귀적으로 나타난다.<br>5. `ValidatorEditorFactory`가 최대 깊이 3단계를 제한하여 무한 재귀를 방지한다. 깊이 초과 시 array/map 옵션이 드롭다운에서 제외된다.<br>6. **서브 에디터 시각적 계층**: 각 깊이별로 좌측 보더 색상과 배경이 차별화된다 — 1단계: outline-variant 보더 + surface-container 배경, 2단계: primary 보더 + primary-container 배경, 3단계: tertiary 보더 + tertiary-container 배경.<br>7. Apply → `EditBoxAction`으로 타입에 속성이 추가된다. |
+| **정상 흐름 (편집)** | 1. TYPE 모드에서 속성 행을 클릭한다.<br>2. 기존 값이 채워진 `AttributeEditorDialog`가 열린다. array/map 속성의 경우 기존 elementType/keyType/valueType이 드롭다운에 복원되고 서브 에디터 체인이 재귀적으로 로드된다.<br>3. 수정 후 Apply. |
 | **정상 흐름 (삭제)** | 속성 행에 마우스 올리면 × 버튼 표시 → 클릭 시 `EditBoxAction`으로 삭제. |
 | **대안 흐름** | 에이전트가 `ADD field:...` / `REMOVE field:...` 명령으로 실행. |
 | **대안 흐름 (모바일)** | 우클릭 대신 터치 롱프레스(500ms)로 컨텍스트 메뉴를 열 수 있다. `AttributeEditorDialog`는 전체 화면 bottom sheet로 전환된다. |
@@ -479,6 +518,89 @@ sequenceDiagram
     CanvasB->>CanvasB: 프레즌스 제거
 ```
 
+## UC-T18: 참조 화살표 호버 하이라이트
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | document 참조 속성이 있는 타입이 캔버스에 표시되어 있고, SVG 화살표가 렌더링됨 |
+| **정상 흐름** | 1. 사용자가 참조 화살표(SVG path)에 마우스를 올린다.<br>2. 화살표 선이 tertiary 색상으로 변경되고 두께가 3px로 증가한다 (`box-ref-hover` 클래스).<br>3. 참조 대상(target) 타입 박스에 tertiary 보더와 강조 그림자가 적용된다 (`ref-highlight-target` 클래스).<br>4. 참조 원본(source) 속성 행에 tertiary 배경과 좌측 보더가 적용된다 (`ref-highlight-source` 클래스).<br>5. 마우스가 화살표를 벗어나면 모든 하이라이트가 즉시 해제된다. |
+| **결과** | 복잡한 참조 관계에서 특정 화살표의 출발지/도착지를 시각적으로 즉시 파악할 수 있다. |
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant Arrow as BoxReferenceElement (SVG)
+    participant Source as TypeElement (source)
+    participant Target as TypeElement (target)
+
+    User->>Arrow: mouseenter (화살표 호버)
+    Arrow->>Arrow: box-ref-hover 클래스 추가
+    Arrow->>Source: ref-highlight-source 클래스 추가 (속성 행)
+    Arrow->>Target: ref-highlight-target 클래스 추가 (타입 박스)
+
+    User->>Arrow: mouseleave (화살표 벗어남)
+    Arrow->>Arrow: box-ref-hover 클래스 제거
+    Arrow->>Source: ref-highlight-source 클래스 제거
+    Arrow->>Target: ref-highlight-target 클래스 제거
+```
+
+## UC-T19: 에이전트 + 사용자 동시 편집 — 선택 상태 유지
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자, AI 에이전트 |
+| **선행조건** | 사용자가 타입 박스를 선택한 상태, 에이전트가 다른 타입을 수정 |
+| **정상 흐름** | 1. 사용자가 캔버스에서 타입 박스를 클릭하여 선택한다.<br>2. 에이전트가 `WindowMutationBridge`를 통해 다른 타입의 속성을 SET 명령으로 수정한다.<br>3. `AgentMutationHandler`가 Action을 실행하여 캔버스를 갱신한다.<br>4. 사용자가 선택한 박스의 `selected` 속성은 변경되지 않고 유지된다. |
+| **결과** | 에이전트의 동시 수정이 사용자의 현재 선택 상태에 영향을 주지 않는다. |
+
+## UC-T20: 다중 사용자 PRESENCE 동시 수신
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 다른 사용자 (복수) |
+| **선행조건** | 같은 워크스페이스에 3명 이상 동시 접속, type-ui 모듈 로딩 완료 |
+| **정상 흐름** | 1. 여러 사용자가 동시에 각각 다른 타입을 편집한다.<br>2. SSE를 통해 PRESENCE 이벤트가 연속으로 수신된다.<br>3. `PresenceRenderer`가 각 사용자별 프레즌스를 캔버스에 표시한다.<br>4. 캔버스가 정상적으로 유지된다 (깨짐 없음). |
+| **결과** | 다수 사용자의 프레즌스가 동시에 표시되어도 캔버스가 안정적으로 동작한다. |
+
+## UC-T21: 에이전트 타입 생성 직후 사용자 Undo
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자, AI 에이전트 |
+| **선행조건** | 에이전트가 타입 생성 명령(CREATE)을 실행한 직후 |
+| **정상 흐름** | 1. 에이전트가 `WindowMutationBridge`를 통해 CREATE 명령으로 새 타입을 생성한다.<br>2. `AgentMutationHandler`가 `CreateBoxAction`을 `ActionManager`에서 실행하여 캔버스에 박스가 추가된다.<br>3. 사용자가 즉시 Ctrl+Z를 누른다.<br>4. `ActionManager.undo()`가 실행되어 생성이 되돌려지고, 박스 수가 원래대로 복원된다. |
+| **결과** | 에이전트가 생성한 타입도 사용자의 Undo 스택에 포함되어 즉시 되돌릴 수 있다. |
+
+## UC-T22: TYPE_CREATED 이벤트 연속 수신 (이벤트 폭주)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 다른 사용자 (이벤트 발행자) |
+| **선행조건** | type-ui 모듈 로딩 완료, `TypeEventHandler`가 `WorkspaceEventReceiver`를 구독 중 |
+| **정상 흐름** | 1. 다른 사용자가 빠르게 연속으로 여러 타입을 생성한다 (3건 이상).<br>2. SSE를 통해 TYPE_CREATED 이벤트가 연속으로 수신된다.<br>3. `TypeEventHandler`가 각 이벤트마다 `TypeRepository.search()`를 재호출한다.<br>4. 연속 갱신에도 캔버스와 컨트롤러가 정상적으로 유지된다. |
+| **결과** | 이벤트 폭주 상황에서도 UI가 깨지거나 오류가 발생하지 않는다. |
+
+## UC-T23: 벌크 삭제 (타입 다중 선택 일괄 삭제)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 캔버스에 타입이 2개 이상 존재 |
+| **정상 흐름** | 1. Shift+클릭 또는 드래그 선택으로 타입을 다중 선택한다.<br>2. 일괄 삭제를 실행한다.<br>3. 확인 다이얼로그 후 선택된 타입이 일괄 삭제되고 ChangeTracker에 반영된다. |
+| **요구사항** | 6.10 벌크 작업 |
+| **상태** | 구현 완료 (BulkDeleteButton, Ctrl+A 전체 선택) |
+
+## UC-T24: 타입 버전 히스토리 UI
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 타입 선택 완료, 해당 타입에 2개 이상의 버전이 존재 |
+| **정상 흐름** | 1. 타입의 버전 히스토리를 열면 전체 버전 목록이 타임라인 또는 리스트 뷰로 표시된다.<br>2. 두 버전을 선택하여 diff 비교를 수행한다 (기존 diff API 활용).<br>3. 속성 추가/삭제/변경 사항이 시각적으로 표시된다. |
+| **요구사항** | 6.12 타입 버전 히스토리 UI |
+| **상태** | 구현 완료 (VersionHistoryPanel, search-type versions API) |
+
 ---
 
 ## 트레이서빌리티 매트릭스
@@ -486,19 +608,29 @@ sequenceDiagram
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
 | UC-T1 (조회) | 타입 조회 (초기 로딩) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, LayoutProvider, LayoutList, TypeList, PositionMap, PeriodRecalculationService, BoxReferenceElement, ArrowFactory | CanvasTest: 캔버스 렌더링, 타입 박스 표시, 타입 이름/속성 검증 |
-| UC-T2 (생성) | 타입 생성 → 저장 | Action 계층, 캔버스, 컨트롤러 | CreateBoxAction, PushOutOverlapAction, ComplexAction, AddTypeButton, CanvasContextMenuElement, ContextMenuHelper, ChangeTracker | CanvasTest: Add Type 클릭 → 박스 1개 추가 검증 |
+| UC-T2 (생성) | 타입 생성 → 저장 | Action 계층, 캔버스, 컨트롤러 | CreateBoxAction, PushOutOverlapAction, ComplexAction, AddTypeButton, CanvasContextMenuElement, ContextMenuHelper, ChangeTracker | CanvasTest: Add Type 클릭 → 박스 1개 추가 검증, EdgeCaseTest: 속성 0개 타입 생성, 연속 빠른 클릭 3회 → 정확히 3개 추가 |
 | UC-T3 (삭제) | — (단순) | Action 계층, 컨트롤러 | DeleteBoxAction, RemoveTypeButton, ChangeTracker | CanvasTest: 선택 후 Delete 키 → 박스 삭제 검증 |
 | UC-T4 (이동) | 드래그 & 드롭 | Action 계층, 캔버스, 상태 관리 | DragShapeElement, MoveBoxAction, PushOutOverlapAction, ComplexAction, GridSnap, PositionMap, SelectedBoxElement | CanvasTest: 클릭 → selected 속성 활성화 검증 |
-| UC-T5 (리사이즈) | 리사이즈 | Action 계층, 캔버스, 상태 관리 | ResizeBoxAction, TypeElement, GridSnap, PositionMap | ❌ 미구현 |
-| UC-T6 (이름편집) | — (단순) | Action 계층, 캔버스, 상태 관리 | TypeElement(startInlineEdit, startVersionEdit), EditBoxAction, CanvasMode | ❌ 미구현 |
-| UC-T7 (속성) | 속성 편집 | Action 계층, 속성 편집 다이얼로그, 캔버스 | AttributeEditorDialog, ValidatorEditor(6종), EditBoxAction, BoxContextMenuElement, ValueElement | CanvasTest: 속성 표시 검증 + 우클릭 컨텍스트 메뉴 표시 |
+| UC-T5 (리사이즈) | 리사이즈 | Action 계층, 캔버스, 상태 관리 | ResizeBoxAction, TypeElement, GridSnap, PositionMap | CanvasTest: 리사이즈 핸들 존재 확인 |
+| UC-T6 (이름편집) | — (단순) | Action 계층, 캔버스, 상태 관리 | TypeElement(startInlineEdit, startVersionEdit), EditBoxAction, CanvasMode | CanvasTest: 타입 이름 요소 편집 가능 확인 |
+| UC-T7 (속성) | 속성 편집 | Action 계층, 속성 편집 다이얼로그, 캔버스 | AttributeEditorDialog, ValidatorEditorFactory, ValidatorEditor(8종: Text, Number, Date, Enum, Array, Map, File, Document), ArrayValidatorEditor, MapValidatorEditor, EditBoxAction, BoxContextMenuElement, ValueElement | CanvasTest: 속성 표시 검증 + 우클릭 컨텍스트 메뉴 표시, EdgeCaseTest: 빈 이름 Apply → 다이얼로그 닫힘 |
 | UC-T8 (기간이동) | — (단순) | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | CanvasTest: Before/After 버튼 존재 확인 |
-| UC-T9 (Undo) | 에이전트 타입 조작 (후반) | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | CanvasTest: Ctrl+Z 삭제 되돌림, Ctrl+Shift+Z Redo 검증 |
+| UC-T9 (Undo) | 에이전트 타입 조작 (후반) | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | CanvasTest: Ctrl+Z 삭제 되돌림, Ctrl+Shift+Z Redo 검증, UndoRedoTest: Undo/Redo 스택 전체 검증, EdgeCaseTest: 빈 스택 Ctrl+Z → 타입 개수 불변 |
 | UC-T10 (저장) | 타입 생성 → 저장 (후반) | Action 계층, API 어댑터, 컨트롤러 | SaveAction, LoadAction, SaveButton, ReloadButton, TypeRepository, LayoutRepository, ChangeTracker | CanvasTest: Save/Reload 버튼 존재 확인 |
-| UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, WindowMutationBridge | ❌ 미구현 |
-| UC-T12 (검색) | — (단순) | 에이전트 연동 | TypeSearchProvider, WindowSearchProviderBridge | ❌ 미구현 |
-| UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, CanvasElement(pinch zoom), TypeElement(longpress), DragShapeElement(touch), AttributeEditorDialog(bottom sheet) | ❌ 미구현 |
-| UC-T14 (RBAC) | — | — | RbacGuard (계획), CanvasMode(READONLY) (계획) | ❌ 미구현 (계획) |
-| UC-T15 (실시간협업) | 실시간 협업 시퀀스 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList, ChangeTracker, ActionManager, ToastContainer | CanvasTest: TYPE_CREATED 이벤트 디스패치 → 캔버스 유지 검증 |
+| UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, WindowMutationBridge | CollaborationTest: 에이전트 CREATE → 박스 추가, SET description → 캔버스 유지 |
+| UC-T12 (검색) | — (단순) | 에이전트 연동 | TypeSearchProvider, WindowSearchProviderBridge | CollaborationTest: 에이전트 SET 명령 → 캔버스 유지 검증 |
+| UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement(pinch zoom), TypeElement(longpress), DragShapeElement(touch), AttributeEditorDialog(bottom sheet) | CanvasTest: 컨트롤러 툴바 존재 및 레이아웃 속성 확인 |
+| UC-T14 (RBAC) | — | — | RbacGuard (ui-components 구현 완료), CanvasMode(READONLY) (UI 연동 미완) | ❌ UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
+| UC-T15 (실시간협업) | 실시간 협업 시퀀스 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList, ChangeTracker, ActionManager, ToastContainer | CanvasTest: TYPE_CREATED 이벤트 디스패치 → 캔버스 유지 검증, CollaborationTest: TYPE_CREATED/DELETED 이벤트 수신 → 캔버스 갱신, 토스트, 비충돌 병합, EdgeCaseTest: malformed/빈 JSON 이벤트 → 캔버스 에러 없이 유지 |
 | UC-T16 (충돌방지) | 충돌 방지 시퀀스 | 상태 관리 | @Version 낙관적 잠금, ChangeTracker(CONFLICT) | CanvasTest: 409 Conflict 표시 검증 |
-| UC-T17 (프레즌스) | 프레즌스 시퀀스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | CanvasTest: PRESENCE 이벤트 수신/해제 검증 |
+| UC-T17 (프레즌스) | 프레즌스 시퀀스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | CanvasTest: PRESENCE 이벤트 수신/해제 검증, CollaborationTest: PRESENCE 이벤트 수신/해제 → 캔버스 정상 유지 |
+| UC-T18 (화살표 호버) | 참조 화살표 호버 하이라이트 | 캔버스 | BoxReferenceElement, ArrowFactory, TypeElement | CanvasTest: 화살표 호버 시 하이라이트 클래스 검증 |
+| UC-T19 (동시편집) | — | 에이전트 연동, 캔버스 | AgentMutationHandler, ActionManager, SelectedBoxElement, WindowMutationBridge | CollaborationTest: 에이전트 SET 명령 중 사용자 선택 상태(selected 속성) 유지, 타입 key 불변, 박스 개수 불변 검증 |
+| UC-T20 (다중프레즌스) | — | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | CollaborationTest: 3명 동시 PRESENCE 이벤트 수신 → 박스 개수, 컨트롤러, SVG 유지 검증 |
+| UC-T21 (에이전트Undo) | — | 에이전트 연동, Action 계층 | AgentMutationHandler, CreateBoxAction, ActionManager | UndoRedoTest: 에이전트 CREATE → 박스 +1 → Ctrl+Z → 원래 개수 복원, Undo 버튼 비활성화 검증 |
+| UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository | CollaborationTest: TYPE_CREATED 3건 연속 수신 → 캔버스/컨트롤러/SVG 정상 유지 검증, EdgeCaseTest: malformed/빈 JSON 이벤트 → 에러 없이 유지 |
+| UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedBoxElement, DeleteBoxAction, ChangeTracker | ❌ 테스트 미작성 (BulkDeleteButton 구현 완료, Ctrl+A 전체 선택 지원) |
+| UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions(), search-type TypeController.versions() (백엔드 구현 완료) | ❌ 테스트 미작성 (VersionHistoryPanel, versions API 구현 완료) |
+| UC-T25 (빈 상태 UI) | — | — | SpreadsheetElement (empty overlay) | ✅ 구현 완료 |
+| UC-T26 (삭제 확인) | — | — | ConfirmDialog (type-ui) | ✅ 구현 완료 |
+| UC-T27 (성공 피드백) | — | — | SaveButton, SubmitButton (SUCCESS 토스트) | ✅ 구현 완료 |

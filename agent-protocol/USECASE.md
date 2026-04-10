@@ -105,11 +105,11 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-AP1 (전달) | 커맨드 직렬화 → 전달 | 전체 (커맨드 계층) | AgentCommand, @JsonTypeInfo, CommandType, Jackson | ❌ 미구현 |
-| UC-AP2 (네비) | — (단순) | NavigateCommand | NavigateCommand(menu, tool, url) | ❌ 미구현 |
-| UC-AP3 (주의환기) | — (단순) | HighlightCommand, AttentionCommand, ScrollCommand | AttentionStyle(5종) | ❌ 미구현 |
-| UC-AP4 (변경) | 데이터 변경 전체 흐름 | PreviewCommand, MutateCommand, AwaitConfirmCommand, CompleteCommand | changes[], options[] | ❌ 미구현 |
-| UC-AP5 (진행률) | 데이터 변경 전체 흐름 (포함) | ProgressCommand | value, max | ❌ 미구현 |
+| UC-AP1 (전달) | 커맨드 직렬화 → 전달 | 전체 (커맨드 계층) | AgentCommand, @JsonTypeInfo, CommandType, Jackson | AgentCommandTest |
+| UC-AP2 (네비) | — (단순) | NavigateCommand | NavigateCommand(menu, tool, url) | AgentCommandTest |
+| UC-AP3 (주의환기) | — (단순) | HighlightCommand, AttentionCommand, ScrollCommand | AttentionStyle(5종) | AgentCommandTest |
+| UC-AP4 (변경) | 데이터 변경 전체 흐름 | PreviewCommand, MutateCommand, AwaitConfirmCommand, CompleteCommand | changes[], options[] | AgentCommandTest |
+| UC-AP5 (진행률) | 데이터 변경 전체 흐름 (포함) | ProgressCommand | value, max | AgentCommandTest |
 
 ---
 

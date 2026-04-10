@@ -4,12 +4,14 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
+    implementation(project(":ui-components"))
     implementation(project(":shell-ui"))
     implementation(project(":agent-ui"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
     testImplementation(libs.bundles.test.web)
+    testImplementation(project(":test-utils"))
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
@@ -41,9 +43,12 @@ val mergeI18nProd by tasks.registering {
                 merged.putAll(map)
             }
             val sorted = merged.toSortedMap()
-            val output = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(sorted))
+            val json = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(sorted))
+            val output = json.replace(Regex("\\\\u([0-9a-fA-F]{4})")) {
+                it.groupValues[1].toInt(16).toChar().toString()
+            }
             outputDir.mkdirs()
-            File(outputDir, "language.${locale}.json").writeText(output + "\n")
+            File(outputDir, "language.${locale}.json").writeText(output + "\n", Charsets.UTF_8)
         }
     }
 }

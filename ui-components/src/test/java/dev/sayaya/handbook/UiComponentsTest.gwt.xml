@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module rename-to="ui-components-test">
+<module rename-to="uicomponentstest">
 	<inherits name="com.google.gwt.user.User"/>
 	<inherits name="org.jboss.elemento.Core"/>
 	<inherits name="dev.sayaya.Ui"/>

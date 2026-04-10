@@ -156,14 +156,48 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **커맨드** | `notify`, `progress` |
-| **정상 흐름** | 1. `NotifyHandler` → 토스트 알림 표시 (info/success/warning/error 레벨).<br>2. `ProgressHandler` → 진행률 바 업데이트. 완료 시 2초 후 자동 숨김. |
+| **정상 흐름** | 1. `NotifyHandler` → 토스트 알림 표시 (info/success/warning/error 레벨).<br>2. `ProgressHandler` → 그룹 수준 진행률 바 업데이트. `currentGroup`/`totalGroups`로 진행률(%)을 계산한다.<br>3. 진행률 바 description에 executionId와 그룹 진행 정보를 표시한다 (예: "Group 2/3 - 3 parallel steps").<br>4. `parallel` 필드가 true이면 병렬 실행 중임을 시각적으로 표시한다.<br>5. 완료 시 2초 후 자동 숨김. |
 
-## UC-A8: 작업 완료
+## UC-A8: 작업 완료 및 아티팩트 표시
 
 | 항목 | 내용 |
 |------|------|
 | **커맨드** | `complete` |
-| **정상 흐름** | 1. `CompleteHandler`가 진행률을 숨기고 성공 토스트를 5초간 표시한다.<br>2. 세션 상태가 COMPLETED로 전환된다.<br>3. 입력 필드가 다시 활성화되고, 전송 버튼이 표시된다. |
+| **정상 흐름** | 1. `CompleteHandler`가 진행률을 숨기고 성공 토스트를 5초간 표시한다.<br>2. `complete` 커맨드에 `artifact` 필드가 포함된 경우, `ArtifactSummaryPanel`이 아티팩트 요약을 표시한다.<br>3. 아티팩트 패널에는 executionId, summary(실행 결과 요약), changes(변경 목록: type/target/description)가 표시된다.<br>4. 각 change 항목은 타입별 아이콘(생성/수정/삭제)과 함께 목록으로 나열된다.<br>5. 세션 상태가 COMPLETED로 전환된다.<br>6. 입력 필드가 다시 활성화되고, 전송 버튼이 표시된다. |
+
+## 그룹 수준 진행률 및 아티팩트 표시 시퀀스
+
+```mermaid
+sequenceDiagram
+    participant SSE as SSE /workspace/{id}/messages
+    participant Router as CommandRouter
+    participant PH as ProgressHandler
+    participant PE as ProgressElement
+    participant CH as CompleteHandler
+    participant AP as ArtifactSummaryPanel
+    participant Session as AgentSession
+
+    SSE-->>Router: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":1,"totalGroups":3,"parallel":true,"stepCount":2}
+    Router->>PH: progressRequests.next()
+    PH->>PE: Progress.percent(33, "ex-1: Group 1/3 - 2 parallel steps")
+
+    SSE-->>Router: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":2,"totalGroups":3,"parallel":false,"stepCount":1}
+    Router->>PH: progressRequests.next()
+    PH->>PE: Progress.percent(66, "ex-1: Group 2/3 - 1 step")
+
+    SSE-->>Router: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":3,"totalGroups":3,"parallel":true,"stepCount":3}
+    Router->>PH: progressRequests.next()
+    PH->>PE: Progress.percent(100, "ex-1: Group 3/3 - 3 parallel steps")
+
+    SSE-->>Router: AGENT_COMMAND {"type":"complete","executionId":"ex-1","summary":"스키마 변경 완료","artifact":{"changes":[...]}}
+    Router->>CH: completeRequests.next()
+    CH->>PE: Progress.hide()
+    CH->>AP: artifact 데이터 전달
+    AP-->>AP: 아티팩트 요약 패널 표시
+    Note over AP: executionId: ex-1<br/>summary: 스키마 변경 완료<br/>changes: [CREATE field, UPDATE type, ...]
+    CH->>Session: state → COMPLETED
+    CH->>CH: 성공 토스트 5초
+```
 
 ## UC-A9: 에이전트 작업 중단
 
@@ -173,15 +207,15 @@ sequenceDiagram
 | **선행조건** | 세션 상태가 PLANNING, EXECUTING, 또는 AWAITING_CONFIRM |
 | **정상 흐름** | 1. 중단(Abort) 버튼을 클릭한다.<br>2. `AgentApiPort.abort(workspace)`가 호출된다.<br>3. Gateway에 `POST /assistant/abort`로 중단 요청이 전달된다.<br>4. 세션 상태가 ABORTED로 전환된다.<br>5. 입력 필드가 다시 활성화된다. |
 
-## UC-A10: 에이전트에 의한 타입/워크스페이스 조작 (미구현)
+## UC-A10: 에이전트에 의한 타입/워크스페이스 조작
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | AI 에이전트 |
-| **정상 흐름 (목표)** | 1. `MutateCommand`의 changes가 `MutationReceiver`를 통해 편집 모듈(type-ui/workspace-ui)에 전달된다.<br>2. 각 모듈의 `AgentMutationHandler`/`AgentWorkspaceHandler`가 Action으로 변환하여 실행한다.<br>3. 사용자가 Undo로 되돌릴 수 있다. |
+| **정상 흐름** | 1. `MutateCommand`의 changes가 `MutationReceiver`를 통해 편집 모듈(type-ui/workspace-ui)에 전달된다.<br>2. 각 모듈의 `AgentMutationHandler`(type-ui)/`AgentWorkspaceHandler`(workspace-ui)가 Action으로 변환하여 실행한다.<br>3. 사용자가 Undo로 되돌릴 수 있다. |
 | **브릿지** | `agent-bridge` 모듈의 `WindowMutationBridge`가 `CustomEvent('handbook-mutate')`로 연결. `WindowStateProviderBridge`/`WindowSearchProviderBridge`로 상태 조회 및 검색도 가능. |
 
-## UC-A11: 에이전트 검색 시각화 (미구현 요구사항)
+## UC-A11: 에이전트 검색 시각화
 
 | 항목 | 내용 |
 |------|------|
@@ -273,6 +307,35 @@ sequenceDiagram
 
 ---
 
+## UC-A13: 서브에이전트 진행률 이벤트 수신
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | AI 에이전트 (서브에이전트) |
+| **선행조건** | 에이전트 세션이 EXECUTING 상태, 서브에이전트가 작업 중 |
+| **정상 흐름** | 1. 메인 에이전트가 서브에이전트에게 작업을 위임한다.<br>2. 서브에이전트의 진행률 이벤트가 AGENT_COMMAND로 전달된다 (subAgentName, subAgentIndex, subAgentTotal 포함).<br>3. `ProgressHandler`가 그룹/서브에이전트 정보를 포함한 진행률을 표시한다.<br>4. 진행률 컨테이너가 정상적으로 표시된다. |
+| **결과** | 서브에이전트의 진행 상황이 UI에 반영된다. |
+
+## UC-A14: DELEGATE 커맨드 수신 시 UI 안정성
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | AI 에이전트 |
+| **선행조건** | 에이전트 세션 활성화 상태 |
+| **정상 흐름** | 1. 에이전트가 DELEGATE 커맨드를 발행하여 서브에이전트에게 작업을 위임한다.<br>2. `CommandRouter`가 DELEGATE 타입을 수신한다.<br>3. 알 수 없거나 별도 핸들러가 없는 커맨드 타입이라도 UI가 오류 없이 정상 유지된다. |
+| **결과** | 새로운 커맨드 타입 수신 시에도 에이전트 UI가 안정적으로 동작한다. |
+
+## UC-A15: 다중 에이전트 연속 완료 + 아티팩트 패널
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | AI 에이전트 (복수) |
+| **선행조건** | 복수 에이전트가 작업 실행 중 |
+| **정상 흐름** | 1. 첫 번째 에이전트가 complete 커맨드를 발행한다 (artifact 포함).<br>2. `CompleteHandler`가 아티팩트 요약 패널을 표시한다.<br>3. 곧이어 두 번째 에이전트가 complete 커맨드를 발행한다.<br>4. 아티팩트 패널이 최신 결과로 갱신된다.<br>5. 연속 완료에도 UI가 정상적으로 동작한다. |
+| **결과** | 다중 에이전트의 연속 완료 시 아티팩트 패널이 정상 표시된다. |
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
@@ -283,9 +346,14 @@ sequenceDiagram
 | UC-A4 (하이라이트) | — (단순) | 핸들러+UI | HighlightHandler, ScrollHandler, OverlayElement | AgentTest: highlight 클래스 토글, attention 오버레이 표시/닫기 |
 | UC-A5 (미리보기) | 변경 미리보기 → 확인 → Mutation | 핸들러+UI, 인터페이스 구현 | PreviewPanelElement, ConfirmDialogElement, AgentSseClient | AgentTest: preview 패널 토글, diff 표시, confirm 다이얼로그 |
 | UC-A6 (Mutation) | 변경 미리보기 (후반) | 핸들러+UI | MutateHandler, WindowMutationBridge | AgentTest: Mutate 버튼 → 변경 로그 표시, 항목 2개 검증 |
-| UC-A7 (알림) | — (단순) | 핸들러+UI | NotifyHandler, ProgressHandler | AgentTest: Notify 버튼 → 토스트 표시, Scroll 버튼 → 스크롤 이동 |
-| UC-A8 (완료) | 에이전트 요청 → 실행 → 완료 (후반) | 핸들러+UI | CompleteHandler, AgentSession(COMPLETED) | AgentTest: complete 커맨드 시 send 버튼 복원 |
+| UC-A7 (진행률) | 그룹 수준 진행률 및 아티팩트 표시 (전반) | 핸들러+UI | NotifyHandler, ProgressHandler, ProgressElement | AgentTest: Notify 버튼 → 토스트 표시, Scroll 버튼 → 스크롤 이동, AgentProgressTest: Progress Group 클릭 → 프로그레스 바 표시 + 그룹 정보(2/5) 라벨, AgentEdgeCaseTest: 0/0 진행률 → UI 에러 없이 유지 |
+| UC-A8 (완료+아티팩트) | 그룹 수준 진행률 및 아티팩트 표시 (후반) | 핸들러+UI | CompleteHandler, ArtifactSummaryPanel, AgentSession(COMPLETED) | AgentTest: complete 커맨드 시 send 버튼 복원, AgentProgressTest: Complete Artifact → 아티팩트 패널 표시/요약 텍스트/변경 3건/닫기 버튼, 완료 토스트 변경 건수, AgentEdgeCaseTest: 아티팩트 없는 complete → 패널 미표시, 변경 0건 아티팩트 → 변경 행 0개 |
 | UC-A9 (중단) | 에이전트 중단 | 핸들러+UI, 인터페이스 구현 | AgentInputElement, AgentSseClient, AgentSession(ABORTED) | AgentTest: confirm 커맨드 시 abort 버튼 표시 |
-| UC-A10 (조작) | type-ui: 에이전트 타입 조작 | 핸들러+UI | MutateHandler, WindowMutationBridge → AgentMutationHandler | ❌ 미구현 |
-| UC-A11 (검색시각화) | UC-A11 내 시퀀스 | 핸들러+UI, 도메인 | ProgressHandler, NavigateHandler, HighlightHandler, OverlayElement, PreviewPanelElement, ConfirmDialogElement | ❌ 미구현 (요구사항만 정의) |
-| UC-A12 (모바일) | 모바일 입력 적응 | 핸들러+UI | ViewportObserver, AgentInputElement(bottom fixed, visualViewport), ConfirmDialogElement(bottom sheet), PreviewPanelElement(vertical stack) | ❌ 미구현 |
+| UC-A10 (조작) | type-ui: 에이전트 타입 조작 | 핸들러+UI | MutateHandler, WindowMutationBridge → AgentMutationHandler (type-ui), AgentWorkspaceHandler (workspace-ui) | CollaborationTest (type-ui): 에이전트 CREATE/SET 명령 검증 |
+| UC-A11 (검색시각화) | UC-A11 내 시퀀스 | 핸들러+UI, 도메인 | SearchVisualizationHandler, SearchVisualizationRequest, CommandRouter (search 분기), ProgressHandler, NavigateHandler, HighlightHandler, OverlayElement, PreviewPanelElement, ConfirmDialogElement | AgentSearchVisualizationTest |
+| UC-A12 (모바일) | 모바일 입력 적응 | 핸들러+UI | ViewportObserver, AgentInputElement(bottom fixed, visualViewport), ConfirmDialogElement(bottom sheet), PreviewPanelElement(vertical stack) | AgentTest: 모바일 뷰포트 입력 컨테이너/필드/전송 버튼 존재 확인 |
+| UC-A13 (서브진행률) | — | 핸들러+UI | ProgressHandler, ProgressElement, CommandRouter | AgentProgressTest: 서브에이전트 진행률 이벤트 → 프로그레스 컨테이너 표시, 라벨에 숫자 포함 검증 |
+| UC-A14 (DELEGATE) | — | 핸들러+UI | CommandRouter | AgentCollaborationTest: DELEGATE 커맨드 수신 → 입력 컨테이너/필드/전송 버튼 정상 유지 검증, AgentEdgeCaseTest: malformed AGENT_COMMAND → UI 에러 없이 유지 |
+| UC-A15 (다중완료) | — | 핸들러+UI | CompleteHandler, ArtifactSummaryPanel | AgentCollaborationTest: 2건 연속 complete + artifact → 아티팩트 패널 표시, Complete 커맨드 → 전송 버튼 복원 |
+| UC-A16 (빈 상태 UI) | — | 핸들러+UI | EmptyStateElement, AgentInputElement | ❌ 미구현 (계획) |
+| UC-A17 (성공 피드백) | — | 핸들러+UI | ToastContainer, CompleteHandler | ❌ 미구현 (계획) |

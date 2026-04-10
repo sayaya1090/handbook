@@ -349,8 +349,31 @@ classDiagram
         -ModuleScriptManager
         -ProgressElement
         -ContentElement
+        -SessionManager
         +initialize()
     }
+    class SessionManager {
+        <<@Singleton>>
+        -FetchApi fetchApi
+        -ToastContainer toastContainer
+        -LabelProvider labelProvider
+        -int CHECK_INTERVAL_MS = 60000$
+        -int WARNING_BEFORE_EXPIRY_MS = 300000$
+        -double REFRESH_THRESHOLD = 0.8$
+        +initialize()
+        -checkSession()
+        -refreshToken()
+        -redirectToLogin()
+        -getTokenExpiry(): double «JSNI»
+        -getTokenDuration(): double «JSNI»
+    }
+    class ThemeToggle {
+        <<@Singleton>>
+        -UserPreferences prefs
+        +element(): HTMLElement
+        -toggleTheme()
+    }
+    ShellInitializer --> SessionManager
     class HostSharedModule {
         <<@Module>>
         +uri(): BehaviorSubject~String~$

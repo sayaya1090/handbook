@@ -5,11 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/app-test.html")
+@GwtHtml("src/test/webapp/apptest.html")
 internal class AppTest: GwtTestSpec({
     Given("앱이 초기화됨") {
-        Thread.sleep(3000)
-
         Then("Shell의 content 요소가 존재한다") {
             page.querySelector("#content") shouldNotBe null
         }

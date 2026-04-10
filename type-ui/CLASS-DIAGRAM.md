@@ -44,9 +44,14 @@ classDiagram
         +Double min, max
         +String[] allowedValues
         +String referencedType
+        +AttributeTypeValue elementType
+        +AttributeTypeValue keyType
+        +AttributeTypeValue valueType
         +text(): AttributeTypeValue$
         +number(min, max): AttributeTypeValue$
         +document(ref): AttributeTypeValue$
+        +array(elementType): AttributeTypeValue$
+        +map(keyType, valueType): AttributeTypeValue$
         +simplify(): String «@JsOverlay»
     }
     class Position {
@@ -433,6 +438,46 @@ classDiagram
     ControllerElement --> BeforeButton
     ControllerElement --> AfterButton
     ControllerElement --> SnapCheckbox
+    ControllerElement --> BulkDeleteButton
+
+    class BulkDeleteButton {
+        <<@Singleton>>
+        -ActionManager actionManager
+        -TypeList typeList
+        -ChangeTracker tracker
+        -SelectedBoxElement selection
+        -LabelProvider labelProvider
+        선택된 모든 타입 일괄 삭제
+    }
+
+    BulkDeleteButton --> SelectedBoxElement
+    BulkDeleteButton --> ActionManager
+```
+
+## 버전 히스토리
+
+```mermaid
+classDiagram
+    class VersionHistoryPanel {
+        <<@Singleton>>
+        -HTMLDivElement root
+        -HTMLDivElement listContainer
+        -HTMLDivElement diffContainer
+        -TypeRepository typeRepository
+        -Labels labels
+        -String currentTypeId
+        -List~String~ selectedVersions
+        +show(typeId: String)
+        +hide()
+        -renderVersions(versions: Set~TypeValue~)
+        -toggleVersionSelection(version: String, row: HTMLElement)
+        -loadDiff(v1: String, v2: String)
+        -fetchDiff(typeId, v1, v2) «JSNI»
+        -renderDiff(diffObj: Object)
+        -renderDiffError(error: String)
+    }
+
+    VersionHistoryPanel --> TypeRepository : versions(), diff()
 ```
 
 ## 속성 편집 다이얼로그
@@ -455,6 +500,16 @@ classDiagram
         <<interface>>
         +load(value: AttributeTypeValue)
         +collect(): AttributeTypeValue
+        +element(): HTMLElement
+    }
+    class ValidatorEditorFactory {
+        -TypeList typeList
+        -int depth
+        -int MAX_DEPTH = 3$
+        +ValidatorEditorFactory(typeList: TypeList)
+        +create(type: String): ValidatorEditor
+        +isMaxDepth(): boolean
+        -nested(): ValidatorEditorFactory
     }
     class TextValidatorEditor {
         -TextFieldElementBuilder regexField
@@ -473,6 +528,26 @@ classDiagram
     }
     class DocumentValidatorEditor {
         -TextFieldElementBuilder refField
+        -TypeList typeList
+    }
+    class ArrayValidatorEditor {
+        -SelectElementBuilder typeSelect
+        -HTMLDivElement subEditorContainer
+        -ValidatorEditorFactory factory
+        -ValidatorEditor currentSubEditor
+        +load(value: AttributeTypeValue)
+        +collect(): AttributeTypeValue
+        -onTypeChanged()
+    }
+    class MapValidatorEditor {
+        -SelectElementBuilder keySelect, valueSelect
+        -HTMLDivElement keySubEditorContainer, valueSubEditorContainer
+        -ValidatorEditorFactory factory
+        -ValidatorEditor keySubEditor, valueSubEditor
+        +load(value: AttributeTypeValue)
+        +collect(): AttributeTypeValue
+        -onKeyTypeChanged()
+        -onValueTypeChanged()
     }
 
     ValidatorEditor <|.. TextValidatorEditor
@@ -481,6 +556,12 @@ classDiagram
     ValidatorEditor <|.. EnumValidatorEditor
     ValidatorEditor <|.. FileValidatorEditor
     ValidatorEditor <|.. DocumentValidatorEditor
+    ValidatorEditor <|.. ArrayValidatorEditor
+    ValidatorEditor <|.. MapValidatorEditor
+    ArrayValidatorEditor --> ValidatorEditorFactory : 서브 에디터 생성
+    MapValidatorEditor --> ValidatorEditorFactory : 서브 에디터 생성
+    ValidatorEditorFactory ..> ValidatorEditor : creates
+    AttributeEditorDialog --> ValidatorEditorFactory : 최상위 팩토리 생성
     AttributeEditorDialog *-- ValidatorEditor : 타입별 에디터
 ```
 
@@ -583,7 +664,8 @@ classDiagram
 | **Memento** | `ActionManager` (undo/redo 스택) | Action 객체가 이전 상태를 내부에 보관하여 rollback 시 복원. LinkedList 스택으로 최대 100개 관리. |
 | **Observer** | `TypeList`, `PositionMap`, `LayoutProvider`, `ChangeTracker`, `SelectedBoxElement` | BehaviorSubject 기반 반응형 상태 관리. 상태 변경 시 구독자(캔버스, 화살표, 버튼 등)에게 자동 전파. |
 | **Factory** | `BoxElementFactory` (@AssistedFactory) | Dagger의 Assisted Injection으로 `TypeElement`를 생성. 런타임 파라미터(TypeValue, Position)와 DI 의존성을 조합. |
-| **Strategy** | `ValidatorEditor` 인터페이스 + 6개 구현체 | 속성 타입(Text/Number/Date/Enum/File/Document)에 따라 다른 검증기 에디터 UI를 동적으로 선택. |
+| **Strategy** | `ValidatorEditor` 인터페이스 + 8개 구현체 | 속성 타입(Text/Number/Date/Enum/File/Document/Array/Map)에 따라 다른 검증기 에디터 UI를 동적으로 선택. |
+| **Abstract Factory** | `ValidatorEditorFactory` | 타입 이름으로 ValidatorEditor를 동적 생성. Array/Map 서브 타입 에디터를 재귀적으로 생성하며 최대 깊이 3단계로 제한. |
 | **Port/Adapter** | `TypeRepository`(포트) ↔ `TypeApi`(어댑터), `LayoutRepository` ↔ `LayoutApi` | 헥사고날 아키텍처. 유스케이스가 포트 인터페이스에만 의존하고, API 어댑터가 HTTP 호출을 수행. |
 | **Singleton** | `ActionManager`, `TypeList`, `PositionMap`, `CanvasMode`, `GridSnap` 등 25+ 클래스 | Dagger @Singleton으로 공유 상태의 단일 인스턴스 보장. |
 
@@ -598,6 +680,17 @@ classDiagram
         -onTouchEnd(e: TouchEvent)
         -longpressTimer: int
         -LONGPRESS_MS: int = 500
+    }
+
+    class PinchZoomHandler {
+        <<@Singleton>>
+        -MIN_SCALE: double = 0.5
+        -MAX_SCALE: double = 3.0
+        -initialDistance: double
+        -currentScale: double
+        -baseScale: double
+        -pinching: boolean
+        +bind(element: HTMLElement)
     }
 
     class CanvasElement {
@@ -618,12 +711,14 @@ classDiagram
 
     TouchEventAdapter --> CanvasElement
     TouchEventAdapter --> TypeElement
+    PinchZoomHandler --> CanvasElement
     CanvasElement --> DragShapeElement
 ```
 
 | 클래스 | 모바일 동작 |
 |--------|-----------|
 | `TouchEventAdapter` | touchstart/touchmove/touchend를 mousedown/mousemove/mouseup과 동일하게 변환. 500ms 롱프레스 타이머. |
+| `PinchZoomHandler` | 두 손가락 핀치 줌 처리. 줌 범위 0.5x~3.0x. transform-origin은 두 손가락 중앙점 기준. |
 | `CanvasElement` | 핀치 줌: gesturechange 이벤트 → CSS transform: scale() 적용 |
 | `TypeElement` | 리사이즈 핸들 터치 영역 44px+로 확대. 롱프레스 → 컨텍스트 메뉴 |
 | `AttributeEditorDialog` | 모바일: 전체 화면 bottom sheet. 키보드 올라올 때 스크롤 조정 |

@@ -31,6 +31,7 @@ client/
 │   ├── UrlBasedMenuResolver            # URL 정규식 매칭 → 메뉴 자동 선택
 │   ├── ToolBasedMenuResolver           # 도구 선택 → 부모 메뉴 역추적
 │   ├── WorkspaceList                   # 사용자의 워크스페이스 목록
+│   ├── SessionManager                  # JWT 만료 감시, 자동 갱신, 만료 경고/리다이렉트
 │   └── ModuleScriptManager             # 메뉴 선택 시 모듈 스크립트 동적 주입
 │
 ├── interfaces/                          # 인터페이스 (UI 어댑터)
@@ -50,6 +51,7 @@ client/
 │       ├── ToolRailElement            # 도구 레일 (offset 계산, debounce)
 │       ├── ToolRailItemElement        # 개별 도구 아이템 (@AssistedInject)
 │       ├── ToolRailItemFactory        # 도구 아이템 팩토리
+│       ├── ThemeToggle                # 라이트/다크 테마 전환 토글
 │       ├── MenuToggleButton           # SVG 햄버거 토글 (애니메이션)
 │       ├── CloseToolRailButton        # 도구 레일 닫기 버튼
 │       ├── WorkspaceSelectElement     # 워크스페이스 셀렉트 드롭다운

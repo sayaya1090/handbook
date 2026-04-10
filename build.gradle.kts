@@ -57,6 +57,20 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+    // GWT UI 모듈 공통: 모듈별 고유 포트 할당 (병렬 테스트 가능)
+    pluginManager.withPlugin("dev.sayaya.gwt") {
+        val portMap = mapOf(
+            "shell-ui" to 18080, "type-ui" to 18081, "document-ui" to 18082,
+            "agent-ui" to 18083, "dashboard-ui" to 18084, "workspace-ui" to 18085,
+            "login-ui" to 18086, "app" to 18087, "ui-components" to 18088,
+            "agent-bridge" to 18089, "activity" to 18090,
+        )
+        tasks.withType<Test> {
+            extensions.configure<dev.sayaya.gwt.GwtTestTaskExtension>("gwt") {
+                webPort.set(portMap[project.name] ?: 18099)
+            }
+        }
+    }
     // GWT UI 모듈 공통: 테스트 리소스(JS/CSS) 자동 복사
     pluginManager.withPlugin("dev.sayaya.gwt") {
         val copyTestResources = tasks.register<Copy>("copyTestWebResources") {
@@ -97,14 +111,25 @@ subprojects {
                         merged.putAll(map)
                     }
                     val sorted = merged.toSortedMap()
-                    val output = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(sorted))
+                    val json = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(sorted))
+                    // Groovy JsonOutput은 non-ASCII를 \uXXXX로 이스케이프하므로 역변환
+                    val output = json.replace(Regex("\\\\u([0-9a-fA-F]{4})")) {
+                        it.groupValues[1].toInt(16).toChar().toString()
+                    }
                     outputDir.mkdirs()
-                    File(outputDir, "language.${locale}.json").writeText(output + "\n")
+                    File(outputDir, "language.${locale}.json").writeText(output + "\n", Charsets.UTF_8)
                 }
             }
         }
-        tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") }.configureEach {
-            dependsOn(copyTestResources, copyTestCss, mergeI18n)
+        // shell-ui는 JS/CSS 소스가 자기 자신이므로 복사 불필요
+        if (project.name != "shell-ui") {
+            tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") }.configureEach {
+                dependsOn(copyTestResources, copyTestCss, mergeI18n)
+            }
+        } else {
+            tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") }.configureEach {
+                dependsOn(mergeI18n)
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.client.usecase.AgentSession;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
+import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
@@ -52,6 +53,9 @@ public class AgentMock {
     static LanguagePackRepository languagePackRepository() {
         return lang -> behavior(Labels.empty());
     }
+
+    @Provides @Singleton
+    static ViewportObserver viewportObserver() { return new ViewportObserver(); }
 
     @Provides @Singleton
     static AgentApiPort agentApi() {

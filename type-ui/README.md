@@ -108,13 +108,17 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 - **이름 필드**: 속성 이름 입력.
 - **타입 셀렉터**: 9종 버튼 (text, number, date, enum, bool, array, map, file, document). 선택 시 `[selected]` 스타일 적용.
-- **Validator 에디터**: 선택한 타입에 따라 하위 에디터가 표시된다.
+- **Validator 에디터**: `ValidatorEditorFactory`가 선택한 타입에 따라 하위 에디터를 동적 생성한다.
   - **Text**: Regex 패턴 (여러 줄, 줄바꿈 구분)
   - **Number**: Min / Max 범위
   - **Date**: After / Before 날짜 범위
   - **Enum**: 허용 값 목록 (한 줄에 하나)
+  - **Array**: MD3 Select(`SelectElementBuilder.select().outlined()`)로 원소 타입을 선택하면 해당 타입의 서브 에디터가 재귀적으로 표시된다. 예: `Array<Number(0~100)>`, `Array<Map<Text, Date>>`
+  - **Map**: 키 타입과 값 타입을 각각 MD3 Select 드롭다운으로 선택하고, 각각의 서브 에디터가 재귀적으로 표시된다. 예: `Map<Text(^[A-Z]+$), Number(0~100)>`
   - **File**: 허용 확장자 목록
   - **Document**: 참조할 타입 이름
+  - **재귀 깊이 제한**: `ValidatorEditorFactory`가 최대 3단계까지 중첩을 허용한다. 깊이 초과 시 array/map 옵션이 드롭다운에서 자동 제외된다.
+  - **시각적 계층**: 서브 에디터는 깊이별로 좌측 보더 색상과 배경이 차별화된다 (outline-variant → primary → tertiary).
 - **설명 필드**: 속성 설명.
 - **Apply**: `EditBoxAction`으로 타입에 속성을 추가/수정한다. Undo 지원.
 - **i18n**: 모든 레이블이 `LabelProvider`를 통해 다국어 처리된다.
@@ -132,6 +136,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | 타입 CRUD | `AddTypeButton`, `RemoveTypeButton` | 타입 추가(유니크 ID 자동 생성, 충돌 해소 포함) / 선택 타입 삭제 |
 | 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo. `ActionManager.canUndo/canRedo` 구독으로 자동 disabled. |
 | 저장 | `SaveButton`, `ReloadButton` | 변경사항 서버 저장 (`SaveAction`) / 서버에서 다시 로드 (`LoadAction`) |
+| 벌크 삭제 | `BulkDeleteButton` | 다중 선택(Shift+클릭, Ctrl+A) 타입 일괄 삭제 |
 | 스냅 | `SnapCheckbox` | 격자 스냅 on/off 토글 |
 
 ---
@@ -156,6 +161,16 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | `ComplexAction` | 복합 액션 (이동 + 충돌 해소 등) |
 | `LoadAction` | 서버에서 레이아웃, 타입, 위치를 로드. 스택 초기화. |
 | `SaveAction` | CHANGED → PUT, DELETED → DELETE 원자적 저장 + 위치 저장. 스택 초기화. |
+
+---
+
+## 버전 히스토리 (VersionHistoryPanel)
+
+특정 타입의 모든 버전을 타임라인으로 표시하고, 두 버전 간 diff 비교를 지원한다.
+
+- **버전 목록 조회**: `TypeRepository.versions(typeId)` → search-type `GET /workspace/{id}/types/{typeId}/versions`
+- **diff 비교**: 두 버전을 클릭하면 diff API를 호출하여 속성 추가/삭제/변경 사항을 시각적으로 표시
+- **Escape/닫기**: Escape 키 또는 닫기 버튼으로 패널을 닫을 수 있다
 
 ---
 
@@ -222,6 +237,19 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | `LayoutRepository.layouts()` | `GET /workspace/{id}/layouts` | 레이아웃 기간 목록 |
 | `LayoutRepository.positions(period)` | `GET /workspace/{id}/layouts/{period}` | 기간별 위치 조회 |
 | `LayoutRepository.savePositions(...)` | `PUT /workspace/{id}/layouts` | 위치 저장 |
+
+---
+
+## 모바일 터치 지원
+
+캔버스는 모바일/태블릿 환경에서 터치 입력을 지원한다.
+
+- **터치 드래그**: `TouchEventAdapter`가 touchstart/touchmove/touchend를 마우스 이벤트로 변환하여 드래그 & 드롭, 리사이즈를 터치로 동작시킨다.
+- **핀치 줌**: `PinchZoomHandler`가 두 손가락 핀치 제스처로 캔버스 줌을 조절한다 (0.5x ~ 3.0x).
+- **롱프레스**: 500ms 롱프레스 시 컨텍스트 메뉴를 트리거한다. 이동 거리 10px 이상이면 롱프레스가 취소된다.
+- **리사이즈 핸들**: 터치 영역이 44px 이상으로 확대되어 모바일에서도 정확한 조작이 가능하다.
+- **속성 편집 다이얼로그**: 모바일에서 전체 화면 bottom sheet로 전환된다.
+- **컨트롤러 툴바**: CSS flex-wrap으로 좁은 화면에서 자동 줄바꿈된다.
 
 ---
 

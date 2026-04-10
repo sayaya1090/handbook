@@ -28,6 +28,7 @@ Handsontable 6.2.4 (MIT) 라이브러리를 JsInterop으로 래핑한 테이블 
 |------|---------|------|
 | 타입 선택 | `TypeTabsElement` | 타입 탭 선택 → 컬럼 재구성 + 문서 다시 로딩 |
 | 문서 CRUD | `AddButton`, `DeleteButton` | 새 문서 추가 / 선택 문서 삭제 |
+| 벌크 작업 | `BulkDeleteButton`, `BulkStatusButton` | 다중 선택 문서 일괄 삭제 / 상태 변경 (DRAFT/REVIEW/PUBLISHED) |
 | 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo |
 | 저장 | `SaveButton` | 변경사항 서버 저장 |
 | 페이지네이션 | `PaginationElement` | 페이지 이동, 페이지당 항목 수 변경 |
@@ -68,6 +69,33 @@ Handsontable 6.2.4 (MIT) 라이브러리를 JsInterop으로 래핑한 테이블 
 | `DOC_EDIT <serial> <field> <value>` | 셀 편집 (DirtyTracker.changed 등록) |
 | `DOC_DELETE <serial>` | 문서 삭제 마킹 (DirtyTracker.deleted 등록) |
 | `DOC_SAVE` | 원자적 저장 (토스트: "에이전트가 저장을 요청했습니다") |
+
+---
+
+## 타입 인식 입력 위젯
+
+`ColumnFactory`가 타입 속성의 `AttributeType`에 따라 Handsontable 컬럼을 동적 생성한다. `ColumnDef` 클래스가 각 컬럼의 이름, 타입, 너비, 입력 소스를 정의한다.
+
+| 속성 타입 | 입력 위젯 |
+|-----------|-----------|
+| Text | 텍스트 입력 |
+| Number | 숫자 전용 입력 (numeric) |
+| Date | 날짜 선택 (date picker) |
+| Enum | 드롭다운 (source: allowedValues) |
+| Bool | 체크박스 |
+| Document | 참조 타입 드롭다운 |
+| File | 텍스트 입력 |
+| Array | 텍스트 입력 |
+| Map | 텍스트 입력 |
+
+---
+
+## 모바일 지원
+
+- **컨트롤러 툴바**: CSS flex-wrap으로 좁은 화면에서 자동 줄바꿈된다.
+- **타입 탭**: 수평 스크롤(overflow-x: auto)로 많은 타입이 있어도 탐색 가능하다.
+- **스프레드시트**: 수평 스크롤 + 고정 컬럼(serial)으로 모바일에서도 문서를 탐색할 수 있다.
+- **ViewportObserver**: 뷰포트 크기에 따라 레이아웃을 자동 전환한다.
 
 ---
 

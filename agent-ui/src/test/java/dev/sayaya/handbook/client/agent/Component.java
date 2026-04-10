@@ -2,6 +2,8 @@ package dev.sayaya.handbook.client.agent;
 
 import dev.sayaya.handbook.client.interfaces.*;
 import dev.sayaya.handbook.client.usecase.AgentSession;
+import dev.sayaya.handbook.domain.Progress;
+import dev.sayaya.rx.Observer;
 
 import javax.inject.Singleton;
 
@@ -21,4 +23,7 @@ public interface Component {
     CompleteHandler completeHandler();
     MutateHandler mutateHandler();
     AgentInputElement agentInputElement();
+    ArtifactSummaryPanel artifactSummaryPanel();
+    SearchVisualizationHandler searchVisualizationHandler();
+    Observer<Progress> progressObserver();
 }

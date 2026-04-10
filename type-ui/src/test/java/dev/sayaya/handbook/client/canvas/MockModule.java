@@ -14,6 +14,7 @@ import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Singleton;
 import java.util.*;
@@ -34,6 +35,8 @@ public class MockModule {
             @Override public Observable<Set<TypeValue>> list(LayoutPeriod period) { return BehaviorSubject.<Set<TypeValue>>behavior(Collections.emptySet()).asObservable(); }
             @Override public Observable<Set<TypeValue>> save(Set<TypeValue> types) { return BehaviorSubject.<Set<TypeValue>>behavior(types).asObservable(); }
             @Override public Observable<Void> delete(Set<TypeValue> types) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
+            @Override public Observable<Set<TypeValue>> patch(List<JsPropertyMap<?>> patches) { return BehaviorSubject.<Set<TypeValue>>behavior(Collections.emptySet()).asObservable(); }
+            @Override public Observable<Set<TypeValue>> versions(String typeId) { return BehaviorSubject.<Set<TypeValue>>behavior(Collections.emptySet()).asObservable(); }
         };
     }
     @Provides @Singleton static LayoutRepository layoutRepository() {
@@ -45,5 +48,11 @@ public class MockModule {
     }
     @Provides @Singleton static MutationReceiver mutationReceiver() {
         return dev.sayaya.handbook.usecase.WindowMutationBridge.receiver();
+    }
+    @Provides @Singleton static dev.sayaya.handbook.client.components.ConfirmDialog confirmDialog() {
+        return new dev.sayaya.handbook.client.components.ConfirmDialog();
+    }
+    @Provides @Singleton static dev.sayaya.handbook.client.components.ToastContainer toastContainer() {
+        return new dev.sayaya.handbook.client.components.ToastContainer();
     }
 }

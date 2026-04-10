@@ -34,7 +34,8 @@ client/
 │   ├── NotifyHandler                   # notify → ToastContainer 위임
 │   ├── ProgressHandler                 # progress → Progress Observer 위임
 │   ├── MutateHandler                   # mutate → 변경 로그 표시
-│   └── CompleteHandler                 # complete → 성공 토스트 (5초)
+│   ├── CompleteHandler                 # complete → 성공 토스트 (5초)
+│   └── SearchVisualizationHandler      # search → 검색 과정 실시간 시각화
 │
 ├── AgentModule                          # Dagger 바인딩 (Session, Dispatcher, ApiPort)
 └── AgentInitializer                     # 핸들러 + UI 요소를 DOM에 등록

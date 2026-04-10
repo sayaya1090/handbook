@@ -4,7 +4,7 @@ import dev.sayaya.handbook.client.interfaces.box.BoxElementModule;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
 import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
-import dev.sayaya.handbook.client.usecase.ActionManager;
+import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.AgentMutationHandler;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;

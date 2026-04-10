@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 @GwtHtml("src/test/webapp/apitest.html")
 internal class ApiTest: GwtTestSpec({
     Given("FetchMock 기반 API가 초기화됨") {
-        Thread.sleep(5000)
+        Thread.sleep(2000)
 
         // UC-S8: 토큰 갱신 및 사용자 정보 조회
         Then("사용자 정보가 로드된다") {
@@ -36,9 +36,7 @@ internal class ApiTest: GwtTestSpec({
             menuCount shouldNotBe null
             menuCount!!.textContent() shouldBe "1"
         }
-        Then("주기적 갱신이 설정된다") {
-            // UserApi.periodicRefresh는 사용자가 null이 아닐 때 자동으로 구독이 등록됨
-            // 사용자 로드가 성공했으므로 주기적 갱신이 활성화된 상태
+        Then("초기화가 완료된다") {
             val status = page.querySelector("#api-test-status")
             status shouldNotBe null
             val text = status!!.textContent()

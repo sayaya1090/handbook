@@ -40,6 +40,11 @@ classDiagram
         +type: String
         +width: int
         +readOnly: boolean
+        +source: String[]
+        +serial()$: ColumnDef
+        +effectDateTime()$: ColumnDef
+        +expireDateTime()$: ColumnDef
+        +fromAttribute(attr, typeNames)$: ColumnDef
     }
 
     TypeInfo --> AttributeInfo
@@ -221,8 +226,8 @@ classDiagram
     }
 
     class ColumnFactory {
-        +create(type: TypeInfo): ColumnDef[]
-        -mapAttributeType(attr: AttributeInfo): ColumnDef
+        +create(type: TypeInfo): ColumnDef[]$
+        +create(type: TypeInfo, allTypes: List~TypeInfo~): ColumnDef[]$
     }
 
     class DataProvider {
@@ -268,6 +273,30 @@ classDiagram
         +render(totalElements: int)
     }
 
+    class SelectedRows {
+        -BehaviorSubject~Set~Integer~~ subject
+        +toggle(rowIndex: int)
+        +clear()
+        +getValue(): Set~Integer~
+        +asObservable(): Observable~Set~Integer~~
+        +subscribe(consumer: Consumer)
+    }
+
+    class BulkDeleteButton {
+        -ActionManager actionManager
+        -DocumentList documentList
+        -SelectedRows selectedRows
+        -LabelProvider labelProvider
+    }
+
+    class BulkStatusButton {
+        -ActionManager actionManager
+        -DocumentList documentList
+        -SelectedRows selectedRows
+        -LabelProvider labelProvider
+        -HTMLSelectElement select (DRAFT/REVIEW/PUBLISHED)
+    }
+
     ControllerElement --> TypeTabsElement
     ControllerElement --> AddButton
     ControllerElement --> DeleteButton
@@ -275,6 +304,10 @@ classDiagram
     ControllerElement --> UndoButton
     ControllerElement --> RedoButton
     ControllerElement --> PaginationElement
+    ControllerElement --> BulkDeleteButton
+    ControllerElement --> BulkStatusButton
+    BulkDeleteButton --> SelectedRows
+    BulkStatusButton --> SelectedRows
     SpreadsheetElement --> ColumnFactory
     SpreadsheetElement --> DataProvider
 ```
@@ -359,7 +392,7 @@ classDiagram
 | **Command** | Action, ActionManager | 모든 편집을 Action으로 캡슐화하여 Undo/Redo 지원 |
 | **Observer (BehaviorSubject)** | DocumentList, TypeProvider, PageState | 상태 변경 시 자동 전파 |
 | **Port & Adapter** | DocumentRepository, TypeRepository | usecase 포트를 API 어댑터가 구현 |
-| **Factory** | ColumnFactory | TypeInfo의 속성을 Handsontable 컬럼 정의로 변환 |
+| **Factory** | ColumnFactory | TypeInfo의 속성 + TypeList(전체 타입 목록)을 기반으로 Handsontable 컬럼 정의로 변환. document 속성은 타입 이름 드롭다운 제공 |
 | **Adapter** | DataProvider | DocumentValue ↔ Handsontable 2D 배열 변환 |
 | **Facade** | DocumentInitializer | 초기화 로직을 하나의 진입점으로 통합 |
 | **Bridge (WindowMutationBridge)** | AgentDocumentHandler | GWT 모듈 간 CustomEvent 기반 통신 |

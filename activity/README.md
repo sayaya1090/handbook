@@ -22,6 +22,7 @@ Shell UI와 각 기능 모듈(타입 에디터, 문서 에디터 등)이 공통�
 | **LabelProvider** | i18n 라벨 구독/제공. 언어 변경 시 자동 갱신 |
 | **LanguageDetector** | 브라우저 언어 감지 |
 | **LanguagePackRepository** | 언어 팩 로딩 포트 |
+| **UserPreferences** | localStorage 기반 사용자 설정 유틸리티 (언어/테마) |
 | **ViewportObserver** | 뷰포트 크기 변경 감지. mobile(<768px), compact(<480px) 상태를 BehaviorSubject로 발행 |
 
 > 에이전트 연동 인터페이스(MutationReceiver, StateProvider, SearchProvider)와 Window 브릿지는

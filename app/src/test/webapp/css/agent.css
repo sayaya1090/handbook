@@ -13,7 +13,7 @@
     box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
     pointer-events: auto; transition: box-shadow 0.2s;
 }
-.agent-input-wrapper:focus-within { box-shadow: 0 6px 32px rgba(33,150,243,0.25), 0 0 0 2px #2196F3; }
+.agent-input-wrapper:focus-within { box-shadow: 0 6px 32px color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent), 0 0 0 2px var(--md-sys-color-primary); }
 .agent-input-field {
     flex: 1; border: none; outline: none; background: transparent;
     font-size: 16px; line-height: 24px; padding: 12px 0;
@@ -50,7 +50,7 @@
 .agent-mutate-log {
     position: fixed; left: 20px; bottom: 100px;
     z-index: 10002; padding: 12px 16px; border-radius: 10px;
-    background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20;
+    background: var(--md-sys-color-primary-container); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-primary-container);
     font-size: 13px; min-width: 280px; max-width: 400px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.1); animation: ui-toast-in 0.3s ease;
 }
@@ -69,5 +69,134 @@
     color: var(--md-sys-color-on-surface, #333);
 }
 
+/* ── 모바일 (< 768px) ── */
+@media (max-width: 768px) {
+    .agent-input-container {
+        padding: 8px 12px 12px;
+    }
+    .agent-input-wrapper {
+        max-width: 100%;
+        border-radius: 20px;
+        padding: 4px 4px 4px 16px;
+    }
+    .agent-input-send, .agent-input-abort {
+        min-height: 48px;
+        min-width: 48px;
+        padding: 8px 16px;
+    }
+    .agent-mutate-log {
+        left: 8px; right: 8px; bottom: 80px;
+        max-width: none; min-width: auto;
+    }
+    .agent-navigate-indicator {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+}
+
+/* ── Preview 모바일 세로 스택 ── */
+@media (max-width: 768px) {
+    .agent-preview-panel {
+        flex-direction: column;
+    }
+    .agent-preview-before, .agent-preview-after {
+        width: 100%;
+    }
+    .agent-confirm-dialog {
+        bottom: 0; left: 0; right: 0; top: auto;
+        border-radius: 16px 16px 0 0;
+        max-height: 60vh;
+    }
+}
+
+/* ── Artifact Summary Panel ── */
+.agent-artifact-panel {
+    position: fixed; right: 24px; bottom: 100px;
+    z-index: 10001;
+    display: flex; flex-direction: column;
+    width: 380px; max-height: 60vh;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    overflow: hidden;
+    animation: agent-artifact-in 0.3s var(--md-sys-motion-easing-standard, ease);
+}
+.agent-artifact-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.agent-artifact-title {
+    font-family: var(--md-sys-typescale-label-large-font, sans-serif);
+    font-size: var(--md-sys-typescale-label-large-size, 0.75rem);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+.agent-artifact-close {
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    padding: 4px;
+    transition: background var(--md-sys-motion-duration-medium2, 300ms);
+}
+.agent-artifact-close:hover {
+    background: var(--md-sys-color-surface-container-highest);
+}
+.agent-artifact-content {
+    padding: 12px 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+.agent-artifact-summary {
+    font-family: var(--md-sys-typescale-body-medium-font, monospace);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.75rem);
+    line-height: var(--md-sys-typescale-body-medium-line-height, 1rem);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 12px;
+}
+.agent-artifact-changes {
+    display: flex; flex-direction: column; gap: 6px;
+}
+.agent-artifact-change-row {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    background: var(--md-sys-color-surface-container);
+}
+.agent-artifact-change-icon {
+    font-size: 18px;
+    color: var(--md-sys-color-primary);
+    flex-shrink: 0;
+    line-height: 1.2;
+}
+.agent-artifact-change-target {
+    font-family: var(--md-sys-typescale-body-medium-font, monospace);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.75rem);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    flex-shrink: 0;
+}
+.agent-artifact-change-desc {
+    font-family: var(--md-sys-typescale-body-small-font, monospace);
+    font-size: var(--md-sys-typescale-body-small-size, 0.6875rem);
+    color: var(--md-sys-color-on-surface-variant);
+    flex: 1;
+}
+@keyframes agent-artifact-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Artifact Panel mobile ── */
+@media (max-width: 768px) {
+    .agent-artifact-panel {
+        right: 8px; left: 8px; bottom: 80px;
+        width: auto; max-height: 50vh;
+    }
+}
+
 /* ── Dark mode ── */
-[color-theme="dark"] .agent-mutate-log { background: #1b3a1f; border-color: #4caf50; color: #a5d6a7; }
+[color-theme="dark"] .agent-mutate-log { background: var(--md-sys-color-primary-container); border-color: var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-primary-container); }

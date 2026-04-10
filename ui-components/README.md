@@ -17,6 +17,7 @@ GWT 기반 공유 UI 컴포넌트 라이브러리. 에이전트 커맨드 처리
         ├── DiffPanel.java         변경사항 Diff 미리보기 패널 (before → after)
         ├── HighlightEffect.java   DOM 요소 강조 효과 (pulse 애니메이션)
         ├── OverlayContainer.java  오버레이 안내 컨테이너 (코치마크, 스포트라이트 등)
+        ├── RbacGuard.java         RBAC 권한 검증 유틸리티 (읽기 전용 판단)
         ├── ScrollEffect.java      스크롤 + 도착 강조 효과
         └── ToastContainer.java    토스트 메시지 컨테이너
 ```
@@ -34,6 +35,7 @@ GWT 기반 공유 UI 컴포넌트 라이브러리. 에이전트 커맨드 처리
 | HighlightEffect | CSS 선택자로 요소를 찾아 pulse 강조 |
 | ScrollEffect | 대상 요소로 부드럽게 스크롤 후 강조 |
 | OverlayContainer | 코치마크, 스포트라이트 등 안내 오버레이 |
+| RbacGuard | RBAC 권한 검증 유틸리티. 사용자 역할 집합과 요구 역할을 비교하여 읽기 전용 여부 판단 |
 
 ## 의존성
 

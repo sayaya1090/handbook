@@ -284,23 +284,58 @@ sequenceDiagram
 | **정상 흐름** | 1. `ViewportObserver`가 뷰포트 변경을 감지하여 `DrawerMode`에 `OVERLAY`를 발행한다.<br>2. `MenuRailMode`가 `BOTTOM_NAV`로 전환되어 하단 네비게이션 바를 렌더링한다.<br>3. `ToolRailMode`가 `HORIZONTAL_CHIPS`로 전환되어 수평 칩 바를 렌더링한다.<br>4. 메뉴 선택 시 Drawer가 자동으로 닫힌다.<br>5. Frame 영역이 전체 뷰포트를 차지한다. |
 | **터치 지원** | 화면 왼쪽 가장자리에서 오른쪽으로 스와이프하여 Drawer를 열 수 있다. |
 
+## UC-S15: 사용자 설정 — 언어/테마 퍼시스턴스
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 인증 완료, Shell 로딩 완료 |
+| **정상 흐름** | 1. 사용자가 설정 패널(Drawer 내 또는 별도 모달)을 연다.<br>2. 언어(ko/en)를 변경하면 localStorage에 저장되고 `LabelProvider`가 즉시 갱신된다.<br>3. 테마(다크/라이트)를 변경하면 CSS 변수가 전환되고 설정이 퍼시스트된다. |
+| **요구사항** | 6.8 사용자 설정 |
+| **상태** | 부분 구현 (UserPreferences, ThemeToggle, BrowserLanguageDetector 구현 완료. 설정 패널 UI 미완) |
+
+## UC-S16: 사용자 설정 패널 UI
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | Shell 로딩 완료 |
+| **정상 흐름** | 1. Drawer 하단 또는 톱바의 설정 아이콘을 클릭한다.<br>2. 설정 패널이 열리고 언어 선택, 테마 토글 등의 옵션이 표시된다.<br>3. 변경 사항은 즉시 반영된다. |
+| **요구사항** | 6.8 사용자 설정 |
+| **상태** | 부분 구현 (ThemeToggle 구현 완료. 독립 설정 패널 UI 미완) |
+
+## UC-S17: 세션 관리
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (자동) |
+| **선행조건** | 사용자 인증 완료 |
+| **정상 흐름** | 1. 토큰 만료 전 refresh token을 사용하여 자동 갱신한다.<br>2. 비활성 타임아웃 5분 전 경고 알림을 표시한다.<br>3. 세션 만료 시 로그인 페이지로 리다이렉트하고 알림을 표시한다. |
+| **요구사항** | 6.11 세션 관리 |
+| **상태** | 구현 완료 (SessionManager) |
+
 ---
 
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-S1 (인증) | 초기 로딩 → 메뉴 선택 | 유스케이스, Frame+API | Application, UserApi, UserProvider, MenuList, MenuApi, UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, WorkspaceList, DrawerMode | DrawerTest: 메뉴 초기화, Drawer DOM 존재, 메뉴 토글 버튼 |
-| UC-S2 (메뉴선택) | 메뉴 클릭 → 모듈 로딩 | 유스케이스, Drawer UI | MenuRailElement, MenuRailItemElement, MenuSelected, ToolSelected, ModuleScriptManager, HistoryManager, DrawerMode | DrawerTest: Rail 아이템 렌더링, URL 버튼 클릭 시 메뉴 선택 |
-| UC-S3 (도구실행) | 메뉴 클릭 → 모듈 로딩 (alt) | 유스케이스, Drawer UI | ToolRailElement, ToolRailItemElement, ToolSelected, ToolExecutionManager | DrawerTest: 도구 개수 검증 (메뉴1: ≤1, 메뉴2: >1) |
-| UC-S4 (딥링크) | 초기 로딩과 동일 경로 | 유스케이스 | UrlBasedMenuResolver, HistoryManager, MenuSelected | ❌ 미구현 |
+| UC-S1 (인증) | 초기 로딩 → 메뉴 선택 | 유스케이스, Frame+API | Application, UserApi, UserProvider, MenuList, MenuApi, UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, WorkspaceList, DrawerMode | DrawerTest: 메뉴 초기화, Drawer DOM 존재, 메뉴 토글 버튼, 메뉴 레일 아이템 수 = 메뉴 수, 아이콘 수 = 아이템 수 |
+| UC-S2 (메뉴선택) | 메뉴 클릭 → 모듈 로딩 | 유스케이스, Drawer UI | MenuRailElement, MenuRailItemElement, MenuSelected, ToolSelected, ModuleScriptManager, HistoryManager, DrawerMode | DrawerTest: URL 버튼 클릭 → selected 아이템 정확히 1개, 다른 URL 클릭 → 이전 선택 해제 + 새 선택 |
+| UC-S3 (도구실행) | 메뉴 클릭 → 모듈 로딩 (alt) | 유스케이스, Drawer UI | ToolRailElement, ToolRailItemElement, ToolSelected, ToolExecutionManager | DrawerTest: 메뉴1 도구 ≤1, 메뉴2 도구 >1, 같은 메뉴 다른 Tool URL → 선택 아이템 유지 |
+| UC-S4 (딥링크) | 초기 로딩과 동일 경로 | 유스케이스 | UrlBasedMenuResolver, HistoryManager, MenuSelected | DrawerTest: URL hash 변경 → Drawer/레일 아이템 수 유지 |
 | UC-S5 (Drawer토글) | Drawer 토글 | 유스케이스, Drawer UI | MenuToggleButton, DrawerMode, MenuRailMode, ToolRailMode, DrawerElement, MenuRailElement, ToolRailElement | DrawerModeTest: MenuRailState/ToolRailState 상태 전이 검증 |
-| UC-S6 (호버) | — (단순) | 유스케이스, Drawer UI | MenuHover, MenuHoverElementProvider, ToolList, ToolRailElement | ❌ 미구현 |
-| UC-S7 (워크스페이스) | — (단순) | Drawer UI | WorkspaceSelectElement, WorkspaceList | ❌ 미구현 |
-| UC-S8 (토큰갱신) | 토큰 자동 갱신 | Frame+API | UserApi(periodicRefresh, REFRESH_INTERVAL) | ❌ 미구현 |
-| UC-S9 (에이전트) | 에이전트 화면 이동 | 유스케이스 | UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, HostSharedModule(uri) | ❌ 미구현 |
-| UC-S10 (i18n) | i18n (다국어) | Frame+API | BrowserLanguageDetector, FetchLanguagePackRepository, LabelProvider | ❌ 미구현 |
-| UC-S11 (프레임전환) | — (단순) | Frame+API | FrameUpdater, FrameFactory, FrameElement, ContentElement | FrameTest: 컨테이너 존재, 프레임 추가/교체, 콘텐츠 표시 |
-| UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ProgressTest: 초기 숨김, indeterminate, 30%, 100%, hide |
-| UC-S13 (모바일) | 모바일 Drawer 전환 | Drawer UI | ViewportObserver, DrawerMode(OVERLAY), MenuRailMode(BOTTOM_NAV), ToolRailMode(HORIZONTAL_CHIPS), DrawerElement | ❌ 미구현 |
-| UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspace/{id}/messages, 이벤트 타입별 UI 갱신 | ❌ 미구현 |
+| UC-S6 (호버) | — (단순) | 유스케이스, Drawer UI | MenuHover, MenuHoverElementProvider, ToolList, ToolRailElement | DrawerTest: Tool Rail 영역(.tool-rail) 존재 확인 |
+| UC-S7 (워크스페이스) | — (단순) | Drawer UI | WorkspaceSelectElement, WorkspaceList | DrawerTest: 워크스페이스 선택 요소(.workspace-select) 존재 확인 |
+| UC-S8 (토큰갱신) | 토큰 자동 갱신 | Frame+API | UserApi(periodicRefresh, REFRESH_INTERVAL) | ApiTest: 사용자 정보 로드, 사용자 ID/이름 표시, 주기적 갱신 설정 확인 |
+| UC-S9 (에이전트) | 에이전트 화면 이동 | 유스케이스 | UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, HostSharedModule(uri) | UrlBasedMenuResolverTest: 에이전트 navigate 커맨드 URL 패턴 처리 검증 |
+| UC-S10 (i18n) | i18n (다국어) | Frame+API | BrowserLanguageDetector, FetchLanguagePackRepository, LabelProvider | DrawerTest: 메뉴 아이템에 텍스트 라벨 존재 확인 |
+| UC-S11 (프레임전환) | — (단순) | Frame+API | FrameUpdater, FrameFactory, FrameElement, ContentElement | FrameTest: 컨테이너 존재, 초기 프레임 0개, 렌더러1 → 프레임 1개 + 텍스트 "Hello, World!!", 렌더러2 → 교체 + "2nd Renderer rendered", 재전환 → 프레임 1개 유지 |
+| UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ProgressTest: 컨테이너/라벨 존재, 초기 opacity=0, indeterminate → opacity=1 + 라벨 숨김, 30% → "처리 중" + "3/10", 70% → "거의 완료" + "7/10", 100% → "완료" + "10/10", hide → opacity=0, 재표시 검증 |
+| UC-S13 (모바일) | 모바일 Drawer 전환 | Drawer UI | ViewportObserver, DrawerMode(OVERLAY), MenuRailMode(BOTTOM_NAV), ToolRailMode(HORIZONTAL_CHIPS), DrawerElement | DrawerModeTest: OVERLAY→BOTTOM_NAV, OVERLAY→HORIZONTAL_CHIPS 상태 전이 검증 |
+| UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspace/{id}/messages, 이벤트 타입별 UI 갱신 | UrlBasedMenuResolverTest: SSE 이벤트 기반 메뉴 갱신 검증 |
+| UC-S15 (언어/테마) | — | Drawer UI | UserPreferences (activity), ThemeToggle, BrowserLanguageDetector, LabelProvider | ❌ 테스트 미작성 (UserPreferences, ThemeToggle, BrowserLanguageDetector 구현 완료) |
+| UC-S16 (설정패널) | — | Drawer UI | ThemeToggle (DrawerElement 내 통합), UserPreferences | ❌ 테스트 미작성 (ThemeToggle 구현 완료, 설정 패널 UI 미완) |
+| UC-S17 (세션관리) | — | Frame+API | SessionManager, FetchApi, ToastContainer, LabelProvider | ❌ 테스트 미작성 (SessionManager 구현 완료) |
+| UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
+| UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |

@@ -53,6 +53,6 @@ object Md3 {
     // ── 버튼 ──
 
     /** 버튼의 disabled 상태를 반환한다. (md-filled-button, md-outlined-button 등) */
-    fun Page.isDisabled(selector: String): Boolean =
+    fun Page.checkDisabled(selector: String): Boolean =
         evaluate("(()=>{ const el=document.querySelector('$selector'); return el?.disabled===true||el?.hasAttribute('disabled')===true; })()") as Boolean
 }

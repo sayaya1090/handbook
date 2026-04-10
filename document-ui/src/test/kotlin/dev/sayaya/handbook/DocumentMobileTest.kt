@@ -9,7 +9,6 @@ import io.kotest.matchers.shouldNotBe
 internal class DocumentMobileTest: GwtTestSpec({
     Given("문서 UI가 모바일 뷰포트에서 초기화됨") {
         page.setViewportSize(375, 667) // iPhone SE
-        Thread.sleep(3000)
 
         // UC-D10: 모바일 반응형 레이아웃
         Then("컨트롤러 툴바가 존재한다") {

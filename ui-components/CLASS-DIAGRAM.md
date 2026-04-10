@@ -84,6 +84,13 @@ classDiagram
 
     ToastContainer --> ToastLevel
     OverlayContainer --> OverlayStyle
+    class RbacGuard {
+        <<utility>>
+        +isReadOnly(userRoles: Set~String~, requiredWriteRoles: String...): boolean$
+        +isDocumentReadOnly(userRoles: Set~String~, workspace: String, type: String): boolean$
+        +isTypeReadOnly(userRoles: Set~String~, workspace: String, type: String): boolean$
+    }
+
     ActionManager --> Action
     ChangeTracker --> ChangeState
 ```
