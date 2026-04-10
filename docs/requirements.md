@@ -215,6 +215,7 @@ flowchart LR
 - 같은 워크스페이스에 여러 사용자가 동시에 참여하여 실시간으로 협업할 수 있다.
   - 다른 사용자의 문서 저장, 타입 변경 등이 SSE 이벤트로 즉시 반영된다.
   - AI 에이전트의 액션도 동일한 이벤트 스트림으로 전달되어, 모든 참여자가 에이전트의 행동을 실시간으로 관찰할 수 있다.
+  - **프레즌스**: 다른 사용자가 편집 중인 셀/타입 박스를 실시간으로 표시한다 (사용자별 고유 색상 보더 + 이름 라벨). 200ms 디바운스, 30초 타임아웃.
 
 ### 3.2 사용자 및 그룹 관리
 
@@ -272,6 +273,10 @@ flowchart LR
 - 문서 저장 시 검증(validation)이 자동으로 트리거된다.
 - 검색 시 페이지네이션, 정렬, 필터링을 지원한다.
 - 다양한 날짜 포맷을 지원한다 (ISO-8601, yyyyMMdd, yyyy.MM.dd 등).
+- **더티 트래킹**: 사용자 편집은 로컬 상태에만 반영되며, 서버에 즉시 저장되지 않는다.
+- **원자적 저장**: Save 버튼을 누르면 생성/수정/삭제 변경점이 하나의 트랜잭션으로 일괄 저장된다.
+- **시각적 상태 구분**: 생성(created), 수정(changed), 삭제 예정(deleted) 셀/행을 색상과 스타일로 구분하여 편집 중에 변경 내역을 즉시 확인할 수 있다.
+- **충돌 감지**: 다른 사용자가 같은 문서를 동시에 수정한 경우 `@Version` 기반 낙관적 잠금으로 충돌을 감지하고, 409 Conflict 시 사용자에게 알린다.
 
 ### 3.7 이력 조회
 
@@ -344,11 +349,20 @@ flowchart LR
 #### 문서 관리 (Document Editor)
 
 - 탭 기반 인터페이스로 여러 타입의 문서를 동시에 편집할 수 있다.
-- 스프레드시트 형태의 테이블 뷰를 제공한다.
+- 스프레드시트 형태의 테이블 뷰를 제공한다 (Handsontable 6.2.4 MIT).
 - 도구 모음: 저장, Undo/Redo, 추가, 삭제, 새로고침, 검증
 - 검색 필터링을 지원한다.
 - 일괄(batch) 작업을 지원한다.
 - 검증 실패(Compliance 불일치) 문서에 대한 경고를 표시한다.
+- **더티 트래킹**: 생성/수정/삭제 상태를 셀 단위로 시각적으로 구분한다.
+  - 생성된 행: tertiary-container 배경, 좌측 3px tertiary 보더
+  - 수정된 셀: tertiary 1px inset box-shadow
+  - 삭제 예정 행: 취소선, 75% 투명화
+  - 유효하지 않은 셀: error 텍스트, error 1px inset box-shadow (필수값 누락/형식 오류)
+  - 충돌 문서: secondary-container 배경, secondary 2px 좌측 보더 (다른 사용자와 동시 수정)
+- **Save 버튼**: 더티 없으면 비활성화, 변경 건수 뱃지 표시, 저장 중 스피너 표시
+- **타입 전환 경고**: 미저장 변경이 있으면 확인 다이얼로그 표시
+- 에이전트 편집과 사용자 편집은 동일한 Action/DirtyTracker 경로로 처리되며, Undo/Redo 가능
 
 #### 사용자 관리
 
@@ -375,6 +389,7 @@ flowchart LR
 | GET    | `/workspace/{workspace}/compliance`         | 호환성 검증 결과 조회           |
 | GET    | `/workspace/{workspace}/layouts`            | 레이아웃 목록 조회              |
 | GET    | `/workspace/{workspace}/messages`           | SSE 실시간 이벤트 스트림        |
+| POST   | `/workspace/{workspace}/presence`           | 프레즌스 (편집 중 셀/타입 공유)  |
 | POST   | `/workspace/{workspace}/documents/import`   | 문서 일괄 임포트 (CSV/JSON)     |
 | GET    | `/workspace/{workspace}/documents/export`   | 문서 일괄 익스포트 (CSV/JSON)   |
 | GET    | `/workspace/{workspace}/dashboard`          | 워크스페이스 현황 대시보드       |

@@ -2,8 +2,8 @@ package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.domain.TypeValue;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
-import dev.sayaya.handbook.client.usecase.ActionManager;
-import dev.sayaya.handbook.client.usecase.ChangeTracker;
+import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.usecase.LabelProvider;

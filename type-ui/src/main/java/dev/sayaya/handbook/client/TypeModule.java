@@ -13,6 +13,7 @@ import dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.rx.Observer;
+import dev.sayaya.rx.subject.AsyncSubject;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
@@ -45,7 +46,7 @@ public class TypeModule {
                     .then(r -> r.ok ? r.json() : elemental2.promise.Promise.reject("HTTP " + r.status))
                     .then(obj -> elemental2.promise.Promise.resolve((Labels) obj))
                     .catch_(err -> elemental2.promise.Promise.resolve(Labels.empty()));
-            return dev.sayaya.rx.subject.AsyncSubject.await(promise);
+            return AsyncSubject.await(promise);
         };
     }
 

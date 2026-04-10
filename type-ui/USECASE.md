@@ -255,17 +255,19 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 실행된 액션이 존재 (undo 기준) |
-| **정상 흐름** | 1. Ctrl+Z 또는 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화. |
-| **특이사항** | 에이전트가 실행한 액션도 동일하게 Undo/Redo 가능. |
+| **정상 흐름** | 1. Ctrl+Z 또는 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화.<br>4. Undo로 원본 상태가 복원되면 `ChangeTracker`에서 해당 타입의 더티 플래그가 자동 해제된다.<br>5. Save 성공 시 Undo/Redo 스택이 초기화된다. |
+| **특이사항** | 에이전트가 실행한 액션도 동일한 Undo 스택에 쌓이므로 사용자가 Ctrl+Z로 되돌릴 수 있다. |
 
-## UC-T10: 저장/다시 로드
+## UC-T10: 저장/다시 로드 (원자적)
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 |
-| **선행조건** | 변경된 타입이 존재 (저장 기준) |
-| **정상 흐름 (저장)** | 1. Save 버튼 클릭 → `SaveAction` 실행.<br>2. `ChangeTracker`에서 CHANGED 타입은 `PUT /workspace/{id}/types`로, DELETED 타입은 `DELETE`로 전송.<br>3. 위치 데이터를 `PUT /workspace/{id}/layouts`로 저장.<br>4. `ChangeTracker` 초기화, Undo/Redo 스택 초기화. |
+| **액터** | 사용자, AI 에이전트 |
+| **선행조건** | `ChangeTracker.hasChanges() == true` (Save 버튼 활성화 상태) |
+| **정상 흐름 (저장)** | 1. Save 버튼 클릭 → `SaveAction` 실행.<br>2. `ChangeTracker`에서 CHANGED 타입은 `PUT /workspace/{id}/types`로, DELETED 타입은 `DELETE /workspace/{id}/types`로 **원자적 전송**.<br>3. 위치 데이터를 `PUT /workspace/{id}/layouts`로 저장.<br>4. 전체 성공 시: `ChangeTracker` 초기화, Undo/Redo 스택 초기화, 모든 더티 상태 해제.<br>5. 부분 실패 시: 실패 항목만 더티 유지, 토스트 "N건 저장 실패". |
 | **정상 흐름 (다시 로드)** | Reload 버튼 → `LoadAction` 실행. 서버에서 최신 데이터 로드. 미저장 변경 사항 소실. |
+| **Save 버튼 UX** | 더티 없으면 비활성화, 변경 건수 뱃지 표시, 저장 중 스피너 표시. |
+| **충돌 흐름** | 409 Conflict 응답 시 해당 타입 카드에 충돌 상태 표시 (secondary-container 배경), 최신 서버 데이터 재로드 안내. |
 
 ## UC-T11: 에이전트에 의한 타입 조작
 
@@ -333,6 +335,104 @@ sequenceDiagram
 | **선행조건** | 뷰포트 너비 < 768px |
 | **정상 흐름** | 1. `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환한다.<br>2. 캔버스에 핀치 줌(두 손가락 확대/축소)과 터치 드래그가 활성화된다.<br>3. 타입 박스에 터치 롱프레스(500ms)로 컨텍스트 메뉴를 열 수 있다.<br>4. 컨트롤러 툴바가 flex-wrap으로 줄바꿈되며, 핵심 버튼만 1행에 표시된다.<br>5. 속성 편집 다이얼로그가 전체 화면 bottom sheet로 전환된다. |
 
+## UC-T14: RBAC 권한 검증 (계획)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 워크스페이스 선택 완료, type-ui 모듈 로딩 완료 |
+| **정상 흐름** | 1. 타입 편집 화면 진입 시 Shell로부터 현재 사용자의 권한 정보를 수신한다.<br>2. `workspace:type:edit` 권한이 있는 경우 일반 편집 모드로 진입한다.<br>3. `workspace:type:edit` 권한이 없는 경우 읽기 전용 모드로 전환한다.<br>4. 읽기 전용 모드에서는 Add Type, Delete, Save 버튼이 비활성화되고, 드래그/리사이즈/속성 편집이 차단된다.<br>5. 에이전트 명령(MutateCommand)도 권한이 없으면 무시된다. |
+| **대안 흐름** | 권한 정보를 가져올 수 없는 경우 읽기 전용 모드로 기본 전환한다. |
+| **요구사항** | 3.3 RBAC (역할 기반 접근 제어) — `{workspace}:type:{type}:edit` |
+
+## UC-T15: 실시간 협업
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 다른 사용자 (이벤트 발행자) |
+| **선행조건** | type-ui 모듈 로딩 완료, `TypeEventHandler`가 초기화되어 `WorkspaceEventReceiver`를 구독 중 |
+| **정상 흐름** | 1. 다른 사용자가 타입을 생성/삭제하면 서버가 Kafka를 통해 TYPE_CREATED 또는 TYPE_DELETED 이벤트를 발행한다.<br>2. shell-ui의 SSE 연결이 이벤트를 수신하고 `WindowWorkspaceEventBridge.publish()`로 CustomEvent를 디스패치한다.<br>3. `TypeEventHandler`가 `WorkspaceEventReceiver.events()`를 통해 이벤트를 수신한다.<br>4. 로컬 더티 상태가 있으면 비충돌 타입만 갱신하고 더티 유지. 충돌하는 타입에는 충돌 카드 표시.<br>5. 더티 상태가 없으면 `TypeRepository.list()`를 재호출하여 최신 타입 목록을 가져온다.<br>6. 토스트 알림: "다른 사용자가 타입을 변경했습니다" |
+| **요구사항** | 3.1 실시간 협업 |
+
+```mermaid
+sequenceDiagram
+    actor A as 사용자 A
+    actor B as 사용자 B
+    participant GW as Gateway
+    participant DB as Database
+    participant CanvasB as CanvasElement (B)
+
+    A->>GW: PUT /types (customer 타입 변경)
+    GW->>DB: UPDATE (version 1 → 2)
+    DB-->>GW: OK
+    GW-->>CanvasB: SSE TYPE_CREATED
+
+    alt B에 미저장 변경 없음
+        CanvasB->>GW: GET /types (재로딩)
+        GW-->>CanvasB: 최신 타입 목록
+        Note over CanvasB: 캔버스 갱신 + 토스트
+    else B가 같은 타입 편집 중
+        Note over CanvasB: customer 카드에 충돌 표시
+        Note over CanvasB: 비충돌 타입만 갱신
+    end
+```
+
+## UC-T16: 동시 편집 충돌 방지
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 같은 타입을 여러 사용자가 동시에 편집 중 (프레즌스로 인지 가능) |
+| **정상 흐름** | 1. 사용자가 타입을 저장할 때 서버 측에서 `@Version` 기반 낙관적 잠금으로 충돌을 감지한다.<br>2. 충돌이 발생하면 서버가 409 Conflict를 반환한다.<br>3. 해당 타입 카드에 충돌 상태를 표시한다 (secondary-container 배경, secondary 2px 보더).<br>4. 사용자가 선택: "내 변경 유지" (재시도) 또는 "서버 버전 수락" (더티 해제). |
+| **요구사항** | 3.1 실시간 협업 — 낙관적 잠금 기반 충돌 감지 |
+
+```mermaid
+sequenceDiagram
+    actor A as 사용자 A
+    actor B as 사용자 B
+    participant GW as Gateway
+    participant DB as Database
+
+    Note over A,B: 프레즌스로 같은 타입 편집 중 인지
+
+    A->>GW: PUT /types (customer v1 → v2)
+    GW->>DB: UPDATE (version 1 → 2)
+    DB-->>GW: OK
+    GW-->>B: SSE TYPE_CREATED
+
+    B->>GW: PUT /types (customer v1 → v2')
+    GW->>DB: UPDATE (version 1 → ?)
+    DB-->>GW: OptimisticLockingFailure
+    GW-->>B: 409 Conflict
+    Note over B: customer 카드에 충돌 표시
+    Note over B: 사용자 선택: 내 변경 유지 / 서버 수락
+```
+
+## UC-T17: 프레즌스 (다른 사용자 편집 표시)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 같은 워크스페이스에 2명 이상 동시 접속 |
+| **정상 흐름** | 1. 사용자 A가 타입 박스를 선택하면 200ms 디바운스 후 `POST /workspace/{id}/presence`로 `{user, typeKey}`를 전송한다.<br>2. SSE PRESENCE 이벤트가 다른 사용자에게 전달된다.<br>3. 해당 타입 박스에 사용자별 고유 색상 보더(2px)와 이름 라벨이 표시된다 (3초 후 fade-out).<br>4. 포커스 해제 시 `{user, typeKey: null}`로 프레즌스가 해제된다.<br>5. 30초 갱신 없으면 자동 해제 (연결 끊김 대비). |
+| **요구사항** | 3.1 실시간 협업 — 프레즌스 |
+
+```mermaid
+sequenceDiagram
+    actor A as 사용자 A
+    actor B as 사용자 B
+    participant GW as Gateway (SSE)
+    participant CanvasB as CanvasElement (B)
+
+    A->>GW: POST /presence {user:"A", typeKey:"customer:1.0"}
+    GW-->>CanvasB: SSE PRESENCE 이벤트
+    CanvasB->>CanvasB: customer 카드에 A 색상 보더 + "A님" 라벨
+
+    A->>GW: POST /presence {user:"A", typeKey:null}
+    GW-->>CanvasB: SSE PRESENCE 해제
+    CanvasB->>CanvasB: 프레즌스 제거
+```
+
 ---
 
 ## 트레이서빌리티 매트릭스
@@ -352,3 +452,7 @@ sequenceDiagram
 | UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, WindowMutationBridge | ❌ 미구현 |
 | UC-T12 (검색) | — (단순) | 에이전트 연동 | TypeSearchProvider, WindowSearchProviderBridge | ❌ 미구현 |
 | UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, CanvasElement(pinch zoom), TypeElement(longpress), DragShapeElement(touch), AttributeEditorDialog(bottom sheet) | ❌ 미구현 |
+| UC-T14 (RBAC) | — | — | RbacGuard (계획), CanvasMode(READONLY) (계획) | ❌ 미구현 (계획) |
+| UC-T15 (실시간협업) | 실시간 협업 시퀀스 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList, ChangeTracker, ActionManager, ToastContainer | CanvasTest: TYPE_CREATED 이벤트 디스패치 → 캔버스 유지 검증 |
+| UC-T16 (충돌방지) | 충돌 방지 시퀀스 | 상태 관리 | @Version 낙관적 잠금, ChangeTracker(CONFLICT) | CanvasTest: 409 Conflict 표시 검증 |
+| UC-T17 (프레즌스) | 프레즌스 시퀀스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | CanvasTest: PRESENCE 이벤트 수신/해제 검증 |

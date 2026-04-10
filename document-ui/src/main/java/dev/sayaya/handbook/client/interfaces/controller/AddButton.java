@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.domain.DocumentValue;
-import dev.sayaya.handbook.client.usecase.ActionManager;
+import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.AddDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import jsinterop.base.JsPropertyMap;

@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.usecase.action;
 
-import dev.sayaya.handbook.client.domain.Action;
+import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.client.domain.Position;
 import dev.sayaya.handbook.client.domain.TypeValue;
-import dev.sayaya.handbook.client.usecase.ChangeTracker;
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 

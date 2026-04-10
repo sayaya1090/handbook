@@ -78,7 +78,7 @@ classDiagram
     }
 ```
 
-## Usecase 계층 — Action & ActionManager
+## Usecase 계층 — Action & ActionManager & DirtyTracker
 
 ```mermaid
 classDiagram
@@ -94,8 +94,30 @@ classDiagram
         +clear()
     }
 
+    class DirtyTracker {
+        -Set~String~ created
+        -Map~String, Map~String, Object[]~~ changed
+        -Set~String~ deleted
+        +markCreated(serial: String)
+        +markChanged(serial: String, field: String, before: Object, after: Object)
+        +markDeleted(serial: String)
+        +unmarkCreated(serial: String)
+        +unmarkChanged(serial: String, field: String)
+        +unmarkDeleted(serial: String)
+        +hasDirty(): boolean
+        +summary(): DirtySummary
+        +reset()
+    }
+
+    class DirtySummary {
+        +created: int
+        +changed: int
+        +deleted: int
+    }
+
     class AddDocumentAction {
         -DocumentList documentList
+        -DirtyTracker dirtyTracker
         -DocumentValue newDoc
         +execute()
         +rollback()
@@ -103,6 +125,7 @@ classDiagram
 
     class EditDocumentAction {
         -DocumentList documentList
+        -DirtyTracker dirtyTracker
         -DocumentValue before
         -DocumentValue after
         +execute()
@@ -111,6 +134,7 @@ classDiagram
 
     class DeleteDocumentAction {
         -DocumentList documentList
+        -DirtyTracker dirtyTracker
         -List~DocumentValue~ deleted
         +execute()
         +rollback()
@@ -119,12 +143,15 @@ classDiagram
     class SaveAction {
         -DocumentRepository repo
         -DocumentList documentList
+        -DirtyTracker dirtyTracker
         -ActionManager actionManager
         +execute()
         +rollback()
     }
 
     ActionManager --> Action
+    ActionManager --> DirtyTracker
+    DirtyTracker --> DirtySummary
     AddDocumentAction ..|> Action
     EditDocumentAction ..|> Action
     DeleteDocumentAction ..|> Action

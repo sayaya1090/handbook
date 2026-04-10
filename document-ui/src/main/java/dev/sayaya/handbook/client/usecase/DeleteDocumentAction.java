@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.Action;
+import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.client.domain.DocumentValue;
 
 import java.util.ArrayList;

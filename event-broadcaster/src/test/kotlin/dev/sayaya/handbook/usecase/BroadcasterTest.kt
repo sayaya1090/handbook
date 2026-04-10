@@ -59,6 +59,38 @@ class BroadcasterTest : DescribeSpec({
                 .verifyComplete()
         }
 
+        // UC-EB5: 다중 구독자 브로드캐스트
+        it("동일 워크스페이스의 다중 구독자에게 이벤트를 동시에 전달한다") {
+            val sinkManager = WorkspaceSinkManager()
+            val broadcaster = Broadcaster(objectMapper, sinkManager)
+            val event = sampleEvent()
+            val json = objectMapper.writeValueAsString(event)
+
+            val flux1 = broadcaster.listen(workspace).take(1)
+            val flux2 = broadcaster.listen(workspace).take(1)
+
+            // 구독자 1 검증
+            StepVerifier.create(flux1)
+                .then { broadcaster.broadcast(json) }
+                .assertNext { received ->
+                    received.id shouldBe event.id
+                    received.eventType shouldBe Event.EventType.DOCUMENT_CREATED
+                    received.workspace shouldBe workspace
+                }
+                .verifyComplete()
+
+            // 구독자 2도 새 이벤트를 수신할 수 있다
+            val event2 = sampleEvent()
+            val json2 = objectMapper.writeValueAsString(event2)
+            StepVerifier.create(flux2)
+                .then { broadcaster.broadcast(json2) }
+                .assertNext { received ->
+                    received.id shouldBe event2.id
+                    received.workspace shouldBe workspace
+                }
+                .verifyComplete()
+        }
+
         it("다른 워크스페이스의 구독자에게는 이벤트를 전달하지 않는다") {
             val sinkManager = WorkspaceSinkManager()
             val broadcaster = Broadcaster(objectMapper, sinkManager)

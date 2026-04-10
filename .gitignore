@@ -34,6 +34,13 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# GWT compiled output
+*.cache.js
+*.nocache.js
+*.devmode.js
+compilation-mappings.txt
+clear.cache.gif
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

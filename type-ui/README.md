@@ -136,34 +136,32 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ---
 
-## Undo/Redo (ActionManager)
+## 더티 트래킹 & Undo/Redo
 
-모든 편집 작업은 `Action` 인터페이스(`execute()`, `rollback()`)로 캡슐화된다.
+`ChangeTracker`로 타입별 `NOT_CHANGED` / `CHANGED` / `DELETED` 상태를 추적하고, `ActionManager`로 Undo/Redo를 지원한다. Save 시 원자적 저장.
 
-- **스택**: 최대 100개. 새 액션 실행 시 redo 스택 초기화.
-- **상태 관찰**: `BehaviorSubject<Boolean>`으로 canUndo/canRedo 상태를 버튼과 메뉴에 전파.
-- **ComplexAction**: 여러 Action을 순서대로 실행하고, rollback 시 역순으로 되돌린다.
+> 공통 패턴 상세는 [설계 패턴](../docs/design-patterns.md) 참조.
 
 ### Action 목록
 
 | Action | 역할 |
 |--------|------|
-| `CreateBoxAction` | TypeList에 타입 추가 + PositionMap에 위치 등록 |
-| `DeleteBoxAction` | TypeList에서 제거 + ChangeTracker에 DELETED 마킹 |
-| `EditBoxAction` | 타입 메타데이터/속성 변경 (before -> after) |
+| `CreateBoxAction` | TypeList에 타입 추가 + PositionMap에 위치 등록 + ChangeTracker CHANGED |
+| `DeleteBoxAction` | TypeList에서 제거 + ChangeTracker DELETED 마킹 |
+| `EditBoxAction` | 타입 메타데이터/속성 변경 (before → after) + ChangeTracker CHANGED |
 | `MoveBoxAction` | 선택된 박스들을 dx, dy만큼 이동 |
 | `ResizeBoxAction` | 박스 크기 변경 |
 | `PushOutOverlapAction` | BFS 연쇄 충돌 해소 |
 | `ChangeLayoutAction` | 레이아웃 기간 전환 (undo 지원) |
 | `ComplexAction` | 복합 액션 (이동 + 충돌 해소 등) |
 | `LoadAction` | 서버에서 레이아웃, 타입, 위치를 로드. 스택 초기화. |
-| `SaveAction` | 변경/삭제된 타입 서버 저장 + 위치 저장. 스택 초기화. |
+| `SaveAction` | CHANGED → PUT, DELETED → DELETE 원자적 저장 + 위치 저장. 스택 초기화. |
 
 ---
 
 ## 에이전트 연동
 
-에이전트가 현재 캔버스에서 편집 중인 타입 데이터를 읽고, 직접 Action을 실행할 수 있다. DB 저장 없이 메모리에서 동작하므로 사용자의 미저장 편집과 충돌하지 않는다.
+에이전트가 현재 캔버스에서 편집 중인 타입 데이터를 읽고, 직접 Action을 실행할 수 있다. 에이전트 편집도 사용자 편집과 동일한 Action/ChangeTracker 경로를 타며, Undo/Redo 가능하다.
 
 ### 상태 조회 (TypeStateProvider)
 
@@ -196,19 +194,18 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ## 상태 관리
 
-모든 상태는 `BehaviorSubject` 기반으로 변경 시 자동 전파된다.
+> BehaviorSubject 패턴 상세는 [설계 패턴](../docs/design-patterns.md#반응형-상태-관리-behaviorsubject) 참조.
 
-| 클래스 | 타입 | 역할 |
-|--------|------|------|
-| `TypeList` | `Set<TypeValue>` | 현재 로딩된 전체 타입 목록 |
-| `LayoutList` | `List<LayoutPeriod>` | 전체 레이아웃 기간 목록 |
-| `LayoutProvider` | `LayoutPeriod` | 현재 선택된 기간. 변경 시 타입 다시 로딩 |
-| `PositionMap` | `Map<String, Position>` | 타입별 캔버스 좌표. 백엔드 TypeLayout과 대응 |
-| `ChangeTracker` | `Map<String, ChangeState>` | NOT_CHANGED / CHANGED / DELETED 추적 |
-| `CanvasMode` | `Mode` (VIEW / LAYOUT / TYPE) | 편집 모드 |
-| `GridSnap` | boolean | 격자 스냅 활성화 여부 |
-| `SelectedBoxElement` | `Set<String>` | 현재 선택된 타입 key 집합 |
-| `PeriodRecalculationService` | (자동) | 타입 변경 시 유효기간 자동 재계산 |
+| 클래스 | 역할 |
+|--------|------|
+| `TypeList` | 현재 로딩된 전체 타입 목록 |
+| `LayoutList` / `LayoutProvider` | 레이아웃 기간 목록 / 현재 선택 기간 |
+| `PositionMap` | 타입별 캔버스 좌표 |
+| `ChangeTracker` | NOT_CHANGED / CHANGED / DELETED 추적 |
+| `CanvasMode` | VIEW / LAYOUT / TYPE 편집 모드 |
+| `GridSnap` | 격자 스냅 on/off |
+| `SelectedBoxElement` | 현재 선택된 타입 key 집합 |
+| `PeriodRecalculationService` | 타입 변경 시 유효기간 자동 재계산 |
 
 ---
 
@@ -231,45 +228,11 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ---
 
-## 프로젝트 구조
-
-```
-type-ui/
-├── build.gradle.kts
-├── src/main/
-│   ├── java/dev/sayaya/handbook/
-│   │   ├── Type.gwt.xml
-│   │   └── client/
-│   │       ├── domain/       (6 클래스)
-│   │       ├── usecase/      (상태 10 + 액션 10 + 화살표 4 + 포트 2 + 에이전트 2)
-│   │       └── interfaces/   (canvas 2 + box 4 + controller 10 + editor 8 + selection 2 + value 2 + api 7 + util 1)
-│   └── webapp/css/type-ui.css
-└── src/test/
-    ├── java/      TestComponent, MockModule, TestApplication
-    ├── kotlin/    CanvasTest.kt (Playwright)
-    └── webapp/    canvastest.html, css/type-ui.css
-```
-
-## 실행
-
-## 모바일 지원
-
-- **캔버스**: 핀치 줌(두 손가락 확대/축소)과 터치 드래그를 지원한다.
-- **타입 박스**: 터치 롱프레스로 컨텍스트 메뉴를 열 수 있다.
-- **컨트롤러 툴바**: flex-wrap으로 좁은 화면에서 줄바꿈. 핵심 버튼만 1행에 표시하고 나머지는 더보기 메뉴로 축소.
-- **속성 편집 다이얼로그**: 모바일에서 전체 화면 다이얼로그(bottom sheet)로 전환.
-- **드래그 & 드롭**: 터치 이벤트(touchstart/touchmove/touchend)를 마우스 이벤트와 동일하게 처리.
-- **최소 뷰포트**: 360px (캔버스 스크롤로 대응).
-
 ## 실행
 
 ```bash
-# DevMode
-./gradlew :type-ui:gwtDev
-
-# 컴파일
-./gradlew :type-ui:compileJava
-
-# 테스트
-./gradlew :type-ui:test
+./gradlew :type-ui:gwtDev    # DevMode
+./gradlew :type-ui:test      # 테스트
 ```
+
+> 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.

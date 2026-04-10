@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.client.usecase.ActionManager;
+import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.DeleteDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import org.jboss.elemento.IsElement;

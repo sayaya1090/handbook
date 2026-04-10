@@ -1,6 +1,6 @@
-package dev.sayaya.handbook.client.usecase;
+package dev.sayaya.handbook.client.components;
 
-import dev.sayaya.handbook.client.domain.Action;
+import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
@@ -20,7 +20,7 @@ public class ActionManager {
     private final BehaviorSubject<Boolean> canUndo = behavior(false);
     private final BehaviorSubject<Boolean> canRedo = behavior(false);
 
-    @Inject ActionManager() {}
+    @Inject public ActionManager() {}
 
     public void execute(Action action) {
         action.execute();

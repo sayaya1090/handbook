@@ -585,9 +585,9 @@ client/
 
 ```
 client/
-├── domain/          TypeValue, AttributeValue, AttributeTypeValue, Position, LayoutPeriod, Action
-├── usecase/         TypeList, LayoutList, LayoutProvider, PositionMap, ChangeTracker,
-│                    ActionManager, CanvasMode (VIEW/LAYOUT/TYPE), GridSnap, PeriodRecalculationService,
+├── domain/          TypeValue, AttributeValue, AttributeTypeValue, Position, LayoutPeriod
+├── usecase/         TypeList, LayoutList, LayoutProvider, PositionMap,
+│                    CanvasMode (VIEW/LAYOUT/TYPE), GridSnap, PeriodRecalculationService,
 │                    AgentMutationHandler, TypeStateProvider
 │   ├── action/      CreateBox, DeleteBox, EditBox, MoveBox, ResizeBox, PushOutOverlap (BFS),
 │                    ChangeLayout, ComplexAction, LoadAction, SaveAction
@@ -770,8 +770,8 @@ client/
 
 ```
 client/
-├── domain/          Action, DocumentValue, TypeInfo, AttributeInfo, ColumnDef
-├── usecase/         DocumentList, TypeProvider, TypeList, ActionManager, *Action (4종),
+├── domain/          DocumentValue, TypeInfo, AttributeInfo, ColumnDef
+├── usecase/         DocumentList, TypeProvider, TypeList, *Action (4종),
 │                    DocumentRepository, TypeRepository, AgentDocumentHandler, DocumentStateProvider
 └── interfaces/
     ├── api/         DocumentApi, TypeApi, ApiModule

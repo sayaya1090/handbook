@@ -173,12 +173,110 @@ internal class CanvasTest: GwtTestSpec({
             name shouldNotBe null
         }
 
+        // UC-T15: 실시간 협업 — TYPE_CREATED 이벤트 수신 시 캔버스 유지 검증
+        When("TYPE_CREATED 워크스페이스 이벤트를 디스패치하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'TYPE_CREATED:{"id":"new-type-001"}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1000)
+            Then("캔버스가 유지된다") {
+                page.querySelector(".type-canvas") shouldNotBe null
+            }
+            Then("컨트롤러 툴바가 유지된다") {
+                page.querySelector(".type-controller") shouldNotBe null
+            }
+        }
+
+        When("TYPE_DELETED 워크스페이스 이벤트를 디스패치하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'TYPE_DELETED:{"id":"new-type-001"}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1000)
+            Then("캔버스가 유지된다") {
+                page.querySelector(".type-canvas") shouldNotBe null
+            }
+        }
+
         // UC-T13: 모바일 - 컨트롤러 툴바 flex-wrap 확인
         Then("컨트롤러 툴바가 존재하고 레이아웃 속성을 가진다") {
             val controller = page.querySelector(".type-controller")
             controller shouldNotBe null
             val display = controller!!.evaluate("el => getComputedStyle(el).display") as String
             display shouldNotBe "none"
+        }
+
+        // UC-T2: 더티 트래킹 — 생성된 타입에 더티 상태 적용
+        When("Add Type으로 타입을 추가하면") {
+            page.click(".type-ctrl-btn-add")
+            Thread.sleep(500)
+            Then("Save 버튼이 활성화된다") {
+                val disabled = page.querySelector(".type-ctrl-btn-save")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe false
+            }
+        }
+
+        // UC-T9: Undo → 더티 해제 → Save 비활성화
+        When("Undo로 타입 생성을 되돌리면") {
+            page.keyboard().press("Control+z")
+            Thread.sleep(500)
+            Then("더티 상태가 해제되어 Save 버튼이 비활성화된다") {
+                val disabled = page.querySelector(".type-ctrl-btn-save")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe true
+            }
+        }
+
+        // UC-T17: 프레즌스 — PRESENCE 이벤트 수신 시 타입 박스에 프레즌스 표시
+        When("다른 사용자의 PRESENCE 이벤트를 수신하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'PRESENCE:{"user":"UserB","typeKey":"customer:1.0"}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(500)
+            Then("캔버스가 정상 유지된다") {
+                page.querySelector(".type-canvas") shouldNotBe null
+            }
+        }
+        When("PRESENCE 해제 이벤트를 수신하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'PRESENCE:{"user":"UserB","typeKey":null}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(300)
+            Then("캔버스가 정상 유지된다") {
+                page.querySelector(".type-canvas") shouldNotBe null
+            }
+        }
+
+        // UC-T16: 충돌 방지 — 에이전트 편집 후 Save
+        When("에이전트가 타입 편집 후 Save를 요청하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = ['CREATE type:conflict-test'];
+                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(500)
+            Then("캔버스와 컨트롤러가 유지된다") {
+                page.querySelector(".type-canvas") shouldNotBe null
+                page.querySelector(".type-controller") shouldNotBe null
+            }
         }
     }
 })

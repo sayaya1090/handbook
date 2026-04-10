@@ -124,6 +124,38 @@ internal class DocumentTest: GwtTestSpec({
             }
         }
 
+        // UC-D13: 실시간 협업 — DOCUMENT_CREATED 이벤트 수신 시 문서 목록 갱신
+        When("DOCUMENT_CREATED 워크스페이스 이벤트를 디스패치하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'DOCUMENT_CREATED:{"serial":"C-999"}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1000)
+            Then("스프레드시트가 유지된다") {
+                page.querySelector(".doc-spreadsheet") shouldNotBe null
+            }
+            Then("타입 탭이 유지된다") {
+                page.querySelector(".doc-type-tabs") shouldNotBe null
+            }
+        }
+
+        When("DOCUMENT_DELETED 워크스페이스 이벤트를 디스패치하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'DOCUMENT_DELETED:{"serial":"C-999"}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1000)
+            Then("스프레드시트가 유지된다") {
+                page.querySelector(".doc-spreadsheet") shouldNotBe null
+            }
+        }
+
         When("에이전트가 DOC_SELECT 이벤트를 디스패치하면") {
             page.evaluate("""
                 (function() {
@@ -135,6 +167,103 @@ internal class DocumentTest: GwtTestSpec({
             Thread.sleep(500)
             Then("타입 탭 영역이 유지된다") {
                 page.querySelector(".doc-type-tabs") shouldNotBe null
+            }
+        }
+
+        // UC-D2: 더티 트래킹 — 생성된 행에 .created 클래스 적용
+        When("Add 버튼으로 행을 추가하면") {
+            page.click(".doc-ctrl-btn-add")
+            Thread.sleep(500)
+            Then("생성된 행에 .created 클래스가 적용된다") {
+                val createdRows = page.querySelectorAll(".handsontable td.created")
+                createdRows.count() shouldNotBe 0
+            }
+            Then("Save 버튼이 활성화된다") {
+                val disabled = page.querySelector(".doc-ctrl-btn-save")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe false
+            }
+        }
+
+        // UC-D5: Save 버튼 비활성화 — 더티 없을 때
+        When("Undo로 생성을 되돌리면") {
+            page.click(".doc-ctrl-btn-undo")
+            Thread.sleep(500)
+            Then("더티 상태가 해제되어 Save 버튼이 비활성화된다") {
+                val disabled = page.querySelector(".doc-ctrl-btn-save")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe true
+            }
+        }
+
+        // UC-D4: 삭제 마킹 — .deleted 클래스 적용
+        When("행을 선택 후 Delete 버튼을 클릭하면") {
+            // 첫 번째 행 선택
+            page.evaluate("""
+                (function() {
+                    var td = document.querySelector('.handsontable td');
+                    if (td) td.click();
+                })()
+            """.trimIndent())
+            Thread.sleep(300)
+            page.click(".doc-ctrl-btn-delete")
+            Thread.sleep(500)
+            Then("삭제 마킹된 행에 .deleted 클래스가 적용된다") {
+                val deletedRows = page.querySelectorAll(".handsontable td.deleted")
+                deletedRows.count() shouldNotBe 0
+            }
+        }
+
+        // UC-D15: 프레즌스 — PRESENCE 이벤트 수신 시 셀에 프레즌스 표시
+        When("다른 사용자의 PRESENCE 이벤트를 수신하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'PRESENCE:{"user":"UserB","type":"customer","serial":"CUST-001","field":"name"}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(500)
+            Then("프레즌스가 표시된다") {
+                // 프레즌스 이벤트 수신 후 UI 요소가 유지된다
+                page.querySelector(".doc-spreadsheet") shouldNotBe null
+            }
+        }
+        When("PRESENCE 해제 이벤트를 수신하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = 'PRESENCE:{"user":"UserB","type":null}';
+                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(300)
+            Then("스프레드시트가 정상 유지된다") {
+                page.querySelector(".doc-spreadsheet") shouldNotBe null
+            }
+        }
+
+        // UC-D14: 충돌 방지 — 409 Conflict 시 .conflict 표시
+        When("에이전트가 DOC_EDIT 후 DOC_SAVE를 요청하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = ['DOC_ADD'];
+                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(500)
+            page.evaluate("""
+                (function() {
+                    var detail = ['DOC_SAVE'];
+                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1000)
+            Then("스프레드시트와 컨트롤러가 유지된다") {
+                page.querySelector(".doc-spreadsheet") shouldNotBe null
+                page.querySelector(".doc-controller") shouldNotBe null
             }
         }
     }

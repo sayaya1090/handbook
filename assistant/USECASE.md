@@ -218,6 +218,78 @@ sequenceDiagram
 | UC-A4 (실행 취소) | 실행 취소 | AssistantController, AssistantService | AssistantServiceTest, AssistantControllerTest |
 | UC-A5 (데이터 품질 감시) | 데이터 품질 감시 | QualityMonitorService, QualityMonitor, DefaultQualityMonitor, QualityController, AgentCommandEventPublisher | QualityMonitorServiceTest, QualityControllerTest |
 | UC-A6 (감사 추적 조회) | 감사 추적 조회 | AuditController, AuditRepository, InMemoryAuditRepository, AuditEntry | AuditControllerTest, InMemoryAuditRepositoryTest |
+| UC-A7 (스케줄 감시) | 스케줄 기반 품질 감시 | Scheduler (계획), QualityMonitorService, QualityMonitor, AgentCommandEventPublisher | ❌ 미구현 (계획) |
+| UC-A8 (이벤트 트리거 감시) | 이벤트 트리거 감시 | DocumentEventListener (계획), QualityMonitorService, QualityMonitor, AgentCommandEventPublisher | ❌ 미구현 (계획) |
+
+## UC-A7: 스케줄 기반 품질 감시 (계획)
+
+```mermaid
+sequenceDiagram
+    participant Scheduler as Scheduler (cron)
+    participant Svc as AssistantService
+    participant QM as QualityMonitor
+    participant Pub as AgentCommandEventPublisher
+    participant K as Kafka
+    participant EB as event-broadcaster
+    participant UI as 클라이언트
+
+    Scheduler->>Svc: 주기적 트리거 (예: 매시간)
+    Svc->>QM: scan(workspaceId)
+    QM->>QM: 결측치 / 중복 / 이상값 분석
+    loop 이슈별 알림
+        QM-->>Svc: QualityIssue (severity, description)
+        Svc->>Pub: publish(workspaceId, AgentCommand(notify, severity))
+        Pub->>K: AGENT_COMMAND 이벤트 발행
+        K->>EB: 이벤트 수신
+        EB-->>UI: SSE (type: notify)
+    end
+    Svc->>Pub: publish(workspaceId, AgentCommand(COMPLETE))
+```
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (스케줄러) |
+| **선행조건** | 워크스페이스에 문서가 1건 이상 존재, 스케줄 설정이 활성화됨 |
+| **정상 흐름** | 1. 스케줄러가 설정된 주기(예: 매시간, 매일)에 따라 `QualityMonitor.scan()`을 자동 실행한다.<br>2. 워크스페이스 내 모든 문서를 스캔하여 결측치, 중복, 이상값을 분석한다.<br>3. 발견된 이슈를 심각도에 따라 `AgentCommand(notify)`로 Kafka에 발행한다.<br>4. event-broadcaster를 통해 워크스페이스 SSE로 브로드캐스트되어 온라인 사용자에게 실시간 알림된다.<br>5. 이슈가 없으면 notify(info: "품질 이상 없음")을 발행하고 COMPLETE로 종료한다. |
+| **대안 흐름** | 스케줄 실행 중 오류 발생 시 notify(error)를 발행하고 다음 주기에 재시도한다. |
+| **요구사항** | 3.16 데이터 품질 감시 — 에이전트는 주기적(스케줄)으로 감시를 실행 |
+
+---
+
+## UC-A8: 이벤트 트리거 감시 (계획)
+
+```mermaid
+sequenceDiagram
+    participant K as Kafka ("handbook-events")
+    participant Listener as DocumentEventListener
+    participant Svc as AssistantService
+    participant QM as QualityMonitor
+    participant Pub as AgentCommandEventPublisher
+    participant EB as event-broadcaster
+    participant UI as 클라이언트
+
+    K->>Listener: DocumentEvent(DOCUMENT_CREATED)
+    Listener->>Svc: onDocumentCreated(workspace, document)
+    Svc->>QM: scanDocument(workspaceId, document)
+    QM->>QM: 해당 문서에 대한 결측치 / 이상값 분석
+    alt 이슈 발견
+        QM-->>Svc: QualityIssue (severity, description)
+        Svc->>Pub: publish(workspaceId, AgentCommand(notify, severity))
+        Pub->>K: AGENT_COMMAND 이벤트 발행
+        K->>EB: 이벤트 수신
+        EB-->>UI: SSE (type: notify)
+    else 이슈 없음
+        Note over QM: 검증 통과, 알림 없이 종료
+    end
+```
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (이벤트 리스너) |
+| **선행조건** | Kafka 이벤트 스트림 구독 상태 |
+| **정상 흐름** | 1. `DOCUMENT_CREATED` 이벤트가 Kafka를 통해 수신된다.<br>2. `DocumentEventListener`가 이벤트를 감지하고 `QualityMonitor.scanDocument()`를 호출한다.<br>3. 새로 생성된 문서에 대해 결측치, 타입 정합성, 이상값을 즉시 검증한다.<br>4. 이슈가 발견되면 심각도에 따라 `AgentCommand(notify)`로 Kafka에 발행한다.<br>5. event-broadcaster를 통해 해당 워크스페이스 멤버에게 실시간 알림된다. |
+| **대안 흐름** | 이슈가 없으면 별도 알림 없이 종료한다. 이벤트 처리 실패 시 Kafka 재처리 메커니즘에 의해 재시도된다. |
+| **요구사항** | 3.16 데이터 품질 감시 — 이벤트 트리거(DOCUMENT_CREATED 수신 시)로 감시를 실행 |
 
 ---
 

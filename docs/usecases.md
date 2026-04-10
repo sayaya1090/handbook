@@ -420,13 +420,14 @@ flowchart TD
 |------|------|
 | **액터** | 타입 관리자, AI 에이전트 |
 | **선행 조건** | `{workspace}:type:create` 권한을 가진다 |
-| **후행 조건** | 새 타입(v1)이 생성되고, TYPE_CREATED 이벤트가 발행된다 |
+| **후행 조건** | 타입이 로컬 더티 상태(CHANGED)로 추가된다. Save 후 서버에 저장되고 TYPE_CREATED 이벤트가 발행된다 |
 
 **기본 흐름:**
-1. 타입 관리자가 타입 이름, 설명, effectDateTime을 입력한다.
-2. 속성(Attribute)을 추가하고, 각 속성의 타입과 Validator를 설정한다.
-3. 시스템이 타입 v1을 생성한다.
-4. TYPE_CREATED 이벤트가 발행된다.
+1. 타입 관리자가 캔버스에서 "Add Type"을 클릭한다.
+2. `CreateBoxAction`이 실행되어 타입 카드가 캔버스에 추가되고, `ChangeTracker`에 CHANGED로 마킹된다.
+3. 타입 이름, 설명, effectDateTime을 입력하고, 속성(Attribute)을 추가한다.
+4. Save 버튼 클릭 시 `PUT /workspace/{id}/types`로 원자적 저장된다.
+5. TYPE_CREATED 이벤트가 발행된다.
 
 **대안 흐름:**
 - 2a. 기존 타입을 parent로 지정하여 속성을 상속받을 수 있다.
@@ -468,11 +469,12 @@ sequenceDiagram
 ```
 
 **기본 흐름:**
-1. 타입 관리자가 기존 타입의 속성을 변경한다 (속성 추가·삭제, Validator 변경 등).
-2. 새 버전의 effectDateTime을 지정한다.
-3. 시스템이 기존 버전의 expireDateTime을 설정하고, 새 버전을 생성한다.
-4. TYPE_CREATED 이벤트가 발행된다.
-5. 검증 시스템이 해당 타입의 기존 문서를 새 스키마 기준으로 재검증한다 (UC-61).
+1. 타입 관리자가 캔버스에서 기존 타입의 속성을 변경한다 (속성 추가·삭제, Validator 변경 등).
+2. `EditBoxAction`이 실행되고 `ChangeTracker`에 CHANGED로 마킹된다.
+3. 새 버전의 effectDateTime을 지정한다.
+4. Save 버튼 클릭 시 원자적 저장. 시스템이 기존 버전의 expireDateTime을 설정하고, 새 버전을 생성한다.
+5. TYPE_CREATED 이벤트가 발행된다.
+6. 검증 시스템이 해당 타입의 기존 문서를 새 스키마 기준으로 재검증한다 (UC-61).
 
 **에이전트 시나리오:**
 - 사용자가 "고객 타입에 전화번호 필드 추가해줘"라고 요청한다.
@@ -486,13 +488,15 @@ sequenceDiagram
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 타입 관리자 |
+| **액터** | 타입 관리자, AI 에이전트 |
 | **선행 조건** | `{workspace}:type:delete` 권한을 가진다 |
-| **후행 조건** | 타입이 삭제되고, TYPE_DELETED 이벤트가 발행된다 |
+| **후행 조건** | 타입이 로컬 더티 상태(DELETED)로 마킹된다. Save 후 서버에서 삭제되고 TYPE_DELETED 이벤트가 발행된다 |
 
 **기본 흐름:**
-1. 타입 관리자가 삭제할 타입을 선택한다.
-2. 시스템이 타입을 삭제하고 TYPE_DELETED 이벤트를 발행한다.
+1. 타입 관리자가 삭제할 타입을 선택하고 Delete 키 또는 "Remove Type" 버튼을 클릭한다.
+2. `DeleteBoxAction`이 실행되고 `ChangeTracker`에 DELETED로 마킹된다.
+3. 타입 카드가 삭제 예정 상태로 표시된다 (50% 투명화, 취소선). Undo 가능.
+4. Save 버튼 클릭 시 서버에서 삭제되고 TYPE_DELETED 이벤트가 발행된다.
 
 ---
 
@@ -567,23 +571,27 @@ sequenceDiagram
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자, 타입 관리자 |
+| **액터** | 사용자, 타입 관리자, AI 에이전트 |
 | **선행 조건** | `{workspace}:type:{type}:document:edit` 권한을 가진다. 해당 타입이 존재한다 |
-| **후행 조건** | 문서가 생성되고, DOCUMENT_CREATED 이벤트가 발행되며, 검증이 트리거된다 |
+| **후행 조건** | 문서가 로컬 더티 상태(created)로 추가된다. Save 후 서버에 저장되고 DOCUMENT_CREATED 이벤트가 발행된다 |
 
 **기본 흐름:**
-1. 사용자가 타입을 선택하고 serial, 데이터, effectDateTime을 입력한다.
-2. 시스템이 문서를 저장한다.
-3. DOCUMENT_CREATED 이벤트가 발행된다.
-4. 검증 시스템이 문서를 현재 유효한 타입 버전 기준으로 검증한다 (UC-60).
+1. 사용자가 타입을 선택하고 Add 버튼을 클릭한다.
+2. `AddDocumentAction`이 실행되어 빈 행이 스프레드시트에 추가된다.
+3. 행이 `.created` 상태로 표시된다 (tertiary-container 배경, 좌측 3px tertiary 보더).
+4. 사용자가 serial, 데이터, effectDateTime을 입력한다.
+5. Save 버튼 클릭 시 서버에 원자적으로 저장된다 (UC-50a).
+6. DOCUMENT_CREATED 이벤트가 발행되고, 검증이 트리거된다 (UC-60).
 
 **예외 흐름:**
-- 2a. serial이 중복되면 오류를 반환한다.
+- 5a. serial이 중복되면 409 Conflict 오류를 반환하고, 해당 행에 `.conflict` 상태를 표시한다.
 
 **에이전트 시나리오:**
 - 사용자가 "새 고객 등록해줘. 이름 홍길동, 이메일 hong@example.com"이라고 요청한다.
 - 에이전트가 고객 타입의 스키마를 조회하여 필수 필드를 확인하고, 누락된 필드가 있으면 추가 질문한다.
-- `preview`로 생성될 문서를 보여주고, `await_confirm` 후 Gateway를 통해 생성한다.
+- `DOC_ADD` → `DOC_EDIT` 명령으로 행 추가 및 값 입력 (동일한 DirtyTracker 경로).
+- `preview`로 생성될 문서를 보여주고, `await_confirm` 후 `DOC_SAVE`로 저장한다.
+- 사용자는 에이전트 편집을 Undo(Ctrl+Z)로 되돌릴 수 있다.
 
 ---
 
@@ -593,19 +601,24 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자, 타입 관리자, AI 에이전트 |
 | **선행 조건** | `{workspace}:type:{type}:document:edit` 권한을 가진다. 해당 문서가 존재한다 |
-| **후행 조건** | 기존 버전은 보존되고 새 버전이 생성된다. 검증이 트리거된다 |
+| **후행 조건** | 셀이 `.changed` 상태로 표시된다. Save 후 기존 버전은 보존되고 새 버전이 생성된다. 검증이 트리거된다 |
 
 **기본 흐름:**
-1. 사용자가 기존 문서의 데이터를 변경한다.
-2. 시스템이 기존 버전의 expireDateTime을 설정하고, 새 버전을 생성한다.
-3. DOCUMENT_CREATED 이벤트가 발행된다.
-4. 검증 시스템이 새 버전을 검증한다 (UC-60).
+1. 사용자가 스프레드시트에서 셀을 클릭하여 값을 수정한다.
+2. `afterChange` 이벤트가 `EditDocumentAction(before, after)`을 생성한다.
+3. `ActionManager`에서 실행되고, `DirtyTracker.changed`에 등록된다.
+4. 변경된 셀에 `.changed` 상태가 표시된다 (tertiary 1px inset box-shadow).
+5. Undo(Ctrl+Z)로 원본값이 복원되면 더티 플래그가 자동 해제된다.
+6. Save 버튼 클릭 시 서버에 원자적으로 저장된다. 기존 버전의 expireDateTime이 설정되고 새 버전이 생성된다.
+7. DOCUMENT_CREATED 이벤트가 발행되고, 검증이 트리거된다 (UC-60).
 
 **에이전트 시나리오:**
 - 사용자가 "고객 C-001의 이메일을 new@example.com으로 변경해줘"라고 요청한다.
 - 에이전트가 해당 문서를 검색하고 문서 편집기로 `navigate`한다.
+- `DOC_EDIT CUST-001 email new@example.com` 명령으로 셀을 편집한다 (동일한 DirtyTracker 경로).
 - 변경 대상 필드를 `attention`(spotlight)으로 안내하고, 변경 전후를 `preview`(diff)로 보여준다.
-- `await_confirm` 후 Gateway를 통해 새 버전을 생성한다.
+- `await_confirm` 후 `DOC_SAVE`로 저장한다.
+- 사용자는 에이전트 편집을 Undo(Ctrl+Z)로 되돌릴 수 있다.
 
 ---
 
@@ -613,13 +626,19 @@ sequenceDiagram
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자, 타입 관리자 |
+| **액터** | 사용자, 타입 관리자, AI 에이전트 |
 | **선행 조건** | `{workspace}:type:{type}:document:edit` 권한을 가진다 |
-| **후행 조건** | 문서가 삭제되고, DOCUMENT_DELETED 이벤트가 발행된다 |
+| **후행 조건** | 행이 `.deleted` 상태로 표시된다. Save 후 서버에서 삭제되고 DOCUMENT_DELETED 이벤트가 발행된다 |
 
 **기본 흐름:**
-1. 사용자가 삭제할 문서를 선택한다.
-2. 시스템이 문서를 삭제하고 DOCUMENT_DELETED 이벤트를 발행한다.
+1. 사용자가 삭제할 행을 선택하고 Delete 버튼을 클릭한다.
+2. `DeleteDocumentAction`이 실행되어 행이 `.deleted` 상태로 표시된다 (취소선, 75% 투명화).
+3. `DirtyTracker.deleted`에 등록된다.
+4. Undo(Ctrl+Z)로 삭제를 취소할 수 있다.
+5. Save 버튼 클릭 시 서버에서 삭제되고 DOCUMENT_DELETED 이벤트가 발행된다.
+
+**에이전트 시나리오:**
+- `DOC_DELETE <serial>` 명령으로 동일한 DirtyTracker 경로를 거쳐 삭제 마킹된다.
 
 ---
 
@@ -700,6 +719,87 @@ sequenceDiagram
 1. 사용자가 대상 타입과 필터 조건을 지정한다.
 2. 시스템이 조건에 맞는 문서를 CSV 또는 JSON 형식으로 생성한다.
 3. 파일이 다운로드된다.
+
+---
+
+### UC-58: 프레즌스 (편집 중 사용자 표시)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행 조건** | 워크스페이스에 2명 이상 동시 접속 중 |
+| **후행 조건** | 다른 사용자의 편집 위치가 실시간으로 표시된다 |
+
+**기본 흐름:**
+1. 사용자 A가 스프레드시트에서 셀을 선택하거나, 캔버스에서 타입 박스를 선택한다.
+2. 200ms 디바운스 후 `POST /workspace/{id}/presence`로 현재 위치를 전송한다.
+   - 문서: `{user, type, serial, field}`
+   - 타입: `{user, typeKey}`
+3. SSE를 통해 PRESENCE 이벤트가 다른 사용자에게 전달된다.
+4. 해당 셀/타입 박스에 사용자별 고유 색상 보더(2px)와 이름 라벨이 표시된다.
+5. 사용자 A가 포커스를 해제하면 `{user, type: null}`로 프레즌스를 해제한다.
+6. 30초 동안 갱신이 없으면 자동 해제된다 (연결 끊김 대비).
+
+```mermaid
+sequenceDiagram
+    actor A as 사용자 A
+    actor B as 사용자 B
+    participant GW as Gateway (SSE)
+
+    A->>GW: POST /presence {user:"A", type:"customer", serial:"CUST-001", field:"name"}
+    GW-->>B: SSE PRESENCE {user:"A", type:"customer", serial:"CUST-001", field:"name"}
+    Note over B: 셀 [CUST-001, name]에 A 색상 보더 + "A님" 라벨
+
+    A->>GW: POST /presence {user:"A", type:null}
+    GW-->>B: SSE PRESENCE {user:"A", type:null}
+    Note over B: 프레즌스 해제
+```
+
+---
+
+### UC-59: 실시간 협업 — 문서 변경 알림 및 충돌 방지
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 A (편집자), 사용자 B (관찰자) |
+| **선행 조건** | 같은 워크스페이스에서 동시 작업 중 |
+| **후행 조건** | B의 화면에 A의 저장 결과가 반영된다. 충돌 시 안내가 표시된다 |
+
+**기본 흐름:**
+1. 사용자 A가 문서를 편집하고 Save한다.
+2. 서버가 DOCUMENT_CREATED/DELETED 이벤트를 Kafka로 발행한다.
+3. SSE를 통해 사용자 B에게 이벤트가 전달된다.
+4. B의 `DocumentEventHandler`가 문서 목록을 갱신한다.
+5. B에게 토스트: "다른 사용자가 문서를 변경했습니다".
+
+**충돌 흐름:**
+1. A와 B가 같은 문서를 동시에 편집한다 (프레즌스로 인지 가능).
+2. A가 먼저 Save한다 → 서버 `@Version` 증가.
+3. B가 Save를 시도한다 → 서버가 409 Conflict 반환.
+4. B의 해당 문서에 `.conflict` 상태 표시 (secondary-container 배경).
+5. B가 선택: "내 변경 유지" (재시도) 또는 "서버 버전 수락" (더티 해제).
+
+```mermaid
+sequenceDiagram
+    actor A as 사용자 A
+    actor B as 사용자 B
+    participant GW as Gateway
+    participant DB as Database
+
+    Note over A,B: 프레즌스로 같은 문서 편집 중 인지
+
+    A->>GW: PUT /documents (CUST-001 변경)
+    GW->>DB: UPDATE (version 1 → 2)
+    DB-->>GW: OK
+    GW-->>B: SSE DOCUMENT_CREATED
+    Note over B: 토스트 + 문서 목록 갱신
+
+    B->>GW: PUT /documents (CUST-001 변경, version=1)
+    GW->>DB: UPDATE (version 1 → ?)
+    DB-->>GW: OptimisticLockingFailure
+    GW-->>B: 409 Conflict
+    Note over B: .conflict 표시, 사용자 선택 요청
+```
 
 ---
 

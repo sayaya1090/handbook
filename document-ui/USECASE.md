@@ -150,38 +150,38 @@ sequenceDiagram
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 |
+| **액터** | 사용자, AI 에이전트 |
 | **선행조건** | 타입이 선택됨 |
-| **정상 흐름** | 1. Add 버튼을 클릭한다.<br>2. `AddDocumentAction`이 `DocumentList`에 빈 문서를 추가한다.<br>3. 스프레드시트 하단에 빈 행이 추가된다.<br>4. 사용자가 셀을 클릭하여 serial, 속성값 등을 입력한다. |
-| **대안 흐름** | 에이전트가 `DOC_ADD` 명령으로 실행. |
+| **정상 흐름** | 1. Add 버튼을 클릭한다.<br>2. `AddDocumentAction`이 `DocumentList`에 빈 문서를 추가하고, `DirtyTracker.created`에 등록한다.<br>3. 스프레드시트 하단에 `.created` 상태의 빈 행이 추가된다 (tertiary-container 배경, 좌측 3px tertiary 보더).<br>4. 사용자가 셀을 클릭하여 serial, 속성값 등을 입력한다.<br>5. Save 전까지 로컬에만 존재하며, Undo로 제거 가능하다. |
+| **대안 흐름** | 에이전트가 `DOC_ADD` 명령으로 실행 (동일한 DirtyTracker 경로). |
 
 ## UC-D3: 문서 편집
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 |
+| **액터** | 사용자, AI 에이전트 |
 | **선행조건** | 문서가 스프레드시트에 표시됨 |
-| **정상 흐름** | 1. 셀을 클릭하여 값을 수정한다.<br>2. Handsontable의 `afterChange` 이벤트가 `EditDocumentAction(before, after)`을 생성한다.<br>3. `ActionManager`에서 실행되어 `DocumentList`가 업데이트된다.<br>4. 변경된 셀이 시각적으로 표시된다 (배경색 변경). |
-| **대안 흐름** | 에이전트가 `DOC_EDIT <serial> <field> <value>` 명령으로 실행. |
+| **정상 흐름** | 1. 셀을 클릭하여 값을 수정한다.<br>2. Handsontable의 `afterChange` 이벤트가 `EditDocumentAction(before, after)`을 생성한다.<br>3. `ActionManager`에서 실행되고, `DirtyTracker.changed`에 등록된다.<br>4. 변경된 셀에 `.changed` 상태가 표시된다 (tertiary 1px inset box-shadow).<br>5. Undo로 원본값이 복원되면 더티 플래그가 자동 해제된다. |
+| **대안 흐름** | 에이전트가 `DOC_EDIT <serial> <field> <value>` 명령으로 실행 (동일한 DirtyTracker 경로). |
 | **대안 흐름 (모바일)** | 셀 탭으로 편집 모드 진입. 가상 키보드가 올라올 때 스프레드시트가 자동 스크롤되어 편집 중인 셀이 가시 영역에 유지된다. 뷰포트 < 480px에서는 `CardViewElement`로 전환되어 카드 내에서 필드를 편집한다. |
 
 ## UC-D4: 문서 삭제
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 |
+| **액터** | 사용자, AI 에이전트 |
 | **선행조건** | 1개 이상의 행이 선택됨 |
-| **정상 흐름** | 1. 행을 선택하고 Delete 버튼을 클릭한다.<br>2. `DeleteDocumentAction`이 `DocumentList`에서 문서를 제거한다.<br>3. 스프레드시트에서 해당 행이 사라진다. |
-| **대안 흐름** | 에이전트가 `DOC_DELETE <serial>` 명령으로 실행. |
+| **정상 흐름** | 1. 행을 선택하고 Delete 버튼을 클릭한다.<br>2. `DeleteDocumentAction`이 실행되고, `DirtyTracker.deleted`에 등록된다.<br>3. 행이 `.deleted` 상태로 표시된다 (취소선, 75% 투명화). 즉시 제거되지 않고 Save 전까지 시각적으로 표시된다.<br>4. Undo로 삭제를 취소할 수 있다. |
+| **대안 흐름** | 에이전트가 `DOC_DELETE <serial>` 명령으로 실행 (동일한 DirtyTracker 경로). |
 
-## UC-D5: 저장
+## UC-D5: 저장 (원자적)
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 |
-| **선행조건** | 변경된 문서가 존재 |
-| **정상 흐름** | 1. Save 버튼 클릭 → `SaveAction` 실행.<br>2. 변경된 문서는 `PUT /workspace/{id}/documents`로, 삭제된 문서는 `DELETE`로 전송한다.<br>3. Undo/Redo 스택이 초기화된다.<br>4. 셀 배경색이 초기화된다. |
-| **대안 흐름** | 에이전트가 `DOC_SAVE` 명령으로 실행. |
+| **액터** | 사용자, AI 에이전트 |
+| **선행조건** | `DirtyTracker.hasDirty() == true` (Save 버튼 활성화 상태) |
+| **정상 흐름** | 1. Save 버튼 클릭 (또는 에이전트 `DOC_SAVE`) → `SaveAction` 실행.<br>2. `DirtyTracker.created + changed` 문서는 `PUT /workspace/{id}/documents`로, `deleted` 문서는 `DELETE`로 **하나의 트랜잭션으로 원자적 전송**한다.<br>3. 전체 성공 시: Undo/Redo 스택 초기화, `DirtyTracker.reset()`, 모든 더티 상태(created/changed/deleted) 해제.<br>4. 부분 실패 시: 실패 항목만 더티 유지, 실패 셀에 `.invalid` 표시, 토스트 "N건 저장 실패". |
+| **대안 흐름 (충돌)** | 409 Conflict 응답 시 해당 문서에 `.conflict` 표시, 최신 서버 데이터 재로드 안내. |
 
 ## UC-D6: 타입 전환
 
@@ -190,7 +190,7 @@ sequenceDiagram
 | **액터** | 사용자 |
 | **선행조건** | 타입 탭이 2개 이상 존재 |
 | **정상 흐름** | 1. 다른 타입 탭을 클릭한다.<br>2. `TypeProvider`가 새 타입으로 전환된다.<br>3. `ColumnFactory`가 새 타입의 속성 기반으로 컬럼을 재생성한다.<br>4. 페이지가 0으로 초기화되고 새 타입의 문서가 로딩된다. |
-| **주의** | 미저장 변경이 있으면 경고 다이얼로그를 표시한다 (미구현 시 주의사항으로 기록). |
+| **주의** | `DirtyTracker.hasDirty()`이면 확인 다이얼로그를 표시한다: "저장하지 않은 변경사항이 있습니다. 계속하시겠습니까?" |
 | **대안 흐름** | 에이전트가 `DOC_SELECT <type>` 명령으로 실행. |
 
 ## UC-D7: Undo/Redo
@@ -199,8 +199,8 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 실행된 액션이 존재 |
-| **정상 흐름** | 1. Ctrl+Z 또는 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화. |
-| **특이사항** | 에이전트가 실행한 액션도 동일하게 Undo/Redo 가능. |
+| **정상 흐름** | 1. Ctrl+Z 또는 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화.<br>4. Undo로 원본값이 복원되면 `DirtyTracker`에서 해당 셀의 더티 플래그가 자동 해제된다.<br>5. Save 성공 시 Undo/Redo 스택이 초기화된다 (서버 상태 변경 후 로컬 Undo 불가). |
+| **특이사항** | 에이전트가 실행한 액션도 동일한 Undo 스택에 쌓이므로 사용자가 Ctrl+Z로 되돌릴 수 있다. |
 
 ## UC-D8: 페이지네이션
 
@@ -255,6 +255,70 @@ sequenceDiagram
 | **선행조건** | 뷰포트 너비 < 768px |
 | **정상 흐름** | 1. `ViewportObserver`가 뷰포트 변경을 감지한다.<br>2. 스프레드시트에서 serial 컬럼이 고정(`fixedColumnsLeft=1`)되고 나머지 컬럼은 수평 스크롤된다.<br>3. 타입 탭이 수평 스크롤 가능한 탭 바로 표시된다.<br>4. 컨트롤러 툴바가 flex-wrap으로 줄바꿈되며, 핵심 버튼(Save, Add)만 1행에 표시된다.<br>5. 뷰포트 < 480px에서 `CardViewElement`로 전환하여 문서별 카드 뷰를 사용할 수 있다. |
 
+## UC-D11: RBAC 권한 검증 (계획)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 워크스페이스 선택 완료, document-ui 모듈 로딩 완료 |
+| **정상 흐름** | 1. 문서 편집 화면 진입 시 Shell로부터 현재 사용자의 권한 정보를 수신한다.<br>2. `workspace:document:edit` 권한이 있는 경우 일반 편집 모드로 진입한다.<br>3. `workspace:document:edit` 권한이 없는 경우 읽기 전용 모드로 전환한다.<br>4. 읽기 전용 모드에서는 Add, Delete, Save 버튼이 비활성화되고, 셀 편집이 차단된다.<br>5. 에이전트 명령(DOC_ADD, DOC_EDIT, DOC_DELETE, DOC_SAVE)도 권한이 없으면 무시된다. |
+| **대안 흐름** | 권한 정보를 가져올 수 없는 경우 읽기 전용 모드로 기본 전환한다. |
+| **요구사항** | 3.3 RBAC (역할 기반 접근 제어) — `{workspace}:type:{type}:document:edit` |
+
+## UC-D12: 이력 조회 (계획)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 문서가 스프레드시트에 표시됨 |
+| **정상 흐름** | 1. 사용자가 특정 문서의 이력 조회를 요청한다 (예: 컨텍스트 메뉴 또는 이력 버튼).<br>2. `DocumentApi`가 `GET /workspace/{id}/{type}/{serial}?date={datetime}`으로 특정 시점의 문서 버전을 조회한다.<br>3. date 파라미터가 지정된 시점에 유효한(effectDateTime ≤ date < expireDateTime) 문서 버전이 반환된다.<br>4. 조회된 과거 버전이 스프레드시트에 표시되거나 별도 다이얼로그로 비교 뷰가 제공된다. |
+| **대안 흐름** | 해당 시점에 문서가 존재하지 않으면 404 Not Found가 반환되고, 사용자에게 안내 메시지를 표시한다. |
+| **요구사항** | 3.7 이력 조회 — 문서의 변경 이력을 시간 기반으로 추적 |
+
+## UC-D13: 실시간 협업
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 다른 사용자 (이벤트 발행자) |
+| **선행조건** | document-ui 모듈 로딩 완료, `DocumentEventHandler`가 초기화되어 `WorkspaceEventReceiver`를 구독 중 |
+| **정상 흐름** | 1. 다른 사용자가 문서를 생성/삭제하면 서버가 Kafka를 통해 DOCUMENT_CREATED 또는 DOCUMENT_DELETED 이벤트를 발행한다.<br>2. shell-ui의 SSE 연결이 이벤트를 수신하고 `WindowWorkspaceEventBridge.publish()`로 CustomEvent를 디스패치한다.<br>3. `DocumentEventHandler`가 `WorkspaceEventReceiver.events()`를 통해 이벤트를 수신한다.<br>4. `DocumentRepository.search()`를 재호출하여 최신 문서 목록을 가져온다.<br>5. `DocumentList`가 갱신되어 스프레드시트에 반영된다.<br>6. 토스트 알림: "다른 사용자가 문서를 변경했습니다" |
+| **요구사항** | 3.1 실시간 협업 |
+
+## UC-D14: 동시 편집 충돌 방지 (계획)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 같은 문서를 여러 사용자가 동시에 편집 중 |
+| **정상 흐름** | 1. 사용자가 문서를 저장할 때 서버 측에서 `@Version` 기반 낙관적 잠금으로 충돌을 감지한다.<br>2. 충돌이 발생하면 서버가 409 Conflict를 반환한다.<br>3. 클라이언트가 충돌 알림을 표시하고 최신 데이터를 다시 로드하도록 안내한다. |
+| **요구사항** | 3.1 실시간 협업 — 낙관적 잠금 기반 충돌 감지 |
+
+## UC-D15: 프레즌스 (다른 사용자 편집 표시)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 같은 워크스페이스에 2명 이상 동시 접속 |
+| **정상 흐름** | 1. 사용자 A가 셀을 선택하면 200ms 디바운스 후 `POST /workspace/{id}/presence`로 위치를 전송한다.<br>2. SSE PRESENCE 이벤트가 다른 사용자에게 전달된다.<br>3. 해당 셀에 사용자별 고유 색상 보더(2px)와 이름 라벨이 표시된다 (3초 후 fade-out).<br>4. 포커스 해제 시 프레즌스가 해제된다.<br>5. 30초 갱신 없으면 자동 해제 (연결 끊김 대비). |
+| **요구사항** | 3.1 실시간 협업 — 프레즌스 |
+
+```mermaid
+sequenceDiagram
+    actor A as 사용자 A
+    actor B as 사용자 B
+    participant Sheet as SpreadsheetElement (B)
+    participant GW as Gateway (SSE)
+
+    A->>GW: POST /presence {user:"A", serial:"CUST-001", field:"name"}
+    GW-->>Sheet: SSE PRESENCE 이벤트
+    Sheet->>Sheet: 셀 [CUST-001, name]에 A 색상 보더 + "A님" 라벨
+    Note over Sheet: 3초 후 라벨 fade-out, 보더는 유지
+
+    A->>GW: POST /presence {user:"A", type:null}
+    GW-->>Sheet: SSE PRESENCE 해제
+    Sheet->>Sheet: 프레즌스 제거
+```
+
 ---
 
 ## 트레이서빌리티 매트릭스
@@ -271,3 +335,21 @@ sequenceDiagram
 | UC-D8 (페이지) | 페이지네이션 | PaginationElement, PageState, DocumentApi, DocumentList | DocumentTest: 페이지 이동 검증 |
 | UC-D9 (에이전트) | 에이전트 문서 조작 | AgentDocumentHandler, DocumentStateProvider, MutationReceiver, WindowMutationBridge | ❌ 미구현 |
 | UC-D10 (모바일) | 모바일 레이아웃 전환 | ViewportObserver, SpreadsheetElement(fixedColumnsLeft), CardViewElement, ControllerElement(flex-wrap), TypeTabsElement(overflow-x) | ❌ 미구현 |
+| UC-D11 (RBAC) | — | RbacGuard (계획), SpreadsheetElement(readOnly) (계획) | ❌ 미구현 (계획) |
+| UC-D12 (이력조회) | — | DocumentApi(date param), HistoryDialog (계획) | ❌ 미구현 (계획) |
+| UC-D13 (실시간협업) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository, DocumentList, ToastContainer | DocumentTest: DOCUMENT_CREATED 이벤트 디스패치 → 문서 목록 갱신 검증 |
+| UC-D14 (충돌방지) | — | @Version 낙관적 잠금 (계획) | ❌ 미구현 (계획) |
+| UC-D15 (프레즌스) | 프레즌스 시퀀스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentTest: PRESENCE 이벤트 수신/해제 검증 |
+
+### 글로벌 UC 매핑
+
+| 글로벌 UC | document-ui UC | 설명 |
+|----------|---------------|------|
+| UC-50 (문서 생성) | UC-D2 | Add 버튼 → DirtyTracker.created → Save |
+| UC-51 (문서 변경) | UC-D3 | 셀 편집 → DirtyTracker.changed → Save |
+| UC-52 (문서 삭제) | UC-D4 | Delete 버튼 → DirtyTracker.deleted → Save |
+| UC-53 (문서 조회) | UC-D1 | 타입 선택 → 문서 로딩 |
+| UC-54 (문서 검색) | UC-D8 | 페이지네이션 + 필터 |
+| UC-55 (이력 조회) | UC-D12 | 계획 |
+| UC-58 (프레즌스) | UC-D15 | 셀 선택 → SSE → 프레즌스 표시 |
+| UC-59 (협업 충돌) | UC-D13, UC-D14 | SSE 갱신 + 낙관적 잠금 |

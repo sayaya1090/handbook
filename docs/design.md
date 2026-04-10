@@ -415,34 +415,75 @@ stateDiagram-v2
 
 ### 스프레드시트 (Document-UI)
 
-Handsontable 기반의 문서 편집기.
+Handsontable 6.2.4 (MIT) 기반의 문서 편집기. MD3 디자인 토큰으로 테마 통일.
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │ 컨트롤러 툴바                                        │
 │ ┌──────────────────┐  ┌───┬───┬───┬───┬───┐        │
-│ │ Customer │ Order │  │ + │ - │ 💾│ ↩ │ ↪ │        │
+│ │ Customer │ Order │  │ + │ - │💾3│ ↩ │ ↪ │        │
 │ │  (타입 탭)       │  │Add│Del│Sav│Und│Red│        │
 │ └──────────────────┘  └───┴───┴───┴───┴───┘        │
 ├─────────────────────────────────────────────────────┤
 │ Serial   │ Name     │ Age  │ Email                  │
 │──────────┼──────────┼──────┼────────────────────────│
-│ CUST-001 │ 홍길동    │ 30   │ hong@example.com       │
-│ CUST-002 │ 김철수    │ 25   │ kim@example.com        │
+│▎CUST-003 │ 새문서    │      │                (생성)  │
+│ CUST-001 │ 홍길동    │ [30] │ hong@example.com (수정)│
+│ C̶U̶S̶T̶-̶0̶0̶2̶ │ 김̶철̶수̶    │ 2̶5̶   │ k̶i̶m̶@̶e̶x̶a̶m̶p̶l̶e̶.̶c̶o̶m̶  (삭제)│
 │          │          │      │  (Handsontable)         │
 ├─────────────────────────────────────────────────────┤
 │                  < 1 2 3 >  (페이지네이션)            │
 └─────────────────────────────────────────────────────┘
 ```
 
+#### 컨트롤러 & 탭
+
 | 요소 | 스타일 |
 |------|--------|
 | 컨트롤러 | `padding: 8px 16px`, `border-bottom: 1px solid var(--md-sys-color-outline-variant)` |
-| 타입 탭 (기본) | `font-size: label-large`, `border-radius: 8px`, `color: on-surface-variant` |
+| 타입 탭 (기본) | `font-size: label-large`, `border-radius: var(--md-sys-shape-corner-small)`, `color: on-surface-variant` |
 | 타입 탭 (선택) | `background: primary-container`, `color: on-primary-container` |
-| 버튼 | `border: 1px solid outline`, `border-radius: 8px`, `background: surface-container` |
+| 버튼 | `border: 1px solid outline`, `border-radius: var(--md-sys-shape-corner-small)`, `background: surface-container` |
 | 버튼 (hover) | `background: surface-container-high` |
 | 비활성 버튼 | `opacity: 0.4`, `cursor: not-allowed` |
+| Save 뱃지 | 더티 건수 표시 (예: `Save (3)`), 더티 없으면 비활성화 |
+
+#### 테이블 구조
+
+| 요소 | 스타일 |
+|------|--------|
+| 외곽 | `border-radius: 0.5rem`, 외곽 보더만 `outline` 색상 |
+| 내부 셀 | 세로 구분선 제거, 가로 구분선 `outline-variant` |
+| 헤더 (th) | `surface-container` 배경, `headline-small` 타이포 |
+| 셀 (td) | `surface-container` 배경, `body-medium` 타이포 |
+| 읽기 전용 셀 | `surface-container-low` 배경, `on-surface-variant` 색상 |
+| 행 호버 | `on-surface` 8% 혼합 배경 |
+| 짝수 행 | `surface-container-low` 배경 (zebra striping) |
+
+#### 셀 인터랙션
+
+| 상태 | 스타일 |
+|------|--------|
+| 현재 셀 | `primary` 보더, `primary` 8% 혼합 배경 |
+| 선택 영역 | `primary` 보더, `primary` 12% 혼합 배경 |
+| 선택된 헤더 | `primary-container` 배경 |
+| 편집 중 | `secondary` 2px inset shadow, `surface-bright` 배경 |
+| 포커스 | `secondary` 2px outline (접근성) |
+
+#### 더티 트래킹 상태
+
+| 상태 | 스타일 | 설명 |
+|------|--------|------|
+| 생성 (created) | `tertiary-container` 배경, 좌측 3px `tertiary` 보더 | 로컬에서 새로 추가된 행 |
+| 수정 (changed) | `tertiary` 1px inset box-shadow | 원본 대비 값이 변경된 셀 |
+| 삭제 예정 (deleted) | 취소선, 텍스트 75% 투명화 | Save 시 서버에서 삭제 |
+| 유효 (valid) | `primary` 텍스트 색상 | 서버 검증 통과 |
+| 유효하지 않음 (invalid) | `error` 텍스트, `error` 1px inset shadow | 필수값 누락/형식 오류 |
+| 충돌 (conflict) | `secondary-container` 배경, `secondary` 2px 좌측 보더 | 다른 사용자와 동시 수정 |
+
+#### 트랜지션
+
+모든 배경색 전환에 `var(--md-sys-motion-duration-medium2)` `var(--md-sys-motion-easing-standard)` 적용.
 
 ### 캔버스 (Type-UI)
 

@@ -8,13 +8,15 @@ Shell이 `ModuleScriptManager`로 `js/data.nocache.js`를 동적 로딩하여 �
 
 ## 스프레드시트 (SpreadsheetElement)
 
-Handsontable JS 라이브러리를 JsInterop으로 래핑한 테이블 컴포넌트.
+Handsontable 6.2.4 (MIT) 라이브러리를 JsInterop으로 래핑한 테이블 컴포넌트.
 
 - **동적 컬럼**: 선택된 타입의 속성(Attribute)을 기반으로 컬럼을 자동 생성한다.
 - **컬럼 타입 매핑**: AttributeType에 따라 Handsontable column type을 결정한다.
   - Text → text, Number → numeric, Date → date, Enum → dropdown, Bool → checkbox
 - **고정 컬럼**: serial(문서 식별자), effectDateTime, expireDateTime은 항상 표시된다.
 - **수정 감지**: `afterChange` 이벤트로 셀 변경을 캡처하여 `EditDocumentAction`으로 변환한다.
+- **읽기 전용 셀**: `htDimmed` 클래스로 편집 불가 셀을 시각적으로 구분한다.
+- **행 호버/zebra**: 행 탐색 시 호버 피드백, 짝수 행 배경색 구분을 제공한다.
 
 ---
 
@@ -32,16 +34,19 @@ Handsontable JS 라이브러리를 JsInterop으로 래핑한 테이블 컴포넌
 
 ---
 
-## Undo/Redo (ActionManager)
+## 더티 트래킹 & Undo/Redo
 
-모든 편집 작업은 `Action` 인터페이스(`execute()`, `rollback()`)로 캡슐화된다.
+`DirtyTracker`로 로컬 변경을 추적하고, `ActionManager`로 Undo/Redo를 지원한다. Save 시 원자적 저장.
+
+> 공통 패턴 상세는 [설계 패턴](../docs/design-patterns.md) 참조.
+> document-ui 전용 디자인 명세는 [DESIGN.md](DESIGN.md) 참조.
 
 | Action | 역할 |
 |--------|------|
-| `AddDocumentAction` | DocumentList에 빈 문서 추가 |
-| `EditDocumentAction` | 셀 값 변경 (before → after) |
-| `DeleteDocumentAction` | DocumentList에서 제거 |
-| `SaveAction` | 변경/삭제 문서 서버 저장, 스택 초기화 |
+| `AddDocumentAction` | DocumentList에 빈 문서 추가, DirtyTracker.created에 등록 |
+| `EditDocumentAction` | 셀 값 변경 (before → after), DirtyTracker.changed에 등록 |
+| `DeleteDocumentAction` | DocumentList에서 제거, DirtyTracker.deleted에 등록 |
+| `SaveAction` | created+changed → PUT, deleted → DELETE 원자적 저장, 스택 초기화 |
 
 ---
 
@@ -54,14 +59,15 @@ Handsontable JS 라이브러리를 JsInterop으로 래핑한 테이블 컴포넌
 ### Mutation 수신 (AgentDocumentHandler)
 
 `MutationReceiver`를 구독하여 에이전트 명령을 Action으로 변환한다.
+에이전트 편집도 사용자 편집과 동일한 Action/DirtyTracker 경로를 타며, Undo/Redo 가능하다.
 
 | 명령어 | 동작 |
 |--------|------|
-| `DOC_SELECT <type>` | 타입 탭 전환 |
-| `DOC_ADD` | 새 문서 추가 |
-| `DOC_EDIT <serial> <field> <value>` | 셀 편집 |
-| `DOC_DELETE <serial>` | 문서 삭제 |
-| `DOC_SAVE` | 저장 |
+| `DOC_SELECT <type>` | 타입 탭 전환 (미저장 변경이 있으면 경고) |
+| `DOC_ADD` | 새 문서 추가 (DirtyTracker.created 등록) |
+| `DOC_EDIT <serial> <field> <value>` | 셀 편집 (DirtyTracker.changed 등록) |
+| `DOC_DELETE <serial>` | 문서 삭제 마킹 (DirtyTracker.deleted 등록) |
+| `DOC_SAVE` | 원자적 저장 (토스트: "에이전트가 저장을 요청했습니다") |
 
 ---
 
@@ -70,6 +76,7 @@ Handsontable JS 라이브러리를 JsInterop으로 래핑한 테이블 컴포넌
 | 클래스 | 타입 | 역할 |
 |--------|------|------|
 | `DocumentList` | `BehaviorSubject<List<DocumentValue>>` | 현재 타입의 문서 목록 |
+| `DirtyTracker` | `created(Set), changed(Map), deleted(Set)` | 로컬 변경 추적 (Save 전까지) |
 | `TypeProvider` | `BehaviorSubject<TypeInfo>` | 현재 선택된 타입 |
 | `TypeList` | `BehaviorSubject<List<TypeInfo>>` | 전체 타입 목록 |
 | `PageState` | `BehaviorSubject<Search>` | 현재 검색/페이지 상태 |
@@ -87,44 +94,11 @@ Handsontable JS 라이브러리를 JsInterop으로 래핑한 테이블 컴포넌
 
 ---
 
-## 프로젝트 구조
-
-```
-document-ui/
-├── build.gradle.kts
-├── src/main/
-│   ├── java/dev/sayaya/handbook/
-│   │   ├── Document.gwt.xml
-│   │   └── client/
-│   │       ├── domain/       (Action, DocumentValue, TypeInfo, ColumnDef)
-│   │       ├── usecase/      (상태 4 + 액션 4 + ActionManager + 포트 2 + 에이전트 2)
-│   │       └── interfaces/   (api 4 + ui 12)
-│   └── webapp/css/document-ui.css
-└── src/test/
-    ├── java/      TestComponent, MockModule, TestApplication
-    ├── kotlin/    DocumentTest.kt (Playwright)
-    └── webapp/    documenttest.html
-```
-
 ## 실행
 
 ```bash
-# DevMode
-./gradlew :document-ui:gwtDev
-
-# 컴파일
-./gradlew :document-ui:compileJava
-
-# 테스트
-./gradlew :document-ui:test
+./gradlew :document-ui:gwtDev    # DevMode
+./gradlew :document-ui:test      # 테스트
 ```
 
-## 모바일 지원
-
-- **스프레드시트**: 좁은 뷰포트에서 serial 컬럼을 고정(fixedColumnsLeft)하고 나머지는 수평 스크롤.
-- **타입 탭**: 수평 스크롤 가능한 탭 바. overflow-x: auto.
-- **컨트롤러 툴바**: flex-wrap으로 좁은 화면에서 줄바꿈. 핵심 버튼(Save, Add)만 1행에 표시.
-- **셀 편집**: 모바일 가상 키보드와 호환되도록 셀 포커스 시 스크롤 위치 자동 조정.
-- **카드 뷰 전환**: 뷰포트 < 480px에서 스프레드시트 대신 문서별 카드 뷰로 전환 가능 (Tool Rail 토글).
-
-> 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.
+> 상세 유스케이스는 [USECASE.md](USECASE.md), 디자인 명세는 [DESIGN.md](DESIGN.md) 참조.
