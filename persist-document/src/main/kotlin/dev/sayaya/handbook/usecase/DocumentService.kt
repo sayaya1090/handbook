@@ -32,6 +32,45 @@ class DocumentService(
             .doOnNext { document -> eventPublisher.publishCreated(workspace, document) }
     }
 
+    fun findAll(workspace: UUID, type: String?): Flux<Document> {
+        return documentRepository.findAll(workspace, type)
+    }
+
+    /**
+     * 문서의 워크플로우 상태를 전이한다.
+     *
+     * **허용되는 전이:**
+     * - DRAFT → REVIEW
+     * - REVIEW → PUBLISHED
+     * - REVIEW → DRAFT
+     * - PUBLISHED → DRAFT
+     *
+     * @param workspace 워크스페이스 ID
+     * @param documentId 대상 문서 ID
+     * @param newStatus 전이할 상태 (DRAFT, REVIEW, PUBLISHED)
+     * @param userId 상태 변경 요청자
+     * @return 상태가 변경된 문서
+     * @throws IllegalStateException 허용되지 않는 전이일 때
+     */
+    fun updateStatus(workspace: UUID, documentId: UUID, newStatus: String, userId: String): Mono<Document> {
+        val allowedTransitions = mapOf(
+            "DRAFT" to setOf("REVIEW"),
+            "REVIEW" to setOf("PUBLISHED", "DRAFT"),
+            "PUBLISHED" to setOf("DRAFT"),
+        )
+        return documentRepository.findById(documentId)
+            .switchIfEmpty(Mono.error(IllegalArgumentException("Document not found: $documentId")))
+            .flatMap { document ->
+                val allowed = allowedTransitions[document.status] ?: emptySet()
+                if (newStatus !in allowed) {
+                    Mono.error(IllegalStateException("Invalid status transition: ${document.status} → $newStatus"))
+                } else {
+                    documentRepository.updateStatus(documentId, newStatus)
+                        .doOnNext { updated -> eventPublisher.publishCreated(workspace, updated) }
+                }
+            }
+    }
+
     fun delete(workspace: UUID, documents: List<Document>): Mono<Void> {
         return documentRepository.deleteAll(workspace, documents)
             .doOnSuccess { documents.forEach { document -> eventPublisher.publishDeleted(workspace, document) } }

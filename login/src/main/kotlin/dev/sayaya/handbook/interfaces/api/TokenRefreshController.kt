@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.interfaces.authentication.UserAuthentication
-import dev.sayaya.handbook.interfaces.config.LoginSecurityConfig
+import dev.sayaya.handbook.interfaces.config.AuthenticationCookieService
 import dev.sayaya.handbook.usecase.TokenPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -19,12 +19,12 @@ import reactor.core.publisher.Mono
  *
  * **의존관계:**
  * - [TokenPublisher] — 토큰 검증 및 재발급
- * - [LoginSecurityConfig] — 인증 쿠키 설정
+ * - [AuthenticationCookieService] — 인증 쿠키 설정
  */
 @RestController
 class TokenRefreshController(
     private val tokenPublisher: TokenPublisher,
-    private val securityConfig: LoginSecurityConfig,
+    private val cookieService: AuthenticationCookieService,
 ) {
     @GetMapping("/auth/refresh")
     @ResponseStatus(HttpStatus.OK)
@@ -33,6 +33,6 @@ class TokenRefreshController(
         exchange: ServerWebExchange,
     ): Mono<Void> {
         return tokenPublisher.validateRefreshToken(authentication)
-            .flatMap { token -> securityConfig.sendAuthenticationCookie(exchange, token) }
+            .flatMap { token -> cookieService.sendAuthenticationCookie(exchange, token) }
     }
 }

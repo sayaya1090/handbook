@@ -91,9 +91,27 @@ class R2dbcDocumentRepositoryAdapter(
                 createDateTime = row.get("create_date_time", java.time.Instant::class.java),
                 creator = row.get("creator", String::class.java),
                 data = dataMap,
+                status = row.get("status", String::class.java) ?: "DRAFT",
                 rev = row.get("rev", java.lang.Long::class.java)?.toLong(),
             )
         }.all()
+    }
+
+    override fun findById(id: UUID): Mono<Document> {
+        return repo.findById(id).map { it.toDomainWithData(objectMapper) }
+    }
+
+    override fun updateStatus(id: UUID, status: String): Mono<Document> {
+        return databaseClient.sql("""
+            UPDATE documents SET status = :status WHERE id = :id
+        """.trimIndent())
+            .bind("status", status)
+            .bind("id", id)
+            .fetch().rowsUpdated()
+            .flatMap { rowsUpdated ->
+                if (rowsUpdated == 0L) Mono.error(IllegalArgumentException("Document not found: $id"))
+                else repo.findById(id).map { it.toDomainWithData(objectMapper) }
+            }
     }
 
     override fun deleteAll(workspace: UUID, documents: List<Document>): Mono<Void> {
@@ -103,7 +121,7 @@ class R2dbcDocumentRepositoryAdapter(
     }
 
     private fun R2dbcDocumentEntity.toDomainWithData(objectMapper: ObjectMapper): Document {
-        val dataMap: Map<String, String?> = objectMapper.readValue(data)
+        val dataMap: Map<String, String?> = objectMapper.readValue(data.asString())
         return Document(
             id = id,
             type = type,
@@ -113,6 +131,7 @@ class R2dbcDocumentRepositoryAdapter(
             createDateTime = createDateTime,
             creator = creator,
             data = dataMap,
+            status = status,
             rev = rev,
         )
     }

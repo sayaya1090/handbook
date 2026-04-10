@@ -3,7 +3,10 @@ package dev.sayaya.handbook.client.usecase.action;
 
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.domain.Action;
+import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.client.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.domain.TypeValue;
 import dev.sayaya.handbook.client.usecase.*;
@@ -16,7 +19,7 @@ import java.util.Set;
  *
  * <p><b>책임:</b> ChangeTracker에서 변경/삭제 키를 조회하여 변경된 타입은 save(),
  * 삭제된 타입은 delete(), 레이아웃 위치는 savePositions()로 서버에 전송한다.
- * 저장 후 ChangeTracker와 ActionManager를 초기화한다.</p>
+ * 저장 후 ChangeTracker와 ActionManager를 초기화하고 성공 토스트를 표시한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link TypeRepository} — 타입 저장/삭제 API</li>
  *   <li>{@link LayoutRepository} — 위치 저장 API</li>
@@ -25,6 +28,7 @@ import java.util.Set;
  *   <li>{@link ChangeTracker} — 변경/삭제 키 조회 및 초기화</li>
  *   <li>{@link ActionManager} — Undo/Redo 스택 초기화</li>
  *   <li>{@link LayoutProvider} — 현재 기간 조회</li>
+ *   <li>{@link ToastContainer} — 성공 피드백 토스트 표시</li>
  * </ul></p>
  * <p><b>주의:</b> rollback()은 no-op이다. 저장은 서버 상태를 변경하므로 되돌릴 수 없다.</p>
  */
@@ -36,10 +40,20 @@ public class SaveAction implements Action {
     private final ChangeTracker tracker;
     private final ActionManager actionManager;
     private final LayoutProvider layoutProvider;
+    private final ToastContainer toastContainer;
+    private final Labels labels;
 
     public SaveAction(TypeRepository typeRepository, LayoutRepository layoutRepository,
                       TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                       ActionManager actionManager, LayoutProvider layoutProvider) {
+        this(typeRepository, layoutRepository, typeList, positionMap, tracker,
+             actionManager, layoutProvider, null, Labels.empty());
+    }
+
+    public SaveAction(TypeRepository typeRepository, LayoutRepository layoutRepository,
+                      TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
+                      ActionManager actionManager, LayoutProvider layoutProvider,
+                      ToastContainer toastContainer, Labels labels) {
         this.typeRepository = typeRepository;
         this.layoutRepository = layoutRepository;
         this.typeList = typeList;
@@ -47,6 +61,8 @@ public class SaveAction implements Action {
         this.tracker = tracker;
         this.actionManager = actionManager;
         this.layoutProvider = layoutProvider;
+        this.toastContainer = toastContainer;
+        this.labels = labels;
     }
 
     @Override
@@ -90,6 +106,12 @@ public class SaveAction implements Action {
         // 상태 초기화
         tracker.reset();
         actionManager.clear();
+
+        // 성공 피드백 토스트
+        if (toastContainer != null) {
+            toastContainer.show(ToastLevel.SUCCESS,
+                    labels.getOrDefault("toast.save.success", "Save completed"));
+        }
     }
 
     @Override

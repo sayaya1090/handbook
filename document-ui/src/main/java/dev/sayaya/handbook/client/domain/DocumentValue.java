@@ -15,5 +15,6 @@ public class DocumentValue {
     public double createDateTime;
     public String creator;
     public JsPropertyMap<String> data;
+    public String status;
     public double rev;
 }

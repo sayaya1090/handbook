@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain.event
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.io.Serializable
 import java.util.*
 
@@ -18,7 +19,7 @@ import java.util.*
 data class AgentCommandEvent(
     override val id: UUID,
     override val workspace: UUID,
-    override val eventType: Event.EventType = Event.EventType.AGENT_COMMAND,
+    @JsonProperty("event_type") override val eventType: Event.EventType = Event.EventType.AGENT_COMMAND,
     override val payload: AgentCommandPayload,
 ) : Event<AgentCommandEvent.AgentCommandPayload> {
 

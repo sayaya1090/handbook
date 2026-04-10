@@ -1,9 +1,31 @@
 spring:
   application:
     name: assistant
+  cloud:
+    stream:
+      bindings:
+        validation-in-0:
+          destination: handbook-events
+          group: assistant-validation
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:9092}
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
 server:
   port: ${SERVER_PORT:8080}
 openai:
   api-key: ${OPENAI_API_KEY:}
   model: ${OPENAI_MODEL:gpt-4o}
   base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+logging:
+  pattern:
+    console: "%d{ISO8601} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"

@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain.event
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.*
 
 /**
@@ -16,7 +17,7 @@ import java.util.*
 data class ValidationEvent(
     override val id: UUID,
     override val workspace: UUID,
-    override val eventType: Event.EventType,
+    @JsonProperty("event_type") override val eventType: Event.EventType,
     override val payload: ValidationPayload,
 ) : Event<ValidationPayload> {
     init {

@@ -293,8 +293,12 @@ workspace, schema, document → (독립, 상호 의존 없음)
 | 병렬 호출 + onErrorResume | 개별 서비스 실패 시 graceful degradation |
 | headers를 Map<String, List<String>>으로 전달 | usecase가 HttpHeaders(Spring)에 의존하지 않도록 |
 | ServiceDiscovery에 1200ms 타임아웃 | 느린 서비스가 전체 응답을 차단하지 않도록 |
+| CorsWebFilter Bean 등록 | CORS 허용 도메인/메서드/헤더 명시적 설정 (7.1 보안) |
+| RateLimitFilter (인메모리 IP 기반) | /auth/** 경로 Rate Limiting — 20회/분 (7.1 보안) |
+| CorrelationIdFilter (HIGHEST_PRECEDENCE) | X-Correlation-Id UUID 생성/전파 + MDC 로깅 (7.4 관측성) |
+| CircuitBreaker + FallbackController | assistant, event-broadcaster 장애 시 빈 응답 반환 (7.3 회복성) |
 
-**의존성:** activity (Menu 도메인), Spring WebFlux
+**의존성:** activity (Menu 도메인), Spring WebFlux, Spring Cloud CircuitBreaker
 
 ---
 
@@ -313,10 +317,13 @@ workspace, schema, document → (독립, 상호 의존 없음)
 | Flux.defer로 구독 시점에 Sink 획득 | 구독 전 Sink 완료로 인한 빈 Flux 수신 방지 |
 | 10ms replay buffer | 구독 직전 이벤트 유실 방지, 메모리 최소화 |
 | 10초 ping | HTTP/1.1 연결 유지 (프록시/로드밸런서 타임아웃 방지) |
+| SSE retry(5초) 힌트 | 연결 끊김 시 브라우저 자동 재연결 (7.3 회복성) |
+| Kafka DLQ (enableDlq, handbook-events-dlq) | 실패 이벤트를 DLQ 토픽에 저장, 재처리 가능 (7.3 회복성) |
+| WebhookSender (Micrometer 카운터) | 웹훅 실패 시 지수 백오프 재시도 + webhook_failures_total 모니터링 (7.3/7.4) |
 | Broadcaster/WorkspaceSinkManager에 Spring 어노테이션 없음 | BroadcasterConfig에서 Bean으로 등록 |
 | JSON 역직렬화를 Broadcaster에서 수행 | 외부 메시징 포맷과 내부 도메인 이벤트 분리 |
 
-**의존성:** domain (Event), authentication, Spring WebFlux, Kafka
+**의존성:** domain (Event), authentication, Spring WebFlux, Kafka, Micrometer
 
 ---
 
@@ -598,7 +605,7 @@ client/
     ├── canvas/      CanvasElement (드래그/드롭/키보드), CanvasContextMenuElement
     ├── box/         TypeElement (인라인 편집/리사이즈), BoxContextMenuElement, BoxReferenceElement (SVG 화살표)
     ├── controller/  ControllerElement + ModeToggle + 개별 버튼 8개 + SnapCheckbox
-    ├── editor/      AttributeEditorDialog + ValidatorEditor 6종
+    ├── editor/      AttributeEditorDialog + ValidatorEditorFactory + ValidatorEditor 8종
     ├── selection/   SelectedBoxElement, DragShapeElement (드래그 고스트)
     ├── value/       ValueElement (편집/삭제), ValueListElement
     └── ContextMenuHelper (공용 유틸)
@@ -686,9 +693,9 @@ client/
 **계층 구조:**
 
 ```
-├── usecase/         TypeService, LayoutService, TypeRepository, LayoutRepository
+├── usecase/         TypeSearchService, LayoutService, TypeRepository, LayoutRepository
 └── interfaces/
-    ├── api/         TypeController (GET), LayoutController (GET), MenuController
+    ├── api/         TypeController (GET 목록/버전/diff), LayoutController (GET), MenuController
     ├── database/    (R2DBC 어댑터)
     └── config/      SearchTypeConfig (Bean 등록, ObjectMapper)
 ```
@@ -712,12 +719,13 @@ client/
 **계층 구조:**
 
 ```
-├── usecase/         DocumentService, DocumentRepository, DocumentEventPublisher
+├── usecase/         DocumentService, DocumentRepository, DocumentEventPublisher, FileStorageService
 └── interfaces/
-    ├── api/         DocumentController (PUT/PATCH/DELETE), ImportExportController (POST /import, GET /export)
+    ├── api/         DocumentController (PUT/PATCH/DELETE), ImportExportController (POST /import, GET /export), FileUploadController (POST /files)
     ├── database/    R2dbcDocumentEntity (@Version), R2dbcDocumentEntityRepository, R2dbcDocumentRepositoryAdapter
     ├── event/       KafkaDocumentEventPublisher
-    └── config/      DocumentConfig (Bean 등록, TransactionalOperator)
+    ├── storage/     LocalFileStorageAdapter (로컬 파일시스템 저장소)
+    └── config/      DocumentConfig (Bean 등록, TransactionalOperator), FileConfig (파일 업로드 설정)
 ```
 
 **설계 결정:**
@@ -729,6 +737,7 @@ client/
 | TransactionalOperator 주입 | usecase에 Spring 어노테이션 없이 트랜잭션 지원 |
 | Kafka 이벤트 발행 | DOCUMENT_CREATED/DELETED → event-broadcaster → 실시간 UI 갱신 |
 | DuplicateKeyException → 409 | serial 중복 시 클라이언트에 명확한 에러 전달 |
+| 파일 저장소 추상화 (계획) | File 속성 업로드를 위한 S3/로컬 파일시스템 어댑터. Port & Adapter 패턴으로 저장소 교체 가능 |
 
 **의존성:** document (Document), event (DocumentEvent), authentication, R2DBC PostgreSQL, Kafka
 
@@ -742,9 +751,9 @@ client/
 
 ```
 ├── domain/          Search (페이지네이션 + 필터 VO)
-├── usecase/         DocumentService, DocumentRepository
+├── usecase/         DocumentSearchService, DocumentRepository
 └── interfaces/
-    ├── api/         DocumentController (GET 검색/단건), MenuController, SearchArgumentResolver
+    ├── api/         DocumentController (GET 검색/단건/전문검색/이력/diff), MenuController, SearchArgumentResolver
     ├── database/    R2dbcDocumentEntity (EntityPageable), R2dbcDocumentRepository
     └── config/      SearchDocumentConfig (Bean 등록, WebFluxConfigurer)
 ```
@@ -950,7 +959,7 @@ sequenceDiagram
 - **실행 계획 보존**: ExecutionPlan 전체(intent, steps, confidence)를 이벤트 로그와 함께 보존하여, 사후에 에이전트의 판단 과정을 재현할 수 있다.
 - **시간순 감사 조회**: Dashboard-UI에서 AGENT_COMMAND 이벤트를 시간순으로 조회하여 에이전트 활동을 감사할 수 있다.
 
-**데이터 품질 감시 (구현 완료):** Assistant 모듈은 자연어 명령 처리 외에, 데이터 품질 감시 기능을 제공한다. `DefaultQualityMonitor`가 search-document API를 통해 문서를 조회하고 결측치(필수 필드 누락), 중복(동일 시리얼), 이상값(3σ 편차)을 검출한다. `QualityMonitorService`가 검출 결과를 `AgentCommand(NOTIFY)`로 Kafka에 발행하여 워크스페이스에 브로드캐스트한다. 심각도에 따라 info/warning/error를 차등 적용한다. `POST /assistant/quality/scan?workspace={id}`로 즉시 스캔을 트리거할 수 있다.
+**데이터 품질 감시 (구현 완료):** Assistant 모듈은 자연어 명령 처리 외에, 데이터 품질 감시 기능을 제공한다. `DefaultQualityMonitor`가 search-document API를 통해 문서를 조회하고 결측치(필수 필드 누락), 중복(동일 시리얼), 이상값(3σ 편차)을 검출한다. `QualityMonitorService`가 검출 결과를 `AgentCommand(NOTIFY)`로 Kafka에 발행하여 워크스페이스에 브로드캐스트한다. 심각도에 따라 info/warning/error를 차등 적용한다. `POST /assistant/quality/scan?workspace={id}`로 즉시 스캔을 트리거할 수 있다. `ScheduledQualityMonitor`가 cron 주기(`quality.monitor.cron`, 기본 매 시간)에 따라 `WebClientWorkspaceProvider`에서 활성 워크스페이스 목록을 조회하여 자동 스캔한다.
 
 **감사 추적 (구현 완료):** `AssistantService`가 자연어 요청 수신 시 `AuditEntry`를 생성하여 `AuditRepository`에 저장한다. 각 항목에는 사용자 원본 메시지, LLM 해석 결과(intent, confidence), 전체 실행 계획, 상태(REQUESTED/CONFIRMED/EXECUTING/COMPLETED/ABORTED)가 기록된다. `GET /assistant/audit?workspace={id}`로 워크스페이스별 감사 이력을 시간순 조회할 수 있다. 현재는 `InMemoryAuditRepository`로 구현되어 있으며, 향후 R2DBC 기반 영속 구현으로 교체 가능하다.
 
@@ -1203,6 +1212,67 @@ sequenceDiagram
 | BehaviorSubject 기반 수신 | 구독 시점에 관계없이 최신 이벤트 수신 가능 |
 | 토스트 알림 | 다른 사용자의 변경을 비침투적으로 알림 |
 | 자동 재연결 | EventSource 기본 동작으로 SSE 연결 끊김 시 자동 복구 |
+
+---
+
+## 인프라 횡단 관심사 (7. 품질 향상 요구사항)
+
+### 보안 (7.1)
+
+| 관심사 | 적용 위치 | 설명 |
+|--------|----------|------|
+| **CORS** | Gateway (WebFilter) | 허용 도메인, 메서드, 헤더를 명시적으로 설정. 프로덕션에서 와일드카드(`*`) 금지 |
+| **CSP** | Gateway (ResponseHeader) | `Content-Security-Policy` 헤더 추가. 인라인 스크립트/스타일 제한 (`script-src 'self'`) |
+| **Rate Limiting** | Gateway (RequestRateLimiter) | OAuth2/JWT 엔드포인트에 요청 속도 제한 (10회/분). 초과 시 429 Too Many Requests |
+
+### 관측성 (7.4)
+
+| 관심사 | 적용 위치 | 설명 |
+|--------|----------|------|
+| **Correlation ID** | Gateway → 전 서비스 → Kafka 헤더 | `X-Correlation-Id` UUID를 Gateway에서 생성. WebFilter로 모든 요청에 주입. 하위 서비스/Kafka 헤더에 전파. MDC에 설정하여 로그 추적 |
+| **Prometheus** | 전 백엔드 서비스 (`/actuator/prometheus`) | Spring Boot Actuator + Micrometer. 지연 시간, 에러율, Kafka 큐 깊이, R2DBC 커넥션 풀 상태 모니터링 |
+| **구조화 로깅** | 전 백엔드 서비스 (Log4j2 JSON Layout) | JSON 로그 포맷. 필드: `correlationId`, `userId`, `workspaceId`, `timestamp`, `level`, `message` |
+
+### DB 인덱스 전략 (7.2)
+
+> 상세 인덱스 목록은 [database-schema.md](database-schema.md#계획된-인덱스-72-성능-최적화) 참조.
+
+| 테이블 | 주요 인덱스 | 용도 |
+|--------|-----------|------|
+| documents | `(workspace, type, serial)` | 타입 기반 문서 검색 |
+| documents | `(workspace, effect_date_time, expire_date_time)` | 시점 기반 유효 문서 조회 |
+| types | `(workspace, effect_date_time, expire_date_time)` | 시점 기반 유효 타입 조회 |
+| webhooks | `(workspace, active)` | 활성 웹훅 조회 |
+
+### DLQ / 재시도 패턴 (7.3)
+
+> 상세 DLQ 흐름은 [error-handling.md](error-handling.md#dlq-에러-복구-흐름-73-회복성-강화), [kafka-events.md](kafka-events.md#dead-letter-queue-dlq-계획-73-회복성-강화) 참조.
+
+```mermaid
+flowchart LR
+    Producer["발행 서비스"] -->|이벤트| Topic["handbook-events"]
+    Topic --> Consumer["Consumer"]
+    Consumer -->|성공| Process["정상 처리"]
+    Consumer -->|실패 (3회 재시도)| DLQ["handbook-events.DLT"]
+    DLQ --> Alert["Prometheus 알림"]
+    DLQ --> Replay["수동 재처리"]
+```
+
+- 최대 3회 재시도 (지수 백오프: 1초, 2초, 4초)
+- 실패 이벤트에 원본 토픽, 에러 메시지, 스택 트레이스, correlation ID 헤더 포함
+- DLQ 보존 기간: 7일
+- webhook-service 실패 시: 웹훅 호출 실패를 DB에 기록, 서비스 복구 후 재시도 큐에서 재처리
+
+### 성능 (7.2)
+
+| 항목 | 설정 |
+|------|------|
+| WebClient 연결 타임아웃 | 5초 |
+| WebClient 요청 타임아웃 | 30초 |
+| R2DBC 커넥션 풀 최대 크기 | 환경별 설정 (기본 10) |
+| R2DBC 유효성 검사 쿼리 | `SELECT 1` |
+| R2DBC 풀 유휴 타임아웃 | 30분 |
+| Export 스트리밍 | chunked transfer encoding, 메모리 일괄 적재 금지 |
 
 ---
 

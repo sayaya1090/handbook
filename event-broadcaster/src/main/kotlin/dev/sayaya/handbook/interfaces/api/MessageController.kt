@@ -43,6 +43,7 @@ class MessageController(
                     .id(event.id.toString())
                     .event(event.eventType.toString())
                     .data(objectMapper.writeValueAsString(event.payload))
+                    .retry(Duration.ofSeconds(5))
                     .build()
             },
             ping,

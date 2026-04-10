@@ -20,6 +20,7 @@ data class Document (
     val createDateTime: Instant?,
     val creator: String?,
     val data: Map<String, String?>,
+    val status: String = "DRAFT",
     val rev: Long? = null,
 ): Serializable {
     init {

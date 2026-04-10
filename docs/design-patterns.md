@@ -144,3 +144,51 @@ public class SomeState {
 ### 상태 조회
 
 각 모듈은 `StateProvider.snapshot()` → JSON으로 현재 상태를 에이전트에 제공한다.
+
+---
+
+## MD3 네이티브 컴포넌트 (sayaya-ui)
+
+네이티브 HTML 요소 대신 `sayaya-ui` 라이브러리의 MD3 빌더 패턴 컴포넌트를 사용하여 디자인 시스템 일관성을 유지한다.
+
+### 마이그레이션 매핑
+
+| 네이티브 HTML | MD3 컴포넌트 (sayaya-ui) | 용례 |
+|-------------|------------------------|------|
+| `<select>` | `SelectElementBuilder.select().outlined()` | type-ui: Array/Map 서브 타입 드롭다운, shell-ui: 워크스페이스 선택 |
+| `<input type="checkbox">` | `CheckboxElementBuilder.checkbox()` | type-ui: 그리드 스냅 토글 |
+| `<input type="radio">` | `RadioElementBuilder.radio()` | 선택 옵션 그룹 |
+| `<input type="text">` | `TextFieldElementBuilder.textField().outlined()` | 모든 텍스트 입력 필드 |
+| `<button>` | `ButtonElementBuilder.button().filled()/.outlined()/.text()` | 모든 버튼 |
+
+### 규칙
+
+- 새로운 폼 요소 추가 시 반드시 `sayaya-ui` 빌더를 사용한다.
+- 기존 네이티브 요소는 발견 시 MD3 빌더로 마이그레이션한다.
+- 빌더 체인: `Builder.create().variant().label().css().element()` 형태로 구성한다.
+
+---
+
+## 재귀 서브 에디터 (ValidatorEditorFactory)
+
+type-ui의 속성 편집에서 Array/Map 타입의 서브 타입 에디터를 재귀적으로 생성하는 패턴이다.
+
+### 구조
+
+- `ValidatorEditorFactory`가 타입 이름으로 적절한 `ValidatorEditor`를 동적 생성한다.
+- Array/Map 에디터는 한 단계 깊은 `nested()` 팩토리를 받아 서브 타입 드롭다운 변경 시 재귀적으로 서브 에디터를 생성한다.
+- 최대 깊이 3단계(`MAX_DEPTH=3`)로 무한 재귀를 방지한다. 깊이 초과 시 array/map 옵션이 드롭다운에서 제외된다.
+
+### 시각적 계층 (CSS 중첩)
+
+| 깊이 | 좌측 보더 색상 | 배경 |
+|------|-------------|------|
+| 1단계 | `--md-sys-color-outline-variant` | `surface-container` 50% |
+| 2단계 | `--md-sys-color-primary` | `primary-container` 30% |
+| 3단계 | `--md-sys-color-tertiary` | `tertiary-container` 30% |
+
+### 적용 모듈
+
+| 모듈 | 사용 위치 |
+|------|----------|
+| **type-ui** | `AttributeEditorDialog` → `ValidatorEditorFactory` → `ArrayValidatorEditor` / `MapValidatorEditor` |

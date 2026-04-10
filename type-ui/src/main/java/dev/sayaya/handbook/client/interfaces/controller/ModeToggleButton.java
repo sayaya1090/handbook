@@ -57,7 +57,7 @@ public class ModeToggleButton implements IsElement<HTMLDivElement> {
             typeBtn.title = labels.getOrDefault("type.mode.type", "Type Mode");
         });
 
-        root = div().css("type-ctrl-group")
+        root = div().css("type-ctrl-group").css("type-mode-toggle")
                 .add(layoutBtn)
                 .add(typeBtn)
                 .element();

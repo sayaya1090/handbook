@@ -40,7 +40,7 @@ public class ReloadButton implements IsElement<HTMLElement> {
                  LabelProvider labelProvider) {
         root = ButtonElementBuilder.button().text()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate"))
-                .css("type-ctrl-btn")
+                .css("type-ctrl-btn").css("type-ctrl-btn-reload")
                 .element();
 
         root.addEventListener("click", e ->

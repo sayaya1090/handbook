@@ -34,7 +34,7 @@ public class BeforeButton implements IsElement<HTMLElement> {
     BeforeButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
         root = ButtonElementBuilder.button().text()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-left"))
-                .css("type-ctrl-btn")
+                .css("type-ctrl-btn").css("type-ctrl-btn-before")
                 .element();
 
         root.addEventListener("click", e -> navigate(layoutProvider, layoutList, actionManager, -1));

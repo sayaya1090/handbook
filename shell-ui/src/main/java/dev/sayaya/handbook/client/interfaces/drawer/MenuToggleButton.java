@@ -55,12 +55,16 @@ public class MenuToggleButton implements IsElement<HTMLElement> {
         on(EventType.click, evt -> toggleDrawerState());
     }
     private void handleDrawerStateChange(DrawerState state) {
-        if (state == EXPAND) open();
-        else if (state == COLLAPSE) close();
+        if (state == EXPAND || state == DrawerState.OVERLAY) open();
+        else if (state == COLLAPSE || state == DrawerState.HIDE) close();
     }
     private void toggleDrawerState() {
-        DrawerState nextState = (mode.getValue() == EXPAND) ? COLLAPSE : EXPAND;
-        mode.next(nextState);
+        if (mode.isMobile()) {
+            mode.toggleOverlay();
+        } else {
+            DrawerState nextState = (mode.getValue() == EXPAND) ? COLLAPSE : EXPAND;
+            mode.next(nextState);
+        }
     }
 
     private void open() {

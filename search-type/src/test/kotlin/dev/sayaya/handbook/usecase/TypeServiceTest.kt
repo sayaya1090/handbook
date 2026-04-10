@@ -12,8 +12,8 @@ import java.time.Instant
 import java.util.*
 
 class TypeServiceTest : BehaviorSpec({
-    val repo = mockk<TypeRepository>()
-    val service = TypeService(repo)
+    val repo = mockk<TypeSearchRepository>()
+    val service = TypeSearchService(repo)
     val workspace = UUID.randomUUID()
 
     val type = Type(

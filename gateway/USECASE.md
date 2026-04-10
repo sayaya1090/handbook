@@ -110,6 +110,96 @@ sequenceDiagram
 
 ---
 
+## UC-GW5: CORS / CSP 설정
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (Gateway WebFilter) |
+| **선행조건** | Gateway 서버 구동 |
+| **정상 흐름** | 1. `GatewayConfig.corsWebFilter()`가 `CorsWebFilter`를 등록하여 허용 도메인(`cors.allowed-origins` 프로퍼티), 메서드(GET/POST/PUT/PATCH/DELETE/OPTIONS), 헤더(Authorization, Content-Type, X-Correlation-Id)를 명시적으로 설정한다.<br>2. `allowCredentials=true`, `maxAge=3600`으로 프리플라이트 캐싱을 적용한다.<br>3. `AuthenticationAutoConfig`가 `Content-Security-Policy` 응답 헤더를 추가한다 (`default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'`). |
+| **요구사항** | 7.1 보안 강화 — CORS 설정, CSP 헤더 |
+| **상태** | ✅ 구현 완료 |
+| **구현 클래스** | `GatewayConfig.corsWebFilter()`, `AuthenticationAutoConfig.contentSecurityPolicy` |
+
+```mermaid
+sequenceDiagram
+    actor Client as 클라이언트
+    participant GW as Gateway (CorsWebFilter)
+    participant Target as 대상 서비스
+
+    Client->>GW: OPTIONS /api/resource (Preflight)
+    GW->>GW: Origin 검증 (허용 도메인 목록)
+    alt 허용된 Origin
+        GW-->>Client: 200 OK + CORS 헤더 + CSP 헤더
+        Client->>GW: GET /api/resource
+        GW->>Target: 요청 프록시
+        Target-->>GW: 응답
+        GW-->>Client: 응답 + CSP 헤더
+    else 허용되지 않은 Origin
+        GW-->>Client: 403 Forbidden
+    end
+```
+
+## UC-GW6: Rate Limiting 필터
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 클라이언트 |
+| **선행조건** | Gateway 서버 구동 |
+| **정상 흐름** | 1. 클라이언트가 `/auth/**` 경로에 요청을 전송한다.<br>2. `RateLimitFilter`(WebFilter)가 IP 기반 인메모리 슬라이딩 윈도우(1분)로 요청 속도를 검사한다.<br>3. 제한(20회/분) 이내이면 요청을 통과시킨다.<br>4. 제한 초과 시 429 Too Many Requests를 반환한다. |
+| **요구사항** | 7.1 보안 강화 — 인증 Rate Limiting |
+| **상태** | ✅ 구현 완료 |
+| **구현 클래스** | `RateLimitFilter` |
+| **비고** | 단일 인스턴스 환경에 적합한 인메모리 구현. 분산 환경에서는 Redis 기반으로 교체 필요 |
+
+```mermaid
+sequenceDiagram
+    actor Client as 클라이언트
+    participant GW as Gateway (RateLimiter)
+    participant Login as Login 서비스
+
+    Client->>GW: POST /auth/login (1회~10회)
+    GW->>GW: IP별 요청 카운트 확인
+    alt 제한 이내 (≤10회/분)
+        GW->>Login: 요청 전달
+        Login-->>GW: 응답
+        GW-->>Client: 응답
+    else 제한 초과 (>10회/분)
+        GW-->>Client: 429 Too Many Requests
+        Note over Client: Retry-After 헤더 포함
+    end
+```
+
+## UC-GW7: 요청 추적 ID 생성
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (Gateway WebFilter) |
+| **선행조건** | Gateway 서버 구동 |
+| **정상 흐름** | 1. `CorrelationIdFilter`(Ordered.HIGHEST_PRECEDENCE)가 수신 요청의 `X-Correlation-Id` 헤더를 확인한다.<br>2. 헤더가 없으면 UUID를 생성한다.<br>3. `exchange.mutate()`로 요청 헤더에 `X-Correlation-Id`를 추가하여 하위 서비스로 전파한다.<br>4. 응답 헤더에도 `X-Correlation-Id`를 설정한다.<br>5. Reactor Context와 MDC에 `correlationId`를 등록하여 로그에 자동 포함한다.<br>6. 필터 종료 시 `doFinally`로 MDC를 정리한다. |
+| **요구사항** | 7.4 관측성 — 요청 추적 ID |
+| **상태** | ✅ 구현 완료 |
+| **구현 클래스** | `CorrelationIdFilter` |
+
+```mermaid
+sequenceDiagram
+    actor Client as 클라이언트
+    participant GW as Gateway (CorrelationIdFilter)
+    participant Target as 대상 서비스
+    participant Kafka as Kafka
+
+    Client->>GW: GET /api/resource
+    GW->>GW: X-Correlation-Id 없음 → UUID 생성
+    GW->>GW: MDC.put("correlationId", uuid)
+    GW->>Target: 요청 + X-Correlation-Id: uuid
+    Target->>Target: MDC.put("correlationId", uuid)
+    Target->>Kafka: 이벤트 발행 (헤더: x-correlation-id=uuid)
+    Target-->>GW: 응답
+    GW-->>Client: 응답 + X-Correlation-Id: uuid
+```
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 요구사항 | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
@@ -118,3 +208,7 @@ sequenceDiagram
 | UC-GW2 (메뉴 집계) | 3.11 (Shell - Menu Rail) | 메뉴 집계 | MenuController, MenuService, MenuSupplier, ServiceDiscovery, ServiceListProperties, GatewayConfig | - |
 | UC-GW3 (인증 필터) | 3.8 | — (헤더 전파) | application.yml (라우트), authentication 모듈 | - |
 | UC-GW4 (SSE 프록시) | 3.9 (SSE 실시간 알림) | event-broadcaster 프록시 | application.yml (event-broadcaster 라우트) | - |
+| UC-GW5 (CORS/CSP 설정) | 7.1 (보안 강화) | CORS/CSP 설정 | GatewayConfig.corsWebFilter(), AuthenticationAutoConfig.contentSecurityPolicy | GatewayConfigTest |
+| UC-GW6 (Rate Limiting) | 7.1 (인증 Rate Limiting) | Rate Limiting 필터 | RateLimitFilter | RateLimitFilterTest |
+| UC-GW7 (Correlation ID) | 7.4 (요청 추적 ID) | 요청 추적 ID 생성 | CorrelationIdFilter | CorrelationIdFilterTest |
+| UC-GW8 (Circuit Breaker) | 7.3 (graceful degradation) | — | FallbackController, application.yml (CircuitBreaker 필터) | - |

@@ -43,7 +43,7 @@ public class Application implements EntryPoint {
         // 타입 선택 변경 시 컬럼 재구성 + 문서 로딩
         component.typeProvider().asObservable().subscribe(type -> {
             if (type == null) return;
-            var columns = ColumnFactory.create(type);
+            var columns = ColumnFactory.create(type, component.typeList().getValue());
             component.spreadsheet().init(columns);
             component.documentApi().search(type.id, 0, 50).subscribe(docs -> {
                 if (docs != null) {
@@ -59,10 +59,11 @@ public class Application implements EntryPoint {
         body().add(container);
     }
 
-    private static native void injectCss(String href) /*-{
-        var link = $doc.createElement('link');
-        link.rel = 'stylesheet';
+    /** 지정된 CSS 파일을 &lt;link&gt; 요소로 document.head에 추가한다. */
+    private static void injectCss(String href) {
+        var link = (elemental2.dom.HTMLLinkElement) elemental2.dom.DomGlobal.document.createElement("link");
+        link.rel = "stylesheet";
         link.href = href;
-        $doc.head.appendChild(link);
-    }-*/;
+        elemental2.dom.DomGlobal.document.head.appendChild(link);
+    }
 }

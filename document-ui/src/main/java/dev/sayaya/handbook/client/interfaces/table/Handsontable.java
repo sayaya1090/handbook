@@ -40,4 +40,13 @@ public final class Handsontable {
     public native void setDataAtCell(int row, int col, Object value);
     public native void alter(String action, int index, int amount);
     public native void destroy();
+
+    /** Handsontable 훅을 등록한다. */
+    public native void addHook(String key, AfterChangeCallback callback);
+
+    /** afterChange 훅 콜백 인터페이스. */
+    @jsinterop.annotations.JsFunction
+    public interface AfterChangeCallback {
+        void onAfterChange(elemental2.core.JsArray<elemental2.core.JsArray<?>> changes, String source);
+    }
 }

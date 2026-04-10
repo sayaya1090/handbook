@@ -17,7 +17,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  */
 @Singleton
 public class CanvasMode {
-    public enum Mode { VIEW, LAYOUT, TYPE }
+    public enum Mode { VIEW, LAYOUT, TYPE, READONLY }
 
     private final BehaviorSubject<Mode> subject = behavior(Mode.LAYOUT);
 
@@ -28,8 +28,11 @@ public class CanvasMode {
 
     public void setMode(Mode mode) { subject.next(mode); }
 
-    /** VIEW가 아닌 모든 모드에서 편집 가능 (키보드 단축키 등) */
-    public boolean isEditable() { return subject.getValue() != Mode.VIEW; }
+    /** VIEW, READONLY가 아닌 모든 모드에서 편집 가능 (키보드 단축키 등) */
+    public boolean isEditable() { return subject.getValue() != Mode.VIEW && subject.getValue() != Mode.READONLY; }
+
+    /** READONLY 모드: RBAC 권한 부족 시 모든 편집 비활성 (드래그, 컨텍스트 메뉴, 삭제 포함) */
+    public boolean isReadOnly() { return subject.getValue() == Mode.READONLY; }
 
     /** LAYOUT 모드: 드래그 이동, 리사이즈 활성 */
     public boolean isLayoutMode() { return subject.getValue() == Mode.LAYOUT; }

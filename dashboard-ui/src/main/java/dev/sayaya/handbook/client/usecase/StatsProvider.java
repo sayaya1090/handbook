@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.WorkspaceStats;
-import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,12 +17,6 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  */
 @Singleton
 public class StatsProvider {
-    private final BehaviorSubject<WorkspaceStats> subject = behavior(null);
-
+    @Delegate private final BehaviorSubject<WorkspaceStats> _this = behavior(null);
     @Inject StatsProvider() {}
-
-    public void next(WorkspaceStats stats) { subject.next(stats); }
-    public WorkspaceStats getValue() { return subject.getValue(); }
-    public Observable<WorkspaceStats> asObservable() { return subject.asObservable(); }
-    public void subscribe(java.util.function.Consumer<WorkspaceStats> consumer) { subject.subscribe(consumer::accept); }
 }

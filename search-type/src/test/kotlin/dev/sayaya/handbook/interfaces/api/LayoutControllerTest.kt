@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.TypeLayout
-import dev.sayaya.handbook.usecase.LayoutService
+import dev.sayaya.handbook.usecase.LayoutSearchService
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
 import io.mockk.mockk
@@ -11,7 +11,7 @@ import java.time.Instant
 import java.util.*
 
 class LayoutControllerTest : BehaviorSpec({
-    val service = mockk<LayoutService>()
+    val service = mockk<LayoutSearchService>()
     val controller = LayoutController(service)
     val client = WebTestClient.bindToController(controller).build()
     val workspace = UUID.randomUUID()

@@ -2,12 +2,14 @@ package dev.sayaya.handbook.client;
 
 import dagger.Module;
 import dagger.Provides;
+import dev.sayaya.handbook.client.components.ConfirmDialog;
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.MutationReceiver;
+import dev.sayaya.handbook.usecase.UserPreferences;
 import dev.sayaya.handbook.usecase.WindowMutationBridge;
 import dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
@@ -15,6 +17,7 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import elemental2.dom.DomGlobal;
 
 import javax.inject.Singleton;
 
@@ -31,7 +34,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  *   <li>{@link dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge} — 워크스페이스 이벤트 수신</li>
  *   <li>{@link dev.sayaya.handbook.usecase.FetchApi} — 언어팩 JSON fetch</li>
  * </ul></p>
- * <p><b>주의:</b> detectLanguage()는 JSNI로 localStorage/navigator.language를 읽는다.</p>
+ * <p><b>주의:</b> detectLanguage()는 Elemental2를 통해 localStorage/navigator.language를 읽는다.</p>
  */
 @Module
 public class TypeModule {
@@ -50,8 +53,11 @@ public class TypeModule {
     @Provides @Singleton static ToastContainer toastContainer() {
         return new ToastContainer();
     }
+    @Provides @Singleton static ConfirmDialog confirmDialog() {
+        return new ConfirmDialog();
+    }
     @Provides @Singleton static LanguageDetector languageDetector() {
-        return () -> detectLanguage();
+        return TypeModule::detectLanguage;
     }
     @Provides @Singleton static LanguagePackRepository languagePackRepository(dev.sayaya.handbook.usecase.FetchApi fetchApi) {
         return lang -> {
@@ -63,11 +69,15 @@ public class TypeModule {
         };
     }
 
-    private static native String detectLanguage() /*-{
-        var stored = $wnd.localStorage.getItem('lang');
-        if (stored) return stored.split('-')[0];
-        var nav = $wnd.navigator.language;
-        if (nav) return nav.split('-')[0];
-        return 'en';
-    }-*/;
+    /**
+     * 브라우저 환경에서 사용자 언어를 감지한다.
+     * UserPreferences(handbook.lang) -> navigator.language -> "en" 순으로 폴백한다.
+     */
+    private static String detectLanguage() {
+        String stored = UserPreferences.getLanguage();
+        if (stored != null && !stored.isEmpty()) return stored.split("-")[0];
+        String nav = DomGlobal.navigator.language;
+        if (nav != null && !nav.isEmpty()) return nav.split("-")[0];
+        return "en";
+    }
 }

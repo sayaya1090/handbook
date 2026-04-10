@@ -142,19 +142,116 @@
     top: -1rem;
     opacity: 0;
 }
+/* ── Drawer scrim (mobile overlay backdrop) ── */
+.drawer-scrim {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 999;
+    transition: background var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, ease);
+    pointer-events: none;
+}
+.drawer-scrim[visible] {
+    background: rgba(0, 0, 0, 0.32);
+    pointer-events: auto;
+}
+
+/* ── Drawer overlay state ── */
+.drawer[overlay] {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 1001;
+    width: 80vw;
+    max-width: 360px;
+    background-color: var(--md-sys-color-surface-container-high);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+    border-top-right-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    border-bottom-right-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    animation: drawer-slide-in var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, ease);
+}
+@keyframes drawer-slide-in {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+}
+
+/* ── Bottom navigation bar ── */
+.rail[bottom-nav] {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%;
+    height: auto;
+    min-height: 56px;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    z-index: 1000;
+    background: var(--md-sys-color-surface-container);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.rail[bottom-nav] .item {
+    flex: 1;
+    min-width: 64px;
+    max-width: 96px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+}
+.rail[bottom-nav] .item .collapse {
+    margin: 4px auto;
+}
+.rail[bottom-nav] .item .expand {
+    display: none;
+}
+.rail[bottom-nav] .item[selected] .collapse {
+    padding: 4px 16px;
+}
+
+/* ── Horizontal chips (tool rail on mobile) ── */
+.rail[horizontal-chips] {
+    position: fixed;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    left: 0; right: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    z-index: 999;
+    background: var(--md-sys-color-surface-container-low);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding: 4px 8px;
+    gap: 8px;
+}
+.rail[horizontal-chips] .item {
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    background: var(--md-sys-color-surface-container);
+}
+.rail[horizontal-chips] .item .expand {
+    display: none;
+}
+.rail[horizontal-chips] .item .collapse {
+    margin: 0 4px 0 0;
+}
+.rail[horizontal-chips] .item[selected] .collapse {
+    padding: 4px 12px;
+}
+
+/* ── Mobile responsive ── */
 @media (max-width: 768px) {
-    .rail[collapse] {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        height: 56px;
-        flex-direction: row;
-        z-index: 100;
+    .drawer:not([overlay]) .header {
+        display: none;
     }
     .frame {
         left: 0;
-        bottom: 56px;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
     }
 }

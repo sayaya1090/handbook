@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain.event
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import dev.sayaya.handbook.domain.Type
 import java.util.*
 
@@ -15,7 +16,7 @@ import java.util.*
 data class TypeEvent(
     override val id: UUID,
     override val workspace: UUID,
-    override val eventType: Event.EventType,
+    @JsonProperty("event_type") override val eventType: Event.EventType,
     override val payload: Type,
 ) : Event<Type> {
     init {

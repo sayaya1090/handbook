@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.domain.event
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.io.Serializable
@@ -31,6 +32,7 @@ import java.util.*
 interface Event<T : Serializable> : Serializable {
     val id: UUID
     val workspace: UUID
+    @get:JsonProperty("event_type")
     val eventType: EventType
     val payload: T
 

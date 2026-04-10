@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.interfaces.database
 
 import dev.sayaya.handbook.domain.Document
+import io.r2dbc.postgresql.codec.Json
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
@@ -27,7 +28,8 @@ data class R2dbcDocumentEntity(
     val serial: String,
     @Column("effect_date_time") val effectDateTime: Instant,
     @Column("expire_date_time") val expireDateTime: Instant,
-    val data: String,
+    val data: Json,
+    val status: String = "DRAFT",
     @CreatedDate @Column("create_date_time") var createDateTime: Instant? = null,
     @CreatedBy var creator: String? = null,
     @Version val rev: Long? = null,
@@ -41,6 +43,7 @@ data class R2dbcDocumentEntity(
         createDateTime = createDateTime,
         creator = creator,
         data = emptyMap(), // JSON 역직렬화는 Adapter에서 처리
+        status = status,
         rev = rev,
     )
 
@@ -52,9 +55,11 @@ data class R2dbcDocumentEntity(
             serial = document.serial,
             effectDateTime = document.effectDateTime,
             expireDateTime = document.expireDateTime,
-            data = serializedData,
+            data = Json.of(serializedData),
+            status = document.status,
             createDateTime = document.createDateTime,
             creator = document.creator,
+            rev = document.rev,
         )
     }
 }

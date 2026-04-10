@@ -26,4 +26,6 @@ public interface TypeRepository {
     /** 변경 속성만 전송하는 패치 저장. 각 항목은 {id, version, rev, attributes: [...]} 형태. */
     Observable<Set<TypeValue>> patch(List<JsPropertyMap<?>> patches);
     Observable<Void> delete(Set<TypeValue> types);
+    /** 특정 타입의 모든 버전을 조회한다. */
+    Observable<Set<TypeValue>> versions(String typeId);
 }

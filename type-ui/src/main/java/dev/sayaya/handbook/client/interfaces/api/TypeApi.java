@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
+import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.domain.TypeValue;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
@@ -71,6 +72,7 @@ public class TypeApi implements TypeRepository {
                 })
                 .catch_(err -> {
                     GWT.log("TypeApi.list failed: " + err);
+                    ErrorNotifier.notify("TypeApi.list failed: " + err);
                     progress.next(Progress.hide());
                     return Promise.resolve(new LinkedHashSet<>());
                 });
@@ -105,6 +107,7 @@ public class TypeApi implements TypeRepository {
                 })
                 .catch_(err -> {
                     GWT.log("TypeApi.save failed: " + err);
+                    ErrorNotifier.notify("TypeApi.save failed: " + err);
                     progress.next(Progress.hide());
                     return Promise.resolve(new LinkedHashSet<>());
                 });
@@ -135,6 +138,7 @@ public class TypeApi implements TypeRepository {
                 })
                 .catch_(err -> {
                     GWT.log("TypeApi.patch failed: " + err);
+                    ErrorNotifier.notify("TypeApi.patch failed: " + err);
                     progress.next(Progress.hide());
                     return Promise.reject(err);
                 });
@@ -162,8 +166,34 @@ public class TypeApi implements TypeRepository {
                 })
                 .catch_(err -> {
                     GWT.log("TypeApi.delete failed: " + err);
+                    ErrorNotifier.notify("TypeApi.delete failed: " + err);
                     progress.next(Progress.hide());
                     return Promise.resolve((Void) null);
+                });
+        return AsyncSubject.await(promise);
+    }
+
+    @Override
+    public Observable<Set<TypeValue>> versions(String typeId) {
+        progress.next(Progress.indeterminate());
+        String url = "workspace/" + workspace + "/types/" + typeId + "/versions";
+        Promise<Set<TypeValue>> promise = fetchApi.request(url)
+                .then(this::handleResponse)
+                .then(Response::json)
+                .then(json -> {
+                    JsArray<TypeNative> arr = Js.cast(json);
+                    Set<TypeValue> result = new LinkedHashSet<>();
+                    for (int i = 0; i < arr.length; i++) {
+                        result.add(arr.getAt(i).toDomain());
+                    }
+                    progress.next(Progress.hide());
+                    return Promise.resolve(result);
+                })
+                .catch_(err -> {
+                    GWT.log("TypeApi.versions failed: " + err);
+                    ErrorNotifier.notify("TypeApi.versions failed: " + err);
+                    progress.next(Progress.hide());
+                    return Promise.resolve(new LinkedHashSet<>());
                 });
         return AsyncSubject.await(promise);
     }

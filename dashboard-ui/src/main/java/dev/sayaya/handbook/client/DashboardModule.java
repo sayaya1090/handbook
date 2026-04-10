@@ -5,7 +5,9 @@ import dagger.Provides;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
+import dev.sayaya.handbook.usecase.UserPreferences;
 import dev.sayaya.rx.subject.AsyncSubject;
+import elemental2.dom.DomGlobal;
 
 import javax.inject.Singleton;
 
@@ -17,12 +19,12 @@ import javax.inject.Singleton;
  *   <li>{@link LanguageDetector} — localStorage/navigator에서 언어 코드 감지</li>
  *   <li>{@link LanguagePackRepository} — FetchApi로 언어팩 JSON 로드</li>
  * </ul></p>
- * <p><b>주의:</b> detectLanguage()는 JSNI로 구현되어 브라우저 환경에서만 동작한다.</p>
+ * <p><b>주의:</b> detectLanguage()는 Elemental2를 통해 브라우저 환경에서 동작한다.</p>
  */
 @Module
 public class DashboardModule {
     @Provides @Singleton static LanguageDetector languageDetector() {
-        return () -> detectLanguage();
+        return DashboardModule::detectLanguage;
     }
     @Provides @Singleton static LanguagePackRepository languagePackRepository(dev.sayaya.handbook.usecase.FetchApi fetchApi) {
         return lang -> {
@@ -34,11 +36,15 @@ public class DashboardModule {
         };
     }
 
-    private static native String detectLanguage() /*-{
-        var stored = $wnd.localStorage.getItem('lang');
-        if (stored) return stored.split('-')[0];
-        var nav = $wnd.navigator.language;
-        if (nav) return nav.split('-')[0];
-        return 'en';
-    }-*/;
+    /**
+     * 브라우저 환경에서 사용자 언어를 감지한다.
+     * UserPreferences(handbook.lang) -> navigator.language -> "en" 순으로 폴백한다.
+     */
+    private static String detectLanguage() {
+        String stored = UserPreferences.getLanguage();
+        if (stored != null && !stored.isEmpty()) return stored.split("-")[0];
+        String nav = DomGlobal.navigator.language;
+        if (nav != null && !nav.isEmpty()) return nav.split("-")[0];
+        return "en";
+    }
 }

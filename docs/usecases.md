@@ -6,6 +6,7 @@
 > - [document-ui](../document-ui/USECASE.md) — 문서 스프레드시트 편집
 > - [workspace-ui](../workspace-ui/USECASE.md) — 워크스페이스 생성/참여
 > - [agent-ui](../agent-ui/USECASE.md) — 에이전트 UI 커맨드
+> - [dashboard-ui](../dashboard-ui/USECASE.md) — 대시보드 (통계, 품질, 에이전트 활동/실행/아티팩트)
 > - [agent-protocol](../agent-protocol/USECASE.md) — 에이전트 프로토콜
 > - [persist-type](../persist-type/USECASE.md) — 타입 저장/삭제 API
 > - [persist-document](../persist-document/USECASE.md) — 문서 저장/삭제 API
@@ -94,6 +95,11 @@ graph TB
         UC63["UC-63: 데이터 사후 보정"]
     end
 
+    subgraph "권한·차트"
+        UC66["UC-66: 필드 레벨<br/>권한 설정 및 적용"]
+        UC67["UC-67: 대시보드<br/>차트 조회"]
+    end
+
     subgraph "Shell 네비게이션"
         UC70["UC-70: 메뉴 선택"]
         UC71["UC-71: 도구 실행"]
@@ -113,6 +119,8 @@ graph TB
         UC91["UC-91: 대시보드 조회"]
         UC92["UC-92: 데이터 품질<br/>현황 확인"]
         UC93["UC-93: 데이터 품질<br/>감시 실행 (에이전트)"]
+        UC94["UC-94: 에이전트<br/>실행 상태 조회"]
+        UC95["UC-95: 에이전트<br/>아티팩트 조회"]
     end
 
     U --- UC01 & UC02 & UC03
@@ -121,8 +129,10 @@ graph TB
     U --- UC62
     U --- UC70 & UC71 & UC72
     U --- UC80 & UC81 & UC82 & UC83 & UC84
-    U --- UC91 & UC92
+    U --- UC91 & UC92 & UC67 & UC94 & UC95
     U --- UC93
+
+    TM --- UC66
 
     AI --- UC93
 
@@ -295,12 +305,15 @@ flowchart TD
 
 **기본 흐름:**
 1. 사용자가 조인할 워크스페이스 ID를 입력한다.
-2. 시스템이 워크스페이스 관리자에게 조인 요청을 전송한다.
-3. 관리자가 승인하면 사용자가 해당 워크스페이스에 배정된다.
-4. 해당 워크스페이스로 자동 진입한다.
+2. `POST /workspace/{id}/join` 엔드포인트로 참여 요청을 전송한다.
+3. 시스템이 워크스페이스 관리자에게 조인 요청을 전달한다.
+4. 관리자가 승인하면 사용자가 해당 워크스페이스에 배정된다.
+5. 해당 워크스페이스로 자동 진입한다.
 
 **대안 흐름:**
-- 3a. 관리자가 거부하면 사용자에게 거부 사유를 알린다.
+- 4a. 관리자가 거부하면 사용자에게 거부 사유를 알린다.
+
+> **요구사항 참조:** 6.1 워크스페이스 참여 (JOIN) — POST /workspace/{id}/join 엔드포인트, workspace-ui SubmitButton JOIN 모드 처리
 
 ---
 
@@ -425,7 +438,7 @@ flowchart TD
 **기본 흐름:**
 1. 타입 관리자가 캔버스에서 "Add Type"을 클릭한다.
 2. `CreateBoxAction`이 실행되어 타입 카드가 캔버스에 추가되고, `ChangeTracker`에 CHANGED로 마킹된다.
-3. 타입 이름, 설명, effectDateTime을 입력하고, 속성(Attribute)을 추가한다.
+3. 타입 이름, 설명, effectDateTime을 입력하고, 속성(Attribute)을 추가한다. 속성 타입은 9종(text, number, date, enum, bool, array, map, file, document)이며, array/map은 `ValidatorEditorFactory`를 통해 재귀적 서브 타입 에디터를 제공한다 (최대 3단계).
 4. Save 버튼 클릭 시 `PUT /workspace/{id}/types`로 원자적 저장된다.
 5. TYPE_CREATED 이벤트가 발행된다.
 
@@ -517,17 +530,39 @@ sequenceDiagram
 
 ---
 
-### UC-34: 타입 이력 조회
+### UC-34: 타입 이력 조회 및 버전 Diff
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자, 타입 관리자 |
 | **선행 조건** | `{workspace}:type:{type}:view` 권한을 가진다 |
-| **후행 조건** | - |
+| **후행 조건** | 두 버전 간 변경점이 DiffPanel에 표시된다 |
 
 **기본 흐름:**
 1. 사용자가 특정 타입의 버전 이력을 요청한다.
-2. 시스템이 해당 타입의 모든 버전을 시간순으로 반환한다 (이전/다음 버전 링크 포함, HATEOAS).
+2. 시스템이 해당 타입의 모든 버전을 시간순으로 반환한다.
+3. 사용자가 비교할 두 버전을 선택한다.
+4. 시스템이 두 버전의 속성/설명/부모 변경점을 계산하여 반환한다.
+5. DiffPanel에 "before → after" 형식으로 변경점이 표시된다.
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant UI as type-ui
+    participant GW as Gateway
+    participant API as search-type
+
+    User->>UI: 타입 버전 이력 요청
+    UI->>GW: GET /types/{type}?version=
+    GW->>API: 전체 버전 목록 조회
+    API-->>UI: 버전 목록
+
+    User->>UI: v1.0과 v2.0 비교 선택
+    UI->>GW: GET /types/{type}/diff?v1=1.0&v2=2.0
+    GW->>API: 두 버전 조회 + diff 계산
+    API-->>UI: DiffResult (added, removed, changed 속성)
+    UI->>UI: DiffPanel.show(changes)
+```
 
 ---
 
@@ -548,6 +583,7 @@ sequenceDiagram
 **대안 흐름:**
 - 1a. 컨텍스트 메뉴로 타입을 캔버스에 추가할 수 있다.
 - 1b. 키보드 방향키로 타입을 이동할 수 있다.
+- 1c. document 참조 속성이 있으면 SVG 화살표가 자동 렌더링된다. 화살표 호버 시 출발지 속성과 도착지 타입이 하이라이트된다 (상세: UC-T18).
 
 ---
 
@@ -604,7 +640,7 @@ sequenceDiagram
 | **후행 조건** | 셀이 `.changed` 상태로 표시된다. Save 후 기존 버전은 보존되고 새 버전이 생성된다. 검증이 트리거된다 |
 
 **기본 흐름:**
-1. 사용자가 스프레드시트에서 셀을 클릭하여 값을 수정한다.
+1. 사용자가 스프레드시트에서 셀을 클릭하여 값을 수정한다. 속성 타입에 따라 전용 입력 위젯이 활성화된다 (enum→드롭다운, date→날짜선택, number→숫자입력, bool→체크박스, document→텍스트 입력. 상세: UC-D16).
 2. `afterChange` 이벤트가 `EditDocumentAction(before, after)`을 생성한다.
 3. `ActionManager`에서 실행되고, `DirtyTracker.changed`에 등록된다.
 4. 변경된 셀에 `.changed` 상태가 표시된다 (tertiary 1px inset box-shadow).
@@ -674,17 +710,34 @@ sequenceDiagram
 
 ---
 
-### UC-55: 문서 이력 조회
+### UC-55: 문서 이력 조회 및 버전 Diff
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 |
 | **선행 조건** | `{workspace}:type:{type}:document:view` 권한을 가진다 |
-| **후행 조건** | - |
+| **후행 조건** | 두 시점 간 변경 필드가 DiffPanel에 표시된다 |
 
 **기본 흐름:**
 1. 사용자가 특정 문서의 과거 시점 날짜를 지정한다.
 2. 시스템이 해당 시점에 유효했던 버전의 문서 데이터를 반환한다 (point-in-time query).
+3. 사용자가 비교할 두 시점을 선택한다.
+4. 시스템이 두 시점의 문서 data 필드를 비교하여 변경점을 반환한다.
+5. DiffPanel에 "before → after" 형식으로 변경 필드가 표시된다.
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant UI as document-ui
+    participant GW as Gateway
+    participant API as search-document
+
+    User->>UI: 문서 이력 비교 요청
+    UI->>GW: GET /{type}/{serial}/diff?date1=2026-01-01&date2=2026-06-01
+    GW->>API: 두 시점 문서 조회 + diff 계산
+    API-->>UI: DiffResult (changed fields with before/after values)
+    UI->>UI: DiffPanel.show(changes)
+```
 
 ---
 
@@ -694,16 +747,43 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자, 타입 관리자 |
 | **선행 조건** | `{workspace}:type:{type}:document:edit` 권한을 가진다 |
-| **후행 조건** | 파일의 데이터가 문서로 생성된다 |
+| **후행 조건** | 파일의 데이터가 문서로 생성되고, 각 문서에 대해 DOCUMENT_CREATED 이벤트가 발행된다 |
+
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant GW as Gateway
+    participant Ctrl as ImportExportController
+    participant Svc as DocumentService
+    participant Repo as DocumentRepository
+    participant DB as PostgreSQL
+    participant Pub as DocumentEventPublisher
+    participant K as Kafka
+
+    U->>GW: POST /workspace/{id}/documents/import
+    Note over U,GW: Content-Type: application/json
+    Note over U,GW: Body: List<Document> (JSON)
+    GW->>Ctrl: @RequestBody List<Document>
+    Ctrl->>Svc: save(workspace, documents)
+    Svc->>Repo: saveAll(workspace, documents)
+    Repo->>DB: INSERT/UPDATE (TransactionalOperator)
+    DB-->>Repo: 저장된 엔티티
+    Repo-->>Svc: Flux<Document>
+    Svc->>Pub: publishCreated(workspace, document) (각 문서마다)
+    Pub->>K: DOCUMENT_CREATED → "handbook-events"
+    Svc-->>Ctrl: Flux<Document>
+    Ctrl-->>U: 201 Created + 저장된 문서 목록
+```
 
 **기본 흐름:**
-1. 사용자가 CSV 또는 JSON 파일을 업로드한다.
-2. 시스템이 타입 스키마에 맞게 컬럼/필드를 자동 매핑한다.
-3. 매핑 미리보기를 보여주고 사용자가 확인한다.
-4. 문서를 일괄 생성한다.
+1. 사용자가 JSON 형식의 문서 목록을 `POST /workspace/{id}/documents/import`로 전송한다.
+2. `ImportExportController`가 `DocumentService.save()`를 호출하여 문서를 일괄 저장한다.
+3. 저장된 각 문서에 대해 DOCUMENT_CREATED 이벤트가 Kafka로 발행된다.
+4. 저장된 문서 목록이 201 Created와 함께 응답으로 반환된다.
 
 **예외 흐름:**
-- 2a. 매핑 실패 항목은 사용자에게 수동 매핑을 요청한다.
+- 1a. serial 중복 시 409 Conflict가 반환된다.
+- 1b. CSV 지원은 향후 추가 예정. 현재는 JSON만 지원한다.
 
 ---
 
@@ -713,12 +793,40 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행 조건** | `{workspace}:type:{type}:document:view` 권한을 가진다 |
-| **후행 조건** | 문서 데이터가 파일로 다운로드된다 |
+| **후행 조건** | 문서 데이터가 JSON 파일로 다운로드된다 |
+
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant GW as Gateway
+    participant Ctrl as ExportController
+    participant Svc as DocumentSearchService
+    participant Csv as CsvSerializer
+    participant Repo as DocumentRepository
+    participant DB as PostgreSQL
+
+    U->>GW: GET /workspace/{id}/documents/export?format=csv
+    Note over U,GW: 선택적 쿼리 파라미터: ?type={typeId}&format=csv|json
+    GW->>Ctrl: @PathVariable workspace, @RequestParam type, format
+    Ctrl->>Svc: findAllForExport(workspace, type)
+    Svc->>Repo: findAll(workspace, type)
+    Repo->>DB: SELECT
+    DB-->>Repo: 문서 목록
+    Repo-->>Svc: Flux<Document>
+    Svc-->>Ctrl: Flux<Document>
+    alt format=csv
+        Ctrl->>Csv: serialize(documents)
+        Csv-->>Ctrl: Flux<DataBuffer>
+    else format=json
+        Ctrl->>Ctrl: JSON 직렬화
+    end
+    Ctrl-->>U: 200 OK + documents-export.csv/json (Content-Disposition: attachment)
+```
 
 **기본 흐름:**
-1. 사용자가 대상 타입과 필터 조건을 지정한다.
-2. 시스템이 조건에 맞는 문서를 CSV 또는 JSON 형식으로 생성한다.
-3. 파일이 다운로드된다.
+1. 사용자가 `GET /workspace/{id}/documents/export`를 호출한다. 선택적으로 `type` 쿼리 파라미터로 타입별 필터링, `format` 파라미터로 출력 형식(csv/json)을 지정할 수 있다.
+2. `ExportController`가 `DocumentSearchService.findAllForExport()`를 호출하여 문서를 조회한다.
+3. CSV 형식이면 `CsvSerializer`로, JSON 형식이면 ObjectMapper로 직렬화하여 파일로 반환한다.
 
 ---
 
@@ -830,8 +938,8 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | 검증 시스템 (이벤트 트리거) |
-| **선행 조건** | DOCUMENT_CREATED 이벤트가 발행되었다 |
-| **후행 조건** | ValidationTask가 완료되고, Compliance 결과가 저장된다 |
+| **선행 조건** | DOCUMENT_CREATED 이벤트가 발행되어 VALIDATION_REQUESTED가 Kafka에 발행되었다 |
+| **후행 조건** | ValidationTask가 완료되고, Compliance 결과가 저장된다. 이슈 발견 시 AGENT_COMMAND NOTIFY 이벤트가 발행된다 |
 
 ```mermaid
 flowchart TD
@@ -848,11 +956,11 @@ flowchart TD
 ```
 
 **기본 흐름:**
-1. 검증 시스템이 DOCUMENT_CREATED 이벤트를 수신한다.
-2. ValidationTask를 생성한다 (NEW → PROCESSING).
-3. 현재 유효한 타입 버전들을 조회한다.
-4. 각 타입 버전의 Validator 규칙으로 문서 데이터를 검증한다.
-5. Compliance 결과를 저장한다 (호환 버전, 불일치 사유).
+1. persist-document가 VALIDATION_REQUESTED 이벤트를 Kafka에 발행한다.
+2. assistant 모듈의 `ValidationEventListener`가 VALIDATION_REQUESTED를 수신한다.
+3. `QualityMonitorService.validate()`가 typeId/documentId로 필터링하여 검증을 실행한다.
+4. 발견된 이슈는 `AGENT_COMMAND(NOTIFY)` 이벤트로 Kafka에 발행되어 워크스페이스 SSE로 브로드캐스트된다.
+5. ValidationTask를 생성하고 Compliance 결과를 저장한다.
 6. ValidationTask를 완료한다 (DONE 또는 FAILED).
 7. 결과를 SSE로 클라이언트에 전달한다.
 
@@ -863,11 +971,11 @@ flowchart TD
 | 항목 | 내용 |
 |------|------|
 | **액터** | 검증 시스템 (이벤트 트리거) |
-| **선행 조건** | TYPE_CREATED 이벤트가 발행되었다 (타입 새 버전 생성) |
-| **후행 조건** | 해당 타입의 모든 기존 문서에 대한 Compliance가 갱신된다 |
+| **선행 조건** | TYPE_CREATED 이벤트가 발행되어 VALIDATION_REQUESTED가 Kafka에 발행되었다 |
+| **후행 조건** | 해당 타입의 모든 기존 문서에 대한 Compliance가 갱신된다. 이슈 발견 시 AGENT_COMMAND NOTIFY 이벤트가 발행된다 |
 
 **기본 흐름:**
-1. 검증 시스템이 TYPE_CREATED 이벤트를 수신한다.
+1. assistant 모듈의 `ValidationEventListener`가 VALIDATION_REQUESTED를 수신한다.
 2. 해당 타입의 현재 유효한 문서를 모두 조회한다.
 3. 각 문서에 대해 새 타입 버전 기준으로 검증을 수행한다 (UC-60과 동일한 검증 로직).
 4. Compliance 결과를 갱신한다.
@@ -1031,8 +1139,9 @@ sequenceDiagram
 3. 에이전트가 타입 캔버스 미리보기로 구조를 시각화한다 (`preview` 커맨드).
 4. 에이전트가 사용자에게 구조를 안내한다 (`attention` 커맨드).
 5. 사용자가 수정을 요청하면 에이전트가 구조를 조정한다 (반복).
-6. 사용자가 최종 승인하면 에이전트가 Gateway를 통해 타입을 일괄 생성한다 (`mutate` 커맨드).
-7. 에이전트가 타입 캔버스로 이동하여 결과를 보여준다 (`navigate` + `attention`).
+6. `await_confirm` 커맨드 발행 시, AssistantService가 `Sinks.One`으로 커맨드 스트림을 일시정지한다. 사용자가 `POST /assistant/respond`로 응답하면 스트림이 재개된다. "cancel" 응답 시 실행이 중단된다.
+7. 사용자가 최종 승인하면 에이전트가 Gateway를 통해 타입을 일괄 생성한다 (`mutate` 커맨드).
+8. 에이전트가 타입 캔버스로 이동하여 결과를 보여준다 (`navigate` + `attention`).
 
 ```mermaid
 sequenceDiagram
@@ -1198,7 +1307,11 @@ sequenceDiagram
 **기본 흐름:**
 1. 사용자가 워크스페이스 대시보드를 조회한다.
 2. 시스템이 현황 요약을 반환한다 (타입 수, 문서 수, 검증 상태 요약, 최근 변경 이력).
-3. SSE(`/workspace/{id}/messages`)를 구독하여 실시간으로 카운터와 타임라인을 갱신한다.
+3. 품질 이슈를 `GET /workspace/{id}/quality-issues`로 조회한다.
+4. 에이전트 활동 이력을 `GET /workspace/{id}/agent-activity`로 조회한다.
+5. SSE(`/workspace/{id}/messages`)를 구독하여 실시간으로 카운터와 타임라인을 갱신한다.
+
+> **요구사항 참조:** 6.2 대시보드 API 통합 — 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트
 
 ---
 
@@ -1258,3 +1371,320 @@ sequenceDiagram
     EB-->>C: SSE /workspace/{id}/messages
     Note over C: 대시보드 품질 현황 자동 갱신
 ```
+
+---
+
+### UC-94: 에이전트 실행 상태 조회
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행 조건** | 워크스페이스에 진입한 상태이다 |
+| **후행 조건** | 현재 진행 중인 에이전트 실행 목록과 진행률이 표시된다 |
+
+**기본 흐름:**
+1. 사용자가 에이전트 실행 상태를 조회한다 (GET /assistant/executions?workspace={id}).
+2. 시스템이 해당 워크스페이스에서 진행 중인 모든 실행의 상태를 반환한다.
+3. 각 실행에 대해 executionId, 실행 계획, 현재 그룹, 전체 그룹 수, 진행률(%), 상태가 표시된다.
+4. SSE AGENT_COMMAND `type:"progress"` 이벤트로 실시간 갱신된다 (currentGroup/totalGroups/parallel/stepCount).
+
+**대안 흐름:**
+- 1a. 진행 중인 실행이 없으면 빈 목록이 반환된다.
+
+**프론트엔드 표시:**
+- **shell-ui**: 툴바의 `ActiveExecutionBadge`에 활성 실행 수 표시. 클릭 시 `ActiveExecutionPopover`로 상세 진행률 확인 (UC-S15).
+- **agent-ui**: `ProgressHandler`가 그룹 수준 진행률을 프로그레스 바에 표시 (UC-A7).
+- **dashboard-ui**: `ActiveExecutionsWidget`이 전체 실행 목록을 카드로 표시, SSE로 실시간 갱신 (UC-DB4).
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant GW as Gateway
+    participant A as Assistant
+    participant Ctx as ExecutionContext Map
+
+    User->>GW: GET /assistant/executions?workspace={id}
+    GW->>A: getExecutions(workspace)
+    A->>Ctx: filter by workspace
+    Ctx-->>A: List<ExecutionContext>
+    A->>A: 각 context에서 상태 추출
+    Note over A: executionId, plan, currentGroup,<br/>totalGroups, progress %, status
+    A-->>User: 200 OK + List<ExecutionStatus>
+```
+
+---
+
+### UC-95: 에이전트 아티팩트 조회
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행 조건** | 워크스페이스에 진입한 상태이다. 1건 이상의 완료된 에이전트 실행이 존재한다 |
+| **후행 조건** | 실행 결과 아티팩트 목록이 시간순으로 표시된다 |
+
+**기본 흐름:**
+1. 사용자가 에이전트 아티팩트를 조회한다 (GET /assistant/artifacts?workspace={id}).
+2. 시스템이 AuditEntry에서 artifact 필드가 존재하는 항목을 필터링하여 반환한다.
+3. 각 아티팩트에 executionId, summary(실행 결과 요약), changes(변경 목록: type/target/description), timestamp가 포함된다.
+
+**대안 흐름:**
+- 1a. 완료된 실행이 없으면 빈 목록이 반환된다.
+
+**프론트엔드 표시:**
+- **agent-ui**: `CompleteHandler`가 `complete` 커맨드 수신 시 `ArtifactSummaryPanel`로 아티팩트 요약 표시 (UC-A8).
+- **dashboard-ui**: `ArtifactListWidget`이 최근 아티팩트 카드 목록 표시. `AgentActivityList` 활동 행에 아티팩트 링크 추가 (UC-DB5).
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant GW as Gateway
+    participant A as Assistant
+    participant Repo as AuditRepository
+
+    User->>GW: GET /assistant/artifacts?workspace={id}
+    GW->>A: getArtifacts(workspace)
+    A->>Repo: findByWorkspace(workspace)
+    Repo-->>A: Flux<AuditEntry>
+    A->>A: artifact != null 필터링
+    Note over A: Artifact: executionId, summary,<br/>changes[{type, target, description}],<br/>timestamp
+    A-->>User: 200 OK + List<Artifact>
+```
+
+---
+
+### UC-64: 문서 상태 전이
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 작성자, 승인자 |
+| **선행 조건** | 문서가 워크스페이스에 존재한다 |
+| **후행 조건** | 문서의 상태가 변경되고, 상태 변경 이벤트가 발행된다 |
+
+**기본 흐름:**
+1. 작성자가 DRAFT 문서를 REVIEW 상태로 전환 요청한다 (PATCH /workspace/{workspace}/documents/{id}/status).
+2. 시스템이 현재 상태와 요청 상태의 전이 유효성을 검증한다.
+3. 시스템이 요청자의 권한을 검증한다 (작성자/승인자).
+4. 상태를 변경하고 DOCUMENT_STATUS_CHANGED 이벤트를 발행한다.
+5. 승인자가 REVIEW 문서를 PUBLISHED로 승인하거나 DRAFT로 반려한다.
+
+**대안 흐름:**
+- 2a. 유효하지 않은 전이 요청 시 400 Bad Request를 반환한다.
+- 3a. 권한이 없는 경우 403 Forbidden을 반환한다.
+- 5a. PUBLISHED 문서를 재편집하려면 DRAFT로 되돌린 후 수정한다.
+
+```mermaid
+sequenceDiagram
+    actor Author as 작성자
+    actor Approver as 승인자
+    participant API as persist-document
+    participant DB as Database
+    participant K as Kafka
+    participant EB as event-broadcaster
+    participant C as 클라이언트 (SSE)
+
+    Author->>API: PATCH /documents/{id}/status {status: "REVIEW"}
+    API->>DB: 문서 상태 조회
+    DB-->>API: status = DRAFT
+    API->>API: 전이 유효성 검증 (DRAFT→REVIEW ✓)
+    API->>API: 권한 검증 (작성자 ✓)
+    API->>DB: UPDATE status = REVIEW
+    API->>K: DOCUMENT_STATUS_CHANGED
+    K->>EB: 이벤트 수신
+    EB-->>C: SSE 알림
+    API-->>Author: 200 OK
+
+    Approver->>API: PATCH /documents/{id}/status {status: "PUBLISHED"}
+    API->>DB: 문서 상태 조회
+    DB-->>API: status = REVIEW
+    API->>API: 전이 유효성 검증 (REVIEW→PUBLISHED ✓)
+    API->>API: 권한 검증 (승인자 ✓)
+    API->>DB: UPDATE status = PUBLISHED
+    API->>K: DOCUMENT_STATUS_CHANGED
+    K->>EB: 이벤트 수신
+    EB-->>C: SSE 알림
+    API-->>Approver: 200 OK
+```
+
+---
+
+### UC-65: 웹훅 등록 및 발행
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 워크스페이스 관리자, 외부 시스템 |
+| **선행 조건** | 워크스페이스가 존재한다 |
+| **후행 조건** | 웹훅이 등록되고, 이벤트 발생 시 등록된 URL로 HTTP POST가 전송된다 |
+
+**기본 흐름:**
+1. 관리자가 웹훅 URL과 구독 이벤트를 등록한다 (POST /workspace/{workspace}/webhooks).
+2. 시스템이 URL 유효성을 검증하고 웹훅을 저장한다.
+3. 이벤트가 발생하면 webhook-service가 Kafka에서 이벤트를 수신한다.
+4. 해당 워크스페이스의 활성 웹훅 중 이벤트 필터가 일치하는 웹훅을 조회한다.
+5. 등록된 URL로 HTTP POST 콜백을 전송한다.
+
+**대안 흐름:**
+- 5a. 전송 실패 시 최대 3회 재시도한다 (지수 백오프: 1초, 2초, 4초).
+- 5b. 3회 모두 실패하면 웹훅을 비활성화(active=false)하고 관리자에게 알린다.
+
+```mermaid
+sequenceDiagram
+    actor Admin as 관리자
+    participant API as Gateway
+    participant DB as Database
+    participant K as Kafka
+    participant WS as webhook-service
+    participant Ext as 외부 시스템
+
+    Note over Admin,Ext: 웹훅 등록
+    Admin->>API: POST /workspace/{ws}/webhooks {url, events}
+    API->>DB: INSERT webhooks
+    API-->>Admin: 201 Created
+
+    Note over Admin,Ext: 이벤트 발생 시 콜백
+    K->>WS: DOCUMENT_CREATED 이벤트 수신
+    WS->>DB: 워크스페이스 활성 웹훅 조회
+    DB-->>WS: webhooks (url, events 필터)
+    WS->>WS: 이벤트 필터 매칭
+    WS->>Ext: HTTP POST {event, workspace, payload, timestamp}
+    Ext-->>WS: 200 OK
+
+    Note over WS,Ext: 실패 시 재시도
+    WS->>Ext: HTTP POST (재시도 1회, 1초 후)
+    Ext-->>WS: 500 Error
+    WS->>Ext: HTTP POST (재시도 2회, 2초 후)
+    Ext-->>WS: 500 Error
+    WS->>Ext: HTTP POST (재시도 3회, 4초 후)
+    Ext-->>WS: 500 Error
+    WS->>DB: UPDATE webhooks SET active=false
+```
+
+---
+
+### UC-66: 필드 레벨 권한 설정 및 적용
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 타입 관리자, 사용자 |
+| **선행 조건** | 워크스페이스에 타입이 정의되어 있다 |
+| **후행 조건** | 속성별 read_roles/write_roles가 저장되고, 문서 편집 시 권한에 따라 셀 접근이 제한된다 |
+
+**기본 흐름:**
+1. 타입 관리자가 타입 정의 화면에서 속성의 `read_roles`/`write_roles`를 설정한다.
+2. PATCH `/workspace/{ws}/types`로 속성 권한을 포함하여 저장한다.
+3. 서버가 `type_attributes` 테이블의 `read_roles`/`write_roles` 컬럼을 업데이트한다.
+4. 사용자가 해당 타입의 문서를 스프레드시트에서 연다.
+5. 클라이언트가 타입 조회 시 각 속성의 권한 정보를 수신한다.
+6. 사용자의 역할과 속성별 `write_roles`를 비교하여, 권한 없는 셀을 읽기 전용으로 표시한다.
+7. `read_roles`에 포함되지 않은 속성의 셀은 마스킹 처리한다.
+
+**대안 흐름:**
+- 2a. `read_roles`/`write_roles`가 빈 배열이면 제한 없음 (모든 역할 허용).
+- 6a. 읽기 전용 셀에 편집을 시도하면 무시하고 토스트로 안내한다.
+
+```mermaid
+sequenceDiagram
+    actor TM as 타입 관리자
+    actor U as 사용자
+    participant API as Gateway
+    participant DB as type_attributes
+
+    Note over TM,DB: 권한 설정
+    TM->>API: PATCH /workspace/{ws}/types<br/>{attributes: [{name:"salary", write_roles:["MANAGER"]}]}
+    API->>DB: UPDATE type_attributes SET write_roles='["MANAGER"]'
+    API-->>TM: 200 OK
+
+    Note over U,DB: 문서 편집 시 적용
+    U->>API: GET /workspace/{ws}/types/{type}
+    API-->>U: {attributes: [{name:"salary", write_roles:["MANAGER"], read_roles:[]}]}
+    Note over U: 사용자 역할 = VIEWER → salary 셀 읽기 전용
+    U->>U: 스프레드시트에서 salary 셀 편집 차단 (readOnly)
+```
+
+---
+
+### UC-67: 대시보드 차트 조회
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행 조건** | 워크스페이스에 진입한 상태이다 |
+| **후행 조건** | 시계열 차트 및 분포 차트가 대시보드에 표시된다 |
+
+**기본 흐름:**
+1. 사용자가 대시보드에서 차트 영역을 확인한다.
+2. 클라이언트가 `GET /workspace/{ws}/stats/timeline?from=&to=&interval=day`로 시계열 데이터를 조회한다.
+3. 문서 생성 추이, 검증 실패율 추이, 에이전트 사용량 추이를 라인 차트로 표시한다.
+4. 클라이언트가 `GET /workspace/{ws}/stats/distribution`으로 타입별 문서 분포를 조회한다.
+5. 타입별 문서 분포를 파이 차트로 표시한다.
+6. 사용자가 기간이나 집계 간격을 변경하면 차트가 갱신된다.
+
+**대안 흐름:**
+- 2a. 데이터가 없으면 빈 차트와 안내 메시지를 표시한다.
+
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant Dash as dashboard-ui
+    participant API as Gateway
+
+    U->>Dash: 대시보드 차트 탭 선택
+    Dash->>API: GET /workspace/{ws}/stats/timeline?from=2026-03-01&to=2026-04-08&interval=day
+    API-->>Dash: {documentCreations: [...], validationFailures: [...], agentUsage: [...]}
+    Dash->>Dash: 라인 차트 렌더링 (문서 생성, 검증 실패율, 에이전트 사용량)
+
+    Dash->>API: GET /workspace/{ws}/stats/distribution
+    API-->>Dash: {types: [{name:"customer", count:120}, {name:"order", count:85}]}
+    Dash->>Dash: 파이 차트 렌더링 (타입별 문서 분포)
+
+    U->>Dash: 기간 변경 (주별)
+    Dash->>API: GET /workspace/{ws}/stats/timeline?from=2026-01-01&to=2026-04-08&interval=week
+    API-->>Dash: {documentCreations: [...], ...}
+    Dash->>Dash: 차트 갱신
+```
+
+---
+
+## 추가 요구사항 (섹션 6) — UC 매핑
+
+| 요구사항 | 관련 UC | 모듈 UC | 설명 |
+|----------|---------|---------|------|
+| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (workspace-ui) | POST /workspace/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 |
+| 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 |
+| 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 |
+| 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI |
+| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (workspace-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/하이픈/언더스코어, 최대 255자 |
+| 6.6 접근성 (Accessibility) | 전체 UI UC | 전체 프론트엔드 모듈 | role 속성, aria-label, 키보드 네비게이션 (Tab/Enter/Escape) |
+| 6.7 파일 업로드 | UC-50 (문서 생성/편집) | UC-PD6 (persist-document) | File 속성 multipart/form-data 업로드 엔드포인트, S3/로컬 저장소 연동 |
+| 6.8 사용자 설정 | — | UC-S15, UC-S16 (shell-ui) | 언어/테마 퍼시스턴스, 설정 패널 UI |
+| 6.9 감사 로그 UI | UC-91, UC-92 | UC-DB6 (dashboard-ui) | 감사 이력 통합 타임라인, 기간/사용자/이벤트 타입 필터 |
+| 6.10 벌크 작업 | UC-50, UC-51, UC-30 | UC-D21 (document-ui), UC-T23 (type-ui) | 문서 다중 선택 일괄 삭제/상태 변경, 타입 다중 선택 일괄 삭제 |
+| 6.11 세션 관리 | UC-01 (인증) | UC-S17 (shell-ui) | 토큰 자동 갱신, 만료 경고, 로그인 리다이렉트 |
+| 6.12 타입 버전 히스토리 UI | UC-30, UC-31 | UC-T24 (type-ui), UC-ST4 (search-type) | 타입 버전 목록 브라우징, 두 버전 간 diff 비교 |
+
+---
+
+## 품질 향상 요구사항 (섹션 7) — UC 매핑
+
+| 요구사항 | 관련 UC | 모듈 UC | 설명 | 상태 |
+|----------|---------|---------|------|------|
+| 7.1 CORS 설정 | UC-GW1 (API 라우팅) | UC-GW5 (gateway) | Gateway에 허용 도메인/메서드/헤더 명시. 프로덕션 와일드카드 금지 | ✅ 구현 완료 — `GatewayConfig.corsWebFilter()` |
+| 7.1 CSP 헤더 | UC-GW1 (API 라우팅) | UC-GW5 (gateway) | Content-Security-Policy 헤더 추가 | ✅ 구현 완료 — `AuthenticationAutoConfig.contentSecurityPolicy` |
+| 7.1 인증 Rate Limiting | UC-01 (로그인) | UC-GW6 (gateway) | `/auth/**` 경로 IP당 분당 20회 제한, 429 반환 | ✅ 구현 완료 — `RateLimitFilter` |
+| 7.1 파일 업로드 크기 제한 | UC-PD6 (파일 업로드) | UC-PD7 (persist-document) | maxFileSize(기본 50MB) 초과 시 413 반환 | ✅ 구현 완료 — `FileUploadController.maxFileSize` |
+| 7.1 검색 쿼리 제한 | UC-54 (문서 검색) | UC-SD7 (search-document) | 전문 검색 쿼리 최대 1000자, 초과 시 400 반환 | ✅ 구현 완료 — `DocumentController.MAX_QUERY_LENGTH` |
+| 7.2 DB 인덱스 | UC-54 (문서 검색) | UC-SD8 (search-document) | documents/types 복합 인덱스 4건 | ✅ 구현 완료 — `V2__add_indexes.sql` |
+| 7.2 Export 스트리밍 | UC-57 (문서 익스포트) | UC-SD9 (search-document) | chunked transfer encoding. 메모리 일괄 적재 금지 | ✅ 구현 완료 — `ExportController` (스트리밍 방식) |
+| 7.3 SSE 재연결 | UC-EB1 (SSE 연결) | UC-EB6 (event-broadcaster) | SSE 이벤트에 retry(5초) 힌트 포함 | ✅ 구현 완료 — `MessageController.retry(Duration.ofSeconds(5))` |
+| 7.3 Kafka DLQ | UC-EB2 (Kafka→SSE) | UC-EB7 (event-broadcaster) | 실패 이벤트를 handbook-events-dlq 토픽에 저장 | ✅ 구현 완료 — `application.yml` (enableDlq, dlqName) |
+| 7.3 Webhook 실패 모니터링 | UC-65 (웹훅) | — | 실패한 웹훅 호출을 Micrometer 카운터로 기록. 지수 백오프 3회 재시도 | ✅ 구현 완료 — `WebhookSender` (MeterRegistry, webhook_failures_total) |
+| 7.3 서비스 graceful degradation | UC-GW2 (메뉴 집계) | — | assistant, event-broadcaster 장애 시 CircuitBreaker → FallbackController 빈 응답 | ✅ 구현 완료 — `FallbackController`, `application.yml` (CircuitBreaker 필터) |
+| 7.4 요청 추적 ID | UC-GW1 (API 라우팅) | UC-GW7 (gateway) | X-Correlation-Id 생성, 요청/응답 헤더 전파, MDC 로깅 | ✅ 구현 완료 — `CorrelationIdFilter` |
+| 7.4 Prometheus 메트릭 | — | 전 모듈 | /actuator/prometheus 노출. 전 서비스 application.yml에 설정 | ✅ 구현 완료 — 전 모듈 `application.yml` (management.endpoints) |
+| 7.4 구조화 로깅 | — | 전 모듈 | 로그 패턴에 correlationId 포함 | ✅ 구현 완료 — 전 모듈 `application.yml` (logging.pattern.console) |
+| 7.5 빈 상태 UI | UC-53, UC-54 (문서 조회/검색) | 전체 프론트엔드 | "결과 없음" 오버레이 | ✅ 구현 완료 — `SpreadsheetElement` (empty overlay) |
+| 7.5 삭제 확인 | UC-52 (문서 삭제), UC-32 (타입 삭제) | 전체 프론트엔드 | 파괴적 작업 전 ConfirmDialog 필수 | ✅ 구현 완료 — `ConfirmDialog` (document-ui, type-ui) |
+| 7.5 성공 피드백 | UC-50, UC-51 (문서 생성/변경) | 전체 프론트엔드 | 저장/삭제/생성 완료 시 SUCCESS 토스트 표시 | ✅ 구현 완료 — `SaveButton`, `SubmitButton` |
+| 7.5 Soft Delete | UC-52 (문서 삭제) | UC-PD8 (persist-document) | 즉시 삭제 대신 30일 보존 후 하드 삭제. 복구 가능 | ❌ 미구현 (계획) |
+| 7.6 AssistantService 분리 | UC-80~UC-84 (AI 어시스턴트) | UC-A12 (assistant) | SubAgentOrchestrator를 AssistantService에서 분리 | ✅ 부분 구현 — `SubAgentOrchestrator` (usecase 계층 추출 완료) |
+| 7.6 테스트 커버리지 80% | — | 전 모듈 | Kover 최소 커버리지 80%. 에러 경로/타임아웃 테스트 보강 | ❌ 미구현 (계획) |
+| 7.6 누락 Javadoc 보완 | — | 전 모듈 | 헬퍼/유틸리티 클래스 문서화 | ❌ 미구현 (계획) |

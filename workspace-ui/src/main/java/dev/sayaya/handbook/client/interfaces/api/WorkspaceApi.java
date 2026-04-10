@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
+import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
@@ -41,6 +42,7 @@ public class WorkspaceApi implements WorkspaceRepository {
                 .then(Response::text)
                 .catch_(err -> {
                     GWT.log("WorkspaceApi.create failed: " + err);
+                    ErrorNotifier.notify("WorkspaceApi.create failed: " + err);
                     return Promise.resolve((String) null);
                 });
         return AsyncSubject.await(promise);
@@ -64,6 +66,7 @@ public class WorkspaceApi implements WorkspaceRepository {
                 .then(Response::text)
                 .catch_(err -> {
                     GWT.log("WorkspaceApi.update failed: " + err);
+                    ErrorNotifier.notify("WorkspaceApi.update failed: " + err);
                     return Promise.resolve((String) null);
                 });
         return AsyncSubject.await(promise);
@@ -78,6 +81,23 @@ public class WorkspaceApi implements WorkspaceRepository {
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("WorkspaceApi.delete failed: " + err);
+                    ErrorNotifier.notify("WorkspaceApi.delete failed: " + err);
+                    return Promise.resolve((Void) null);
+                });
+        return AsyncSubject.await(promise);
+    }
+
+    @Override
+    public Observable<Void> join(String workspaceId) {
+        RequestInit init = RequestInit.create();
+        init.setMethod("POST");
+
+        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/join", init)
+                .then(this::handleResponse)
+                .then(resp -> Promise.resolve((Void) null))
+                .catch_(err -> {
+                    GWT.log("WorkspaceApi.join failed: " + err);
+                    ErrorNotifier.notify("WorkspaceApi.join failed: " + err);
                     return Promise.resolve((Void) null);
                 });
         return AsyncSubject.await(promise);

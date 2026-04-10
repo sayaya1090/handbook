@@ -112,6 +112,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
         root = div().css("type-box")
                 .attr("tabindex", "0")
+                .attr("data-type-key", type.key())
                 .add(header)
                 .add(valueList)
                 .element();

@@ -23,6 +23,10 @@ public final class AttributeValue {
     public AttributeTypeValue type;
     public boolean nullable;
     public boolean inherited;
+    /** 이 속성을 읽을 수 있는 역할 목록 (빈 배열이면 모든 역할 허용) */
+    public String[] readRoles;
+    /** 이 속성을 쓸 수 있는 역할 목록 (빈 배열이면 모든 역할 허용) */
+    public String[] writeRoles;
 
     @JsOverlay
     public static AttributeValue of(String name, int order, AttributeTypeValue type) {
@@ -32,6 +36,8 @@ public final class AttributeValue {
         a.type = type;
         a.nullable = false;
         a.inherited = false;
+        a.readRoles = new String[0];
+        a.writeRoles = new String[0];
         return a;
     }
 
@@ -72,6 +78,8 @@ public final class AttributeValue {
         a.type = this.type;
         a.nullable = this.nullable;
         a.inherited = this.inherited;
+        a.readRoles = this.readRoles;
+        a.writeRoles = this.writeRoles;
         return a;
     }
 }

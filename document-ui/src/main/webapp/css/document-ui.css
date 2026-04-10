@@ -79,24 +79,37 @@
     .doc-controller {
         flex-wrap: wrap;
         padding: 6px 8px;
+        gap: 4px;
     }
     .doc-type-tabs {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         flex-shrink: 0;
         max-width: 100%;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+    .doc-type-tabs::-webkit-scrollbar {
+        display: none;
     }
     .doc-ctrl-actions {
         flex-wrap: wrap;
         gap: 4px;
     }
     .doc-ctrl-btn {
-        min-height: 48px;
-        min-width: 48px;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 6px 8px;
     }
     .doc-type-tab {
-        min-height: 48px;
+        min-height: 44px;
         white-space: nowrap;
+        padding: 6px 12px;
+    }
+    .doc-spreadsheet {
+        min-height: 200px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

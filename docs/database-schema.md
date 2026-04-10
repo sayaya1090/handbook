@@ -10,6 +10,7 @@ erDiagram
     workspace ||--o{ documents : contains
     workspace ||--o{ types : contains
     workspace ||--o{ type_layouts : contains
+    workspace ||--o{ webhooks : has
     "group" ||--o{ group_member : has
     types ||--o{ type_attributes : has
     users ||--o{ group_member : belongs
@@ -33,6 +34,7 @@ erDiagram
         instant effect_date_time
         instant expire_date_time
         jsonb data "스키마리스 속성"
+        varchar status "DRAFT / REVIEW / PUBLISHED"
         instant create_date_time
         string creator
         long rev "낙관적 잠금"
@@ -61,6 +63,8 @@ erDiagram
         jsonb attribute_type "타입+검증기 JSON"
         boolean nullable
         boolean inherited
+        jsonb read_roles "조회 허용 역할 배열"
+        jsonb write_roles "편집 허용 역할 배열"
     }
 
     type_layouts {
@@ -94,6 +98,15 @@ erDiagram
         string group FK
         uuid member FK "users.id"
     }
+
+    webhooks {
+        uuid id PK
+        uuid workspace FK
+        string url
+        jsonb events "구독 이벤트 필터"
+        boolean active "활성 여부"
+        instant created_at
+    }
 ```
 
 ## 테이블 상세
@@ -108,6 +121,7 @@ erDiagram
 | effect_date_time | Instant | 유효 시작 |
 | expire_date_time | Instant | 유효 종료 (불변 이력 — 변경 시 새 버전 생성) |
 | data | JSONB | 스키마리스 속성 `{"name":"홍길동","age":"30"}` |
+| status | VARCHAR | 문서 상태 (`DRAFT` / `REVIEW` / `PUBLISHED`, 기본값 `DRAFT`) |
 | create_date_time | Instant | 생성 시각 (@CreatedDate) |
 | creator | String | 생성자 (@CreatedBy) |
 | rev | Long | 낙관적 잠금 (@Version) |
@@ -130,12 +144,24 @@ erDiagram
 | attribute_type | JSONB | 타입 + 검증기 `{"type":"NUMBER","min":0,"max":100}` |
 | nullable | Boolean | null 허용 |
 | inherited | Boolean | 부모 타입에서 상속 |
+| read_roles | JSONB | 조회 허용 역할 배열 `["MANAGER","VIEWER"]`. 빈 배열 = 제한 없음 (기본값) |
+| write_roles | JSONB | 편집 허용 역할 배열 `["MANAGER"]`. 빈 배열 = 제한 없음 (기본값) |
 
 ### type_layouts
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
 | positions | JSONB | 타입별 캔버스 좌표 `{"customer:1.0":{"x":100,"y":200,"width":200,"height":150}}` |
 | effect/expire_date_time | Instant | 레이아웃 유효 기간 |
+
+### webhooks
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | UUID (PK) | 웹훅 식별자 |
+| workspace | UUID (FK) | 워크스페이스 FK |
+| url | String | 콜백 URL |
+| events | JSONB | 구독 이벤트 필터 `["DOCUMENT_CREATED","TYPE_CREATED"]` |
+| active | Boolean | 활성 여부 (연속 실패 시 false) |
+| created_at | Instant | 등록 시각 |
 
 ## 설계 결정
 
@@ -148,6 +174,77 @@ erDiagram
 | documents.data JSONB 머지 (`\|\|`) | 패치 기반 저장: 변경 필드만 전송하여 비충돌 동시 편집 지원. `UPDATE documents SET data = data \|\| $patch WHERE id = $id AND rev = $rev` |
 | type_attributes 개별 upsert | 타입 속성 패치: 변경 속성만 upsert (전체 삭제-재삽입 대신), 비충돌 동시 편집 지원 |
 | group 테이블명 따옴표 | PostgreSQL 예약어 회피 |
+| documents.status VARCHAR (ENUM 아님) | 상태 추가 시 마이그레이션 불필요. 애플리케이션 레벨에서 유효성 검증 |
+| webhooks.events JSONB | 이벤트 필터를 유연하게 정의. 새 이벤트 타입 추가 시 스키마 변경 불필요 |
+| type_attributes.read_roles/write_roles JSONB | 속성별 필드 레벨 권한. 빈 배열 = 제한 없음. 별도 조인 테이블 없이 속성과 함께 조회 가능 |
+
+## 계획된 인덱스 (7.2 성능 최적화)
+
+> 현재 인덱스가 명시적으로 생성되어 있지 않다. 다음 인덱스를 추가하여 검색/조회 성능을 개선한다.
+
+### documents 테이블
+
+| 인덱스 이름 | 컬럼 | 용도 |
+|------------|------|------|
+| `idx_documents_ws_type_serial` | `(workspace, type, serial)` | 워크스페이스+타입 기준 문서 검색, 단건 조회 시 복합 조건 |
+| `idx_documents_ws_effect_expire` | `(workspace, effect_date_time, expire_date_time)` | 시점 기반 유효 문서 조회 (WHERE effect <= ? AND expire > ?) |
+| `idx_documents_ws_status` | `(workspace, status)` | 상태별 문서 필터링 (DRAFT/REVIEW/PUBLISHED) |
+| `idx_documents_ws_create_dt` | `(workspace, create_date_time DESC)` | 최신 문서 정렬 |
+
+### types 테이블
+
+| 인덱스 이름 | 컬럼 | 용도 |
+|------------|------|------|
+| `idx_types_ws_effect_expire` | `(workspace, effect_date_time, expire_date_time)` | 시점 기반 유효 타입 조회 |
+
+### webhooks 테이블
+
+| 인덱스 이름 | 컬럼 | 용도 |
+|------------|------|------|
+| `idx_webhooks_ws_active` | `(workspace, active)` | 이벤트 발생 시 활성 웹훅 조회 |
+
+### 마이그레이션 예시
+
+```sql
+-- documents
+CREATE INDEX idx_documents_ws_type_serial ON documents (workspace, type, serial);
+CREATE INDEX idx_documents_ws_effect_expire ON documents (workspace, effect_date_time, expire_date_time);
+CREATE INDEX idx_documents_ws_status ON documents (workspace, status);
+CREATE INDEX idx_documents_ws_create_dt ON documents (workspace, create_date_time DESC);
+
+-- types
+CREATE INDEX idx_types_ws_effect_expire ON types (workspace, effect_date_time, expire_date_time);
+
+-- webhooks
+CREATE INDEX idx_webhooks_ws_active ON webhooks (workspace, active);
+```
+
+## Soft Delete 계획 (7.5 UX 개선)
+
+> 현재 문서 삭제는 즉시 하드 삭제(DELETE)이다. Soft Delete를 도입하여 30일 보존 후 하드 삭제하고, 그 사이 복구를 가능하게 한다.
+
+### 컬럼 추가
+
+| 테이블 | 컬럼 | 타입 | 설명 |
+|--------|------|------|------|
+| documents | `deleted_at` | `TIMESTAMPTZ NULL` | NULL = 활성, 값 존재 = 삭제됨. 30일 후 배치로 하드 삭제 |
+
+### 영향 범위
+
+| 항목 | 변경 내용 |
+|------|----------|
+| DocumentRepository | `DELETE` → `UPDATE SET deleted_at = NOW()` |
+| DocumentSearchService | 조회 쿼리에 `WHERE deleted_at IS NULL` 조건 추가 |
+| 하드 삭제 배치 | 스케줄 잡 추가: `DELETE FROM documents WHERE deleted_at < NOW() - INTERVAL '30 days'` |
+| 복구 API | `PATCH /workspace/{ws}/documents/{id}/restore` — `deleted_at = NULL` |
+| 인덱스 | `idx_documents_ws_type_serial`에 `WHERE deleted_at IS NULL` 부분 인덱스 고려 |
+
+### 마이그레이션 예시
+
+```sql
+ALTER TABLE documents ADD COLUMN deleted_at TIMESTAMPTZ NULL;
+CREATE INDEX idx_documents_deleted_at ON documents (deleted_at) WHERE deleted_at IS NOT NULL;
+```
 
 ## 엔티티 코드 위치
 

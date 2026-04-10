@@ -1,10 +1,10 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.rx.subject.BehaviorSubject;
+import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.function.Consumer;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
@@ -13,11 +13,6 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class CreateWorkspaceMode {
     public enum Mode { CREATE, JOIN }
 
-    private final BehaviorSubject<Mode> subject = behavior(Mode.CREATE);
-
+    @Delegate private final BehaviorSubject<Mode> _this = behavior(Mode.CREATE);
     @Inject CreateWorkspaceMode() {}
-
-    public Mode getValue() { return subject.getValue(); }
-    public void next(Mode mode) { subject.next(mode); }
-    public void subscribe(Consumer<Mode> consumer) { subject.subscribe(consumer::accept); }
 }

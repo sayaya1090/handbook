@@ -45,10 +45,30 @@ class DocumentController(private val documentService: DocumentService) {
         @RequestBody patches: List<DocumentPatch>,
     ): Flux<Document> = documentService.patch(workspace, patches)
 
+    @PatchMapping(
+        value = ["/{id}/status"],
+        consumes = ["application/vnd.sayaya.handbook.v1+json"],
+        produces = ["application/vnd.sayaya.handbook.v1+json"],
+    )
+    @ResponseStatus(HttpStatus.OK)
+    fun updateStatus(
+        @PathVariable workspace: UUID,
+        @PathVariable id: UUID,
+        @RequestBody request: StatusUpdateRequest,
+    ): Mono<Document> = documentService.updateStatus(workspace, id, request.status, request.userId)
+
     @DeleteMapping(consumes = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(
         @PathVariable workspace: UUID,
         @RequestBody documents: List<Document>,
     ): Mono<Void> = documentService.delete(workspace, documents)
+
+    /**
+     * 문서 상태 변경 요청 DTO.
+     *
+     * @property status 전이할 대상 상태 (DRAFT, REVIEW, PUBLISHED)
+     * @property userId 상태 변경 요청자 ID
+     */
+    data class StatusUpdateRequest(val status: String, val userId: String)
 }

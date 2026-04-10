@@ -13,6 +13,8 @@ import java.io.Serializable
  * @property type 이 속성의 데이터 타입 (e.g., Text, Number, Document 등)
  * @property nullable 이 속성의 값이 null을 허용하는지 여부
  * @property inherited 이 속성이 부모 'Type'으로부터 상속되었는지 여부
+ * @property readRoles 이 속성을 읽을 수 있는 역할 목록 (빈 목록이면 모든 역할 허용)
+ * @property writeRoles 이 속성을 쓸 수 있는 역할 목록 (빈 목록이면 모든 역할 허용)
  */
 data class Attribute (
     val name: String,
@@ -20,7 +22,9 @@ data class Attribute (
     val description: String?,
     val type: AttributeType,
     val nullable: Boolean,
-    val inherited: Boolean
+    val inherited: Boolean,
+    val readRoles: List<String> = emptyList(),
+    val writeRoles: List<String> = emptyList()
 ) : Serializable {
     init {
         require(name.isNotBlank()) { "Attribute name cannot be blank." }

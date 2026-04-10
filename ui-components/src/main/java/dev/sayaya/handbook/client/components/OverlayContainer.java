@@ -21,7 +21,7 @@ import static org.jboss.elemento.Elements.div;
  *   <li>{@link CardElementBuilder} — 툴팁/메시지 카드 렌더링</li>
  *   <li>{@link BadgeElementBuilder} — 뱃지 스타일 렌더링</li>
  * </ul></p>
- * <p><b>주의:</b> positionNear()는 JSNI로 구현되어 getBoundingClientRect() 기반으로 fixed 위치를 계산한다.</p>
+ * <p><b>주의:</b> positionNear()는 getBoundingClientRect()로 fixed 위치를 계산한다.</p>
  */
 public class OverlayContainer implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
@@ -116,32 +116,42 @@ public class OverlayContainer implements IsElement<HTMLDivElement> {
         target.appendChild(badge);
     }
 
-    private native void positionNear(Element tooltip, Element target, String position) /*-{
-        var rect = target.getBoundingClientRect();
-        tooltip.style.position = 'fixed';
-        switch(position) {
-            case 'top':
-                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-                tooltip.style.top = rect.top + 'px';
-                tooltip.style.transform = 'translate(-50%, -100%)';
+    /**
+     * tooltip 요소를 target 요소 근처에 fixed 위치로 배치한다.
+     *
+     * @param tooltip 배치할 요소
+     * @param target 기준 요소
+     * @param position "top", "bottom", "left", "right" 중 하나
+     */
+    private void positionNear(Element tooltip, Element target, String position) {
+        elemental2.dom.DOMRect rect = target.getBoundingClientRect();
+        elemental2.dom.CSSStyleDeclaration style = ((HTMLElement) tooltip).style;
+        style.setProperty("position", "fixed");
+        switch (position) {
+            case "top":
+                style.setProperty("left", (rect.left + rect.width / 2) + "px");
+                style.setProperty("top", rect.top + "px");
+                style.setProperty("transform", "translate(-50%, -100%)");
                 break;
-            case 'bottom':
-                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-                tooltip.style.top = rect.bottom + 'px';
-                tooltip.style.transform = 'translate(-50%, 8px)';
+            case "bottom":
+                style.setProperty("left", (rect.left + rect.width / 2) + "px");
+                style.setProperty("top", rect.bottom + "px");
+                style.setProperty("transform", "translate(-50%, 8px)");
                 break;
-            case 'left':
-                tooltip.style.left = rect.left + 'px';
-                tooltip.style.top = (rect.top + rect.height / 2) + 'px';
-                tooltip.style.transform = 'translate(-100%, -50%)';
+            case "left":
+                style.setProperty("left", rect.left + "px");
+                style.setProperty("top", (rect.top + rect.height / 2) + "px");
+                style.setProperty("transform", "translate(-100%, -50%)");
                 break;
-            case 'right':
-                tooltip.style.left = rect.right + 'px';
-                tooltip.style.top = (rect.top + rect.height / 2) + 'px';
-                tooltip.style.transform = 'translate(8px, -50%)';
+            case "right":
+                style.setProperty("left", rect.right + "px");
+                style.setProperty("top", (rect.top + rect.height / 2) + "px");
+                style.setProperty("transform", "translate(8px, -50%)");
+                break;
+            default:
                 break;
         }
-    }-*/;
+    }
 
     @Override
     public HTMLDivElement element() { return root; }

@@ -93,6 +93,16 @@ sequenceDiagram
 | **정상 흐름** | 1. Gateway의 `MenuService`가 `GET /menus`를 호출한다.<br>2. `MenuController`가 정적으로 정의된 `types` 메뉴를 반환한다.<br>3. 메뉴에는 title("types"), order("B"), icon("fa-cubes"), script("js/type.nocache.js"), tool("View as Graph"), URL 패턴("^types")이 포함된다. |
 | **결과** | 200 OK + types 메뉴 (Gateway에서 다른 서비스 메뉴와 병합) |
 
+## UC-ST4: 타입 버전 히스토리 조회
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 (type-ui 경유) |
+| **선행조건** | 워크스페이스 접근 권한 보유, 대상 타입이 존재 |
+| **정상 흐름** | 1. 클라이언트가 특정 타입의 전체 버전 목록을 조회한다.<br>2. 두 버전 간 diff를 요청하면 속성 추가/삭제/변경 내역이 반환된다. |
+| **요구사항** | 6.12 타입 버전 히스토리 UI |
+| **상태** | 구현 완료 (TypeController.versions(), TypeSearchService.findVersions()) |
+
 ---
 
 ## 트레이서빌리티 매트릭스
@@ -102,3 +112,4 @@ sequenceDiagram
 | UC-ST1 (타입 목록 조회) | 3.4, 3.7 | 타입 목록 조회 | TypeController, TypeService, TypeRepository | - |
 | UC-ST2 (레이아웃 조회) | 3.5 | 레이아웃 기간 목록 조회 | LayoutController, LayoutService, LayoutRepository | - |
 | UC-ST3 (메뉴 제공) | 3.11 (Shell - Menu Rail) | 메뉴 제공 | MenuController | - |
+| UC-ST4 (버전 히스토리 조회) | 6.12 | — | TypeController.versions(), TypeSearchService.findVersions() | ❌ 테스트 미작성 (구현 완료) |

@@ -18,4 +18,7 @@ interface DocumentRepository {
     fun saveAll(workspace: UUID, documents: List<Document>): Flux<Document>
     fun patchAll(workspace: UUID, patches: List<DocumentPatch>): Flux<Document>
     fun deleteAll(workspace: UUID, documents: List<Document>): Mono<Void>
+    fun findAll(workspace: UUID, type: String?): Flux<Document>
+    fun findById(id: UUID): Mono<Document>
+    fun updateStatus(id: UUID, status: String): Mono<Document>
 }

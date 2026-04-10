@@ -3,6 +3,7 @@ package dev.sayaya.handbook.interfaces.config
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.usecase.Broadcaster
@@ -23,14 +24,15 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class BroadcasterConfig {
     @Bean
-    fun objectMapper(): ObjectMapper = ObjectMapper()
+    fun objectMapper(): ObjectMapper = JsonMapper.builder()
         .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .registerModule(JavaTimeModule())
-        .registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        .addModule(JavaTimeModule())
+        .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .build()
 
     @Bean
     fun workspaceSinkManager() = WorkspaceSinkManager()

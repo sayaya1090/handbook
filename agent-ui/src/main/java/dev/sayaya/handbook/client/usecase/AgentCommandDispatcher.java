@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.usecase;
 import dev.sayaya.handbook.client.domain.*;
 import dev.sayaya.rx.Observable;
 
+
 /**
  * 수신된 에이전트 커맨드를 타입별로 분류하여 발행하는 디스패처 포트 인터페이스.
  *
@@ -19,8 +20,8 @@ public interface AgentCommandDispatcher {
     Observable<ProgressInfo> progressUpdates();
     /** 미리보기 스트림 (preview 커맨드) */
     Observable<String[]> previewRequests();
-    /** 완료 요약 스트림 (complete 커맨드) */
-    Observable<String> completions();
+    /** 완료 정보 스트림 (complete 커맨드) */
+    Observable<dev.sayaya.handbook.client.domain.CompleteInfo> completions();
     /** 하이라이트 대상 스트림 (highlight 커맨드) */
     Observable<String> highlights();
     /** 스크롤 대상 스트림 (scroll 커맨드) */
@@ -31,4 +32,6 @@ public interface AgentCommandDispatcher {
     Observable<String[]> mutations();
     /** notify 커맨드 스트림 */
     Observable<NotifyInfo> notifications();
+    /** search 시각화 커맨드 스트림 */
+    Observable<SearchVisualizationRequest> searchVisualizations();
 }

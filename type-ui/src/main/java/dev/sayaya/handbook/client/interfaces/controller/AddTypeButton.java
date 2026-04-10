@@ -44,7 +44,7 @@ public class AddTypeButton implements IsElement<HTMLElement> {
                   ChangeTracker tracker, LayoutProvider layoutProvider, LabelProvider labelProvider) {
         root = ButtonElementBuilder.button().filled()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-plus"))
-                .css("type-ctrl-btn")
+                .css("type-ctrl-btn", "type-ctrl-btn-add")
                 .element();
 
         root.addEventListener("click", e -> {

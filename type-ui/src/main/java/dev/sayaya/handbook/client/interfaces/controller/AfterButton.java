@@ -34,7 +34,7 @@ public class AfterButton implements IsElement<HTMLElement> {
     AfterButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
         root = ButtonElementBuilder.button().text()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-right"))
-                .css("type-ctrl-btn")
+                .css("type-ctrl-btn").css("type-ctrl-btn-after")
                 .element();
 
         root.addEventListener("click", e -> navigate(layoutProvider, layoutList, actionManager, 1));

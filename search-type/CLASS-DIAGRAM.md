@@ -29,6 +29,8 @@ classDiagram
     class TypeController {
         -TypeService service
         +types(workspace: UUID, effect: Instant, expire: Instant): Flux~Type~
+        +versions(workspace: UUID, typeId: String): Flux~Type~
+        +diff(workspace: UUID, typeId: String, v1: String, v2: String): Mono~DiffResult~
     }
 
     class LayoutController {

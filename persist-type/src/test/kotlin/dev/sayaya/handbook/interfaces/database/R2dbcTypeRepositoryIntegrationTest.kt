@@ -3,9 +3,9 @@ package dev.sayaya.handbook.interfaces.database
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Attribute
@@ -14,9 +14,8 @@ import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.TypePatch
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import io.r2dbc.spi.ConnectionFactories
-import io.r2dbc.spi.ConnectionFactoryOptions
-import io.r2dbc.spi.ConnectionFactoryOptions.*
+import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
+import io.r2dbc.postgresql.PostgresqlConnectionFactory
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.r2dbc.repository.support.R2dbcRepositoryFactory
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
@@ -30,14 +29,13 @@ import java.util.*
 class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
     val postgres = PostgreSQLContainer("postgres:17").apply { start() }
 
-    val connectionFactory = ConnectionFactories.get(
-        ConnectionFactoryOptions.builder()
-            .option(DRIVER, "postgresql")
-            .option(HOST, postgres.host)
-            .option(PORT, postgres.firstMappedPort)
-            .option(DATABASE, postgres.databaseName)
-            .option(USER, postgres.username)
-            .option(PASSWORD, postgres.password)
+    val connectionFactory = PostgresqlConnectionFactory(
+        PostgresqlConnectionConfiguration.builder()
+            .host(postgres.host)
+            .port(postgres.firstMappedPort)
+            .database(postgres.databaseName)
+            .username(postgres.username)
+            .password(postgres.password)
             .build()
     )
 
@@ -45,17 +43,19 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
     val repositoryFactory = R2dbcRepositoryFactory(template)
     val typeRepo = repositoryFactory.getRepository(R2dbcTypeEntityRepository::class.java)
     val attrRepo = repositoryFactory.getRepository(R2dbcAttributeEntityRepository::class.java)
-    val objectMapper = ObjectMapper()
+    val objectMapper = JsonMapper.builder()
         .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .registerModule(JavaTimeModule())
-        .registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        .addModule(JavaTimeModule())
+        .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .build()
     val tx = TransactionalOperator.create(R2dbcTransactionManager(connectionFactory))
     val databaseClient = DatabaseClient.create(connectionFactory)
-    val adapter = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, objectMapper, tx, databaseClient)
+    val attrMapper = AttributeEntityMapper(objectMapper)
+    val adapter = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, attrMapper, tx, databaseClient)
 
     val workspace = UUID.randomUUID()
 
@@ -87,6 +87,8 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                 attribute_type JSONB NOT NULL,
                 nullable BOOLEAN NOT NULL DEFAULT FALSE,
                 inherited BOOLEAN NOT NULL DEFAULT FALSE,
+                read_roles JSONB NOT NULL DEFAULT '[]'::jsonb,
+                write_roles JSONB NOT NULL DEFAULT '[]'::jsonb,
                 PRIMARY KEY (id)
             )
         """).then().block()
@@ -169,8 +171,6 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
 
         When("patch로 일부 속성만 변경하면") {
             Then("변경 속성만 업데이트되고 나머지는 유지된다") {
-                // 먼저 저장
-                adapter.save(workspace, listOf(type)).collectList().block()
                 val savedRev = typeRepo.findById("customer").block()!!.rev!!
 
                 val patch = TypePatch(
@@ -197,6 +197,30 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                         patched.attributes.any { it.name == "phone" } shouldBe true
                     }
                     .verifyComplete()
+            }
+        }
+
+        When("잘못된 rev로 patch를 호출하면") {
+            Then("DuplicateKeyException이 발생한다") {
+                val wrongRev = 999L
+                val patch = TypePatch(
+                    id = "customer",
+                    version = "1.0",
+                    rev = wrongRev,
+                    attributes = listOf(
+                        Attribute(
+                            name = "email",
+                            order = 3,
+                            description = "이메일",
+                            type = AttributeType.Text(),
+                            nullable = true,
+                            inherited = false,
+                        ),
+                    ),
+                )
+                StepVerifier.create(adapter.patch(workspace, listOf(patch)))
+                    .expectErrorMatches { it is org.springframework.dao.DuplicateKeyException && it.message!!.contains("Version conflict") }
+                    .verify()
             }
         }
 

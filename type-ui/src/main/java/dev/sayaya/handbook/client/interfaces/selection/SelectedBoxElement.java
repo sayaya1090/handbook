@@ -31,6 +31,10 @@ public class SelectedBoxElement {
         subject.next(next);
     }
 
+    public void selectAll(Set<String> keys) {
+        subject.next(new LinkedHashSet<>(keys));
+    }
+
     public void clear() {
         subject.next(Collections.emptySet());
     }

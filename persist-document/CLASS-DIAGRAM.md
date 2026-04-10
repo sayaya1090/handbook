@@ -90,6 +90,32 @@ classDiagram
     DocumentConfig ..> R2dbcDocumentRepositoryAdapter : creates
     DocumentConfig ..> KafkaDocumentEventPublisher : creates
     DocumentConfig ..> DocumentService : creates
+
+    class FileUploadController {
+        -FileStorageService fileStorageService
+        -Set~String~ allowedExtensions
+        +upload(workspace: UUID, filePart: FilePart): Mono~FileUploadResponse~
+    }
+
+    class FileStorageService {
+        <<interface>>
+        +upload(workspace: UUID, filename: String, bytes: byte[]): Mono~String~
+    }
+
+    class LocalFileStorageAdapter {
+        -Path basePath
+        +upload(workspace: UUID, filename: String, bytes: byte[]): Mono~String~
+    }
+
+    class FileConfig {
+        <<Configuration>>
+        +allowedExtensions(): Set~String~
+        +fileStorageService(): FileStorageService
+    }
+
+    FileUploadController --> FileStorageService
+    LocalFileStorageAdapter ..|> FileStorageService
+    FileConfig ..> LocalFileStorageAdapter : creates
 ```
 
 ## 설계 패턴

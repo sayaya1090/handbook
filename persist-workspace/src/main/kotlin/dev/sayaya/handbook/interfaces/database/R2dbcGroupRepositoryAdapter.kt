@@ -9,6 +9,17 @@ import reactor.core.publisher.Mono
 import java.security.Principal
 import java.util.*
 
+/**
+ * [GroupRepository] 포트의 R2DBC 어댑터.
+ *
+ * **책임:** 그룹 생성/멤버 배정 및 기존 그룹에 멤버 추가를 R2DBC로 처리한다.
+ *
+ * **의존관계:**
+ * - [R2dbcEntityTemplate] — R2DBC 엔티티 삽입/조회
+ *
+ * **주의:** addMember는 기본 "Member" 그룹에 사용자를 추가한다.
+ * 그룹이 존재하지 않으면 자동 생성 후 멤버를 추가한다.
+ */
 @Repository
 class R2dbcGroupRepositoryAdapter(
     private val template: R2dbcEntityTemplate,
@@ -24,5 +35,18 @@ class R2dbcGroupRepositoryAdapter(
         return template.insert(groupEntity)
             .delayUntil { template.insert(memberEntity) }
             .map { Group(UUID.randomUUID(), workspace.id, name, description) }
+    }
+
+    override fun addMember(workspaceId: UUID, principal: Principal): Mono<Void> {
+        val memberEntity = R2dbcGroupMemberEntity(
+            workspace = workspaceId,
+            group = GROUP_MEMBER,
+            member = UUID.fromString(principal.name),
+        )
+        return template.insert(memberEntity).then()
+    }
+
+    companion object {
+        const val GROUP_MEMBER = "Member"
     }
 }

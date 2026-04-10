@@ -19,7 +19,7 @@ class AttributeTypeTest : StringSpec({
         .addModule(kotlinModule())
         .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .serializationInclusion(JsonInclude.Include.NON_EMPTY) // NON_NULL에서 NON_EMPTY로 변경
+        .serializationInclusion(JsonInclude.Include.NON_EMPTY)
         .build()
 
     /**

@@ -15,7 +15,7 @@ import static org.jboss.elemento.Elements.div;
  * 저장/새로고침 버튼, 스냅 체크박스, 모드 토글 등 모든 컨트롤러 버튼을 수평 배치한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link BeforeButton}, {@link AfterButton} — 레이아웃 기간 탐색</li>
- *   <li>{@link AddTypeButton}, {@link RemoveTypeButton} — 타입 CRUD</li>
+ *   <li>{@link AddTypeButton}, {@link RemoveTypeButton}, {@link BulkDeleteButton} — 타입 CRUD</li>
  *   <li>{@link UndoButton}, {@link RedoButton} — Undo/Redo</li>
  *   <li>{@link SaveButton}, {@link ReloadButton} — 저장/새로고침</li>
  *   <li>{@link SnapCheckbox} — 그리드 스냅 토글</li>
@@ -29,7 +29,7 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
 
     @Inject
     ControllerElement(BeforeButton beforeBtn, AfterButton afterBtn,
-                      AddTypeButton addBtn, RemoveTypeButton removeBtn,
+                      AddTypeButton addBtn, RemoveTypeButton removeBtn, BulkDeleteButton bulkDeleteBtn,
                       UndoButton undoBtn, RedoButton redoBtn,
                       SaveButton saveBtn, ReloadButton reloadBtn,
                       SnapCheckbox snapCheckbox, ModeToggleButton modeToggle) {
@@ -38,7 +38,7 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
                 .add(div().css("type-ctrl-group")
                         .add(beforeBtn).add(afterBtn))
                 .add(div().css("type-ctrl-group")
-                        .add(addBtn).add(removeBtn))
+                        .add(addBtn).add(removeBtn).add(bulkDeleteBtn))
                 .add(div().css("type-ctrl-group")
                         .add(undoBtn).add(redoBtn))
                 .add(div().css("type-ctrl-group")

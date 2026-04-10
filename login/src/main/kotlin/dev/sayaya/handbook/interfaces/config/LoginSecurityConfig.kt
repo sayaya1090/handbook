@@ -1,21 +1,16 @@
 package dev.sayaya.handbook.interfaces.config
 
-import dev.sayaya.handbook.interfaces.authentication.AuthenticationConfig
 import dev.sayaya.handbook.interfaces.authentication.JwtAuthenticationConverter
 import dev.sayaya.handbook.interfaces.authentication.JwtAuthenticationManager
 import dev.sayaya.handbook.interfaces.authentication.NoWwwAuthenticateEntryPoint
 import dev.sayaya.handbook.usecase.TokenPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpCookie
-import org.springframework.http.ResponseCookie
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.config.web.server.invoke
-import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.web.server.SecurityWebFilterChain
-import org.springframework.security.web.server.WebFilterExchange
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler
@@ -27,24 +22,21 @@ import java.net.URI
 /**
  * Spring Security 웹 필터 체인 및 OAuth2/JWT 인증 설정.
  *
- * **책임:** OAuth2 로그인 성공 시 JWT를 발급하여 HttpOnly 쿠키로 설정하고,
- * 로그아웃 시 쿠키를 삭제한다. JWT 인증 필터를 SecurityWebFilterChain에 등록하여
- * 이후 요청에서 쿠키 기반 인증을 수행한다.
+ * **책임:** SecurityWebFilterChain을 구성하여 OAuth2 로그인, JWT 인증 필터, 로그아웃,
+ * 경로별 접근 제어를 설정한다. 쿠키 생성/삭제 로직은 [AuthenticationCookieService]에 위임한다.
  *
  * **의존관계:**
- * - [AuthenticationConfig][dev.sayaya.handbook.interfaces.authentication.AuthenticationConfig] — JWT 쿠키 헤더명
+ * - [AuthenticationCookieService] — 인증 쿠키 설정/삭제
  * - [AuthenticationUrlConfig] — 인증 후 리다이렉트 URL
  * - [TokenPublisher] — OAuth2 사용자 → JWT 발급
- * - [TokenFactoryConfig] — JWT 만료 시간 (쿠키 maxAge)
  *
  * **주의:** CSRF는 비활성화되어 있으며, `/oauth2/`, `/auth/`, `/menus`는 인증 없이 접근 가능하다.
  */
 @Configuration
 class LoginSecurityConfig(
-    private val authConfig: AuthenticationConfig,
+    private val cookieService: AuthenticationCookieService,
     private val urlConfig: AuthenticationUrlConfig,
     private val tokenPublisher: TokenPublisher,
-    private val tokenFactoryConfig: TokenFactoryConfig,
 ) {
     @Bean
     fun securityFilterChain(
@@ -60,7 +52,11 @@ class LoginSecurityConfig(
             csrf { disable() }
             httpBasic { disable() }
             formLogin { disable() }
-            headers { frameOptions { mode = XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN } }
+            headers {
+                frameOptions { mode = XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN }
+                contentTypeOptions { }
+                hsts { }
+            }
             addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             exceptionHandling { authenticationEntryPoint = noWwwAuthenticateEntryPoint }
             oauth2Login {
@@ -88,7 +84,7 @@ class LoginSecurityConfig(
             val provider = oauth2Token.authorizedClientRegistrationId
             val principal = oauth2Token.principal ?: return@ServerAuthenticationSuccessHandler Mono.error(IllegalStateException("OAuth2 principal is null"))
             tokenPublisher.publish(provider, principal).flatMap { token ->
-                sendAuthenticationCookie(webFilterExchange.exchange, token)
+                cookieService.sendAuthenticationCookie(webFilterExchange.exchange, token)
                     .then(redirect(webFilterExchange.exchange, urlConfig.loginRedirectUri))
             }
         }
@@ -96,38 +92,20 @@ class LoginSecurityConfig(
 
     private fun logoutSuccessHandler(): ServerLogoutSuccessHandler {
         return ServerLogoutSuccessHandler { webFilterExchange, _ ->
-            clearAuthenticationCookie(webFilterExchange.exchange)
+            cookieService.clearAuthenticationCookie(webFilterExchange.exchange)
                 .then(redirect(webFilterExchange.exchange, urlConfig.logoutRedirectUri))
         }
     }
 
-    fun sendAuthenticationCookie(exchange: ServerWebExchange, token: String): Mono<Void> {
-        val cookie = ResponseCookie.from(authConfig.header, token)
-            .httpOnly(true)
-            .secure(true)
-            .sameSite("Lax")
-            .path("/")
-            .maxAge(tokenFactoryConfig.duration)
-            .build()
-        exchange.response.addCookie(cookie)
-        return Mono.empty()
-    }
-
-    private fun clearAuthenticationCookie(exchange: ServerWebExchange): Mono<Void> {
-        val cookie = ResponseCookie.from(authConfig.header, "")
-            .httpOnly(true)
-            .secure(true)
-            .sameSite("Lax")
-            .path("/")
-            .maxAge(0)
-            .build()
-        exchange.response.addCookie(cookie)
-        return Mono.empty()
-    }
-
+    /**
+     * 리다이렉트 URI를 검증하고 안전한 경우에만 리다이렉트를 수행한다.
+     *
+     * 상대 경로("/"로 시작)만 허용하며, 절대 URL(외부 도메인)은 "/"로 대체한다.
+     */
     private fun redirect(exchange: ServerWebExchange, uri: String): Mono<Void> {
+        val safeUri = if (uri.startsWith("/") && !uri.startsWith("//")) uri else "/"
         exchange.response.statusCode = org.springframework.http.HttpStatus.FOUND
-        exchange.response.headers.location = URI.create(uri)
+        exchange.response.headers.location = URI.create(safeUri)
         return exchange.response.setComplete()
     }
 }

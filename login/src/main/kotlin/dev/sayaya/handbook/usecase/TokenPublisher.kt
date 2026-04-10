@@ -32,7 +32,7 @@ class TokenPublisher(
                 userRepository.updateLastLoginDateTime(user.id, LocalDateTime.now())
                     .thenReturn(user)
             }
-            .switchIfEmpty(createUser(provider, principal))
+            .switchIfEmpty(Mono.defer { createUser(provider, principal) })
             .map { user -> factory.publish(user) }
     }
 

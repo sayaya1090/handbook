@@ -23,4 +23,10 @@ public class Column {
     public String type;
     public Integer width;
     public Boolean readOnly;
+    /** Handsontable dropdown/autocomplete source options (enum 등). */
+    public String[] source;
+    /** Handsontable date format string (예: "YYYY-MM-DD HH:mm"). */
+    public String dateFormat;
+    /** true이면 Handsontable이 잘못된 날짜 형식을 자동 보정한다. */
+    public Boolean correctFormat;
 }

@@ -21,7 +21,7 @@ import static org.jboss.elemento.Elements.span;
  *   <li>{@link AgentActivityList} — 에이전트 활동 목록 상태 구독</li>
  *   <li>{@link LabelProvider} — 패널 제목 및 빈 상태 메시지 다국어 처리</li>
  * </ul></p>
- * <p><b>주의:</b> formatTimestamp()는 JSNI로 구현되어 브라우저 Date 객체를 사용한다.</p>
+ * <p><b>주의:</b> formatTimestamp()는 JsDate를 사용하여 시간을 포맷한다.</p>
  */
 @Singleton
 public class ActivityLogElement implements IsElement<elemental2.dom.HTMLElement> {
@@ -74,12 +74,13 @@ public class ActivityLogElement implements IsElement<elemental2.dom.HTMLElement>
         }
     }
 
-    private static native String formatTimestamp(double ts) /*-{
-        var d = new Date(ts);
-        var h = ('0' + d.getHours()).slice(-2);
-        var m = ('0' + d.getMinutes()).slice(-2);
-        return h + ':' + m;
-    }-*/;
+    /** 타임스탬프(ms)를 "HH:mm" 형식으로 변환한다. */
+    private static String formatTimestamp(double ts) {
+        elemental2.core.JsDate d = new elemental2.core.JsDate(ts);
+        int h = (int) d.getHours();
+        int m = (int) d.getMinutes();
+        return (h < 10 ? "0" + h : "" + h) + ":" + (m < 10 ? "0" + m : "" + m);
+    }
 
     @Override
     public elemental2.dom.HTMLElement element() { return element; }

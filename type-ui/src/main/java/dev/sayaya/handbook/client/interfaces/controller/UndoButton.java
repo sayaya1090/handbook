@@ -29,7 +29,7 @@ public class UndoButton implements IsElement<HTMLElement> {
     UndoButton(ActionManager actionManager, LabelProvider labelProvider) {
         root = ButtonElementBuilder.button().text()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate-left"))
-                .css("type-ctrl-btn")
+                .css("type-ctrl-btn").css("type-ctrl-btn-undo")
                 .element();
 
         root.addEventListener("click", e -> actionManager.undo());

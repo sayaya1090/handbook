@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
+import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.domain.DocumentValue;
 import dev.sayaya.handbook.client.usecase.DocumentRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
@@ -56,6 +57,7 @@ public class DocumentApi implements DocumentRepository {
                 .then(json -> Promise.resolve(Js.<DocumentValue[]>cast(json)))
                 .catch_(err -> {
                     GWT.log("DocumentApi.search failed: " + err);
+                    ErrorNotifier.notify("DocumentApi.search failed: " + err);
                     return Promise.resolve(new DocumentValue[0]);
                 });
         return AsyncSubject.await(promise);
@@ -72,6 +74,7 @@ public class DocumentApi implements DocumentRepository {
                 .then(r -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("DocumentApi.save failed: " + err);
+                    ErrorNotifier.notify("DocumentApi.save failed: " + err);
                     return Promise.resolve((Void) null);
                 });
         return AsyncSubject.await(promise);
@@ -91,6 +94,7 @@ public class DocumentApi implements DocumentRepository {
                 })
                 .catch_(err -> {
                     GWT.log("DocumentApi.patch failed: " + err);
+                    ErrorNotifier.notify("DocumentApi.patch failed: " + err);
                     return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
@@ -107,6 +111,7 @@ public class DocumentApi implements DocumentRepository {
                 .then(r -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("DocumentApi.delete failed: " + err);
+                    ErrorNotifier.notify("DocumentApi.delete failed: " + err);
                     return Promise.resolve((Void) null);
                 });
         return AsyncSubject.await(promise);

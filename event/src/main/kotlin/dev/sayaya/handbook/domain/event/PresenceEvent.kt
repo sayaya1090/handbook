@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain.event
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.io.Serializable
 import java.util.*
 
@@ -14,7 +15,7 @@ import java.util.*
 data class PresenceEvent(
     override val id: UUID = UUID.randomUUID(),
     override val workspace: UUID,
-    override val eventType: Event.EventType = Event.EventType.PRESENCE,
+    @JsonProperty("event_type") override val eventType: Event.EventType = Event.EventType.PRESENCE,
     override val payload: PresencePayload,
 ) : Event<PresencePayload>
 

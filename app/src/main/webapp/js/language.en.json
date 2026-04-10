@@ -40,5 +40,6 @@
     "type.undo": "Undo",
     "type_canvas": "Type Canvas",
     "type_definition": "Type Definition",
-    "types": "Types"
+    "types": "Types",
+    "workspace.name.invalid": "Workspace name must contain only alphanumeric, Korean, hyphen, or underscore characters (max 255)"
 }

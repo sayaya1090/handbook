@@ -112,6 +112,77 @@ sequenceDiagram
 
 ---
 
+## UC-EB6: SSE 재연결 지원
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 클라이언트 (shell-ui) |
+| **선행조건** | SSE 연결이 수립된 상태에서 네트워크 장애 또는 서비스 재시작 발생 |
+| **정상 흐름** | 1. `MessageController`가 각 SSE 이벤트에 `retry(Duration.ofSeconds(5))` 힌트를 포함하여 전송한다.<br>2. SSE 연결이 끊어지면 브라우저의 EventSource가 5초 후 자동 재연결을 시도한다.<br>3. 재연결 성공 시 새로운 SSE 스트림이 수립된다. |
+| **요구사항** | 7.3 회복성 강화 — SSE 재연결 |
+| **상태** | ✅ 구현 완료 (서버 측 retry 힌트) |
+| **구현 클래스** | `MessageController` (ServerSentEvent.builder().retry()) |
+| **비고** | 클라이언트 측 exponential backoff 및 Toast 알림은 향후 프론트엔드에서 보강 예정 |
+
+```mermaid
+sequenceDiagram
+    actor Client as 클라이언트
+    participant GW as Gateway
+    participant EB as event-broadcaster
+
+    Client->>GW: SSE 연결 (정상)
+    GW->>EB: SSE 프록시
+    EB-->>Client: text/event-stream (이벤트 수신 중)
+    Note over Client,EB: ⚡ 네트워크 장애 / 서비스 재시작
+    Client->>Client: onerror 감지
+    Client->>Client: Toast WARNING 표시
+
+    loop Exponential Backoff
+        Client->>GW: 재연결 시도 (1초 후)
+        GW-->>Client: 503 Service Unavailable
+        Client->>GW: 재연결 시도 (2초 후)
+        GW-->>Client: 503 Service Unavailable
+        Client->>GW: 재연결 시도 (4초 후)
+        GW->>EB: SSE 프록시
+        EB-->>Client: text/event-stream (재연결 성공)
+    end
+
+    Client->>Client: Toast INFO "연결 복구"
+```
+
+## UC-EB7: Kafka DLQ 처리
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (Kafka Consumer) |
+| **선행조건** | Kafka 이벤트 처리 중 예외 발생 |
+| **정상 흐름** | 1. `EventMessageListener`가 이벤트 처리 중 예외를 발생시킨다 (역직렬화 실패, 런타임 에러 등).<br>2. Spring Cloud Stream이 최대 3회 재시도를 수행한다 (`consumer.max-attempts: 3`).<br>3. 3회 모두 실패하면 이벤트를 `handbook-events-dlq` 토픽에 저장한다 (`enableDlq: true`, `dlqName: handbook-events-dlq`).<br>4. DLQ 이벤트에 원본 토픽, 에러 정보를 포함한다. |
+| **요구사항** | 7.3 회복성 강화 — Kafka DLQ |
+| **상태** | ✅ 구현 완료 |
+| **구현** | `application.yml` (Spring Cloud Stream Kafka Binder DLQ 설정) |
+
+```mermaid
+sequenceDiagram
+    participant Kafka as Kafka (handbook-events)
+    participant Consumer as EventMessageListener
+    participant DLQ as Kafka (handbook-events.DLT)
+    participant Prometheus as Prometheus
+
+    Kafka->>Consumer: 이벤트 수신
+    Consumer->>Consumer: JSON 역직렬화 시도
+    Consumer-->>Consumer: 예외 발생
+    Consumer->>Consumer: 재시도 1 (1초 후)
+    Consumer-->>Consumer: 예외 발생
+    Consumer->>Consumer: 재시도 2 (2초 후)
+    Consumer-->>Consumer: 예외 발생
+    Consumer->>Consumer: 재시도 3 (4초 후)
+    Consumer-->>Consumer: 예외 발생
+    Consumer->>DLQ: DLQ에 이벤트 저장 (원본 + 에러 헤더)
+    Consumer->>Prometheus: dlq_events_total 카운터 증가
+```
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 요구사항 | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
@@ -121,3 +192,5 @@ sequenceDiagram
 | UC-EB3 (Keep-alive) | 3.9 (Keep-alive ping) | SSE 연결 및 이벤트 브로드캐스트 (loop) | MessageController | - |
 | UC-EB4 (연결 정리) | 3.9 (Sink lazy 생성/자동 정리) | 연결 정리 | WorkspaceSinkManager, WorkspaceSink | - |
 | UC-EB5 (다중 구독자) | 3.1 (실시간 협업), 3.9 (SSE) | SSE 연결 및 이벤트 브로드캐스트 | Broadcaster, WorkspaceSinkManager, WorkspaceSink | BroadcasterTest: 다중 구독자 동시 수신 검증, WorkspaceSinkManagerTest: 여러 구독자 동시 구독 검증 |
+| UC-EB6 (SSE 재연결) | 7.3 (SSE 재연결) | SSE 재연결 | MessageController (retry 힌트) | MessageControllerTest |
+| UC-EB7 (Kafka DLQ) | 7.3 (Kafka DLQ) | Kafka DLQ 처리 | application.yml (enableDlq, dlqName) | - |

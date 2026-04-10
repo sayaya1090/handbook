@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
+import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.domain.TypeInfo;
 import dev.sayaya.handbook.client.usecase.TypeRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
@@ -52,6 +53,7 @@ public class TypeApi implements TypeRepository {
                 .then(json -> Promise.resolve(Js.<TypeInfo[]>cast(json)))
                 .catch_(err -> {
                     GWT.log("TypeApi.list failed: " + err);
+                    ErrorNotifier.notify("TypeApi.list failed: " + err);
                     return Promise.resolve(new TypeInfo[0]);
                 });
         return AsyncSubject.await(promise);

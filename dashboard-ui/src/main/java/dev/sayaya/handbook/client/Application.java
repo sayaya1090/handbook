@@ -16,6 +16,10 @@ public class Application implements EntryPoint {
         Component component = DaggerComponent.create();
         injectCss("css/dashboard.css");
 
+        // URL에서 워크스페이스 ID 추출 후 API에 설정
+        String wsId = extractWorkspaceId();
+        component.dashboardApi().setWorkspace(wsId);
+
         // 대시보드 데이터 로딩
         component.dashboardRepository().fetchStats().subscribe(stats -> {
             if (stats != null) component.statsProvider().next(stats);
@@ -30,10 +34,27 @@ public class Application implements EntryPoint {
         body().add(component.dashboard());
     }
 
-    private static native void injectCss(String href) /*-{
-        var link = $doc.createElement('link');
-        link.rel = 'stylesheet';
+    /**
+     * 현재 URL 경로에서 워크스페이스 ID를 추출한다.
+     * 예: "/workspace/abc-123/dashboard" -&gt; "abc-123"
+     */
+    private static String extractWorkspaceId() {
+        String path = elemental2.dom.DomGlobal.window.location.pathname;
+        int idx = path.indexOf("/workspace/");
+        if (idx < 0) return "";
+        String rest = path.substring(idx + "/workspace/".length());
+        int slashIdx = rest.indexOf('/');
+        String wsId = slashIdx >= 0 ? rest.substring(0, slashIdx) : rest;
+        int queryIdx = wsId.indexOf('?');
+        if (queryIdx >= 0) wsId = wsId.substring(0, queryIdx);
+        return wsId;
+    }
+
+    /** 지정된 CSS 파일을 &lt;link&gt; 요소로 document.head에 추가한다. */
+    private static void injectCss(String href) {
+        var link = (elemental2.dom.HTMLLinkElement) elemental2.dom.DomGlobal.document.createElement("link");
+        link.rel = "stylesheet";
         link.href = href;
-        $doc.head.appendChild(link);
-    }-*/;
+        elemental2.dom.DomGlobal.document.head.appendChild(link);
+    }
 }

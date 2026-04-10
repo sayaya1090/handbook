@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.interfaces.database.*
@@ -26,6 +27,7 @@ import org.springframework.transaction.reactive.TransactionalOperator
  * Jackson ObjectMapper를 snake_case + JavaTime 지원으로 구성한다.
  *
  * **의존관계:**
+ * - [AttributeEntityMapper] — 속성 엔티티 ↔ 도메인 매퍼
  * - [R2dbcTypeRepositoryAdapter] — 타입 영속화 어댑터
  * - [R2dbcLayoutRepositoryAdapter] — 레이아웃 영속화 어댑터
  * - [KafkaTypeEventPublisher] — Kafka 이벤트 발행 어댑터
@@ -35,23 +37,27 @@ import org.springframework.transaction.reactive.TransactionalOperator
 @Configuration
 class TypeConfig {
     @Bean
-    fun objectMapper(): ObjectMapper = ObjectMapper()
+    fun objectMapper(): ObjectMapper = JsonMapper.builder()
         .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .registerModule(JavaTimeModule())
-        .registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        .addModule(JavaTimeModule())
+        .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .build()
+
+    @Bean
+    fun attributeEntityMapper(objectMapper: ObjectMapper) = AttributeEntityMapper(objectMapper)
 
     @Bean
     fun typeRepositoryAdapter(
         typeRepo: R2dbcTypeEntityRepository,
         attrRepo: R2dbcAttributeEntityRepository,
-        objectMapper: ObjectMapper,
+        attrMapper: AttributeEntityMapper,
         tx: TransactionalOperator,
         databaseClient: DatabaseClient,
-    ) = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, objectMapper, tx, databaseClient)
+    ) = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, attrMapper, tx, databaseClient)
 
     @Bean
     fun layoutRepositoryAdapter(repository: R2dbcLayoutEntityRepository, objectMapper: ObjectMapper) =

@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.interfaces.database
 
+import io.r2dbc.postgresql.codec.Json
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -27,7 +28,11 @@ data class R2dbcAttributeEntity(
     @Column("attr_order") val order: Short,
     val description: String?,
     /** JSONB — AttributeType의 직렬화된 형태 */
-    @Column("attribute_type") val attributeType: String,
+    @Column("attribute_type") val attributeType: Json,
     val nullable: Boolean,
     val inherited: Boolean,
+    /** JSONB — 읽기 권한 역할 목록의 직렬화된 형태 */
+    @Column("read_roles") val readRoles: Json = Json.of("[]"),
+    /** JSONB — 쓰기 권한 역할 목록의 직렬화된 형태 */
+    @Column("write_roles") val writeRoles: Json = Json.of("[]"),
 )
