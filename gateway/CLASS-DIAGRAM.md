@@ -53,34 +53,9 @@ classDiagram
     ServiceDiscovery ..|> MenuSupplier
     MenuController --> MenuService
     ServiceListProperties *-- ServiceEntry
-    class RateLimitFilter {
-        <<@Component>>
-        -windowMillis: Long
-        -maxRequests: Int
-        -counters: ConcurrentHashMap
-        +filter(exchange, chain): Mono~Void~
-    }
-
-    class CorrelationIdFilter {
-        <<@Component @Order(HIGHEST_PRECEDENCE)>>
-        +HEADER_NAME: String$
-        +MDC_KEY: String$
-        +filter(exchange, chain): Mono~Void~
-    }
-
-    class FallbackController {
-        <<@RestController>>
-        +fallbackGet(): ResponseEntity~Map~
-        +fallbackPost(): ResponseEntity~Map~
-    }
-
-    RateLimitFilter ..|> WebFilter
-    CorrelationIdFilter ..|> WebFilter
-
     GatewayConfig --> ServiceListProperties
     GatewayConfig ..> ServiceDiscovery : creates
     GatewayConfig ..> MenuService : creates
-    GatewayConfig ..> CorsWebFilter : creates
 ```
 
 ## 설계 패턴
@@ -91,5 +66,3 @@ classDiagram
 | **Port & Adapter** | MenuSupplier | usecase의 포트를 ServiceDiscovery가 구현 |
 | **Graceful Degradation** | MenuService | 개별 서비스 실패 시 해당 서비스의 결과만 무시하고 나머지 반환 |
 | **Configuration Properties** | ServiceListProperties | 서비스 목록을 YAML에서 바인딩 |
-| **Filter Chain** | RateLimitFilter, CorrelationIdFilter | WebFilter로 횡단 관심사(보안, 관측성) 처리 |
-| **Circuit Breaker** | FallbackController + application.yml | 선택 서비스(assistant, event-broadcaster) 장애 시 빈 응답 반환 |

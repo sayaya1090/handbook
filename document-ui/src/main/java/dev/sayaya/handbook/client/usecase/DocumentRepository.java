@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.DocumentValue;
 import dev.sayaya.rx.Observable;
-import jsinterop.base.JsPropertyMap;
 
 import java.util.List;
 
@@ -10,7 +9,5 @@ import java.util.List;
 public interface DocumentRepository {
     Observable<DocumentValue[]> search(String type, int page, int limit);
     Observable<Void> save(List<DocumentValue> documents);
-    /** 변경 필드만 전송하는 패치 저장. 각 항목은 {id, rev, data: {변경필드만}} 형태. */
-    Observable<Void> patch(List<JsPropertyMap<?>> patches);
     Observable<Void> delete(List<DocumentValue> documents);
 }

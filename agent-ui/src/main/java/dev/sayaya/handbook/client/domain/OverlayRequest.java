@@ -3,10 +3,8 @@ package dev.sayaya.handbook.client.domain;
 import dev.sayaya.handbook.domain.AttentionStyle;
 
 /**
- * 오버레이 렌더링 요청 값 객체.
- *
- * <p><b>책임:</b> attention 커맨드의 대상(target), 스타일, 메시지, 위치, 해제 가능 여부를 UI에 전달한다.</p>
- * <p><b>의존관계:</b> <ul><li>{@link dev.sayaya.handbook.domain.AttentionStyle} — 오버레이 스타일 열거형</li></ul></p>
+ * 오버레이 렌더링 요청.
+ * AttentionCommand를 UI에 전달하기 위한 값 객체.
  */
 public class OverlayRequest {
     private final String target;

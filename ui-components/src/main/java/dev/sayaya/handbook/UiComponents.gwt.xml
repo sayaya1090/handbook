@@ -3,7 +3,6 @@
     <inherits name="com.google.gwt.user.User"/>
     <inherits name="org.jboss.elemento.Core"/>
     <inherits name="dev.sayaya.Ui"/>
-    <inherits name="dev.sayaya.Rx"/>
     <source path="domain"/>
     <source path="client"/>
 </module>

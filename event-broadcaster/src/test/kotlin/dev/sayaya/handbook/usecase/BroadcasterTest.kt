@@ -3,9 +3,9 @@ package dev.sayaya.handbook.usecase
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Document
@@ -19,15 +19,14 @@ import java.util.*
 
 class BroadcasterTest : DescribeSpec({
 
-    val objectMapper = JsonMapper.builder()
+    val objectMapper = ObjectMapper()
         .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .addModule(JavaTimeModule())
-        .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
-        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .build()
+        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        .registerModule(JavaTimeModule())
+        .registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
 
     val workspace = UUID.randomUUID()
     val now = Instant.now()
@@ -55,38 +54,6 @@ class BroadcasterTest : DescribeSpec({
                 .assertNext { received ->
                     received.id shouldBe event.id
                     received.eventType shouldBe Event.EventType.DOCUMENT_CREATED
-                    received.workspace shouldBe workspace
-                }
-                .verifyComplete()
-        }
-
-        // UC-EB5: 다중 구독자 브로드캐스트
-        it("동일 워크스페이스의 다중 구독자에게 이벤트를 동시에 전달한다") {
-            val sinkManager = WorkspaceSinkManager()
-            val broadcaster = Broadcaster(objectMapper, sinkManager)
-            val event = sampleEvent()
-            val json = objectMapper.writeValueAsString(event)
-
-            val flux1 = broadcaster.listen(workspace).take(1)
-            val flux2 = broadcaster.listen(workspace).take(1)
-
-            // 구독자 1 검증
-            StepVerifier.create(flux1)
-                .then { broadcaster.broadcast(json) }
-                .assertNext { received ->
-                    received.id shouldBe event.id
-                    received.eventType shouldBe Event.EventType.DOCUMENT_CREATED
-                    received.workspace shouldBe workspace
-                }
-                .verifyComplete()
-
-            // 구독자 2도 새 이벤트를 수신할 수 있다
-            val event2 = sampleEvent()
-            val json2 = objectMapper.writeValueAsString(event2)
-            StepVerifier.create(flux2)
-                .then { broadcaster.broadcast(json2) }
-                .assertNext { received ->
-                    received.id shouldBe event2.id
                     received.workspace shouldBe workspace
                 }
                 .verifyComplete()

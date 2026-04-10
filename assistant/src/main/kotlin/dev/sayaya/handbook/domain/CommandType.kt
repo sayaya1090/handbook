@@ -15,5 +15,4 @@ enum class CommandType {
     PROGRESS,
     AWAIT_CONFIRM,
     COMPLETE,
-    DELEGATE,
 }

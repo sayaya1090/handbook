@@ -15,11 +15,9 @@ usecase/                         # 유스케이스 (프레임워크 의존성 �
 
 interfaces/                      # 인프라 어댑터 (Spring 의존)
 ├── api/
-│   └── MessageController       # SSE 엔드포인트 (/workspace/{ws}/messages, retry 5초 힌트)
+│   └── MessageController       # SSE 엔드포인트 (/workspace/{ws}/messages)
 ├── event/
-│   ├── EventMessageListener    # Kafka Consumer → Broadcaster 위임
-│   ├── WebhookSender           # 웹훅 HTTP POST 발신 (지수 백오프 재시도 + Micrometer 모니터링)
-│   └── WebhookDispatcher       # 웹훅 라우팅/디스패치
+│   └── EventMessageListener    # Kafka Consumer → Broadcaster 위임
 └── config/
     └── BroadcasterConfig       # ObjectMapper, Bean 등록 (Spring 설정)
 ```
@@ -67,16 +65,6 @@ flowchart LR
 - 모든 구독자가 연결을 해제하면 Sink를 완료(complete)하고 맵에서 제거한다.
 - `ConcurrentHashMap.compute`로 구독자 등록/해제와 Sink 생성/제거를 원자적으로 처리하여 경합 조건을 방지한다.
 - `Flux.defer`로 실제 구독 시점에 Sink를 획득하여, 완료된 Sink를 참조하는 문제를 방지한다.
-
-## 인프라 기능
-
-| 기능 | 구현 | 설명 |
-|------|------|------|
-| SSE 재연결 힌트 | `MessageController` | 각 SSE 이벤트에 `retry(5초)` 힌트 포함. 연결 끊김 시 브라우저가 5초 후 자동 재연결 |
-| Kafka DLQ | `application.yml` | `enableDlq: true`, `dlqName: handbook-events-dlq`. 3회 재시도 후 실패 이벤트를 DLQ 토픽에 저장 |
-| Webhook 실패 모니터링 | `WebhookSender` | 지수 백오프 3회 재시도. 최종 실패 시 `webhook_failures_total` Micrometer 카운터 기록 |
-| Prometheus | `application.yml` | `/actuator/prometheus` 메트릭 노출 |
-| 구조화 로깅 | `application.yml` | 로그 패턴에 correlationId 포함 |
 
 ## 테스트
 

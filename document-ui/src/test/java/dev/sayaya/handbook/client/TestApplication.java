@@ -11,59 +11,33 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.jboss.elemento.Elements.body;
-import static org.jboss.elemento.Elements.button;
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.span;
 
 public class TestApplication implements EntryPoint {
     @Override
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
 
-        // 테스트용 타입 설정 (다양한 속성 타입 포함)
-        TypeInfo customerType = createMixedType("customer");
+        // 테스트용 타입 설정
+        TypeInfo customerType = createType("customer", "name", "age", "email");
         TypeInfo orderType = createType("order", "customer", "amount", "date");
 
-        List<TypeInfo> allTypes = Arrays.asList(customerType, orderType);
-        component.typeList().next(allTypes);
+        component.typeList().next(Arrays.asList(customerType, orderType));
         component.typeProvider().next(customerType);
 
-        // 페이지네이션 컨트롤 (테스트용)
-        var prevBtn = button("◀").css("doc-page-btn", "doc-page-prev");
-        var nextBtn = button("▶").css("doc-page-btn", "doc-page-next");
-        var pagination = div().css("doc-pagination")
-                .add(prevBtn)
-                .add(span().css("doc-page-info"))
-                .add(nextBtn);
+        // 테스트용 문서 설정
+        DocumentValue doc1 = createDoc("CUST-001", "customer", "홍길동", "30", "test@example.com");
+        DocumentValue doc2 = createDoc("CUST-002", "customer", "김철수", "25", "kim@example.com");
+        component.spreadsheet().init(ColumnFactory.create(customerType));
 
         var container = div().css("doc-container")
                 .add(component.controller())
                 .add(component.spreadsheet())
-                .add(pagination)
                 .element();
         body().add(container);
 
-        // Handsontable init은 DOM에 요소가 추가된 후 호출해야 헤더가 렌더링됨
-        component.spreadsheet().init(ColumnFactory.create(customerType, allTypes));
-
         // UC-D9: 에이전트 문서 조작 핸들러 초기화
         component.agentHandler().init();
-    }
-
-    /** 다양한 속성 타입을 포함하는 테스트 타입 생성 */
-    private static TypeInfo createMixedType(String id) {
-        TypeInfo type = new TypeInfo();
-        type.id = id;
-        type.version = "1.0";
-        type.attributes = new AttributeInfo[] {
-            attr("name", "text"),
-            attr("age", "number"),
-            attr("birthday", "date"),
-            attrEnum("status", new String[]{"ACTIVE", "INACTIVE", "PENDING"}),
-            attr("verified", "bool"),
-            attrDoc("refOrder", "order"),
-        };
-        return type;
     }
 
     private static TypeInfo createType(String id, String... attrNames) {
@@ -72,29 +46,12 @@ public class TestApplication implements EntryPoint {
         type.version = "1.0";
         type.attributes = new AttributeInfo[attrNames.length];
         for (int i = 0; i < attrNames.length; i++) {
-            type.attributes[i] = attr(attrNames[i], "text");
+            type.attributes[i] = new AttributeInfo();
+            type.attributes[i].name = attrNames[i];
+            type.attributes[i].type = "text";
+            type.attributes[i].nullable = true;
         }
         return type;
-    }
-
-    private static AttributeInfo attr(String name, String type) {
-        AttributeInfo a = new AttributeInfo();
-        a.name = name;
-        a.type = type;
-        a.nullable = true;
-        return a;
-    }
-
-    private static AttributeInfo attrEnum(String name, String[] values) {
-        AttributeInfo a = attr(name, "enum");
-        a.allowedValues = values;
-        return a;
-    }
-
-    private static AttributeInfo attrDoc(String name, String refType) {
-        AttributeInfo a = attr(name, "document");
-        a.referencedType = refType;
-        return a;
     }
 
     private static DocumentValue createDoc(String serial, String type, String... values) {

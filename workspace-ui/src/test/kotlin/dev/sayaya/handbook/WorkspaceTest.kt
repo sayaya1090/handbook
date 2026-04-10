@@ -2,17 +2,14 @@ package dev.sayaya.handbook
 
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
-import dev.sayaya.handbook.test.Md3
-
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldNotBeBlank
 
 @GwtHtml("src/test/webapp/workspacetest.html")
 internal class WorkspaceTest: GwtTestSpec({
     Given("워크스페이스 UI가 초기화됨") {
-        Thread.sleep(3000) // GWT onModuleLoad + subscribe 완료 대기
+        Thread.sleep(3000)
+
         // UC-W1: 워크스페이스 생성
         Then("다이얼로그가 존재한다") {
             page.querySelector(".ws-dialog") shouldNotBe null
@@ -22,48 +19,46 @@ internal class WorkspaceTest: GwtTestSpec({
             sections.count() shouldBe 2
         }
         Then("라디오 버튼 2개가 존재한다") {
-            val radios = page.querySelectorAll("md-radio")
+            val radios = page.querySelectorAll("input[name='create-workspace']")
             radios.count() shouldBe 2
-        }
-        Then("입력 필드가 md-outlined-text-field로 렌더링된다") {
-            val mdFields = page.querySelectorAll("md-outlined-text-field")
-            mdFields.count() shouldBeGreaterThan 0
-        }
-        Then("섹션 요소 2개가 존재한다") {
-            val sections = page.querySelectorAll(".ws-section")
-            sections.count() shouldBe 2
         }
         Then("Submit 버튼이 존재한다") {
             val btn = page.querySelector(".ws-submit")
             btn shouldNotBe null
         }
         Then("Submit 버튼이 초기에 비활성 상태이다") {
-            with(Md3) { page.checkDisabled(".ws-submit") shouldBe true }
+            val btn = page.querySelector(".ws-submit")
+            val disabled = btn!!.evaluate("el => el.disabled || el.hasAttribute('disabled')") as Boolean
+            disabled shouldBe true
         }
 
         // UC-W1: CREATE 모드 동작
         When("CREATE 라디오를 선택하고 이름을 입력하면") {
-            with(Md3) {
-                page.click(".ws-section:first-of-type md-radio")
-                Thread.sleep(200)
-                page.fillTextFieldIn(".ws-section", 0, "md-outlined-text-field.ws-section-input", "TestWorkspace")
-                Thread.sleep(300)
-            }
+            page.click(".ws-section:first-child input[type='radio']")
+            Thread.sleep(200)
+            val input = page.querySelector(".ws-section:first-child .ws-section-input")
+            input shouldNotBe null
+            page.fill(".ws-section:first-child .ws-section-input", "TestWorkspace")
+            Thread.sleep(300)
             Then("Submit 버튼이 활성화된다") {
-                with(Md3) { page.checkDisabled(".ws-submit") shouldBe false }
+                val btn = page.querySelector(".ws-submit")
+                val disabled = btn!!.evaluate("el => el.disabled || el.hasAttribute('disabled')") as Boolean
+                disabled shouldBe false
             }
         }
 
         // UC-W2: JOIN 모드 전환
         When("JOIN 라디오를 선택하면") {
-            page.click("md-radio[value='JOIN']")
+            page.click(".ws-section:last-child input[type='radio']")
             Thread.sleep(200)
-            Then("JOIN 섹션의 입력 필드가 존재한다") {
-                page.querySelectorAll(".ws-section")[1]
-                    .querySelector("md-outlined-text-field.ws-section-input") shouldNotBe null
+            Then("JOIN 섹션의 입력 필드에 포커스가 이동한다") {
+                val input = page.querySelector(".ws-section:last-child .ws-section-input")
+                input shouldNotBe null
             }
-            Then("Submit 버튼이 존재한다 (JOIN 모드)") {
-                page.querySelector(".ws-submit") shouldNotBe null
+            Then("Submit 버튼이 비활성 상태로 돌아간다") {
+                val btn = page.querySelector(".ws-submit")
+                val disabled = btn!!.evaluate("el => el.disabled || el.hasAttribute('disabled')") as Boolean
+                disabled shouldBe true
             }
         }
 
@@ -114,7 +109,7 @@ internal class WorkspaceTest: GwtTestSpec({
                 page.querySelector(".ws-submit") shouldNotBe null
             }
             Then("입력 필드가 존재한다") {
-                val inputs = page.querySelectorAll("md-outlined-text-field.ws-section-input")
+                val inputs = page.querySelectorAll(".ws-section-input")
                 inputs.count() shouldBe 2
             }
         }

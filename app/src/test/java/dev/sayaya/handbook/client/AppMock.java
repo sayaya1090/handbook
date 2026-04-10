@@ -54,9 +54,6 @@ public class AppMock {
         return lang -> behavior(Labels.empty());
     }
 
-    @Provides @Singleton static dev.sayaya.handbook.usecase.FetchApi fetchApi() { return new dev.sayaya.handbook.usecase.FetchApi() {}; }
-    @Provides @Singleton static dev.sayaya.handbook.client.components.ToastContainer toastContainer() { return new dev.sayaya.handbook.client.components.ToastContainer(); }
-
     // ── Agent mocks ──
     @Provides @Singleton static AgentSession agentSession() { return new AgentSessionImpl(); }
     @Provides @Singleton static CommandRouter commandRouter(AgentSession session) { return new CommandRouter(session); }

@@ -7,14 +7,6 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
-/**
- * type_layouts 테이블에 매핑되는 R2DBC 엔티티.
- *
- * **책임:** 타입 캔버스 레이아웃(노드 위치 정보)과 DB 행 간의 양방향 변환을 담당한다.
- * positions 컬럼은 JSONB 문자열로 저장되며, JSON 역직렬화는 [R2dbcLayoutRepositoryAdapter]에서 처리한다.
- *
- * **주의:** positions가 null이면 레이아웃이 아직 정의되지 않은 상태이다.
- */
 @Table("type_layouts")
 data class R2dbcLayoutEntity(
     @Id val id: UUID,

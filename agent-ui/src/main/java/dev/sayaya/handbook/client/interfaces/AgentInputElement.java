@@ -5,7 +5,6 @@ import dev.sayaya.handbook.client.usecase.AgentApiPort;
 import dev.sayaya.handbook.client.usecase.AgentSession;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
@@ -20,15 +19,7 @@ import static org.jboss.elemento.Elements.div;
 
 /**
  * 에이전트에게 자연어 요청을 보내는 메인 입력 UI.
- *
- * <p><b>책임:</b> 하단 중앙에 고정된 입력 필드를 제공하고, 세션 상태에 따라 입력/비활성/중단 버튼을 전환한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link AgentApiPort} — 세션 시작, 응답 전송, 중단 요청</li>
- *   <li>{@link AgentSession} — 세션 상태 구독</li>
- *   <li>{@link ConfirmDialogElement} — 사용자 확인 응답 콜백 연결</li>
- *   <li>{@link LabelProvider} — 입력 필드 라벨/플레이스홀더 다국어 처리</li>
- *   <li>{@link ViewportObserver} — 모바일 뷰포트 감지, 가상 키보드 높이 조정</li>
- * </ul></p>
+ * 하단 중앙에 고정되며, 세션 상태에 따라 입력/비활성/중단 버튼을 전환한다.
  */
 @Singleton
 public class AgentInputElement implements IsElement<HTMLDivElement> {
@@ -42,7 +33,7 @@ public class AgentInputElement implements IsElement<HTMLDivElement> {
     private String workspace;
 
     @Inject
-    AgentInputElement(AgentApiPort api, AgentSession session, ConfirmDialogElement confirmDialog, LabelProvider labelProvider, ViewportObserver viewport) {
+    AgentInputElement(AgentApiPort api, AgentSession session, ConfirmDialogElement confirmDialog, LabelProvider labelProvider) {
         this.api = api;
 
         textField = TextFieldElementBuilder.textField().outlined()
@@ -86,28 +77,6 @@ public class AgentInputElement implements IsElement<HTMLDivElement> {
         });
         confirmDialog.onResponse(response -> {
             if (workspace != null) api.respond(workspace, response);
-        });
-        viewport.isMobile().subscribe(this::onMobileChange);
-    }
-
-    private void onMobileChange(boolean mobile) {
-        if (mobile) initVirtualKeyboardListener();
-    }
-
-    /**
-     * 모바일 가상 키보드 높이를 CSS 변수로 반영하는 리스너를 등록한다.
-     * visualViewport API가 지원되는 브라우저에서만 동작한다.
-     */
-    private static void initVirtualKeyboardListener() {
-        Object vv = jsinterop.base.Js.asPropertyMap(elemental2.dom.DomGlobal.window).get("visualViewport");
-        if (vv == null) return;
-        elemental2.dom.EventTarget viewport = jsinterop.base.Js.cast(vv);
-        viewport.addEventListener("resize", e -> {
-            jsinterop.base.JsPropertyMap<?> vvMap = jsinterop.base.Js.cast(vv);
-            double vvHeight = ((jsinterop.base.Any) vvMap.get("height")).asDouble();
-            double innerHeight = elemental2.dom.DomGlobal.window.innerHeight;
-            double keyboardHeight = Math.max(0, innerHeight - vvHeight);
-            elemental2.dom.DomGlobal.document.documentElement.style.setProperty("--keyboard-height", keyboardHeight + "px");
         });
     }
 

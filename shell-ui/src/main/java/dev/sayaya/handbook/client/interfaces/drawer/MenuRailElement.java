@@ -21,20 +21,6 @@ import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsLast;
 import static org.jboss.elemento.Elements.div;
 
-/**
- * 메뉴 레일 네비게이션 컨테이너.
- *
- * <p><b>책임:</b> MenuList의 메뉴 목록을 정렬하여 렌더링하고,
- * MenuRailMode의 상태(EXPAND/COLLAPSE/HIDE/BOTTOM_NAV)에 따라 레이아웃을 전환한다.
- * 모바일(BOTTOM_NAV)에서는 하단 네비게이션 바로 표시된다.</p>
- *
- * <p><b>의존관계:</b>
- * <ul>
- *   <li>{@link MenuList} — 메뉴 목록 구독</li>
- *   <li>{@link MenuRailMode} — 레일 상태 구독</li>
- *   <li>{@link MenuRailItemFactory} — 메뉴 아이템 생성</li>
- * </ul></p>
- */
 @Singleton
 public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail");
@@ -67,14 +53,6 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
             case EXPAND -> expand();
             case COLLAPSE -> collapse();
             case HIDE -> hide();
-            case BOTTOM_NAV -> bottomNav();
         }
-    }
-
-    private void bottomNav() {
-        element().removeAttribute("expand");
-        element().removeAttribute("collapse");
-        element().removeAttribute("hide");
-        element().setAttribute("bottom-nav", true);
     }
 }

@@ -108,17 +108,13 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 - **이름 필드**: 속성 이름 입력.
 - **타입 셀렉터**: 9종 버튼 (text, number, date, enum, bool, array, map, file, document). 선택 시 `[selected]` 스타일 적용.
-- **Validator 에디터**: `ValidatorEditorFactory`가 선택한 타입에 따라 하위 에디터를 동적 생성한다.
+- **Validator 에디터**: 선택한 타입에 따라 하위 에디터가 표시된다.
   - **Text**: Regex 패턴 (여러 줄, 줄바꿈 구분)
   - **Number**: Min / Max 범위
   - **Date**: After / Before 날짜 범위
   - **Enum**: 허용 값 목록 (한 줄에 하나)
-  - **Array**: MD3 Select(`SelectElementBuilder.select().outlined()`)로 원소 타입을 선택하면 해당 타입의 서브 에디터가 재귀적으로 표시된다. 예: `Array<Number(0~100)>`, `Array<Map<Text, Date>>`
-  - **Map**: 키 타입과 값 타입을 각각 MD3 Select 드롭다운으로 선택하고, 각각의 서브 에디터가 재귀적으로 표시된다. 예: `Map<Text(^[A-Z]+$), Number(0~100)>`
   - **File**: 허용 확장자 목록
   - **Document**: 참조할 타입 이름
-  - **재귀 깊이 제한**: `ValidatorEditorFactory`가 최대 3단계까지 중첩을 허용한다. 깊이 초과 시 array/map 옵션이 드롭다운에서 자동 제외된다.
-  - **시각적 계층**: 서브 에디터는 깊이별로 좌측 보더 색상과 배경이 차별화된다 (outline-variant → primary → tertiary).
 - **설명 필드**: 속성 설명.
 - **Apply**: `EditBoxAction`으로 타입에 속성을 추가/수정한다. Undo 지원.
 - **i18n**: 모든 레이블이 `LabelProvider`를 통해 다국어 처리된다.
@@ -136,47 +132,38 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | 타입 CRUD | `AddTypeButton`, `RemoveTypeButton` | 타입 추가(유니크 ID 자동 생성, 충돌 해소 포함) / 선택 타입 삭제 |
 | 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo. `ActionManager.canUndo/canRedo` 구독으로 자동 disabled. |
 | 저장 | `SaveButton`, `ReloadButton` | 변경사항 서버 저장 (`SaveAction`) / 서버에서 다시 로드 (`LoadAction`) |
-| 벌크 삭제 | `BulkDeleteButton` | 다중 선택(Shift+클릭, Ctrl+A) 타입 일괄 삭제 |
 | 스냅 | `SnapCheckbox` | 격자 스냅 on/off 토글 |
 
 ---
 
-## 더티 트래킹 & Undo/Redo
+## Undo/Redo (ActionManager)
 
-`ChangeTracker`로 타입별 `NOT_CHANGED` / `CHANGED` / `DELETED` 상태를 추적하고, `ActionManager`로 Undo/Redo를 지원한다. Save 시 원자적 저장.
+모든 편집 작업은 `Action` 인터페이스(`execute()`, `rollback()`)로 캡슐화된다.
 
-> 공통 패턴 상세는 [설계 패턴](../docs/design-patterns.md) 참조.
+- **스택**: 최대 100개. 새 액션 실행 시 redo 스택 초기화.
+- **상태 관찰**: `BehaviorSubject<Boolean>`으로 canUndo/canRedo 상태를 버튼과 메뉴에 전파.
+- **ComplexAction**: 여러 Action을 순서대로 실행하고, rollback 시 역순으로 되돌린다.
 
 ### Action 목록
 
 | Action | 역할 |
 |--------|------|
-| `CreateBoxAction` | TypeList에 타입 추가 + PositionMap에 위치 등록 + ChangeTracker CHANGED |
-| `DeleteBoxAction` | TypeList에서 제거 + ChangeTracker DELETED 마킹 |
-| `EditBoxAction` | 타입 메타데이터/속성 변경 (before → after) + ChangeTracker CHANGED |
+| `CreateBoxAction` | TypeList에 타입 추가 + PositionMap에 위치 등록 |
+| `DeleteBoxAction` | TypeList에서 제거 + ChangeTracker에 DELETED 마킹 |
+| `EditBoxAction` | 타입 메타데이터/속성 변경 (before -> after) |
 | `MoveBoxAction` | 선택된 박스들을 dx, dy만큼 이동 |
 | `ResizeBoxAction` | 박스 크기 변경 |
 | `PushOutOverlapAction` | BFS 연쇄 충돌 해소 |
 | `ChangeLayoutAction` | 레이아웃 기간 전환 (undo 지원) |
 | `ComplexAction` | 복합 액션 (이동 + 충돌 해소 등) |
 | `LoadAction` | 서버에서 레이아웃, 타입, 위치를 로드. 스택 초기화. |
-| `SaveAction` | CHANGED → PUT, DELETED → DELETE 원자적 저장 + 위치 저장. 스택 초기화. |
-
----
-
-## 버전 히스토리 (VersionHistoryPanel)
-
-특정 타입의 모든 버전을 타임라인으로 표시하고, 두 버전 간 diff 비교를 지원한다.
-
-- **버전 목록 조회**: `TypeRepository.versions(typeId)` → search-type `GET /workspace/{id}/types/{typeId}/versions`
-- **diff 비교**: 두 버전을 클릭하면 diff API를 호출하여 속성 추가/삭제/변경 사항을 시각적으로 표시
-- **Escape/닫기**: Escape 키 또는 닫기 버튼으로 패널을 닫을 수 있다
+| `SaveAction` | 변경/삭제된 타입 서버 저장 + 위치 저장. 스택 초기화. |
 
 ---
 
 ## 에이전트 연동
 
-에이전트가 현재 캔버스에서 편집 중인 타입 데이터를 읽고, 직접 Action을 실행할 수 있다. 에이전트 편집도 사용자 편집과 동일한 Action/ChangeTracker 경로를 타며, Undo/Redo 가능하다.
+에이전트가 현재 캔버스에서 편집 중인 타입 데이터를 읽고, 직접 Action을 실행할 수 있다. DB 저장 없이 메모리에서 동작하므로 사용자의 미저장 편집과 충돌하지 않는다.
 
 ### 상태 조회 (TypeStateProvider)
 
@@ -209,18 +196,19 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ## 상태 관리
 
-> BehaviorSubject 패턴 상세는 [설계 패턴](../docs/design-patterns.md#반응형-상태-관리-behaviorsubject) 참조.
+모든 상태는 `BehaviorSubject` 기반으로 변경 시 자동 전파된다.
 
-| 클래스 | 역할 |
-|--------|------|
-| `TypeList` | 현재 로딩된 전체 타입 목록 |
-| `LayoutList` / `LayoutProvider` | 레이아웃 기간 목록 / 현재 선택 기간 |
-| `PositionMap` | 타입별 캔버스 좌표 |
-| `ChangeTracker` | NOT_CHANGED / CHANGED / DELETED 추적 |
-| `CanvasMode` | VIEW / LAYOUT / TYPE 편집 모드 |
-| `GridSnap` | 격자 스냅 on/off |
-| `SelectedBoxElement` | 현재 선택된 타입 key 집합 |
-| `PeriodRecalculationService` | 타입 변경 시 유효기간 자동 재계산 |
+| 클래스 | 타입 | 역할 |
+|--------|------|------|
+| `TypeList` | `Set<TypeValue>` | 현재 로딩된 전체 타입 목록 |
+| `LayoutList` | `List<LayoutPeriod>` | 전체 레이아웃 기간 목록 |
+| `LayoutProvider` | `LayoutPeriod` | 현재 선택된 기간. 변경 시 타입 다시 로딩 |
+| `PositionMap` | `Map<String, Position>` | 타입별 캔버스 좌표. 백엔드 TypeLayout과 대응 |
+| `ChangeTracker` | `Map<String, ChangeState>` | NOT_CHANGED / CHANGED / DELETED 추적 |
+| `CanvasMode` | `Mode` (VIEW / LAYOUT / TYPE) | 편집 모드 |
+| `GridSnap` | boolean | 격자 스냅 활성화 여부 |
+| `SelectedBoxElement` | `Set<String>` | 현재 선택된 타입 key 집합 |
+| `PeriodRecalculationService` | (자동) | 타입 변경 시 유효기간 자동 재계산 |
 
 ---
 
@@ -231,8 +219,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | 포트 메서드 | HTTP | 설명 |
 |------------|------|------|
 | `TypeRepository.list(period)` | `GET /workspace/{id}/types` | 기간별 타입 조회 |
-| `TypeRepository.save(types)` | `PUT /workspace/{id}/types` | 타입 저장 (신규) |
-| `TypeRepository.patch(patches)` | `PATCH /workspace/{id}/types` | 타입 부분 업데이트 (변경 속성만) |
+| `TypeRepository.save(types)` | `PUT /workspace/{id}/types` | 변경된 타입 저장 |
 | `TypeRepository.delete(types)` | `DELETE /workspace/{id}/types` | 삭제된 타입 제거 |
 | `LayoutRepository.layouts()` | `GET /workspace/{id}/layouts` | 레이아웃 기간 목록 |
 | `LayoutRepository.positions(period)` | `GET /workspace/{id}/layouts/{period}` | 기간별 위치 조회 |
@@ -240,28 +227,49 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ---
 
-## 모바일 터치 지원
-
-캔버스는 모바일/태블릿 환경에서 터치 입력을 지원한다.
-
-- **터치 드래그**: `TouchEventAdapter`가 touchstart/touchmove/touchend를 마우스 이벤트로 변환하여 드래그 & 드롭, 리사이즈를 터치로 동작시킨다.
-- **핀치 줌**: `PinchZoomHandler`가 두 손가락 핀치 제스처로 캔버스 줌을 조절한다 (0.5x ~ 3.0x).
-- **롱프레스**: 500ms 롱프레스 시 컨텍스트 메뉴를 트리거한다. 이동 거리 10px 이상이면 롱프레스가 취소된다.
-- **리사이즈 핸들**: 터치 영역이 44px 이상으로 확대되어 모바일에서도 정확한 조작이 가능하다.
-- **속성 편집 다이얼로그**: 모바일에서 전체 화면 bottom sheet로 전환된다.
-- **컨트롤러 툴바**: CSS flex-wrap으로 좁은 화면에서 자동 줄바꿈된다.
-
----
-
 > 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.
 
 ---
+
+## 프로젝트 구조
+
+```
+type-ui/
+├── build.gradle.kts
+├── src/main/
+│   ├── java/dev/sayaya/handbook/
+│   │   ├── Type.gwt.xml
+│   │   └── client/
+│   │       ├── domain/       (6 클래스)
+│   │       ├── usecase/      (상태 10 + 액션 10 + 화살표 4 + 포트 2 + 에이전트 2)
+│   │       └── interfaces/   (canvas 2 + box 4 + controller 10 + editor 8 + selection 2 + value 2 + api 7 + util 1)
+│   └── webapp/css/type-ui.css
+└── src/test/
+    ├── java/      TestComponent, MockModule, TestApplication
+    ├── kotlin/    CanvasTest.kt (Playwright)
+    └── webapp/    canvastest.html, css/type-ui.css
+```
+
+## 실행
+
+## 모바일 지원
+
+- **캔버스**: 핀치 줌(두 손가락 확대/축소)과 터치 드래그를 지원한다.
+- **타입 박스**: 터치 롱프레스로 컨텍스트 메뉴를 열 수 있다.
+- **컨트롤러 툴바**: flex-wrap으로 좁은 화면에서 줄바꿈. 핵심 버튼만 1행에 표시하고 나머지는 더보기 메뉴로 축소.
+- **속성 편집 다이얼로그**: 모바일에서 전체 화면 다이얼로그(bottom sheet)로 전환.
+- **드래그 & 드롭**: 터치 이벤트(touchstart/touchmove/touchend)를 마우스 이벤트와 동일하게 처리.
+- **최소 뷰포트**: 360px (캔버스 스크롤로 대응).
 
 ## 실행
 
 ```bash
-./gradlew :type-ui:gwtDev    # DevMode
-./gradlew :type-ui:test      # 테스트
-```
+# DevMode
+./gradlew :type-ui:gwtDev
 
-> 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.
+# 컴파일
+./gradlew :type-ui:compileJava
+
+# 테스트
+./gradlew :type-ui:test
+```

@@ -6,7 +6,6 @@
 	<inherits name="dev.sayaya.Ui"/>
 	<inherits name="dev.sayaya.Rx" />
 	<inherits name="dev.sayaya.handbook.Activity" />
-	<inherits name="dev.sayaya.handbook.UiComponents" />
 	<entry-point class="dev.sayaya.handbook.client.progress.Application"/>
 	<source path="client"/>
 </module>

@@ -4,14 +4,7 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
-/**
- * 캔버스 위 타입 박스의 위치와 크기를 표현하는 값 객체(GWT JsInterop native).
- *
- * <p><b>책임:</b> 백엔드 TypeLayout.Position에 대응하는 x, y, width, height 값을 보유하며,
- * 이동(move)과 리사이즈(resize) 시 새 인스턴스를 반환하는 불변 연산을 제공한다.</p>
- * <p><b>의존관계:</b> 없음 (자립 값 객체)</p>
- * <p><b>주의:</b> 좌표 단위는 픽셀(px). 캔버스 좌상단 기준 절대 좌표.</p>
- */
+/** 캔버스 위 타입 박스의 위치와 크기. backend TypeLayout.Position과 대응. */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 public final class Position {
     public int x;

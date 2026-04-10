@@ -43,11 +43,6 @@ classDiagram
         -String level
         -String message
     }
-    class SearchVisualizationRequest {
-        -String query
-        -String[] targets
-        -String scope
-    }
 ```
 
 ## 유스케이스 (포트 인터페이스)
@@ -212,14 +207,6 @@ classDiagram
     ProgressHandler --> AgentCommandDispatcher
     CompleteHandler --> AgentCommandDispatcher
     MutateHandler --> AgentCommandDispatcher
-
-    class SearchVisualizationHandler {
-        <<@Singleton>>
-        구독: search 커맨드
-        검색 시각화 시퀀스 오케스트레이션
-    }
-
-    SearchVisualizationHandler --> AgentCommandDispatcher
 ```
 
 ## 조합 (DI)

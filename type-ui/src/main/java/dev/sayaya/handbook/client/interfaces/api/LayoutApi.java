@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
-import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.domain.Position;
 import dev.sayaya.handbook.client.usecase.LayoutRepository;
@@ -47,7 +46,6 @@ public class LayoutApi implements LayoutRepository {
                 })
                 .catch_(err -> {
                     GWT.log("LayoutApi.layouts failed: " + err);
-                    ErrorNotifier.notify("LayoutApi.layouts failed: " + err);
                     return Promise.resolve(Collections.emptyList());
                 });
         return AsyncSubject.await(promise);
@@ -71,7 +69,6 @@ public class LayoutApi implements LayoutRepository {
                 })
                 .catch_(err -> {
                     GWT.log("LayoutApi.positions failed: " + err);
-                    ErrorNotifier.notify("LayoutApi.positions failed: " + err);
                     return Promise.resolve(Collections.emptyMap());
                 });
         return AsyncSubject.await(promise);
@@ -105,7 +102,6 @@ public class LayoutApi implements LayoutRepository {
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("LayoutApi.savePositions failed: " + err);
-                    ErrorNotifier.notify("LayoutApi.savePositions failed: " + err);
                     return Promise.resolve((Void) null);
                 });
         return AsyncSubject.await(promise);

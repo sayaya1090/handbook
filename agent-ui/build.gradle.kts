@@ -11,7 +11,6 @@ dependencies {
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
     testImplementation(libs.bundles.test.web)
-    testImplementation(project(":test-utils"))
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }

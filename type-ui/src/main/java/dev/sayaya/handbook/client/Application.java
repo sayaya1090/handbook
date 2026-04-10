@@ -38,11 +38,10 @@ public class Application implements EntryPoint {
         org.jboss.elemento.Elements.body().add(container);
     }
 
-    /** 지정된 CSS 파일을 &lt;link&gt; 요소로 document.head에 추가한다. */
-    private static void injectCss(String href) {
-        var link = (elemental2.dom.HTMLLinkElement) elemental2.dom.DomGlobal.document.createElement("link");
-        link.rel = "stylesheet";
+    private static native void injectCss(String href) /*-{
+        var link = $doc.createElement('link');
+        link.rel = 'stylesheet';
         link.href = href;
-        elemental2.dom.DomGlobal.document.head.appendChild(link);
-    }
+        $doc.head.appendChild(link);
+    }-*/;
 }

@@ -1,13 +1,8 @@
 package dev.sayaya.handbook.client.agent;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.domain.Progress;
-import dev.sayaya.rx.subject.BehaviorSubject;
-import elemental2.dom.CustomEvent;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
-import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 
 import static org.jboss.elemento.Elements.*;
@@ -22,39 +17,11 @@ public class Application implements EntryPoint {
         components.progressHandler();
         components.navigateHandler();
         components.mutateHandler();
-        components.searchVisualizationHandler();
 
         // 입력창에 테스트 워크스페이스 설정
         components.agentInputElement().setWorkspace("test-ws");
 
-        // SSE 이벤트 브릿지: handbook-workspace-event에서 AGENT_COMMAND: 접두사를 추출하여 CommandRouter로 전달
-        DomGlobal.window.addEventListener("handbook-workspace-event", evt -> {
-            CustomEvent<?> ce = Js.cast(evt);
-            Object detail = ce.detail;
-            if (detail == null) return;
-            String data = Js.cast(detail);
-            if (data.startsWith("AGENT_COMMAND:")) {
-                String json = data.substring("AGENT_COMMAND:".length());
-                components.commandRouter().route(json);
-            }
-        });
-
-        // 프로그레스 상태 표시용 테스트 요소
-        HTMLDivElement progressDisplay = div().css("progress-container").id("test-progress").element();
-        progressDisplay.style.set("display", "none");
-        HTMLDivElement progressLabel = div().css("progress-label").element();
-        progressDisplay.appendChild(progressLabel);
-        ((BehaviorSubject<Progress>) components.progressObserver()).subscribe(p -> {
-            if (p != null && p.enabled()) {
-                progressDisplay.style.set("display", "flex");
-                progressLabel.textContent = p.description() != null ? p.description() : "";
-            } else {
-                progressDisplay.style.set("display", "none");
-            }
-        });
-
         body()
-            .add(progressDisplay)
             .add(createTestArea())
             .add(components.overlayElement())
             .add(components.confirmDialogElement())
@@ -63,7 +30,6 @@ public class Application implements EntryPoint {
             .add(components.mutateHandler())
             .add(components.notifyHandler())
             .add(components.completeHandler())
-            .add(components.artifactSummaryPanel())
             .add(components.agentInputElement())
             .add(div().style("position: fixed; top: 0; left: 0; right: 0; z-index: 9999; display: flex; flex-wrap: wrap; gap: 5px; padding: 8px 12px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #e0e0e0;")
                 .add(button("Highlight").id("btn-highlight")
@@ -108,15 +74,6 @@ public class Application implements EntryPoint {
                 .add(button("Mutate").id("btn-mutate")
                     .on(EventType.click, evt -> components.commandRouter().route(
                         "{\"type\":\"mutate\",\"seq\":12,\"description\":\"변경\",\"changes\":[\"ADD field:phone:type=STRING\",\"SET field:phone:label=전화번호\"]}")))
-                .add(button("Progress Group").id("btn-progress-group")
-                    .on(EventType.click, evt -> components.commandRouter().route(
-                        "{\"type\":\"progress\",\"seq\":13,\"description\":\"그룹 진행\",\"currentGroup\":2,\"totalGroups\":5,\"parallel\":3,\"stepCount\":4}")))
-                .add(button("Search").id("btn-search")
-                    .on(EventType.click, evt -> components.commandRouter().route(
-                        "{\"type\":\"search\",\"seq\":15,\"description\":\"검색\",\"navigateTo\":\"/workspace/ws-1/type\",\"query\":\"customer\",\"targets\":[\"#target-element\",\"#scroll-target\"],\"summary\":\"customer 타입 2건 발견\"}")))
-                .add(button("Complete Artifact").id("btn-complete-artifact")
-                    .on(EventType.click, evt -> components.commandRouter().route(
-                        "{\"type\":\"complete\",\"seq\":14,\"description\":\"완료\",\"summary\":\"타입 스키마 변경 완료\",\"executionId\":\"exec-001\",\"artifact\":{\"summary\":\"3개 필드를 추가했습니다\",\"changes\":[{\"type\":\"create\",\"target\":\"customer.phone\",\"description\":\"전화번호 필드 추가\"},{\"type\":\"update\",\"target\":\"customer.email\",\"description\":\"이메일 검증 규칙 변경\"},{\"type\":\"delete\",\"target\":\"customer.fax\",\"description\":\"팩스 필드 제거\"}]}}")))
             );
     }
 

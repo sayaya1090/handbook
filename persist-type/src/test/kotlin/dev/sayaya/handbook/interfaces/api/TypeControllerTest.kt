@@ -63,10 +63,9 @@ class TypeControllerTest : BehaviorSpec({
 
         When("DELETE /workspace/{id}/types를 호출하면") {
             Then("204 No Content가 반환된다") {
-                client.method(org.springframework.http.HttpMethod.DELETE)
+                client.delete()
                     .uri("/workspace/$workspace/types")
                     .header("Content-Type", "application/vnd.sayaya.handbook.v1+json")
-                    .bodyValue(listOf(type))
                     .exchange()
                     .expectStatus().isNoContent
             }

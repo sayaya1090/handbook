@@ -117,26 +117,9 @@ classDiagram
     }
 
     DashboardApi ..|> DashboardRepository
-    class AuditLogWidget {
-        -HTMLDivElement element
-        -HTMLDivElement listContainer
-        -HTMLInputElement dateFromInput
-        -HTMLInputElement dateToInput
-        -HTMLInputElement userFilterInput
-        -Labels labels
-        -List~AgentActivity~ currentActivities
-        -applyFilters()
-        -renderRow(activity: AgentActivity)
-        -formatTimestamp(ts: double): String «JSNI»
-        -parseDate(dateStr: String, startOfDay: boolean): double «JSNI»
-        +element(): HTMLElement
-    }
-
     DashboardElement --> StatsCardElement
     DashboardElement --> QualityPanelElement
     DashboardElement --> ActivityLogElement
-    DashboardElement --> AuditLogWidget
-    AuditLogWidget --> AgentActivityList
     StatsCardElement --> StatsProvider
     QualityPanelElement --> QualityIssueList
     ActivityLogElement --> AgentActivityList

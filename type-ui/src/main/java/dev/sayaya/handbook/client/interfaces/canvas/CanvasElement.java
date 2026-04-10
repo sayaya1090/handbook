@@ -6,21 +6,22 @@ import dev.sayaya.handbook.client.interfaces.box.BoxContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementFactory;
 import dev.sayaya.handbook.client.interfaces.box.BoxReferenceElement;
 import dev.sayaya.handbook.client.interfaces.box.TypeElement;
-import dev.sayaya.handbook.client.interfaces.box.VersionHistoryPanel;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
-import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.usecase.ActionManager;
 import dev.sayaya.handbook.client.usecase.CanvasMode;
-import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.usecase.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.GridSnap;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.domain.Action;
+import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
-import elemental2.dom.*;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.KeyboardEvent;
+import elemental2.dom.MouseEvent;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -29,28 +30,6 @@ import java.util.*;
 
 import static org.jboss.elemento.Elements.div;
 
-/**
- * 타입 스키마 편집기의 메인 캔버스 컴포넌트.
- *
- * <p><b>책임:</b> 타입 박스({@link TypeElement})들을 배치/렌더링하고,
- * 드래그 이동, 키보드 단축키(Ctrl+Z Undo, Ctrl+A 전체 선택, Delete 삭제, Arrow 이동),
- * 컨텍스트 메뉴, 선택 상태를 관리한다.
- * TypeList를 구독하여 타입 추가/제거 시 DOM 요소를 동기화한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link BoxElementFactory} — TypeElement 생성 팩토리</li>
- *   <li>{@link TypeList} — 타입 목록 상태 구독</li>
- *   <li>{@link PositionMap} — 타입 위치 조회</li>
- *   <li>{@link ActionManager} — Move/Delete/ComplexAction 실행</li>
- *   <li>{@link SelectedBoxElement} — 선택 상태</li>
- *   <li>{@link DragShapeElement} — 드래그 시각 피드백</li>
- *   <li>{@link CanvasMode}, {@link GridSnap} — 모드/스냅 설정</li>
- *   <li>{@link CanvasContextMenuElement}, {@link BoxContextMenuElement} — 컨텍스트 메뉴</li>
- * </ul></p>
- * <p><b>주의:</b> elementMap으로 typeKey → TypeElement 매핑을 유지한다.
- * 드래그 종료 시 스냅이 활성화되면 첫 번째 선택 박스 기준으로 스냅 델타를 계산한다.
- * 모바일에서는 {@link TouchEventAdapter}가 터치 이벤트를 마우스 이벤트로 변환하고,
- * {@link PinchZoomHandler}가 두 손가락 핀치 줌을 처리한다.</p>
- */
 @Singleton
 public class CanvasElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
@@ -65,8 +44,6 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private final BoxContextMenuElement boxMenu;
     private final CanvasMode canvasMode;
     private final GridSnap gridSnap;
-    private final TouchEventAdapter touchAdapter;
-    private final PinchZoomHandler pinchZoom;
     private final Map<String, TypeElement> elementMap = new LinkedHashMap<>();
 
     @Inject
@@ -74,9 +51,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                   PositionMap positionMap, SelectedBoxElement selection, DragShapeElement dragShape,
                   BoxReferenceElement referenceElement, ChangeTracker tracker,
                   CanvasMode canvasMode, GridSnap gridSnap,
-                  CanvasContextMenuElement canvasMenu, BoxContextMenuElement boxMenu,
-                  TouchEventAdapter touchAdapter, PinchZoomHandler pinchZoom,
-                  VersionHistoryPanel versionHistoryPanel) {
+                  CanvasContextMenuElement canvasMenu, BoxContextMenuElement boxMenu) {
         this.canvasMode = canvasMode;
         this.gridSnap = gridSnap;
         this.boxFactory = boxFactory;
@@ -88,8 +63,6 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         this.tracker = tracker;
         this.canvasMenu = canvasMenu;
         this.boxMenu = boxMenu;
-        this.touchAdapter = touchAdapter;
-        this.pinchZoom = pinchZoom;
 
         dragShape.onDrop(delta -> {
             Set<String> selected = new HashSet<>(selection.getValue());
@@ -122,12 +95,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                 .add(dragShape)
                 .add(canvasMenu)
                 .add(boxMenu)
-                .add(versionHistoryPanel)
                 .element();
-
-        // 모바일 터치 지원: 터치 → 마우스 이벤트 변환, 핀치 줌
-        touchAdapter.bind(root);
-        pinchZoom.bind(root);
 
         root.addEventListener("click", e -> selection.clear());
         root.addEventListener("contextmenu", e -> {
@@ -169,7 +137,6 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     }
 
     private void initBoxHandlers(TypeElement elem) {
-        touchAdapter.bind(elem.element());
         elem.element().addEventListener("mousedown", e -> {
             MouseEvent me = (MouseEvent) e;
             if (me.button != 0) return;
@@ -201,13 +168,6 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
             e.preventDefault();
             if (e.shiftKey) actionManager.redo();
             else actionManager.undo();
-        } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
-            e.preventDefault();
-            Set<String> allKeys = new HashSet<>();
-            for (TypeValue type : typeList.getValue()) {
-                allKeys.add(type.key());
-            }
-            selection.selectAll(allKeys);
         } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
             e.preventDefault();
             Set<String> selected = new HashSet<>(selection.getValue());

@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
-import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.client.usecase.UserRepository;
@@ -82,7 +81,6 @@ public class UserApi implements UserRepository {
     }
     private <V> V handleException(Object throwable) {
         progress.next(Progress.hide());
-        ErrorNotifier.notify("UserApi request failed: " + throwable);
         throw new RuntimeException("User request failed: " + throwable);
     }
 }

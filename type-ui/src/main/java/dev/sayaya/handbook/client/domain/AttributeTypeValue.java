@@ -7,17 +7,8 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * 속성의 데이터 타입을 표현하는 유니온 스타일 값 객체(GWT JsInterop native).
- *
- * <p><b>책임:</b> 백엔드 AttributeType sealed interface의 GWT 호환 표현.
- * 단일 native 클래스에 type 구분자(text/bool/number/date/enum/array/map/file/document)와
- * 타입별 검증 필드를 nullable로 포함하며, 정적 팩토리 메서드로 각 타입 인스턴스를 생성한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>자기참조 — array의 elementType, map의 keyType/valueType이 재귀적으로 AttributeTypeValue를 참조</li>
- * </ul></p>
- * <p><b>주의:</b> simplify()는 @JsOverlay 인스턴스 메서드에서 재귀 호출 시
- * GWT ReferenceError가 발생하므로 static 헬퍼(doSimplify)로 우회한다.
- * 별도로 {@link AttributeTypes#simplify(AttributeTypeValue)}도 같은 로직을 제공한다.</p>
+ * 속성의 데이터 타입. backend AttributeType sealed interface의 GWT 호환 표현.
+ * 단일 native 클래스에 type 구분자 + 타입별 필드를 nullable로 포함한다.
  */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 public final class AttributeTypeValue {

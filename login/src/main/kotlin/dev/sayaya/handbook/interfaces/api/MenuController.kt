@@ -8,14 +8,6 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import java.security.Principal
 
-/**
- * 로그인 모듈의 메뉴 제공 컨트롤러.
- *
- * **책임:** 인증 상태에 따라 Sign In 또는 Sign Out 메뉴를 반환한다.
- * gateway의 [MenuController][dev.sayaya.handbook.interfaces.api.MenuController]가 이 엔드포인트를 호출하여 메뉴를 집계한다.
- *
- * **주의:** principal이 null이면 미인증 상태로 Sign In 메뉴를, 인증 상태면 Sign Out 메뉴를 반환한다.
- */
 @RestController
 class MenuController {
     companion object {

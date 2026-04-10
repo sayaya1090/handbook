@@ -46,18 +46,4 @@ class WorkspaceControllerTest : BehaviorSpec({
             }
         }
     }
-
-    // 워크스페이스 참여(Join) API
-    Given("워크스페이스 참여 API") {
-        every { service.join(workspace.id, any()) } returns Mono.empty()
-
-        When("POST /workspace/{id}/join을 호출하면") {
-            Then("204 No Content가 반환된다") {
-                client.post()
-                    .uri("/workspace/${workspace.id}/join")
-                    .exchange()
-                    .expectStatus().isNoContent
-            }
-        }
-    }
 })

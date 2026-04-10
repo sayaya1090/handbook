@@ -4,12 +4,10 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
-    implementation(project(":ui-components"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
     testImplementation(libs.bundles.test.web)
-    testImplementation(project(":test-utils"))
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
@@ -25,7 +23,7 @@ tasks {
         sourceLevel = "auto"
         modules = listOf("dev.sayaya.handbook.Shell")
         devMode {
-            modules = listOf("dev.sayaya.handbook.Shell",  "dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.ProgressTest")
+            modules = listOf("dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.ProgressTest")
             war = file("src/test/webapp")
         }
         generateJsInteropExports = true

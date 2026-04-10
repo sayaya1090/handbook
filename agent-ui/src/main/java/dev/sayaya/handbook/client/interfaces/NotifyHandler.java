@@ -10,13 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * notify 커맨드를 범용 ToastContainer에 위임하는 핸들러.
- *
- * <p><b>책임:</b> AgentCommandDispatcher의 notifications를 구독하고, ToastContainer로 레벨별 토스트 메시지를 표시한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link AgentCommandDispatcher} — 알림 스트림 구독</li>
- *   <li>{@link ToastContainer} — 범용 토스트 렌더링</li>
- * </ul></p>
+ * notify 커맨드 → 범용 ToastContainer 위임.
  */
 @Singleton
 public class NotifyHandler implements IsElement<HTMLDivElement> {

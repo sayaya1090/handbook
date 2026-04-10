@@ -1,10 +1,10 @@
 package dev.sayaya.handbook.interfaces.authentication
 
+import dev.sayaya.handbook.domain.Pem
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
@@ -14,28 +14,74 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter
 
 /**
- * 인증 및 JWT 관련 자동 구성 클래스.
+ * 인증 및 JWT 관련 자동 구성 클래스
  *
- * **책임:** SecurityWebFilterChain 기본 빈을 등록한다. JWT 인증 빈은 [JwtAuthenticationConfig]에,
- * 예외 처리 빈은 [SecurityExceptionConfig]에 위임한다.
- *
- * **의존관계:**
- * - [JwtAuthenticationConfig] — PEM, JWT 컨버터/매니저, Claims 컨버터
- * - [SecurityExceptionConfig] — 인증 진입점, 예외 핸들러
- *
- * **주의:** 다른 모듈에서 [SecurityWebFilterChain] 빈이 이미 정의되어 있으면
- * [securityFilterChain]은 적용되지 않는다 (ConditionalOnMissingBean).
+ * Spring Boot의 자동 구성 메커니즘을 통해 JWT 인증에 필요한 빈들을 등록합니다.
+ * 애플리케이션에서 해당 빈을 직접 정의한 경우 자동 구성이 적용되지 않습니다.
  */
 @Configuration
 @EnableReactiveMethodSecurity
 @EnableConfigurationProperties(AuthenticationConfig::class)
-@Import(JwtAuthenticationConfig::class, SecurityExceptionConfig::class)
 class AuthenticationAutoConfig {
+    /**
+     * PEM 키 파서 빈을 생성합니다.
+     *
+     * @param config 인증 설정 (jwtSecret 포함)
+     * @return PEM 형식 키 파서
+     */
+    @Bean fun pem(config: AuthenticationConfig) = Pem(config.jwtSecret)
+
+    /**
+     * Claims 인증 컨버터 빈을 생성합니다.
+     *
+     * @return 기본 사용자 인증 컨버터
+     */
+    @Bean fun claimsAuthenticationConverter(): ClaimsAuthenticationConverter = UserAuthenticationConverter()
+
+    /**
+     * JWT 인증 컨버터 빈을 생성합니다.
+     *
+     * @param config 인증 설정
+     * @return JWT 인증 컨버터
+     */
+    @Bean fun jwtAuthenticationConverter(config: AuthenticationConfig) = JwtAuthenticationConverter(config)
+
+    /**
+     * JWT 인증 매니저 빈을 생성합니다.
+     *
+     * @param pem PEM 키 파서
+     * @param converter Claims 인증 컨버터
+     * @return JWT 인증 매니저
+     */
+    @Bean fun jwtAuthenticationManager(pem: Pem, converter: ClaimsAuthenticationConverter) = JwtAuthenticationManager(pem, converter)
+
+    /**
+     * 인증 진입점 빈을 생성합니다.
+     *
+     * @return WWW-Authenticate 헤더가 없는 인증 진입점
+     */
+    @Bean fun noWwwAuthenticateEntryPoint() = NoWwwAuthenticateEntryPoint()
+
+    /**
+     * 만료된 토큰 예외 핸들러 빈을 생성합니다.
+     *
+     * @param config 인증 설정
+     * @return 만료된 토큰 예외 핸들러
+     */
+    @Bean fun expiredTokenExceptionHandler(config: AuthenticationConfig) = ExpiredTokenExceptionHandler(config)
+
+    /**
+     * 인증 예외 핸들러 빈을 생성합니다.
+     *
+     * @return 인증 예외 핸들러
+     */
+    @Bean fun authorizationExceptionHandler() = AuthorizationExceptionHandler()
+
     /**
      * 어플리케이션의 전반적인 보안 설정을 담당하는 빈.
      *
-     * JWT 기반의 인증/인가를 위한 반응형 보안 필터 체인을 구성한다.
-     * 다른 모듈에서 [SecurityWebFilterChain] 빈이 이미 정의되어 있다면, 이 설정은 적용되지 않는다.
+     * JWT 기반의 인증/인가를 위한 반응형 보안 필터 체인을 구성합니다.
+     * 다른 모듈에서 [SecurityWebFilterChain] 빈이 이미 정의되어 있다면, 이 설정은 적용되지 않습니다.
      *
      * @param jwtAuthenticationConverter HTTP 요청에서 JWT를 추출하여 초기 인증 토큰으로 변환하는 컨버터
      * @param jwtAuthenticationManager JWT의 유효성을 검증하고 최종 인증 객체를 생성하는 매니저
@@ -58,13 +104,8 @@ class AuthenticationAutoConfig {
             httpBasic { disable() }
             formLogin { disable() }
 
-            // 보안 응답 헤더 설정
-            headers {
-                frameOptions { mode = XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN }
-                contentTypeOptions { }
-                hsts { }
-                contentSecurityPolicy { policyDirectives = "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'" }
-            }
+            // Clickjacking 방지를 위해 X-Frame-Options 헤더 설정
+            headers { frameOptions { mode = XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN } }
 
             // 직접 구현한 JWT 인증 필터를 등록
             addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

@@ -1,9 +1,6 @@
 package dev.sayaya.handbook.client.usecase.action;
 
-
-import dev.sayaya.handbook.client.components.ChangeTracker;
-import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.domain.Action;
+import dev.sayaya.handbook.client.domain.Action;
 import dev.sayaya.handbook.client.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.domain.Position;
 import dev.sayaya.handbook.client.domain.TypeValue;
@@ -13,21 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 서버에서 타입과 레이아웃을 로드하는 액션.
- *
- * <p><b>책임:</b> 레이아웃 기간 목록을 로드하고, 현재 선택과 가장 겹치는 기간을 자동 선택한 뒤,
- * 해당 기간의 타입 목록과 위치 데이터를 로드한다.
- * 로드 후 ChangeTracker와 ActionManager를 초기화한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link LayoutRepository} — 기간 목록/위치 조회 API</li>
- *   <li>{@link TypeRepository} — 타입 목록 조회 API</li>
- *   <li>{@link LayoutList} — 기간 목록 상태 갱신</li>
- *   <li>{@link LayoutProvider} — 기간 자동 선택</li>
- *   <li>{@link TypeList} — 타입 목록 교체</li>
- *   <li>{@link PositionMap} — 위치 교체</li>
- *   <li>{@link ChangeTracker}, {@link ActionManager} — 초기화</li>
- * </ul></p>
- * <p><b>주의:</b> rollback()은 no-op이다. 로드 시 Undo/Redo 스택이 초기화되므로 undo 대상이 아니다.</p>
+ * 서버에서 타입과 레이아웃을 로드한다.
+ * 로드 후 ActionManager의 undo/redo 스택을 초기화한다.
  */
 public class LoadAction implements Action {
     private final TypeRepository typeRepository;

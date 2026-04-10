@@ -14,16 +14,7 @@ import java.util.*
 
 /**
  * SSE(Server-Sent Events)를 통해 워크스페이스별 실시간 이벤트를 스트리밍하는 컨트롤러.
- *
- * **책임:** 클라이언트가 `/workspace/{workspace}/messages`로 SSE 연결을 맺으면,
- * 해당 워크스페이스의 이벤트를 실시간으로 스트리밍한다.
- * HTTP/1.1 연결 유지를 위해 10초 간격으로 ping 코멘트를 전송한다.
- *
- * **의존관계:**
- * - [Broadcaster] — 워크스페이스별 이벤트 구독
- * - [ObjectMapper] — 이벤트 페이로드 JSON 직렬화
- *
- * **주의:** SSE 이벤트의 id는 이벤트 UUID, event는 EventType, data는 페이로드 JSON이다.
+ * HTTP/1.1 연결 유지를 위해 10초 간격으로 ping을 전송한다.
  */
 @RestController
 class MessageController(
@@ -43,7 +34,6 @@ class MessageController(
                     .id(event.id.toString())
                     .event(event.eventType.toString())
                     .data(objectMapper.writeValueAsString(event.payload))
-                    .retry(Duration.ofSeconds(5))
                     .build()
             },
             ping,

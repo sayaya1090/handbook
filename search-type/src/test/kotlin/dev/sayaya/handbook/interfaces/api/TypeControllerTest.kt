@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Type
-import dev.sayaya.handbook.usecase.TypeSearchService
+import dev.sayaya.handbook.usecase.TypeService
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
 import io.mockk.mockk
@@ -11,7 +11,7 @@ import java.time.Instant
 import java.util.*
 
 class TypeControllerTest : BehaviorSpec({
-    val service = mockk<TypeSearchService>()
+    val service = mockk<TypeService>()
     val controller = TypeController(service)
     val client = WebTestClient.bindToController(controller).build()
     val workspace = UUID.randomUUID()

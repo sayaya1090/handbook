@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
-import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.domain.Menu;
@@ -58,7 +57,6 @@ public class MenuApi implements MenuRepository {
     }
     private <V> V handleException(Object throwable) {
         progress.next(Progress.hide());
-        ErrorNotifier.notify("MenuApi request failed: " + throwable);
         throw new RuntimeException("Search request failed: " + throwable);
     }
 }

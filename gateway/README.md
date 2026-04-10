@@ -12,16 +12,12 @@ usecase/                             # 유스케이스 (프레임워크 의존�
 
 interfaces/                          # 인프라 어댑터 (Spring 의존)
 ├── api/
-│   ├── MenuController              # GET /menus 엔드포인트
-│   └── FallbackController          # CircuitBreaker 폴백 (빈 응답 반환)
-├── filter/
-│   ├── RateLimitFilter             # /auth/** IP 기반 Rate Limiting (20회/분)
-│   └── CorrelationIdFilter         # X-Correlation-Id 생성/전파/MDC 등록
+│   └── MenuController              # GET /menus 엔드포인트
 ├── discovery/
 │   ├── ServiceDiscovery            # WebClient 기반 메뉴 조회 어댑터
 │   └── ServiceListProperties       # 서비스 목록 프로퍼티 바인딩
 └── config/
-    └── GatewayConfig               # ObjectMapper, WebClient, CORS, Bean 등록
+    └── GatewayConfig               # ObjectMapper, WebClient, Bean 등록
 ```
 
 ## 메뉴 집계 흐름
@@ -115,23 +111,10 @@ services:
   - name: search-document
 ```
 
-## 인프라 기능
-
-| 기능 | 구현 | 설명 |
-|------|------|------|
-| CORS | `GatewayConfig.corsWebFilter()` | 허용 도메인/메서드/헤더 명시, `cors.allowed-origins` 프로퍼티로 설정 |
-| CSP | `AuthenticationAutoConfig` | `Content-Security-Policy` 헤더 자동 적용 (authentication 모듈) |
-| Rate Limiting | `RateLimitFilter` | `/auth/**` 경로 IP당 20회/분 제한 (인메모리 슬라이딩 윈도우) |
-| Correlation ID | `CorrelationIdFilter` | X-Correlation-Id UUID 생성/전파 + MDC 로깅 |
-| Circuit Breaker | `application.yml` + `FallbackController` | assistant, event-broadcaster 장애 시 빈 응답 반환 |
-| Prometheus | `application.yml` | `/actuator/prometheus` 메트릭 노출 |
-| 구조화 로깅 | `application.yml` | 로그 패턴에 correlationId 포함 |
-
 ## 의존성
 
 - authentication (JWT 검증)
 - Spring Cloud Gateway
-- Spring Cloud CircuitBreaker (Resilience4j)
 - SpringDoc OpenAPI (WebFlux)
 - Log4j2
 

@@ -2,7 +2,6 @@ package dev.sayaya.handbook.interfaces.database
 
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedBy
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.annotation.Version
@@ -13,7 +12,7 @@ import java.util.*
 
 @Table("workspace")
 data class R2dbcWorkspaceEntity(
-    @Id val id: UUID,
+    val id: UUID,
     var name: String,
     var description: String?,
     @Version var version: Long? = null,

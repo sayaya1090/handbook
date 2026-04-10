@@ -11,5 +11,4 @@ data class ExecutionPlan(
     val intent: String,
     val steps: List<ExecutionStep>,
     val confidence: Double,
-    val subAgents: List<SubAgentDefinition> = emptyList(),
 )

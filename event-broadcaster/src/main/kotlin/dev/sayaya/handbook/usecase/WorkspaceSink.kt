@@ -7,13 +7,10 @@ import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * 워크스페이스별 이벤트 Sink를 래핑하여 구독자 수를 추적하는 래퍼.
+ * 워크스페이스별 이벤트 Sink를 래핑하여 구독자 수를 추적한다.
  *
- * **책임:** Reactor [Sinks.Many]를 감싸고, 구독자 카운트를 [AtomicInteger]로 관리한다.
- * 구독자가 0이 되면 [WorkspaceSinkManager]가 이 Sink를 완료(complete)하고 맵에서 제거한다.
- *
- * **주의:** 구독자 카운트 변경([incrementSubscribers]/[decrementSubscribers])은 반드시
- * [WorkspaceSinkManager]의 [ConcurrentHashMap.compute] 블록 내에서 호출되어야 원자성이 보장된다.
+ * 구독자 카운트 변경은 반드시 [WorkspaceSinkManager.compute] 블록 내에서
+ * 호출되어야 원자성이 보장된다.
  */
 class WorkspaceSink(
     private val sink: Sinks.Many<Event<out Serializable>>

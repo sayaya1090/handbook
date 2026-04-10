@@ -47,50 +47,6 @@ classDiagram
         +hide()
     }
 
-    class Action {
-        <<interface>>
-        +execute()
-        +rollback()
-    }
-
-    class ActionManager {
-        -LinkedList~Action~ undoStack
-        -LinkedList~Action~ redoStack
-        +execute(action: Action)
-        +undo()
-        +redo()
-        +clear()
-        +canUndo(): Observable~Boolean~
-        +canRedo(): Observable~Boolean~
-    }
-
-    class ChangeTracker {
-        -Map~String, ChangeState~ states
-        +markChanged(key: String)
-        +markDeleted(key: String)
-        +unmark(key: String)
-        +reset()
-        +hasChanges(): boolean
-        +getChangedKeys(): Set~String~
-        +getDeletedKeys(): Set~String~
-    }
-
-    class ChangeState {
-        <<enum>>
-        NOT_CHANGED
-        CHANGED
-        DELETED
-    }
-
     ToastContainer --> ToastLevel
     OverlayContainer --> OverlayStyle
-    class RbacGuard {
-        <<utility>>
-        +isReadOnly(userRoles: Set~String~, requiredWriteRoles: String...): boolean$
-        +isDocumentReadOnly(userRoles: Set~String~, workspace: String, type: String): boolean$
-        +isTypeReadOnly(userRoles: Set~String~, workspace: String, type: String): boolean$
-    }
-
-    ActionManager --> Action
-    ChangeTracker --> ChangeState
 ```

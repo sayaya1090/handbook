@@ -79,37 +79,24 @@
     .doc-controller {
         flex-wrap: wrap;
         padding: 6px 8px;
-        gap: 4px;
     }
     .doc-type-tabs {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         flex-shrink: 0;
         max-width: 100%;
-        white-space: nowrap;
-        scrollbar-width: none;
-    }
-    .doc-type-tabs::-webkit-scrollbar {
-        display: none;
     }
     .doc-ctrl-actions {
         flex-wrap: wrap;
         gap: 4px;
     }
     .doc-ctrl-btn {
-        min-height: 44px;
-        min-width: 44px;
-        padding: 6px 8px;
+        min-height: 48px;
+        min-width: 48px;
     }
     .doc-type-tab {
-        min-height: 44px;
+        min-height: 48px;
         white-space: nowrap;
-        padding: 6px 12px;
-    }
-    .doc-spreadsheet {
-        min-height: 200px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -122,27 +109,4 @@
         width: 100%;
         justify-content: space-between;
     }
-}
-
-/* 프레즌스 — 다른 사용자 편집 위치 표시 */
-.presence-cell {
-    position: relative;
-    box-shadow: inset 0 0 0 2px var(--presence-color, var(--md-sys-color-primary));
-}
-.presence-label {
-    position: absolute;
-    top: -18px;
-    right: 0;
-    font-size: var(--md-sys-typescale-label-small-size, 11px);
-    padding: 1px 6px;
-    border-radius: var(--md-sys-shape-corner-small, 8px) var(--md-sys-shape-corner-small, 8px) 0 0;
-    background: var(--presence-color, var(--md-sys-color-primary));
-    color: var(--md-sys-color-on-primary);
-    white-space: nowrap;
-    pointer-events: none;
-    animation: presence-fade 3s ease-in-out forwards;
-}
-@keyframes presence-fade {
-    0%, 70% { opacity: 1; }
-    100% { opacity: 0; }
 }

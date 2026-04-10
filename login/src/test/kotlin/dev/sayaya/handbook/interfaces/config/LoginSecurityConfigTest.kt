@@ -23,8 +23,7 @@ class LoginSecurityConfigTest : BehaviorSpec({
     every { urlConfig.loginRedirectUri } returns "/"
     every { urlConfig.logoutRedirectUri } returns "/login"
 
-    val cookieService = AuthenticationCookieService(authConfig, tokenFactoryConfig)
-    val config = LoginSecurityConfig(cookieService, urlConfig, tokenPublisher)
+    val config = LoginSecurityConfig(authConfig, urlConfig, tokenPublisher, tokenFactoryConfig)
 
     // UC-L3: 로그아웃 - 인증 쿠키 설정 검증
     Given("사용자 인증 쿠키 설정 요청이 주어졌을 때") {
@@ -33,7 +32,7 @@ class LoginSecurityConfigTest : BehaviorSpec({
         val exchange = MockServerWebExchange.from(request)
 
         When("sendAuthenticationCookie를 호출하면") {
-            cookieService.sendAuthenticationCookie(exchange, token).block()
+            config.sendAuthenticationCookie(exchange, token).block()
 
             Then("응답에 인증 쿠키가 추가된다") {
                 val cookies = exchange.response.cookies
@@ -45,7 +44,7 @@ class LoginSecurityConfigTest : BehaviorSpec({
                 cookie.value shouldBe "jwt-token-value"
                 cookie.isHttpOnly shouldBe true
                 cookie.isSecure shouldBe true
-                cookie.sameSite shouldBe "Strict"
+                cookie.sameSite shouldBe "Lax"
                 cookie.path shouldBe "/"
                 cookie.maxAge.seconds shouldBe 3600L
             }

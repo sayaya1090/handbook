@@ -11,8 +11,8 @@ import java.time.Instant
 import java.util.*
 
 class LayoutServiceTest : BehaviorSpec({
-    val repo = mockk<LayoutSearchRepository>()
-    val service = LayoutSearchService(repo)
+    val repo = mockk<LayoutRepository>()
+    val service = LayoutService(repo)
     val workspace = UUID.randomUUID()
 
     Given("워크스페이스 레이아웃 조회 요청이 주어졌을 때") {

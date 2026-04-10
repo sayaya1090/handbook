@@ -1,10 +1,8 @@
 package dev.sayaya.handbook.client.domain;
 
 /**
- * 알림 정보 값 객체.
- *
- * <p><b>책임:</b> notify 커맨드의 심각도(level)와 메시지를 UI에 전달한다.</p>
- * <p><b>의존관계:</b> <ul><li>없음 (순수 도메인 VO)</li></ul></p>
+ * 알림 정보.
+ * NotifyCommand를 UI에 전달하기 위한 값 객체.
  */
 public class NotifyInfo {
     private final String level;

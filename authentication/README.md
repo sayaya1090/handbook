@@ -87,9 +87,6 @@ spring:
 - `/actuator/**` (그 외): 인증 필수
 - 그 외 모든 경로: 인증 필수
 - X-Frame-Options: SAMEORIGIN
-- Content-Security-Policy: `default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'`
-- Content-Type-Options: nosniff
-- HSTS: 활성화
 - `@EnableReactiveMethodSecurity`로 `@PreAuthorize` 사용 가능
 
 ## 테스트

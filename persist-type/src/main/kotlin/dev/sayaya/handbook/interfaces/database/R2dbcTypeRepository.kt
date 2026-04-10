@@ -1,19 +1,19 @@
 package dev.sayaya.handbook.interfaces.database
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import dev.sayaya.handbook.domain.Attribute
+import dev.sayaya.handbook.domain.AttributeType
 import dev.sayaya.handbook.domain.Type
-import dev.sayaya.handbook.domain.TypePatch
 import dev.sayaya.handbook.usecase.TypeRepository
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
-import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Instant
 import java.util.*
 
-/** Spring Data R2DBC 자동 구현 인터페이스. types 테이블에 대한 기본 CRUD + 기간별 조회를 제공한다. */
 interface R2dbcTypeEntityRepository : ReactiveCrudRepository<R2dbcTypeEntity, String> {
     @Query("""
         SELECT * FROM types
@@ -28,27 +28,11 @@ interface R2dbcTypeEntityRepository : ReactiveCrudRepository<R2dbcTypeEntity, St
     ): Flux<R2dbcTypeEntity>
 }
 
-/**
- * [TypeRepository] 포트의 R2DBC 어댑터.
- *
- * **책임:** 타입 도메인 객체의 영속화, 조회, 패치, 삭제를 R2DBC를 통해 수행한다.
- * 속성 엔티티-도메인 매핑은 [AttributeEntityMapper]에 위임한다.
- *
- * **의존관계:**
- * - [R2dbcTypeEntityRepository] — 타입 엔티티 CRUD
- * - [R2dbcAttributeEntityRepository] — 속성 엔티티 CRUD + 이름 기준 삭제
- * - [AttributeEntityMapper] — 속성 엔티티 ↔ 도메인 변환
- * - [DatabaseClient] — 커스텀 SQL (rev 체크 + 증가)
- *
- * **주의:** save()는 기존 속성을 전체 삭제 후 재삽입. patch()는 변경 속성만 이름 기준 삭제 후 삽입 (비충돌 병합).
- * rev 불일치 시 [DuplicateKeyException]으로 409 Conflict 변환.
- */
 class R2dbcTypeRepositoryAdapter(
     private val typeRepo: R2dbcTypeEntityRepository,
     private val attrRepo: R2dbcAttributeEntityRepository,
-    private val attrMapper: AttributeEntityMapper,
+    private val objectMapper: ObjectMapper,
     private val tx: TransactionalOperator,
-    private val databaseClient: DatabaseClient,
 ) : TypeRepository {
 
     override fun findByWorkspaceAndPeriod(
@@ -66,7 +50,7 @@ class R2dbcTypeRepositoryAdapter(
                     .flatMapMany { attrMap ->
                         Flux.fromIterable(entities.map { entity ->
                             val key = "${entity.id}:${entity.version}"
-                            val attrs = (attrMap[key] ?: emptyList()).map { attrMapper.toDomain(it) }
+                            val attrs = (attrMap[key] ?: emptyList()).map { it.toDomain() }
                                 .sortedBy { it.order }
                             entity.toDomain(attrs)
                         })
@@ -89,52 +73,22 @@ class R2dbcTypeRepositoryAdapter(
             }
             .flatMap { saved ->
                 val attrEntities = type.attributes.map { attr ->
-                    attrMapper.toEntity(type.id, type.version, workspace, attr)
+                    R2dbcAttributeEntity(
+                        typeId = type.id,
+                        typeVersion = type.version,
+                        workspace = workspace,
+                        name = attr.name,
+                        order = attr.order,
+                        description = attr.description,
+                        attributeType = objectMapper.writeValueAsString(attr.type),
+                        nullable = attr.nullable,
+                        inherited = attr.inherited,
+                    )
                 }
                 if (attrEntities.isEmpty()) Mono.just(saved.toDomain())
                 else attrRepo.saveAll(attrEntities)
                     .collectList()
-                    .map { attrs -> saved.toDomain(attrs.map { attrMapper.toDomain(it) }) }
-            }
-    }
-
-    override fun patch(workspace: UUID, patches: List<TypePatch>): Flux<Type> {
-        return Flux.fromIterable(patches)
-            .flatMap { patch -> patchOne(workspace, patch) }
-            .`as`(tx::transactional)
-    }
-
-    private fun patchOne(workspace: UUID, patch: TypePatch): Mono<Type> {
-        // 1. rev 체크 + description 업데이트 + rev 증가
-        val spec = if (patch.description != null) {
-            databaseClient.sql("UPDATE types SET rev = rev + 1, description = :desc WHERE id = :id AND version = :version AND rev = :rev")
-                .bind("id", patch.id)
-                .bind("version", patch.version)
-                .bind("rev", patch.rev)
-                .bind("desc", patch.description)
-        } else {
-            databaseClient.sql("UPDATE types SET rev = rev + 1 WHERE id = :id AND version = :version AND rev = :rev")
-                .bind("id", patch.id)
-                .bind("version", patch.version)
-                .bind("rev", patch.rev)
-        }
-        return spec.fetch().rowsUpdated()
-            .flatMap { rowsUpdated ->
-                if (rowsUpdated == 0L) return@flatMap Mono.error<Type>(DuplicateKeyException("Version conflict for type ${patch.id}:${patch.version}"))
-                // 2. 변경 속성만 upsert (이름 기준으로 삭제 후 삽입)
-                val attrOps = Flux.fromIterable(patch.attributes)
-                    .flatMap { attr ->
-                        attrRepo.deleteByTypeIdAndTypeVersionAndName(patch.id, patch.version, attr.name)
-                            .then(attrRepo.save(attrMapper.toEntity(patch.id, patch.version, workspace, attr)))
-                    }
-                // 3. 전체 타입 조회하여 반환
-                attrOps.then(
-                    typeRepo.findById(patch.id).flatMap { entity ->
-                        attrRepo.findByTypeIdAndTypeVersion(patch.id, patch.version)
-                            .collectList()
-                            .map { attrs -> entity.toDomain(attrs.map { attrMapper.toDomain(it) }.sortedBy { it.order }) }
-                    }
-                )
+                    .map { attrs -> saved.toDomain(attrs.map { it.toDomain() }) }
             }
     }
 
@@ -147,4 +101,13 @@ class R2dbcTypeRepositoryAdapter(
             .`as`(tx::transactional)
             .then()
     }
+
+    private fun R2dbcAttributeEntity.toDomain(): Attribute = Attribute(
+        name = name,
+        order = order,
+        description = description,
+        type = objectMapper.readValue<AttributeType>(attributeType),
+        nullable = nullable,
+        inherited = inherited,
+    )
 }

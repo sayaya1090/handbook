@@ -13,8 +13,8 @@ import java.time.Instant
 import java.util.*
 
 class DocumentServiceTest : BehaviorSpec({
-    val repo = mockk<DocumentSearchRepository>()
-    val service = DocumentSearchService(repo)
+    val repo = mockk<DocumentRepository>()
+    val service = DocumentService(repo)
     val workspace = UUID.randomUUID()
 
     Given("문서 검색 요청이 주어졌을 때") {

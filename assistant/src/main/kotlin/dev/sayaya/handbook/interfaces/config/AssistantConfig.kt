@@ -10,10 +10,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.interfaces.database.InMemoryAuditRepository
 import dev.sayaya.handbook.interfaces.llm.LlmConfig
-import dev.sayaya.handbook.interfaces.llm.DefaultArtifactAggregator
-import dev.sayaya.handbook.interfaces.llm.DefaultSubAgentPlanExecutor
 import dev.sayaya.handbook.interfaces.llm.OpenAiIntentParser
-import dev.sayaya.handbook.interfaces.llm.GroupedPlanExecutor
+import dev.sayaya.handbook.interfaces.llm.SequentialPlanExecutor
 import dev.sayaya.handbook.interfaces.event.KafkaAgentCommandEventPublisher
 import dev.sayaya.handbook.interfaces.quality.DefaultQualityMonitor
 import dev.sayaya.handbook.usecase.*
@@ -47,7 +45,7 @@ class AssistantConfig {
         OpenAiIntentParser(openAiWebClient, objectMapper, llmConfig.apiKey, llmConfig.model)
 
     @Bean
-    fun planExecutor(): PlanExecutor = GroupedPlanExecutor()
+    fun planExecutor(): PlanExecutor = SequentialPlanExecutor()
 
     @Bean
     fun agentCommandEventPublisher(kafkaTemplate: KafkaTemplate<String, String>, objectMapper: ObjectMapper): AgentCommandEventPublisher =
@@ -57,22 +55,8 @@ class AssistantConfig {
     fun auditRepository(): AuditRepository = InMemoryAuditRepository()
 
     @Bean
-    fun executionContextManager() = ExecutionContextManager()
-
-    @Bean
-    fun subAgentPlanExecutor(intentParser: IntentParser, planExecutor: PlanExecutor, eventPublisher: AgentCommandEventPublisher): SubAgentPlanExecutor =
-        DefaultSubAgentPlanExecutor(intentParser, planExecutor, eventPublisher)
-
-    @Bean
-    fun artifactAggregator(): ArtifactAggregator = DefaultArtifactAggregator()
-
-    @Bean
-    fun subAgentOrchestrator(subAgentPlanExecutor: SubAgentPlanExecutor, artifactAggregator: ArtifactAggregator, eventPublisher: AgentCommandEventPublisher) =
-        SubAgentOrchestrator(subAgentPlanExecutor, artifactAggregator, eventPublisher)
-
-    @Bean
-    fun assistantService(intentParser: IntentParser, planExecutor: PlanExecutor, eventPublisher: AgentCommandEventPublisher, auditRepository: AuditRepository, executionContextManager: ExecutionContextManager, subAgentOrchestrator: SubAgentOrchestrator) =
-        AssistantService(intentParser, planExecutor, eventPublisher, auditRepository, executionContextManager, subAgentOrchestrator)
+    fun assistantService(intentParser: IntentParser, planExecutor: PlanExecutor, eventPublisher: AgentCommandEventPublisher, auditRepository: AuditRepository) =
+        AssistantService(intentParser, planExecutor, eventPublisher, auditRepository)
 
     @Bean
     fun searchDocumentClient(@Value("\${handbook.search-document.base-url:http://localhost:8080}") baseUrl: String): WebClient =

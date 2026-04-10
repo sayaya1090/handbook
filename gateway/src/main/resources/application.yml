@@ -18,11 +18,6 @@ spring:
           predicates:
             - Path=/workspace/*/messages
             - Method=GET
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: eventBroadcasterCB
-                fallbackUri: forward:/fallback/empty
         # 타입 조회
         - id: search-type
           uri: ${SEARCH_TYPE_URI:http://localhost:8082}
@@ -35,11 +30,11 @@ spring:
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=PUT,DELETE
-        # 문서 조회 + 대시보드 통계
+        # 문서 조회
         - id: search-document
           uri: ${SEARCH_DOCUMENT_URI:http://localhost:8084}
           predicates:
-            - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
+            - Path=/workspace/*/documents/**,/workspace/*/*/*
             - Method=GET
         # 문서 저장
         - id: persist-document
@@ -53,18 +48,11 @@ spring:
           predicates:
             - Path=/workspace,/workspace/**
             - Method=POST,PUT,DELETE
-        # 실시간 이벤트 — 장애 시 빈 응답 (선택 서비스)
-        # CircuitBreaker 필터는 event-broadcaster, assistant에 적용
-        # 에이전트 (선택 서비스 — 장애 시 빈 응답)
+        # 에이전트
         - id: assistant
           uri: ${ASSISTANT_URI:http://localhost:8087}
           predicates:
             - Path=/assistant/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: assistantCB
-                fallbackUri: forward:/fallback/empty
         # 메뉴 (여러 서비스에서 합산 — MenuService에서 처리)
         # 정적 리소스
         - id: static
@@ -73,16 +61,3 @@ spring:
             - Path=/js/**,/css/**,/icons/**
 server:
   port: ${SERVER_PORT:8080}
-cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus,metrics
-  metrics:
-    tags:
-      application: ${spring.application.name}
-logging:
-  pattern:
-    console: "%d{ISO8601} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"

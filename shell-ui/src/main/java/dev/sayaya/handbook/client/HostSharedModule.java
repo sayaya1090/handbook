@@ -3,7 +3,6 @@ package dev.sayaya.handbook.client;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
-import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Render;
@@ -29,9 +28,6 @@ public abstract class HostSharedModule {
     }
     @Provides @Singleton static BehaviorSubject<Progress> progress() {
         return behavior(Progress.hide());
-    }
-    @Provides @Singleton static ToastContainer toastContainer() {
-        return new ToastContainer();
     }
     @Binds abstract Observable<String> uriObservableProvider(BehaviorSubject<String> impl);
     @Binds abstract Observer<String> uriObserverProvider(BehaviorSubject<String> impl);

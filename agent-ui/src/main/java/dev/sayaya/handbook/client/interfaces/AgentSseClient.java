@@ -14,14 +14,8 @@ import javax.inject.Singleton;
 import static elemental2.dom.DomGlobal.fetch;
 
 /**
- * Gateway를 통해 Assistant 서비스와 SSE로 통신하는 AgentApiPort 구현체.
- *
- * <p><b>책임:</b> 세션 시작(POST), SSE 스트림 연결, 사용자 응답 전송, 세션 중단을 처리하고, 수신된 JSON을 CommandRouter에 위임한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link CommandRouter} — 수신된 SSE 메시지 라우팅</li>
- *   <li>{@link AgentSession} — 세션 상태 전이 발행</li>
- * </ul></p>
- * <p><b>주의:</b> SSE 연결 오류 시 세션을 ABORTED 상태로 전이하고 EventSource를 닫는다.</p>
+ * Gateway를 통해 Assistant 서비스와 SSE로 통신한다.
+ * 수신된 JSON 메시지를 파싱하여 CommandRouter에 전달한다.
  */
 @Singleton
 public class AgentSseClient implements AgentApiPort {

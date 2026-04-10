@@ -91,12 +91,4 @@ classDiagram
         +getOrDefault(key, defaultValue): String
         +empty()$ Labels
     }
-
-    class UserPreferences {
-        <<utility>>
-        +getLanguage(): String$ «JSNI»
-        +setLanguage(lang: String)$ «JSNI»
-        +getTheme(): String$ «JSNI»
-        +setTheme(theme: String)$ «JSNI»
-    }
 ```

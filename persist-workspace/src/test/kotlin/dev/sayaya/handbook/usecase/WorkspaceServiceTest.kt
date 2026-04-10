@@ -81,22 +81,4 @@ class WorkspaceServiceTest : BehaviorSpec({
             }
         }
     }
-
-    Given("워크스페이스 참여 요청이 주어졌을 때") {
-        val workspaceId = UUID.randomUUID()
-        val principal = mockk<Principal>()
-        every { groupRepo.addMember(workspaceId, principal) } returns Mono.empty()
-
-        When("join을 호출하면") {
-            val result = service.join(workspaceId, principal)
-
-            Then("성공적으로 완료된다") {
-                StepVerifier.create(result)
-                    .verifyComplete()
-            }
-            Then("그룹에 멤버가 추가된다") {
-                verify { groupRepo.addMember(workspaceId, principal) }
-            }
-        }
-    }
 })

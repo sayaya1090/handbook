@@ -1,11 +1,6 @@
 package dev.sayaya.handbook.client.domain;
 
-/**
- * 에이전트 세션의 현재 상태를 나타내는 열거형.
- *
- * <p><b>책임:</b> 세션 생명주기(대기 → 계획 → 실행 → 확인 대기 → 완료/중단)를 상태 값으로 정의한다.</p>
- * <p><b>의존관계:</b> <ul><li>없음 (순수 도메인 열거형)</li></ul></p>
- */
+/** 에이전트 세션의 현재 상태 */
 public enum AgentSessionState {
     /** 세션 없음 (대기) */
     IDLE,

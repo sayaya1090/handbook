@@ -6,15 +6,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * 터치 이벤트를 마우스 이벤트로 변환하는 어댑터.
- *
- * <p><b>책임:</b> touchstart/touchmove/touchend 이벤트를 mousedown/mousemove/mouseup으로 변환하여
- * 캔버스의 드래그/드롭/리사이즈를 모바일에서도 동작하게 한다.
- * 500ms 롱프레스 시 contextmenu 이벤트를 트리거한다.</p>
- * <p><b>의존관계:</b> 없음 (DOM API만 사용하는 독립 어댑터)</p>
- * <p><b>주의:</b> 핀치 줌(touches.length != 1)은 무시한다.
- * 이동 거리가 10px 이상이면 롱프레스가 취소된다.
- * touchmove 시 preventDefault()로 스크롤을 방지한다.</p>
+ * 터치 이벤트를 마우스 이벤트로 변환하여 캔버스의 드래그/드롭/리사이즈를 모바일에서도 동작하게 한다.
+ * 500ms 롱프레스 시 컨텍스트 메뉴를 트리거한다.
  */
 @Singleton
 public class TouchEventAdapter {

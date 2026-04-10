@@ -2,8 +2,6 @@ package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import dev.sayaya.handbook.client.domain.AgentActivity;
-import dev.sayaya.handbook.client.domain.ArtifactData;
-import dev.sayaya.handbook.client.domain.ExecutionStatusData;
 import dev.sayaya.handbook.client.domain.QualityIssue;
 import dev.sayaya.handbook.client.domain.WorkspaceStats;
 import jsinterop.base.Js;
@@ -56,40 +54,6 @@ public class TestApplication implements EntryPoint {
         act2.status = "COMPLETE";
 
         component.agentActivityList().next(Arrays.asList(act1, act2));
-
-        // 테스트용 활성 실행 데이터 설정
-        ExecutionStatusData exec1 = Js.cast(JsPropertyMap.of());
-        exec1.executionId = "exec-001";
-        exec1.intent = "타입 일괄 생성";
-        exec1.currentGroup = 2;
-        exec1.totalGroups = 5;
-        exec1.progress = 0.4;
-        exec1.status = "RUNNING";
-
-        ExecutionStatusData exec2 = Js.cast(JsPropertyMap.of());
-        exec2.executionId = "exec-002";
-        exec2.intent = "문서 검증";
-        exec2.currentGroup = 1;
-        exec2.totalGroups = 3;
-        exec2.progress = 0.33;
-        exec2.status = "RUNNING";
-
-        component.executionStatusList().next(Arrays.asList(exec1, exec2));
-
-        // 테스트용 아티팩트 데이터 설정
-        ArtifactData art1 = Js.cast(JsPropertyMap.of());
-        art1.executionId = "exec-100";
-        art1.summary = "고객 타입 필드 추가";
-        art1.changes = new String[]{"ADD customer.phone", "SET customer.phone.label=전화번호"};
-        art1.timestamp = System.currentTimeMillis() - 60000;
-
-        ArtifactData art2 = Js.cast(JsPropertyMap.of());
-        art2.executionId = "exec-101";
-        art2.summary = "주문 스키마 변경";
-        art2.changes = new String[]{"UPDATE order.amount"};
-        art2.timestamp = System.currentTimeMillis() - 300000;
-
-        component.artifactList().next(Arrays.asList(art1, art2));
 
         body().add(component.dashboard());
     }

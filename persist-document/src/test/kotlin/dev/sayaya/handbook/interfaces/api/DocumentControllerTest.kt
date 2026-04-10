@@ -57,10 +57,9 @@ class DocumentControllerTest : BehaviorSpec({
 
         When("DELETE /workspace/{id}/documents를 호출하면") {
             Then("204 No Content가 반환된다") {
-                client.method(org.springframework.http.HttpMethod.DELETE)
+                client.delete()
                     .uri("/workspace/$workspace/documents")
                     .header("Content-Type", "application/vnd.sayaya.handbook.v1+json")
-                    .bodyValue(listOf(doc))
                     .exchange()
                     .expectStatus().isNoContent
             }

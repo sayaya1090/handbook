@@ -8,37 +8,13 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
 }
 dependencies {
+    implementation(project(":activity"))
+    implementation(project(":persist-document"))
+    implementation(project(":search-document"))
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
-    testImplementation(libs.testcontainers.postgresql)
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation(libs.springdoc.webflux)
+    testImplementation(libs.bundles.test.api)
 }
-configurations { all { exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging") } }
-dependencyManagement { imports { mavenBom(libs.spring.cloud.bom.get().toString()) } }
-tasks {
-    jar {
-        enabled = false
-    }
-    test {
-        useJUnitPlatform()
-    }
-}
-jib {
-    container {
-        environment = mapOf(
-            "LANG" to "C.UTF-8",
-            "TZ" to "Asia/Seoul",
-        )
-    }
-}
-kover {
-    reports {
-        verify {
-            rule {
-                disabled = true
-                bound {
-                    minValue = 80
-                }
-            }
-        }
-    }
-}
+tasks.jar { enabled = false }

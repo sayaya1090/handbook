@@ -2,7 +2,7 @@ package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.Menu
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.comparables.shouldBeBetween
+import io.kotest.matchers.longs.shouldBeBetween
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk

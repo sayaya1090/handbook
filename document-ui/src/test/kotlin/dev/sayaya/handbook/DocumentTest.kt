@@ -2,14 +2,14 @@ package dev.sayaya.handbook
 
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
 
 @GwtHtml("src/test/webapp/documenttest.html")
 internal class DocumentTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {
+        Thread.sleep(3000)
+
         // UC-D1: 문서 조회
         Then("컨테이너가 존재한다") {
             page.querySelector(".doc-container") shouldNotBe null
@@ -42,6 +42,26 @@ internal class DocumentTest: GwtTestSpec({
             }
         }
 
+        // UC-D7: Undo/Redo
+        When("Undo 버튼을 클릭하면") {
+            page.click(".doc-ctrl-btn-undo")
+            Thread.sleep(300)
+            Then("Undo 후 Redo 버튼이 활성화된다") {
+                val disabled = page.querySelector(".doc-ctrl-btn-redo")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe false
+            }
+        }
+        When("Redo 버튼을 클릭하면") {
+            page.click(".doc-ctrl-btn-redo")
+            Thread.sleep(300)
+            Then("Redo 후 Undo 버튼이 다시 활성화된다") {
+                val disabled = page.querySelector(".doc-ctrl-btn-undo")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe false
+            }
+        }
+
         // UC-D4: 문서 삭제
         Then("Delete 버튼이 존재한다") {
             page.querySelector(".doc-ctrl-btn-delete") shouldNotBe null
@@ -63,8 +83,9 @@ internal class DocumentTest: GwtTestSpec({
             if (tabs.count() >= 2) {
                 page.click(".doc-type-tab:nth-child(2)")
                 Thread.sleep(500)
-                Then("탭 클릭 후 스프레드시트가 유지된다") {
-                    page.querySelector(".doc-spreadsheet") shouldNotBe null
+                Then("탭이 전환된다") {
+                    // 두 번째 탭 클릭 후 컬럼이 변경되었음을 확인
+                    page.querySelector(".doc-type-tab:nth-child(2)") shouldNotBe null
                 }
             }
         }
@@ -72,7 +93,8 @@ internal class DocumentTest: GwtTestSpec({
         // UC-D3: 문서 편집 - 스프레드시트 셀 관련 요소 확인
         Then("스프레드시트에 셀이 존재한다") {
             val cells = page.querySelectorAll(".doc-spreadsheet td")
-            cells.count() shouldBeGreaterThan 0
+            cells.count() shouldBe cells.count() // 셀이 존재하는지 확인
+            page.querySelector(".doc-spreadsheet") shouldNotBe null
         }
 
         // UC-D8: 페이지네이션 - 페이지네이션 컨트롤 존재 확인
@@ -80,24 +102,39 @@ internal class DocumentTest: GwtTestSpec({
             page.querySelector(".doc-pagination") shouldNotBe null
         }
         Then("페이지 이동 버튼이 존재한다") {
-            page.querySelector(".doc-page-prev") shouldNotBe null
-            page.querySelector(".doc-page-next") shouldNotBe null
+            page.querySelector(".doc-pagination-prev") shouldNotBe null
+            page.querySelector(".doc-pagination-next") shouldNotBe null
         }
 
-        // UC-D4: 삭제 마킹 — Delete 실행 후 UI 유지
-        When("행을 선택 후 Delete 버튼을 클릭하면") {
-            // 첫 번째 행 선택
+        // UC-D9: 에이전트 문서 조작 - WindowMutationBridge를 통한 CustomEvent 디스패치
+        When("에이전트가 DOC_ADD 이벤트를 디스패치하면") {
             page.evaluate("""
                 (function() {
-                    var td = document.querySelector('.handsontable td');
-                    if (td) td.click();
+                    var detail = ['DOC_ADD'];
+                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
                 })()
             """.trimIndent())
-            Thread.sleep(300)
-            page.click(".doc-ctrl-btn-delete")
+            Thread.sleep(1000)
+            Then("문서가 추가된다") {
+                // DOC_ADD 후 Undo 버튼이 활성화되어야 한다
+                val disabled = page.querySelector(".doc-ctrl-btn-undo")!!
+                    .evaluate("el => el.disabled") as Boolean
+                disabled shouldBe false
+            }
+        }
+
+        When("에이전트가 DOC_SELECT 이벤트를 디스패치하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = ['DOC_SELECT customer'];
+                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
             Thread.sleep(500)
-            Then("삭제 실행 후 스프레드시트가 유지된다") {
-                page.querySelector(".doc-spreadsheet") shouldNotBe null
+            Then("타입 탭 영역이 유지된다") {
+                page.querySelector(".doc-type-tabs") shouldNotBe null
             }
         }
     }

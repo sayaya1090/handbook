@@ -21,31 +21,20 @@ classDiagram
         PROGRESS
         AWAIT_CONFIRM
         COMPLETE
-        DELEGATE
     }
     class ExecutionPlan {
         +String intent
         +List~ExecutionStep~ steps
         +Double confidence
-        +List~SubAgentDefinition~ subAgents
-    }
-    class SubAgentDefinition {
-        +String name
-        +String role
-        +String task
-        +Int group
-        +List~String~ dependsOn
     }
     class ExecutionStep {
         +Int order
-        +Int group
         +AgentCommand command
         +String description
     }
 
     AgentCommand --> CommandType
     ExecutionPlan *-- ExecutionStep
-    ExecutionPlan *-- SubAgentDefinition
     ExecutionStep --> AgentCommand
 
     class QualityIssue {
@@ -70,18 +59,6 @@ classDiagram
         +Double confidence
         +ExecutionPlan plan
         +Status status
-        +Artifact? artifact
-    }
-    class Artifact {
-        +UUID executionId
-        +String summary
-        +List~ArtifactChange~ changes
-        +Instant timestamp
-    }
-    class ArtifactChange {
-        +String type
-        +String target
-        +String description
     }
     class AuditEntry_Status {
         <<enum>>
@@ -95,8 +72,6 @@ classDiagram
     QualityIssue --> QualityIssue_Severity
     AuditEntry --> AuditEntry_Status
     AuditEntry --> ExecutionPlan
-    AuditEntry --> Artifact
-    Artifact *-- ArtifactChange
 ```
 
 ## Usecase 계층
@@ -105,15 +80,7 @@ classDiagram
 classDiagram
     class IntentParser {
         <<interface>>
-        +parse(userMessage: String, context: String?): Mono~ExecutionPlan~
-    }
-    class SubAgentPlanExecutor {
-        <<interface>>
-        +execute(workspace: UUID, parentExecutionId: UUID, definition: SubAgentDefinition, upstreamArtifacts: Map): Mono~Artifact~
-    }
-    class ArtifactAggregator {
-        <<interface>>
-        +aggregate(executionId: UUID, intent: String, subArtifacts: Map): Artifact
+        +parse(userMessage: String): Mono~ExecutionPlan~
     }
     class PlanExecutor {
         <<interface>>
@@ -142,51 +109,22 @@ classDiagram
         -AgentCommandEventPublisher eventPublisher
         +execute(workspace: UUID): Mono~Void~
     }
-    class ExecutionContext {
-        +UUID executionId
-        +UUID workspace
-        +ExecutionPlan plan
-        +AuditEntry auditEntry
-        +Sinks.One~String~ responseSink
-        +Disposable subscription
-        +Int currentGroup
-        +Int totalGroups
-        +Status status
-    }
     class AssistantService {
         -IntentParser intentParser
         -PlanExecutor planExecutor
         -AgentCommandEventPublisher eventPublisher
         -AuditRepository auditRepository
-        -ExecutionContextManager contextManager
-        -SubAgentOrchestrator? subAgentOrchestrator
-        +request(workspace: UUID, message: String): Mono~ExecutionRequest~
-        +execute(workspace: UUID, executionId: UUID, plan: ExecutionPlan): Mono~Void~
-        +respond(executionId: UUID, response: String): Mono~Void~
-        +abort(executionId: UUID): Mono~Void~
-        +getExecutions(workspace: UUID): Flux~ExecutionStatus~
-        +getArtifacts(workspace: UUID): Flux~Artifact~
-    }
-    class ExecutionRequest {
-        +UUID executionId
-        +ExecutionPlan plan
-    }
-
-    class SubAgentOrchestrator {
-        -SubAgentPlanExecutor subAgentExecutor
-        -ArtifactAggregator artifactAggregator
-        -AgentCommandEventPublisher eventPublisher
-        +execute(workspace: UUID, executionId: UUID, plan: ExecutionPlan): Mono~Artifact~
+        -AtomicReference~Disposable~ currentExecution
+        -AtomicReference~UUID~ currentAuditId
+        +request(workspace: UUID, message: String): Mono~ExecutionPlan~
+        +execute(workspace: UUID, plan: ExecutionPlan): Mono~Void~
+        +abort(): Mono~Void~
     }
 
     AssistantService --> IntentParser
     AssistantService --> PlanExecutor
     AssistantService --> AgentCommandEventPublisher
     AssistantService --> AuditRepository
-    AssistantService --> SubAgentOrchestrator
-    SubAgentOrchestrator --> SubAgentPlanExecutor
-    SubAgentOrchestrator --> ArtifactAggregator
-    SubAgentOrchestrator --> AgentCommandEventPublisher
     QualityMonitorService --> QualityMonitor
     QualityMonitorService --> AgentCommandEventPublisher
 ```
@@ -197,12 +135,10 @@ classDiagram
 classDiagram
     class AssistantController {
         -AssistantService assistantService
-        +request(body: Map): Mono~ExecutionRequest~
-        +execute(workspace: UUID, executionId: UUID, plan: ExecutionPlan): Mono~Void~
-        +respond(workspace: UUID, executionId: UUID, body: Map): Mono~Void~
-        +abort(executionId: UUID): Mono~Void~
-        +getExecutions(workspace: UUID): Flux~ExecutionStatus~
-        +getArtifacts(workspace: UUID): Flux~Artifact~
+        +request(body: Map): Mono~ExecutionPlan~
+        +execute(workspace: UUID, plan: ExecutionPlan): Mono~Void~
+        +respond(workspace: UUID, body: Map): Mono~Void~
+        +abort(): Mono~Void~
     }
     class OpenAiIntentParser {
         -WebClient webClient
@@ -210,22 +146,11 @@ classDiagram
         -String apiKey
         -String model
         -SYSTEM_PROMPT: String$
-        +parse(userMessage: String, context: String?): Mono~ExecutionPlan~
+        +parse(userMessage: String): Mono~ExecutionPlan~
         -extractContent(response: Map): String
         -parseExecutionPlan(json: String): ExecutionPlan
     }
-    class DefaultSubAgentPlanExecutor {
-        -IntentParser intentParser
-        -PlanExecutor planExecutor
-        -AgentCommandEventPublisher eventPublisher
-        +execute(workspace: UUID, parentExecutionId: UUID, definition: SubAgentDefinition, upstreamArtifacts: Map): Mono~Artifact~
-        -buildContext(definition: SubAgentDefinition, upstreamArtifacts: Map): String
-        -executePlan(workspace: UUID, parentExecutionId: UUID, subAgentName: String, plan: ExecutionPlan): Mono~Artifact~
-    }
-    class DefaultArtifactAggregator {
-        +aggregate(executionId: UUID, intent: String, subArtifacts: Map): Artifact
-    }
-    class GroupedPlanExecutor {
+    class SequentialPlanExecutor {
         +execute(plan: ExecutionPlan): Flux~AgentCommand~
     }
     class KafkaAgentCommandEventPublisher {
@@ -252,15 +177,11 @@ classDiagram
 
     AssistantController --> AssistantService
     OpenAiIntentParser ..|> IntentParser
-    GroupedPlanExecutor ..|> PlanExecutor
+    SequentialPlanExecutor ..|> PlanExecutor
     KafkaAgentCommandEventPublisher ..|> AgentCommandEventPublisher
-    DefaultSubAgentPlanExecutor ..|> SubAgentPlanExecutor
-    DefaultArtifactAggregator ..|> ArtifactAggregator
     AssistantConfig ..> OpenAiIntentParser : creates
-    AssistantConfig ..> GroupedPlanExecutor : creates
+    AssistantConfig ..> SequentialPlanExecutor : creates
     AssistantConfig ..> KafkaAgentCommandEventPublisher : creates
-    AssistantConfig ..> DefaultSubAgentPlanExecutor : creates
-    AssistantConfig ..> DefaultArtifactAggregator : creates
     AssistantConfig ..> AssistantService : creates
     AssistantConfig --> LlmConfig
 
@@ -294,34 +215,6 @@ classDiagram
     AssistantConfig ..> DefaultQualityMonitor : creates
     AssistantConfig ..> InMemoryAuditRepository : creates
     AssistantConfig ..> QualityMonitorService : creates
-
-    class ScheduledQualityMonitor {
-        -QualityMonitorService qualityMonitorService
-        -WorkspaceProvider workspaceProvider
-        +scanAll() «@Scheduled cron»
-    }
-
-    class WorkspaceProvider {
-        <<interface>>
-        +getActiveWorkspaces(): List~UUID~
-    }
-
-    class WebClientWorkspaceProvider {
-        -WebClient webClient
-        +getActiveWorkspaces(): List~UUID~
-    }
-
-    class SchedulingConfig {
-        <<@Configuration>>
-        +scheduledQualityMonitor(): ScheduledQualityMonitor
-        +workspaceProvider(): WorkspaceProvider
-    }
-
-    ScheduledQualityMonitor --> QualityMonitorService
-    ScheduledQualityMonitor --> WorkspaceProvider
-    WebClientWorkspaceProvider ..|> WorkspaceProvider
-    SchedulingConfig ..> ScheduledQualityMonitor : creates
-    SchedulingConfig ..> WebClientWorkspaceProvider : creates
 ```
 
 ## 설계 패턴
@@ -331,8 +224,5 @@ classDiagram
 | **Port & Adapter (Hexagonal)** | IntentParser, PlanExecutor, AgentCommandEventPublisher | usecase의 포트 인터페이스를 interfaces에서 구현 |
 | **Transaction Script** | AssistantService | 비즈니스 로직을 순수 클래스로 구현, Spring 어노테이션 없음 |
 | **Domain Event** | KafkaAgentCommandEventPublisher | Kafka AGENT_COMMAND 이벤트 발행으로 워크스페이스 브로드캐스트 |
-| **Strategy** | OpenAiIntentParser, GroupedPlanExecutor | LLM 클라이언트와 실행 전략을 인터페이스로 분리하여 교체 가능 |
+| **Strategy** | OpenAiIntentParser, SequentialPlanExecutor | LLM 클라이언트와 실행 전략을 인터페이스로 분리하여 교체 가능 |
 | **Port & Adapter** | QualityMonitor / DefaultQualityMonitor, AuditRepository / InMemoryAuditRepository | 품질 감시와 감사 저장소를 인터페이스로 분리하여 구현 교체 가능 |
-| **Port & Adapter** | SubAgentPlanExecutor / DefaultSubAgentPlanExecutor, ArtifactAggregator / DefaultArtifactAggregator | 서브 에이전트 실행과 결과 병합을 인터페이스로 분리 |
-| **Orchestrator** | SubAgentOrchestrator | 서브 에이전트 group별 순차/병렬 실행 + Artifact 수집/병합을 전담 (AssistantService에서 추출) |
-| **Composite** | SubAgentDefinition, SubAgentOrchestrator | 실행 계획을 서브 에이전트 단위로 분해하여 재귀적으로 실행 (최대 깊이 1) |

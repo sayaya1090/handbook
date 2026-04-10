@@ -13,13 +13,9 @@ import javax.inject.Singleton;
 import static org.jboss.elemento.Elements.div;
 
 /**
- * navigate 커맨드를 처리하여 화면을 전환하고 이동 인디케이터를 표시하는 핸들러.
- *
- * <p><b>책임:</b> Shell의 URI Observer에 URL을 발행하여 화면을 전환하고, 이동 내용을 2초간 인디케이터로 표시 후 페이드아웃한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link AgentCommandDispatcher} — navigate 스트림 구독</li>
- *   <li>{@link Observer}&lt;String&gt; — Shell URI Observer (HistoryManager/UrlBasedMenuResolver 연동)</li>
- * </ul></p>
+ * navigate 커맨드를 처리한다.
+ * Shell의 URI Observer에 URL을 발행하여 HistoryManager/UrlBasedMenuResolver가 화면을 전환한다.
+ * 이동 내용을 인디케이터로 표시한다.
  */
 @Singleton
 public class NavigateHandler implements IsElement<HTMLDivElement> {

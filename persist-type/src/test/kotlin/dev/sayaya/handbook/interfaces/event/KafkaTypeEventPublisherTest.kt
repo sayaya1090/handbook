@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.interfaces.event
 
-import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.event.Event
 import io.kotest.core.spec.style.BehaviorSpec
@@ -15,11 +15,13 @@ import java.time.Instant
 import java.util.*
 
 class KafkaTypeEventPublisherTest : BehaviorSpec({
-    val objectMapper = JsonMapper.builder()
-        .addModule(KotlinModule.Builder().build())
-        .addModule(JavaTimeModule())
-        .build()
+    val kafkaTemplate = mockk<KafkaTemplate<String, String>>(relaxed = true)
+    val objectMapper = ObjectMapper()
+        .registerKotlinModule()
+        .registerModule(JavaTimeModule())
     val topic = "handbook-events"
+    val publisher = KafkaTypeEventPublisher(kafkaTemplate, objectMapper, topic)
+
     val workspace = UUID.randomUUID()
     val type = Type(
         id = "customer",
@@ -31,9 +33,6 @@ class KafkaTypeEventPublisherTest : BehaviorSpec({
     )
 
     Given("타입 생성 이벤트 발행") {
-        val kafkaTemplate = mockk<KafkaTemplate<String, String>>(relaxed = true)
-        val publisher = KafkaTypeEventPublisher(kafkaTemplate, objectMapper, topic)
-
         When("publishCreated를 호출하면") {
             publisher.publishCreated(workspace, type)
 
@@ -59,9 +58,6 @@ class KafkaTypeEventPublisherTest : BehaviorSpec({
     }
 
     Given("타입 삭제 이벤트 발행") {
-        val kafkaTemplate = mockk<KafkaTemplate<String, String>>(relaxed = true)
-        val publisher = KafkaTypeEventPublisher(kafkaTemplate, objectMapper, topic)
-
         When("publishDeleted를 호출하면") {
             publisher.publishDeleted(workspace, type)
 

@@ -1,10 +1,8 @@
 package dev.sayaya.handbook.client.usecase;
 
 /**
- * 에이전트 백엔드 통신 포트 인터페이스.
- *
- * <p><b>책임:</b> 세션 시작, 사용자 응답 전송, 세션 중단 등 에이전트 API 통신 계약을 정의한다.</p>
- * <p><b>의존관계:</b> <ul><li>interfaces 계층의 {@link dev.sayaya.handbook.client.interfaces.AgentSseClient}가 구현한다.</li></ul></p>
+ * 에이전트 백엔드 통신 포트.
+ * interfaces 계층에서 구현하여 Gateway를 통해 Assistant 서비스와 통신한다.
  */
 public interface AgentApiPort {
     /** 자연어 요청을 전송하고 SSE 스트림을 시작한다 */

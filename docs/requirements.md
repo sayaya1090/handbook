@@ -215,7 +215,6 @@ flowchart LR
 - 같은 워크스페이스에 여러 사용자가 동시에 참여하여 실시간으로 협업할 수 있다.
   - 다른 사용자의 문서 저장, 타입 변경 등이 SSE 이벤트로 즉시 반영된다.
   - AI 에이전트의 액션도 동일한 이벤트 스트림으로 전달되어, 모든 참여자가 에이전트의 행동을 실시간으로 관찰할 수 있다.
-  - **프레즌스**: 다른 사용자가 편집 중인 셀/타입 박스를 실시간으로 표시한다 (사용자별 고유 색상 보더 + 이름 라벨). 200ms 디바운스, 30초 타임아웃.
 
 ### 3.2 사용자 및 그룹 관리
 
@@ -239,7 +238,6 @@ flowchart LR
 | `{workspace}:type:create/delete`          | 타입 생성/삭제   |
 | `{workspace}:type:{type}:view/edit`       | 특정 타입 조회/편집 |
 | `{workspace}:type:{type}:document:view/edit` | 문서 조회/편집 |
-| `{workspace}:type:{type}:attribute:{attr}:read/write` | 속성 필드 레벨 조회/편집 (3.20) |
 
 #### Role 계층
 
@@ -257,10 +255,6 @@ flowchart LR
 - primitive 플래그로 기본 타입을 표시할 수 있다.
 - 타입별로 접근 권한을 별도로 설정할 수 있다.
 - 일괄(batch) 처리를 지원한다.
-- **패치 기반 저장**: 변경된 속성만 서버에 전송하여 부분 업데이트한다. 두 사용자가 같은 타입의 서로 다른 속성을 동시에 수정해도 충돌 없이 병합된다.
-  - 속성: 변경된 속성만 개별 upsert (전체 삭제-재삽입 대신)
-  - `@Version`으로 타입 레벨 동시성 보장, 속성 레벨에서는 비충돌 병합
-- **rev 필드 전파**: 타입의 `rev`(DB 버전) 값이 도메인 → API 응답 → 프론트엔드까지 전달되어, 클라이언트가 패치 기반 낙관적 잠금에 활용할 수 있다.
 
 ### 3.5 타입 시각화 (Type Layout)
 
@@ -278,25 +272,12 @@ flowchart LR
 - 문서 저장 시 검증(validation)이 자동으로 트리거된다.
 - 검색 시 페이지네이션, 정렬, 필터링을 지원한다.
 - 다양한 날짜 포맷을 지원한다 (ISO-8601, yyyyMMdd, yyyy.MM.dd 등).
-- **더티 트래킹**: 사용자 편집은 로컬 상태에만 반영되며, 서버에 즉시 저장되지 않는다.
-- **원자적 저장**: Save 버튼을 누르면 생성/수정/삭제 변경점이 하나의 트랜잭션으로 일괄 저장된다.
-- **시각적 상태 구분**: 생성(created), 수정(changed), 삭제 예정(deleted) 셀/행을 색상과 스타일로 구분하여 편집 중에 변경 내역을 즉시 확인할 수 있다.
-- **충돌 감지**: 다른 사용자가 같은 문서를 동시에 수정한 경우 `@Version` 기반 낙관적 잠금으로 충돌을 감지하고, 409 Conflict 시 사용자에게 알린다.
-- **패치 기반 저장**: 변경된 필드만 서버에 전송하여 부분 업데이트한다. 두 사용자가 같은 문서의 서로 다른 속성을 동시에 수정해도 충돌 없이 병합된다.
-  - 문서: ChangeTracker가 추적한 변경 필드만 PATCH로 전송 → 백엔드에서 JSONB 머지 (`||` 연산자)
-  - 타입: 변경된 속성만 개별 업데이트 (전체 삭제-재삽입 대신 upsert)
-  - `@Version`으로 문서/타입 레벨 동시성 보장, 필드 레벨에서는 비충돌 병합
-- **rev 필드 전파**: 문서의 `rev`(DB 버전) 값이 도메인 → API 응답 → 프론트엔드까지 전달되어, 클라이언트가 패치 기반 낙관적 잠금에 활용할 수 있다.
 
 ### 3.7 이력 조회
 
 - 타입의 과거 버전을 조회할 수 있다 (특정 시점 기준 point-in-time query).
 - 문서의 변경 이력을 시간 기반으로 추적할 수 있다.
 - 이전 버전의 타입/문서는 삭제되지 않고 보존된다.
-- **버전 간 Diff 비교**: 두 버전의 타입 또는 문서를 비교하여 변경된 속성/필드를 "before → after" 형식으로 시각적으로 표시한다.
-  - 타입 diff: 속성 추가/삭제/변경, description 변경, 부모 타입 변경을 표시
-  - 문서 diff: data 필드 값 변경을 표시
-  - DiffPanel 컴포넌트(ui-components)를 사용하여 MD3 카드 형식으로 렌더링
 
 ### 3.8 인증
 
@@ -363,20 +344,11 @@ flowchart LR
 #### 문서 관리 (Document Editor)
 
 - 탭 기반 인터페이스로 여러 타입의 문서를 동시에 편집할 수 있다.
-- 스프레드시트 형태의 테이블 뷰를 제공한다 (Handsontable 6.2.4 MIT).
+- 스프레드시트 형태의 테이블 뷰를 제공한다.
 - 도구 모음: 저장, Undo/Redo, 추가, 삭제, 새로고침, 검증
 - 검색 필터링을 지원한다.
 - 일괄(batch) 작업을 지원한다.
 - 검증 실패(Compliance 불일치) 문서에 대한 경고를 표시한다.
-- **더티 트래킹**: 생성/수정/삭제 상태를 셀 단위로 시각적으로 구분한다.
-  - 생성된 행: tertiary-container 배경, 좌측 3px tertiary 보더
-  - 수정된 셀: tertiary 1px inset box-shadow
-  - 삭제 예정 행: 취소선, 75% 투명화
-  - 유효하지 않은 셀: error 텍스트, error 1px inset box-shadow (필수값 누락/형식 오류)
-  - 충돌 문서: secondary-container 배경, secondary 2px 좌측 보더 (다른 사용자와 동시 수정)
-- **Save 버튼**: 더티 없으면 비활성화, 변경 건수 뱃지 표시, 저장 중 스피너 표시
-- **타입 전환 경고**: 미저장 변경이 있으면 확인 다이얼로그 표시
-- 에이전트 편집과 사용자 편집은 동일한 Action/DirtyTracker 경로로 처리되며, Undo/Redo 가능
 
 #### 사용자 관리
 
@@ -394,20 +366,15 @@ flowchart LR
 | GET    | `/workspace/{workspace}/types`              | 타입 목록 조회 (날짜 필터링)     |
 | GET    | `/workspace/{workspace}/types/{type}?version=` | 특정 타입 버전 조회           |
 | PUT    | `/workspace/{workspace}/types`              | 타입 일괄 저장 (새 버전 생성)    |
-| PATCH  | `/workspace/{workspace}/types`              | 타입 부분 업데이트 (변경 속성만) |
 | DELETE | `/workspace/{workspace}/types`              | 타입 일괄 삭제                  |
-| GET    | `/workspace/{workspace}/types/{type}/diff?v1=&v2=` | 타입 두 버전 간 diff       |
 | GET    | `/workspace/{workspace}/documents`          | 문서 검색 (페이지네이션)         |
 | GET    | `/workspace/{workspace}/{type}/{serial}`    | 특정 문서 조회                  |
 | GET    | `/workspace/{workspace}/{type}/{serial}?date=` | 특정 시점 문서 조회 (이력)    |
 | PUT    | `/workspace/{workspace}/documents`          | 문서 일괄 저장 (새 버전 생성)    |
-| PATCH  | `/workspace/{workspace}/documents`          | 문서 부분 업데이트 (변경 필드만) |
 | DELETE | `/workspace/{workspace}/documents`          | 문서 일괄 삭제                  |
-| GET    | `/workspace/{workspace}/{type}/{serial}/diff?date1=&date2=` | 문서 두 시점 간 diff |
 | GET    | `/workspace/{workspace}/compliance`         | 호환성 검증 결과 조회           |
 | GET    | `/workspace/{workspace}/layouts`            | 레이아웃 목록 조회              |
 | GET    | `/workspace/{workspace}/messages`           | SSE 실시간 이벤트 스트림        |
-| POST   | `/workspace/{workspace}/presence`           | 프레즌스 (편집 중 셀/타입 공유)  |
 | POST   | `/workspace/{workspace}/documents/import`   | 문서 일괄 임포트 (CSV/JSON)     |
 | GET    | `/workspace/{workspace}/documents/export`   | 문서 일괄 익스포트 (CSV/JSON)   |
 | GET    | `/workspace/{workspace}/dashboard`          | 워크스페이스 현황 대시보드       |
@@ -415,16 +382,8 @@ flowchart LR
 | GET    | `/openapi.json`                             | OpenAPI 3.0 스펙               |
 | POST   | `/assistant/request`                        | 자연어 요청 → 실행 계획 생성     |
 | POST   | `/assistant/execute`                        | 실행 계획 확인 후 실행 (Kafka 발행) |
-| POST   | `/assistant/abort`                          | 에이전트 작업 중단 (executionId 지정)  |
+| POST   | `/assistant/abort`                          | 에이전트 작업 중단               |
 | POST   | `/assistant/respond`                        | 에이전트 확인 요청에 대한 사용자 응답    |
-| GET    | `/assistant/executions`                     | 실행 상태/진행률 조회 (워크스페이스별)   |
-| GET    | `/assistant/artifacts`                      | 실행 결과 아티팩트 조회                 |
-| PATCH  | `/workspace/{workspace}/documents/{id}/status` | 문서 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
-| POST   | `/workspace/{workspace}/webhooks`           | 웹훅 등록                               |
-| GET    | `/workspace/{workspace}/webhooks`           | 웹훅 목록 조회                           |
-| DELETE | `/workspace/{workspace}/webhooks/{id}`      | 웹훅 삭제                               |
-| GET    | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 조회              |
-| GET    | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 조회                    |
 
 ### 3.12 API 접근성 (외부 시스템·AI 연동)
 
@@ -514,10 +473,6 @@ flowchart LR
 | 품질 점수 차트 | 미구현 | - |
 | 최근 변경 타임라인 | 미구현 | - |
 | 실시간 SSE 카운터 갱신 | 미구현 | - |
-| 문서 생성 추이 차트 | 미구현 | `TimelineChartElement` (3.21) |
-| 검증 실패율 추이 차트 | 미구현 | `TimelineChartElement` (3.21) |
-| 타입별 문서 분포 파이 차트 | 미구현 | `DistributionChartElement` (3.21) |
-| 에이전트 사용량 추이 차트 | 미구현 | `TimelineChartElement` (3.21) |
 
 ### 3.16 데이터 품질 감시 (AI 에이전트)
 
@@ -657,29 +612,6 @@ AI 에이전트가 백그라운드에서 워크스페이스 내 데이터의 패
 - 사용자가 에이전트의 모든 행동을 실시간으로 관찰하고, 언제든 Undo/Redo로 되돌리거나 중단(abort)할 수 있다.
 - Assistant는 DB에 직접 접근하지 않으며, 독립 서비스로 수평 확장이 가능하다.
 - 워크스페이스별 권한을 그대로 적용한다 (자연어 요청이라도 권한 밖의 작업은 거부).
-
-#### 병렬 단계 실행 (Parallel Step Execution)
-
-- `ExecutionStep`에 `group: Int` 필드를 추가한다. 같은 group 값을 가진 단계들은 동시(병렬)에 실행되고, 서로 다른 group 간에는 순차적으로 실행된다.
-- `SequentialPlanExecutor`를 `GroupedPlanExecutor`로 교체한다. 같은 그룹의 단계는 `Flux.merge`로 병렬 실행한다.
-- `PROGRESS` 커맨드 페이로드에 그룹 정보를 포함한다: `{ currentGroup, totalGroups, parallel, stepCount }`.
-- 병렬 실행 중 한 단계가 실패하면 같은 그룹의 나머지 단계도 취소한다.
-
-#### 다중 실행 및 실행 컨텍스트 (Multi-Execution)
-
-- `AssistantService`는 `ConcurrentHashMap<UUID, ExecutionContext>`로 복수의 동시 실행을 관리한다.
-- 각 실행은 고유한 `executionId`, 감사 추적(`AuditEntry`), 응답 sink(`Sinks.One`)를 가진다.
-- `request()` 메서드는 `ExecutionRequest(executionId, plan)`을 반환하여 클라이언트가 실행을 식별할 수 있게 한다.
-- `execute()`, `respond()`, `abort()` 메서드는 `executionId`를 매개변수로 받아 특정 실행을 대상으로 동작한다.
-- `GET /assistant/executions?workspace={id}`로 워크스페이스 내 모든 실행의 상태(실행 계획, 현재 그룹, 진행률, 상태)를 조회할 수 있다.
-
-#### 아티팩트 (Artifacts)
-
-- 실행이 완료되면 결과를 `Artifact`로 수집한다.
-- `Artifact`에는 `executionId`, `summary`(실행 결과 요약), `changes`(변경 목록: `{ type, target, description }`), `timestamp`가 포함된다.
-- `COMPLETE` 커맨드 페이로드에 artifact summary를 포함하여 클라이언트에 전달한다.
-- `AuditEntry`에 `artifact` 필드를 확장하여 아티팩트를 감사 추적과 함께 보존한다.
-- `GET /assistant/artifacts?workspace={id}`로 워크스페이스의 실행 결과 아티팩트를 조회할 수 있다.
 
 #### 에이전트 감사 추적 (Audit Trail)
 
@@ -1261,87 +1193,6 @@ seq  type           payload
 > | `await_confirm` | 7회 | 구조 확인, 생성 승인, 일괄 작업 승인 |
 > | `complete` | 5회 | 각 Phase 종료 시 작업 완료 요약 |
 
-### 3.18 워크플로우/상태 머신 (문서 생명주기)
-
-문서는 DRAFT → REVIEW → PUBLISHED 생명주기를 따르며, 상태에 따라 편집 가능 여부가 결정된다.
-
-- 문서는 DRAFT, REVIEW, PUBLISHED 세 가지 상태를 가진다.
-- **DRAFT**: 편집 가능. 작성자가 자유롭게 수정할 수 있다.
-- **REVIEW**: 읽기 전용. 승인자만 상태 전이(PUBLISHED 또는 DRAFT 반려)를 수행할 수 있다.
-- **PUBLISHED**: 읽기 전용. 재편집이 필요하면 DRAFT로 되돌린 후 수정한다.
-- 상태 전이 규칙:
-  - DRAFT → REVIEW: 작성자가 검토 요청
-  - REVIEW → PUBLISHED: 승인자가 승인
-  - REVIEW → DRAFT: 승인자가 반려
-  - PUBLISHED → DRAFT: 재편집 요청 (권한 필요)
-- API: `PATCH /workspace/{workspace}/documents/{id}/status`
-  - 요청 바디: `{ "status": "REVIEW" }`
-  - 권한 검증 후 상태 전이 수행. 유효하지 않은 전이 시 400 응답.
-
-### 3.19 웹훅 알림 (외부 시스템 연동)
-
-문서·타입 변경 시 외부 시스템에 HTTP 콜백으로 알림을 전송한다.
-
-- 워크스페이스별로 웹훅 URL을 등록할 수 있다.
-  - `POST /workspace/{workspace}/webhooks` — 웹훅 등록
-  - `GET /workspace/{workspace}/webhooks` — 웹훅 목록 조회
-  - `DELETE /workspace/{workspace}/webhooks/{id}` — 웹훅 삭제
-- 이벤트 발생 시 등록된 URL로 HTTP POST 콜백을 전송한다.
-  - 페이로드: 이벤트 타입, 워크스페이스, 페이로드, 타임스탬프
-- 이벤트 필터링을 지원한다 (DOCUMENT_CREATED, DOCUMENT_DELETED, TYPE_CREATED, TYPE_DELETED 등 선택 가능).
-- 재시도 정책: 최대 3회, 지수 백오프 (1초, 2초, 4초).
-- 연속 실패 시 웹훅을 비활성화(active=false)하고 워크스페이스 관리자에게 알린다.
-
-### 3.20 필드 레벨 권한
-
-타입의 각 속성(attribute)에 역할 기반 편집/조회 권한을 설정하여, 문서 편집 시 사용자 역할에 따라 특정 필드의 접근을 제한한다.
-
-#### 속성별 권한 설정
-
-- 타입 정의 시 각 속성에 `read_roles`(조회 허용 역할)와 `write_roles`(편집 허용 역할)를 설정할 수 있다.
-- `read_roles`/`write_roles`는 JSONB 배열로 `type_attributes` 테이블에 저장된다.
-- 역할 값은 기존 RBAC Role 계층(3.3)의 역할명을 사용한다.
-- 빈 배열(`[]`)은 "제한 없음"을 의미한다 (기본값).
-
-#### 문서 편집 시 적용
-
-- 문서 편집기(스프레드시트)가 로드될 때, 사용자의 역할과 각 속성의 권한을 비교한다.
-- `write_roles`에 사용자 역할이 포함되지 않은 속성의 셀은 읽기 전용으로 표시한다.
-- `read_roles`에 사용자 역할이 포함되지 않은 속성의 셀은 마스킹 처리한다.
-
-#### API
-
-- 기존 타입 저장(`PUT /workspace/{workspace}/types`) 및 패치(`PATCH /workspace/{workspace}/types`) 시 속성의 `read_roles`/`write_roles`를 포함하여 전송한다.
-- 타입 조회 시 각 속성의 `read_roles`/`write_roles`가 응답에 포함된다.
-
-### 3.21 대시보드 차트
-
-워크스페이스 통계를 시계열 차트로 시각화하여 추이를 파악할 수 있도록 한다.
-
-#### 문서 생성 추이
-
-- 일별/주별 문서 생성 건수를 라인 차트로 표시한다.
-- 기간(from/to) 및 집계 간격(day/week)을 선택할 수 있다.
-
-#### 검증 실패율 추이
-
-- 기간별 검증 성공/실패 비율을 라인 차트로 표시한다.
-
-#### 타입별 문서 분포
-
-- 타입별 문서 수를 파이 차트로 표시한다.
-
-#### 에이전트 사용량 추이
-
-- 기간별 에이전트 요청 건수를 라인 차트로 표시한다.
-
-#### API
-
-| Method | Path | 설명 |
-|--------|------|------|
-| GET | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 (문서 생성, 검증 실패율, 에이전트 사용량) |
-| GET | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 |
-
 ## 5. 비기능 요구사항
 
 ### 5.1 기술 스택
@@ -1379,101 +1230,3 @@ seq  type           payload
 
 - Kubernetes 환경에 배포한다.
 - Helm Chart를 통해 인프라를 관리한다.
-
-## 6. 추가 구현 요구사항
-
-### 6.1 워크스페이스 참여 (JOIN)
-- 사용자는 워크스페이스 ID를 입력하여 기존 워크스페이스에 참여할 수 있어야 한다.
-- POST /workspace/{id}/join 엔드포인트 필요.
-- workspace-ui SubmitButton에서 JOIN 모드 처리 구현.
-
-### 6.2 대시보드 API 통합
-- 대시보드 프론트엔드 API URL을 워크스페이스 기반으로 수정.
-- 품질 이슈 조회 엔드포인트 구현 (GET /workspace/{id}/quality-issues).
-- 에이전트 활동 이력 조회 엔드포인트 구현 (GET /workspace/{id}/agent-activity).
-
-### 6.3 에러 핸들링 개선
-- 프론트엔드 API 호출 실패 시 사용자에게 토스트 알림 표시 (사일런트 실패 금지).
-- save/delete/patch 실패 시 에러 메시지 표시 + 충돌 해결 UI.
-- SSE 연결 끊김 시 자동 재연결 + 알림.
-
-### 6.4 페이지네이션 경계 처리
-- 마지막 페이지에서 Next 버튼 비활성화.
-- 총 페이지 수 또는 hasMore 플래그를 API 응답에 포함.
-- 결과 없음 상태 UI.
-
-### 6.5 입력 검증 강화
-- 워크스페이스 이름: 영숫자+한글+하이픈+언더스코어, 최대 255자.
-- 프론트엔드 클라이언트 사이드 검증 + 백엔드 서버 사이드 검증 이중화.
-
-### 6.6 접근성 (Accessibility)
-- 모든 다이얼로그에 role="dialog" 또는 role="alertdialog" 속성.
-- 폼 요소에 aria-label 또는 label 연결.
-- 키보드 네비게이션 지원 (Tab, Enter, Escape).
-
-### 6.7 파일 업로드
-- File 속성 타입에 대한 multipart/form-data 업로드 엔드포인트 구현.
-- 저장소 백엔드 (S3 또는 로컬 파일시스템) 연동.
-- 파일 확장자 검증은 기존 AttributeType.File의 extensions 규칙을 따른다.
-
-### 6.8 사용자 설정
-- 언어 선택 (ko/en) 퍼시스턴스 (localStorage 또는 서버 사이드).
-- 다크/라이트 테마 전환 UI 및 퍼시스턴스.
-- 설정 패널은 shell-ui Drawer 또는 별도 모달로 제공.
-
-### 6.9 감사 로그 UI
-- dashboard-ui 또는 별도 화면에서 감사 이력 조회 (누가, 언제, 무엇을 변경했는지).
-- 에이전트 활동 이력과 사용자 변경 이력을 통합 타임라인으로 표시.
-- 필터: 기간, 사용자, 이벤트 타입.
-
-### 6.10 벌크 작업
-- 문서 다중 선택 → 일괄 삭제, 일괄 상태 변경.
-- 타입 다중 선택 → 일괄 삭제.
-- 선택 UI: 체크박스 또는 Shift+클릭 범위 선택.
-
-### 6.11 세션 관리
-- 토큰 만료 전 자동 갱신 (refresh token 사용).
-- 세션 만료 시 로그인 페이지로 리다이렉트 + 알림.
-- 비활성 타임아웃 경고 (만료 5분 전 알림).
-
-### 6.12 타입 버전 히스토리 UI
-- 타입의 전체 버전 목록을 시각적으로 브라우징.
-- 두 버전 간 diff 비교 (기존 diff API 활용).
-- 타임라인 또는 리스트 뷰.
-
-## 7. 품질 향상 요구사항
-
-### 7.1 보안 강화
-- **CORS 설정**: Gateway에 허용 도메인/메서드/헤더 명시. 프로덕션에서 와일드카드 금지.
-- **CSP 헤더**: Content-Security-Policy 헤더 추가. 인라인 스크립트/스타일 제한.
-- **인증 Rate Limiting**: OAuth2/JWT 엔드포인트에 요청 속도 제한 (예: 10회/분). 429 Too Many Requests 반환.
-- **파일 업로드 크기 제한**: multipart max-size 설정 (예: 50MB). 초과 시 413 반환.
-- **검색 쿼리 제한**: 전문 검색 쿼리 최대 1000자. Rate limiting 적용.
-
-### 7.2 성능 최적화
-- **DB 인덱스**: documents 테이블 (workspace, type, serial), (workspace, effect_date_time, expire_date_time) 복합 인덱스.
-- **Export 스트리밍**: 대량 내보내기 시 chunked transfer encoding 사용. 메모리 일괄 적재 금지.
-- **WebClient/R2DBC 타임아웃**: 연결 타임아웃 5초, 요청 타임아웃 30초, 풀 유휴 타임아웃 설정.
-- **R2DBC 커넥션 풀**: 최대 커넥션 수, 유효성 검사 쿼리 설정.
-
-### 7.3 회복성 강화
-- **SSE 재연결**: 클라이언트 측 exponential backoff 재연결 (1초→2초→4초→최대 30초).
-- **Kafka DLQ**: 실패한 이벤트를 dead-letter-topic에 저장. 재처리 가능.
-- **Webhook 실패 저장**: 실패한 웹훅 호출을 DB에 기록. 재시도 큐 구현.
-- **서비스 graceful degradation**: 선택적 서비스(assistant, event-broadcaster) 장애 시 핵심 기능 유지.
-
-### 7.4 관측성 (Observability)
-- **요청 추적 ID**: Gateway에서 X-Correlation-Id 생성. 전 서비스/Kafka 헤더 전파. MDC 로깅.
-- **Prometheus 메트릭**: /actuator/prometheus 노출. 지연 시간, 에러율, 큐 깊이, 커넥션 풀 모니터링.
-- **구조화 로깅**: JSON 로그 포맷. 요청 ID, 사용자 ID, 워크스페이스 ID 포함.
-
-### 7.5 UX 개선
-- **빈 상태 UI**: "결과 없음", "로딩 중", "에러 발생" 상태를 시각적으로 구분.
-- **삭제 확인**: 파괴적 작업(삭제, 벌크 삭제) 전 ConfirmDialog 필수.
-- **성공 피드백**: 저장/삭제/생성 완료 시 SUCCESS 토스트 표시.
-- **Soft Delete**: 즉시 삭제 대신 30일 보존 후 하드 삭제. 복구 가능.
-
-### 7.6 코드 품질
-- **AssistantService 분리**: 255줄 → SubAgentOrchestrator, ExecutionLifecycleManager, AuditingService 3클래스.
-- **테스트 커버리지 80%**: 전 모듈 Kover 최소 커버리지 충족. 에러 경로/타임아웃 테스트 보강.
-- **누락 Javadoc 보완**: 헬퍼/유틸리티 클래스 문서화.
