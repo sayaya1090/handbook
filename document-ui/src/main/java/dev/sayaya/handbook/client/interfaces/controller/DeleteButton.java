@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.interfaces.controller;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.DeleteDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -17,9 +18,9 @@ public class DeleteButton implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLElement element;
 
     @Inject
-    public DeleteButton(ActionManager actionManager, DocumentList documentList) {
+    public DeleteButton(ActionManager actionManager, DocumentList documentList, LabelProvider labelProvider) {
         this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-delete").element();
-        element.textContent = "Delete";
+        labelProvider.subscribe(labels -> element.textContent = labels.getOrDefault("document.delete", "Delete"));
         element.addEventListener("click", e -> {
             var docs = documentList.getValue();
             if (!docs.isEmpty()) {

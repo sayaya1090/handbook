@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -14,9 +15,9 @@ public class UndoButton implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLElement element;
 
     @Inject
-    public UndoButton(ActionManager actionManager) {
+    public UndoButton(ActionManager actionManager, LabelProvider labelProvider) {
         this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-undo").element();
-        element.textContent = "Undo";
+        labelProvider.subscribe(labels -> element.textContent = labels.getOrDefault("document.undo", "Undo"));
         element.addEventListener("click", e -> actionManager.undo());
         actionManager.onCanUndo(can ->
             ((elemental2.dom.HTMLButtonElement) element).disabled = !can

@@ -16,6 +16,7 @@ import dev.sayaya.handbook.usecase.DocumentService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
 
 @Configuration
@@ -35,7 +36,8 @@ class DocumentConfig {
         repo: R2dbcDocumentEntityRepository,
         objectMapper: ObjectMapper,
         tx: TransactionalOperator,
-    ) = R2dbcDocumentRepositoryAdapter(repo, objectMapper, tx)
+        databaseClient: DatabaseClient,
+    ) = R2dbcDocumentRepositoryAdapter(repo, objectMapper, tx, databaseClient)
 
     @Bean
     fun documentEventPublisher(kafkaTemplate: KafkaTemplate<String, String>, objectMapper: ObjectMapper): DocumentEventPublisher =

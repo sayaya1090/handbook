@@ -11,6 +11,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
 import dev.sayaya.handbook.domain.Type
+import dev.sayaya.handbook.domain.TypePatch
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.r2dbc.spi.ConnectionFactories
@@ -53,7 +54,8 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
         .registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
         .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
     val tx = TransactionalOperator.create(R2dbcTransactionManager(connectionFactory))
-    val adapter = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, objectMapper, tx)
+    val databaseClient = DatabaseClient.create(connectionFactory)
+    val adapter = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, objectMapper, tx, databaseClient)
 
     val workspace = UUID.randomUUID()
 
@@ -162,6 +164,39 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                         Instant.parse("2027-12-31T23:59:59Z"),
                     )
                 ).verifyComplete()
+            }
+        }
+
+        When("patch로 일부 속성만 변경하면") {
+            Then("변경 속성만 업데이트되고 나머지는 유지된다") {
+                // 먼저 저장
+                adapter.save(workspace, listOf(type)).collectList().block()
+                val savedRev = typeRepo.findById("customer").block()!!.rev!!
+
+                val patch = TypePatch(
+                    id = "customer",
+                    version = "1.0",
+                    rev = savedRev,
+                    attributes = listOf(
+                        Attribute(
+                            name = "phone",
+                            order = 2,
+                            description = "전화번호",
+                            type = AttributeType.Text(),
+                            nullable = true,
+                            inherited = false,
+                        ),
+                    ),
+                )
+                StepVerifier.create(adapter.patch(workspace, listOf(patch)))
+                    .assertNext { patched ->
+                        patched.id shouldBe "customer"
+                        patched.attributes.size shouldBe 3
+                        patched.attributes.any { it.name == "name" } shouldBe true
+                        patched.attributes.any { it.name == "age" } shouldBe true
+                        patched.attributes.any { it.name == "phone" } shouldBe true
+                    }
+                    .verifyComplete()
             }
         }
 

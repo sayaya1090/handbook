@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.Type
+import dev.sayaya.handbook.domain.TypePatch
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.*
@@ -68,6 +69,32 @@ class TypeServiceTest : BehaviorSpec({
             Then("저장된 타입이 반환된다") {
                 StepVerifier.create(result)
                     .assertNext { it.id shouldBe "product" }
+                    .verifyComplete()
+            }
+            Then("TYPE_CREATED 이벤트가 발행된다") {
+                verify { publisher.publishCreated(workspace, type) }
+            }
+        }
+    }
+
+    Given("타입 패치 요청이 주어졌을 때") {
+        val type = Type(
+            id = "customer",
+            version = "1.0",
+            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
+            description = "고객 타입",
+            primitive = false,
+        )
+        val patch = TypePatch(id = "customer", version = "1.0", rev = 1)
+        every { repo.patch(workspace, listOf(patch)) } returns Flux.just(type)
+
+        When("patch를 호출하면") {
+            val result = service.patch(workspace, listOf(patch))
+
+            Then("패치된 타입이 반환된다") {
+                StepVerifier.create(result)
+                    .assertNext { it.id shouldBe "customer" }
                     .verifyComplete()
             }
             Then("TYPE_CREATED 이벤트가 발행된다") {

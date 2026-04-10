@@ -13,4 +13,7 @@ interface R2dbcAttributeEntityRepository : ReactiveCrudRepository<R2dbcAttribute
 
     @Query("DELETE FROM type_attributes WHERE type_id = :typeId AND type_version = :typeVersion")
     fun deleteByTypeIdAndTypeVersion(typeId: String, typeVersion: String): Mono<Void>
+
+    @Query("DELETE FROM type_attributes WHERE type_id = :typeId AND type_version = :typeVersion AND name = :name")
+    fun deleteByTypeIdAndTypeVersionAndName(typeId: String, typeVersion: String, name: String): Mono<Void>
 }

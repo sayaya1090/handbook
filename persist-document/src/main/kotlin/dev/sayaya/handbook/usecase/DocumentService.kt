@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.Document
+import dev.sayaya.handbook.domain.DocumentPatch
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
@@ -15,6 +16,11 @@ class DocumentService(
 ) {
     fun save(workspace: UUID, documents: List<Document>): Flux<Document> {
         return documentRepository.saveAll(workspace, documents)
+            .doOnNext { document -> eventPublisher.publishCreated(workspace, document) }
+    }
+
+    fun patch(workspace: UUID, patches: List<DocumentPatch>): Flux<Document> {
+        return documentRepository.patchAll(workspace, patches)
             .doOnNext { document -> eventPublisher.publishCreated(workspace, document) }
     }
 

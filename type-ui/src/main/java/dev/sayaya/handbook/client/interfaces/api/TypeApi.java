@@ -16,10 +16,12 @@ import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
 import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Singleton
@@ -93,6 +95,36 @@ public class TypeApi implements TypeRepository {
                     GWT.log("TypeApi.save failed: " + err);
                     progress.next(Progress.hide());
                     return Promise.resolve(new LinkedHashSet<>());
+                });
+        return AsyncSubject.await(promise);
+    }
+
+    @Override
+    public Observable<Set<TypeValue>> patch(List<JsPropertyMap<?>> patches) {
+        progress.next(Progress.indeterminate());
+        RequestInit init = RequestInit.create();
+        init.setMethod("PATCH");
+        init.setBody(Global.JSON.stringify(patches.toArray()));
+        init.setHeaders(new String[][]{
+                {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
+        });
+
+        Promise<Set<TypeValue>> promise = fetchApi.request("workspace/" + workspace + "/types", init)
+                .then(this::handleResponse)
+                .then(Response::json)
+                .then(json -> {
+                    JsArray<TypeNative> arr = Js.cast(json);
+                    Set<TypeValue> result = new LinkedHashSet<>();
+                    for (int j = 0; j < arr.length; j++) {
+                        result.add(arr.getAt(j).toDomain());
+                    }
+                    progress.next(Progress.hide());
+                    return Promise.resolve(result);
+                })
+                .catch_(err -> {
+                    GWT.log("TypeApi.patch failed: " + err);
+                    progress.next(Progress.hide());
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }

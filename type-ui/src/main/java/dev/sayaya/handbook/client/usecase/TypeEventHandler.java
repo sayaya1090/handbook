@@ -3,11 +3,17 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.PresenceTracker;
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
+import elemental2.core.Global;
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -30,6 +36,8 @@ public class TypeEventHandler {
     private final ChangeTracker tracker;
     private final ActionManager actionManager;
     private final ToastContainer toastContainer;
+    private final PresenceTracker presenceTracker;
+    private Labels labels = Labels.empty();
 
     @Inject
     public TypeEventHandler(WorkspaceEventReceiver eventReceiver,
@@ -38,7 +46,9 @@ public class TypeEventHandler {
                             LayoutProvider layoutProvider,
                             ChangeTracker tracker,
                             ActionManager actionManager,
-                            ToastContainer toastContainer) {
+                            ToastContainer toastContainer,
+                            LabelProvider labelProvider,
+                            PresenceTracker presenceTracker) {
         this.eventReceiver = eventReceiver;
         this.typeRepository = typeRepository;
         this.typeList = typeList;
@@ -46,6 +56,8 @@ public class TypeEventHandler {
         this.tracker = tracker;
         this.actionManager = actionManager;
         this.toastContainer = toastContainer;
+        this.presenceTracker = presenceTracker;
+        labelProvider.subscribe(l -> this.labels = l);
     }
 
     public void init() {
@@ -62,11 +74,26 @@ public class TypeEventHandler {
             case "TYPE_CREATED":
             case "TYPE_DELETED":
                 refreshTypes();
-                toastContainer.show(ToastLevel.INFO, "\ub2e4\ub978 \uc0ac\uc6a9\uc790\uac00 \ud0c0\uc785\uc744 \ubcc0\uacbd\ud588\uc2b5\ub2c8\ub2e4");
+                toastContainer.show(ToastLevel.INFO, labels.getOrDefault("type.event.changed", "Another user has modified the type"));
+                break;
+            case "PRESENCE":
+                handlePresence(eventData.substring(colonIdx + 1));
                 break;
             default:
                 break;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handlePresence(String json) {
+        GWT.log("TypeEventHandler: presence event: " + json);
+        JsPropertyMap<Object> parsed = Js.cast(Global.JSON.parse(json));
+        String user = Js.cast(parsed.get("user"));
+        String userName = parsed.has("user_name") ? Js.cast(parsed.get("user_name")) : user;
+        String type = parsed.has("type") ? Js.cast(parsed.get("type")) : null;
+        String serial = parsed.has("serial") ? Js.cast(parsed.get("serial")) : null;
+        String field = parsed.has("field") ? Js.cast(parsed.get("field")) : null;
+        presenceTracker.update(user, userName, type, serial, field);
     }
 
     private void refreshTypes() {

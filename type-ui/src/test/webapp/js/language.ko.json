@@ -25,5 +25,6 @@
   "type.attr.description": "설명",
   "type.attr.apply": "적용",
   "type.attr.close": "닫기",
-  "type.attr.nullable": "널 허용"
+  "type.attr.nullable": "널 허용",
+  "type.event.changed": "다른 사용자가 타입을 변경했습니다"
 }

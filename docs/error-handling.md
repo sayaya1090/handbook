@@ -82,11 +82,11 @@ flowchart LR
     C -->|200| D[정상 처리]
     C -->|401| E[쿠키 삭제 + 로그인 리다이렉트]
     C -->|409| F[.conflict 표시 + 사용자 선택]
-    C -->|400/404| G[Toast ERROR]
-    C -->|500| H[Toast ERROR + 재시도 안내]
+    C -->|"400, 404"| G[Toast ERROR]
+    C -->|"500"| H[Toast ERROR + 재시도 안내]
 
     I[SSE 이벤트] --> J{이벤트 타입}
-    J -->|DOCUMENT/TYPE_CREATED| K[문서/타입 목록 갱신]
+    J -->|"DOCUMENT, TYPE_CREATED"| K["문서, 타입 목록 갱신"]
     J -->|PRESENCE| L[프레즌스 표시]
     J -->|연결 끊김| M[자동 재연결 + Toast WARNING]
 ```

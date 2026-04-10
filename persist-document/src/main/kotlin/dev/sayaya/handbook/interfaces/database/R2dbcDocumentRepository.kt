@@ -3,8 +3,11 @@ package dev.sayaya.handbook.interfaces.database
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import dev.sayaya.handbook.domain.Document
+import dev.sayaya.handbook.domain.DocumentPatch
 import dev.sayaya.handbook.usecase.DocumentRepository
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -16,6 +19,7 @@ class R2dbcDocumentRepositoryAdapter(
     private val repo: R2dbcDocumentEntityRepository,
     private val objectMapper: ObjectMapper,
     private val tx: TransactionalOperator,
+    private val databaseClient: DatabaseClient,
 ) : DocumentRepository {
 
     override fun saveAll(workspace: UUID, documents: List<Document>): Flux<Document> {
@@ -28,6 +32,29 @@ class R2dbcDocumentRepositoryAdapter(
             .flatMapMany { entities -> repo.saveAll(entities) }
             .map { entity -> entity.toDomainWithData(objectMapper) }
             .`as`(tx::transactional)
+    }
+
+    override fun patchAll(workspace: UUID, patches: List<DocumentPatch>): Flux<Document> {
+        return Flux.fromIterable(patches)
+            .flatMapSequential { patch -> patchOne(patch) }
+            .`as`(tx::transactional)
+    }
+
+    private fun patchOne(patch: DocumentPatch): Mono<Document> {
+        val patchJson = objectMapper.writeValueAsString(patch.data)
+        return databaseClient.sql("""
+            UPDATE documents
+            SET data = data || :patchData::jsonb, rev = rev + 1
+            WHERE id = :id AND rev = :rev
+        """.trimIndent())
+            .bind("patchData", patchJson)
+            .bind("id", patch.id)
+            .bind("rev", patch.rev)
+            .fetch().rowsUpdated()
+            .flatMap { rowsUpdated ->
+                if (rowsUpdated == 0L) Mono.error(DuplicateKeyException("Version conflict for document ${patch.id}"))
+                else repo.findById(patch.id).map { it.toDomainWithData(objectMapper) }
+            }
     }
 
     override fun deleteAll(workspace: UUID, documents: List<Document>): Mono<Void> {

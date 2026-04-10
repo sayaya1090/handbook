@@ -1,0 +1,10 @@
+{
+  "dashboard.stats.types": "타입 수",
+  "dashboard.stats.documents": "문서 수",
+  "dashboard.stats.users": "사용자 수",
+  "dashboard.activity.title": "에이전트 활동",
+  "dashboard.activity.empty": "에이전트 활동 없음",
+  "dashboard.activity.count_suffix": "건",
+  "dashboard.quality.title": "품질 현황",
+  "dashboard.quality.empty": "품질 이슈 없음"
+}

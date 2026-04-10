@@ -216,7 +216,8 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | 포트 메서드 | HTTP | 설명 |
 |------------|------|------|
 | `TypeRepository.list(period)` | `GET /workspace/{id}/types` | 기간별 타입 조회 |
-| `TypeRepository.save(types)` | `PUT /workspace/{id}/types` | 변경된 타입 저장 |
+| `TypeRepository.save(types)` | `PUT /workspace/{id}/types` | 타입 저장 (신규) |
+| `TypeRepository.patch(patches)` | `PATCH /workspace/{id}/types` | 타입 부분 업데이트 (변경 속성만) |
 | `TypeRepository.delete(types)` | `DELETE /workspace/{id}/types` | 삭제된 타입 제거 |
 | `LayoutRepository.layouts()` | `GET /workspace/{id}/layouts` | 레이아웃 기간 목록 |
 | `LayoutRepository.positions(period)` | `GET /workspace/{id}/layouts/{period}` | 기간별 위치 조회 |

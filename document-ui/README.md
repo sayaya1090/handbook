@@ -88,7 +88,8 @@ Handsontable 6.2.4 (MIT) 라이브러리를 JsInterop으로 래핑한 테이블 
 | 포트 메서드 | HTTP | 설명 |
 |------------|------|------|
 | `DocumentRepository.search(param)` | `GET /workspace/{id}/documents` | 문서 검색 |
-| `DocumentRepository.save(docs)` | `PUT /workspace/{id}/documents` | 문서 저장 |
+| `DocumentRepository.save(docs)` | `PUT /workspace/{id}/documents` | 문서 저장 (신규) |
+| `DocumentRepository.patch(patches)` | `PATCH /workspace/{id}/documents` | 문서 부분 업데이트 (변경 필드만) |
 | `DocumentRepository.delete(docs)` | `DELETE /workspace/{id}/documents` | 문서 삭제 |
 | `TypeRepository.list()` | `GET /workspace/{id}/types` | 타입 목록 (컬럼 정의용) |
 

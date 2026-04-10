@@ -1,0 +1,8 @@
+{
+  "document.add": "Add",
+  "document.save": "Save",
+  "document.delete": "Delete",
+  "document.undo": "Undo",
+  "document.redo": "Redo",
+  "document.event.changed": "Another user has modified the document"
+}

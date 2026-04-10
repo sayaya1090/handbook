@@ -10,10 +10,40 @@
 - **문서 작성 완료 후 개발 개시. 동시 진행 금지.**
 - 기능 추가/변경 시: 요구사항(docs/requirements.md) → 유스케이스(docs/usecases.md + 모듈/USECASE.md) → 설계(모듈/DESIGN.md, CLASS-DIAGRAM.md) → 구현 → 테스트
 
+### 유스케이스 작성 규칙
+- **모든 유스케이스에는 시퀀스 다이어그램(mermaid)이 있어야 한다.** 흐름을 시각적으로 이해할 수 있어야 한다.
+- **모든 유스케이스에는 대응되는 테스트가 있어야 한다.** 트레이서빌리티 매트릭스에 테스트 매핑을 기록한다.
+- 테스트가 없는 UC는 매트릭스에 "❌ 미구현"으로 표시하고, 구현 시 테스트를 함께 작성한다.
+
+### 문서 크로스체크 (필수)
+- **문서를 수정한 후에는 반드시 관련된 모든 문서를 크로스체크해야 한다.**
+- 하나의 변경이 여러 문서에 영향을 줄 수 있다. 다음 항목을 확인:
+  - 클래스/패키지 경로가 변경되었으면: docs/architecture.md, 모듈/CLASS-DIAGRAM.md, 모듈/README.md
+  - 요구사항이 추가/변경되었으면: docs/requirements.md, docs/usecases.md, 모듈/USECASE.md, 모듈/DESIGN.md
+  - 디자인 토큰/시각 상태가 변경되었으면: docs/design.md, docs/design-patterns.md, 모듈/DESIGN.md
+  - API 엔드포인트가 변경되었으면: docs/requirements.md (4. API 엔드포인트), 모듈/README.md
+  - 유스케이스가 추가되었으면: docs/usecases.md (글로벌 UC), 모듈/USECASE.md (트레이서빌리티 매트릭스)
+- 크로스체크 없이 커밋하지 않는다.
+
 ### 커밋
 - Co-Authored-By 태그 사용 금지
 - 커밋 메시지 한국어, conventional commits (feat/fix/docs/refactor/chore/test)
 - GWT 캐시 파일(*.cache.js, *.nocache.js, *.devmode.js, compilation-mappings.txt, clear.cache.gif) 커밋 금지
+
+### I18N (다국어)
+- **UI에 표시되는 모든 텍스트는 LabelProvider를 통해 다국어 처리해야 한다.** 한국어 하드코딩 금지.
+- 언어 파일: `js/language.ko.json`, `js/language.en.json`
+- 토스트 메시지, 버튼 레이블, 다이얼로그 텍스트, 플레이스홀더 모두 LabelProvider 사용.
+
+### 디자인 언어 통일
+- **모든 UI 모듈은 docs/design.md에 정의된 MD3 디자인 토큰을 사용해야 한다.** 하드코딩된 색상/크기/트랜지션 금지.
+- 색상은 `var(--md-sys-color-*)`, 크기는 `var(--md-sys-typescale-*)`, 형태는 `var(--md-sys-shape-*)`, 모션은 `var(--md-sys-motion-*)` 사용.
+- 상태 색상(created/changed/deleted/valid/invalid/conflict)은 docs/design-patterns.md에 정의된 매핑을 따른다.
+- 버튼, 카드, 컨테이너, 툴바 등 공통 UI 패턴은 모듈 간 시각적으로 일관되어야 한다.
+
+### 스킬스 자동 업데이트
+- **요청을 처리하면서 새로운 패턴, 컨벤션, 규칙을 발견하면 CLAUDE.md를 선제적으로 업데이트한다.** 사용자가 별도로 요청하지 않아도 필요하다고 판단되면 즉시 반영한다.
+- 예: 반복되는 실수 패턴 발견, 새 공통 규칙 도출, 기존 규칙의 예외 사항 발견 등.
 
 ### GWT
 - @JsOverlay 인스턴스 메서드에서 재귀 호출 금지 (GWT ReferenceError 발생). static 헬퍼로 우회.
@@ -56,13 +86,15 @@
 | usecases.md | 글로벌 유스케이스 (UC-01~UC-93) |
 | design-patterns.md | 공통 설계 패턴 (Action, 더티 트래킹, 프레즌스) |
 | error-handling.md | 오류 처리 전략 |
+| kafka-events.md | 이벤트 카탈로그 (토픽, 발행/구독, SSE 흐름) |
+| database-schema.md | DB 스키마 (ER 다이어그램, 테이블 상세, 설계 결정) |
 | development.md | 빌드/테스트 가이드 |
 
 ### 모듈 레벨 (각 모듈/)
 | 파일 | 역할 |
 |------|------|
 | README.md | 모듈 요약 (목적, 컴포넌트, API, 실행) |
-| DESIGN.md | 모듈 전용 설계 (비주얼, 상태 머신, 협업) |
+| DESIGN.md | 모듈 전용 설계 — 설계 결정이 복잡한 모듈에만 작성 (document-ui 등) |
 | USECASE.md | 모듈 유스케이스 + 시퀀스 다이어그램 |
 | CLASS-DIAGRAM.md | 클래스 구조 (mermaid) |
 

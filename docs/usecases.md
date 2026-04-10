@@ -757,27 +757,32 @@ sequenceDiagram
 
 ---
 
-### UC-59: 실시간 협업 — 문서 변경 알림 및 충돌 방지
+### UC-59: 실시간 협업 — 패치 기반 병합 및 충돌 방지
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 A (편집자), 사용자 B (관찰자) |
+| **액터** | 사용자 A, 사용자 B |
 | **선행 조건** | 같은 워크스페이스에서 동시 작업 중 |
-| **후행 조건** | B의 화면에 A의 저장 결과가 반영된다. 충돌 시 안내가 표시된다 |
+| **후행 조건** | 서로 다른 필드 수정 시 자동 병합. 같은 필드 수정 시 충돌 안내 |
 
-**기본 흐름:**
-1. 사용자 A가 문서를 편집하고 Save한다.
-2. 서버가 DOCUMENT_CREATED/DELETED 이벤트를 Kafka로 발행한다.
-3. SSE를 통해 사용자 B에게 이벤트가 전달된다.
-4. B의 `DocumentEventHandler`가 문서 목록을 갱신한다.
-5. B에게 토스트: "다른 사용자가 문서를 변경했습니다".
+**기본 흐름 (비충돌 — 서로 다른 필드):**
+1. A가 문서 CUST-001의 "이름" 필드를, B가 "전화번호" 필드를 편집한다.
+2. A가 Save → PATCH 요청 (변경 필드: `{"이름": "홍길동"}`, version=1).
+3. 서버가 JSONB 머지 (`data || patch_data`) → version 2로 업데이트.
+4. SSE로 B에게 DOCUMENT_CREATED 이벤트 전달 → B의 목록 갱신.
+5. B가 Save → PATCH 요청 (변경 필드: `{"전화번호": "010-1234"}`, version=2).
+6. 서버가 JSONB 머지 → version 3. **A의 "이름" 변경은 유지됨.**
 
-**충돌 흐름:**
-1. A와 B가 같은 문서를 동시에 편집한다 (프레즌스로 인지 가능).
-2. A가 먼저 Save한다 → 서버 `@Version` 증가.
-3. B가 Save를 시도한다 → 서버가 409 Conflict 반환.
-4. B의 해당 문서에 `.conflict` 상태 표시 (secondary-container 배경).
-5. B가 선택: "내 변경 유지" (재시도) 또는 "서버 버전 수락" (더티 해제).
+**충돌 흐름 (같은 필드):**
+1. A와 B가 같은 문서의 같은 "이름" 필드를 편집한다.
+2. A가 먼저 Save → version 1 → 2.
+3. B가 Save (version=1) → 서버가 version 불일치 감지 → 409 Conflict.
+4. B에게 `.conflict` 표시 + 사용자 선택 ("내 변경 유지" / "서버 버전 수락").
+
+**알림 흐름:**
+1. 저장 성공 시 DOCUMENT_CREATED 이벤트 발행.
+2. SSE를 통해 다른 사용자에게 전달.
+3. `DocumentEventHandler`가 문서 목록 갱신 + 토스트 표시.
 
 ```mermaid
 sequenceDiagram
@@ -788,17 +793,32 @@ sequenceDiagram
 
     Note over A,B: 프레즌스로 같은 문서 편집 중 인지
 
-    A->>GW: PUT /documents (CUST-001 변경)
-    GW->>DB: UPDATE (version 1 → 2)
-    DB-->>GW: OK
-    GW-->>B: SSE DOCUMENT_CREATED
-    Note over B: 토스트 + 문서 목록 갱신
+    rect rgb(220, 240, 220)
+        Note over A,DB: 비충돌: 서로 다른 필드
+        A->>GW: PATCH /documents (이름="홍길동", rev=1)
+        GW->>DB: data = data || '{"이름":"홍길동"}', rev 1→2
+        DB-->>GW: OK (rev=2)
+        GW-->>B: SSE DOCUMENT_CREATED
+        Note over B: 목록 갱신, 토스트
 
-    B->>GW: PUT /documents (CUST-001 변경, version=1)
-    GW->>DB: UPDATE (version 1 → ?)
-    DB-->>GW: OptimisticLockingFailure
-    GW-->>B: 409 Conflict
-    Note over B: .conflict 표시, 사용자 선택 요청
+        B->>GW: PATCH /documents (전화번호="010-1234", rev=2)
+        GW->>DB: data = data || '{"전화번호":"010-1234"}', rev 2→3
+        DB-->>GW: OK (rev=3)
+        Note over DB: 이름+전화번호 모두 보존
+    end
+
+    rect rgb(255, 230, 230)
+        Note over A,DB: 충돌: 같은 필드
+        A->>GW: PATCH /documents (이름="홍길동", rev=1)
+        GW->>DB: rev 1→2
+        DB-->>GW: OK
+
+        B->>GW: PATCH /documents (이름="김철수", rev=1)
+        GW->>DB: rev 1→? (불일치)
+        DB-->>GW: OptimisticLockingFailure
+        GW-->>B: 409 Conflict
+        Note over B: .conflict 표시, 사용자 선택
+    end
 ```
 
 ---
@@ -819,7 +839,7 @@ flowchart TD
     B --> C["PROCESSING"]
     C --> D["현재 유효한<br/>타입 버전 조회"]
     D --> E["각 버전별<br/>Validator 규칙 적용"]
-    E --> F{하나 이상의<br/>버전 만족?}
+    E --> F{"하나 이상의 버전 만족?"}
     F -->|Yes| G["DONE"]
     F -->|No| H["FAILED"]
     G --> I["Compliance 저장<br/>(호환 버전 기록)"]

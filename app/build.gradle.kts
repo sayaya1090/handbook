@@ -13,6 +13,40 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
+val mergeI18nProd by tasks.registering {
+    val i18nDirs = rootProject.subprojects.map { it.file("src/main/i18n") }
+    inputs.files(i18nDirs.filter { it.exists() }.flatMap { dir ->
+        dir.listFiles()?.filter { it.name.startsWith("language.") && it.name.endsWith(".json") } ?: emptyList()
+    })
+    val outputDir = file("src/main/webapp/js")
+    outputs.dir(outputDir)
+    doLast {
+        val locales = mutableSetOf<String>()
+        val allFiles = mutableListOf<File>()
+        rootProject.subprojects.forEach { sub ->
+            val i18nDir = sub.file("src/main/i18n")
+            if (i18nDir.exists()) {
+                i18nDir.listFiles()?.filter { it.name.startsWith("language.") && it.name.endsWith(".json") }?.forEach { f ->
+                    allFiles.add(f)
+                    val locale = f.name.removePrefix("language.").removeSuffix(".json")
+                    locales.add(locale)
+                }
+            }
+        }
+        locales.forEach { locale ->
+            val merged = mutableMapOf<String, Any>()
+            allFiles.filter { it.name == "language.${locale}.json" }.forEach { f ->
+                @Suppress("UNCHECKED_CAST")
+                val map = groovy.json.JsonSlurper().parse(f) as Map<String, Any>
+                merged.putAll(map)
+            }
+            val sorted = merged.toSortedMap()
+            val output = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(sorted))
+            outputDir.mkdirs()
+            File(outputDir, "language.${locale}.json").writeText(output + "\n")
+        }
+    }
+}
 tasks {
     gwt {
         gwtVersion = "2.13.0"
@@ -24,6 +58,9 @@ tasks {
         }
         generateJsInteropExports = true
         compiler { strict = true }
+    }
+    matching { it.name.startsWith("gwtCompile") }.configureEach {
+        dependsOn(mergeI18nProd)
     }
     test { useJUnitPlatform() }
 }

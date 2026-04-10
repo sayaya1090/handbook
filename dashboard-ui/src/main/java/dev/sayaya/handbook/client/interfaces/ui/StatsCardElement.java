@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
 import dev.sayaya.handbook.client.usecase.StatsProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -18,7 +19,7 @@ public class StatsCardElement implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLElement userCountValue;
 
     @Inject
-    public StatsCardElement(StatsProvider statsProvider) {
+    public StatsCardElement(StatsProvider statsProvider, LabelProvider labelProvider) {
         typeCountValue = span().css("dash-stat-value").element();
         typeCountValue.textContent = "0";
         docCountValue = span().css("dash-stat-value").element();
@@ -40,11 +41,13 @@ public class StatsCardElement implements IsElement<elemental2.dom.HTMLElement> {
 
         // 라벨 텍스트 설정
         var cards = element.querySelectorAll(".dash-stat-label");
-        if (cards.length >= 3) {
-            cards.getAt(0).textContent = "타입 수";
-            cards.getAt(1).textContent = "문서 수";
-            cards.getAt(2).textContent = "사용자 수";
-        }
+        labelProvider.subscribe(labels -> {
+            if (cards.length >= 3) {
+                cards.getAt(0).textContent = labels.getOrDefault("dashboard.stats.types", "Types");
+                cards.getAt(1).textContent = labels.getOrDefault("dashboard.stats.documents", "Documents");
+                cards.getAt(2).textContent = labels.getOrDefault("dashboard.stats.users", "Users");
+            }
+        });
 
         statsProvider.subscribe(stats -> {
             if (stats != null) {

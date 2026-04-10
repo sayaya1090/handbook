@@ -110,3 +110,26 @@
         justify-content: space-between;
     }
 }
+
+/* 프레즌스 — 다른 사용자 편집 위치 표시 */
+.presence-cell {
+    position: relative;
+    box-shadow: inset 0 0 0 2px var(--presence-color, var(--md-sys-color-primary));
+}
+.presence-label {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    font-size: var(--md-sys-typescale-label-small-size, 11px);
+    padding: 1px 6px;
+    border-radius: var(--md-sys-shape-corner-small, 8px) var(--md-sys-shape-corner-small, 8px) 0 0;
+    background: var(--presence-color, var(--md-sys-color-primary));
+    color: var(--md-sys-color-on-primary);
+    white-space: nowrap;
+    pointer-events: none;
+    animation: presence-fade 3s ease-in-out forwards;
+}
+@keyframes presence-fade {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+}

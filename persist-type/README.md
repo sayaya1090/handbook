@@ -8,6 +8,7 @@
 |--------|------|------|
 | GET | `/workspace/{id}/types?effect_date_time=&expire_date_time=` | 기간별 타입 목록 |
 | PUT | `/workspace/{id}/types` | 타입 저장 (upsert) |
+| PATCH | `/workspace/{id}/types` | 타입 부분 업데이트 (속성 upsert) |
 | DELETE | `/workspace/{id}/types` | 타입 삭제 |
 | GET | `/workspace/{id}/layouts` | 레이아웃 기간 목록 |
 | PUT | `/workspace/{id}/layouts` | 캔버스 위치 저장 |

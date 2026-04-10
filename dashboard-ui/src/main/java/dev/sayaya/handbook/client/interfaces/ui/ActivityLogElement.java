@@ -2,6 +2,8 @@ package dev.sayaya.handbook.client.interfaces.ui;
 
 import dev.sayaya.handbook.client.domain.AgentActivity;
 import dev.sayaya.handbook.client.usecase.AgentActivityList;
+import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -16,11 +18,15 @@ import static org.jboss.elemento.Elements.span;
 public class ActivityLogElement implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLDivElement element;
     private final elemental2.dom.HTMLDivElement listContainer;
+    private Labels labels = Labels.empty();
 
     @Inject
-    public ActivityLogElement(AgentActivityList agentActivityList) {
+    public ActivityLogElement(AgentActivityList agentActivityList, LabelProvider labelProvider) {
         var header = div().css("dash-panel-header").element();
-        header.textContent = "에이전트 활동";
+        labelProvider.subscribe(l -> {
+            this.labels = l;
+            header.textContent = l.getOrDefault("dashboard.activity.title", "Agent Activity");
+        });
 
         listContainer = div().css("dash-activity-list").element();
 
@@ -36,7 +42,7 @@ public class ActivityLogElement implements IsElement<elemental2.dom.HTMLElement>
         listContainer.innerHTML = "";
         if (activities == null || activities.isEmpty()) {
             var empty = div().css("dash-activity-empty").element();
-            empty.textContent = "에이전트 활동 없음";
+            empty.textContent = labels.getOrDefault("dashboard.activity.empty", "No agent activity");
             listContainer.appendChild(empty);
             return;
         }
@@ -48,7 +54,7 @@ public class ActivityLogElement implements IsElement<elemental2.dom.HTMLElement>
             status.textContent = "[" + activity.status + "]";
 
             var intent = span().css("dash-activity-intent").element();
-            intent.textContent = activity.intent + " (" + activity.commandCount + "건)";
+            intent.textContent = activity.intent + " (" + activity.commandCount + labels.getOrDefault("dashboard.activity.count_suffix", "commands") + ")";
 
             var row = div().css("dash-activity-row")
                     .add(time)

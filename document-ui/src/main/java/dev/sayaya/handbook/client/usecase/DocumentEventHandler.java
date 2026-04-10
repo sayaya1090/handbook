@@ -1,10 +1,16 @@
 package dev.sayaya.handbook.client.usecase;
 
 import com.google.gwt.core.client.GWT;
+import dev.sayaya.handbook.client.components.PresenceTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
+import elemental2.core.Global;
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,18 +33,24 @@ public class DocumentEventHandler {
     private final DocumentRepository documentRepository;
     private final DocumentList documentList;
     private final ToastContainer toastContainer;
+    private final PresenceTracker presenceTracker;
+    private Labels labels = Labels.empty();
 
     @Inject
     public DocumentEventHandler(WorkspaceEventReceiver eventReceiver,
                                  TypeProvider typeProvider,
                                  DocumentRepository documentRepository,
                                  DocumentList documentList,
-                                 ToastContainer toastContainer) {
+                                 ToastContainer toastContainer,
+                                 LabelProvider labelProvider,
+                                 PresenceTracker presenceTracker) {
         this.eventReceiver = eventReceiver;
         this.typeProvider = typeProvider;
         this.documentRepository = documentRepository;
         this.documentList = documentList;
         this.toastContainer = toastContainer;
+        this.presenceTracker = presenceTracker;
+        labelProvider.subscribe(l -> this.labels = l);
     }
 
     public void init() {
@@ -55,11 +67,26 @@ public class DocumentEventHandler {
             case "DOCUMENT_CREATED":
             case "DOCUMENT_DELETED":
                 refreshDocuments();
-                toastContainer.show(ToastLevel.INFO, "\ub2e4\ub978 \uc0ac\uc6a9\uc790\uac00 \ubb38\uc11c\ub97c \ubcc0\uacbd\ud588\uc2b5\ub2c8\ub2e4");
+                toastContainer.show(ToastLevel.INFO, labels.getOrDefault("document.event.changed", "Another user has modified the document"));
+                break;
+            case "PRESENCE":
+                handlePresence(eventData.substring(colonIdx + 1));
                 break;
             default:
                 break;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handlePresence(String json) {
+        GWT.log("DocumentEventHandler: presence event: " + json);
+        JsPropertyMap<Object> parsed = Js.cast(Global.JSON.parse(json));
+        String user = Js.cast(parsed.get("user"));
+        String userName = parsed.has("user_name") ? Js.cast(parsed.get("user_name")) : user;
+        String type = parsed.has("type") ? Js.cast(parsed.get("type")) : null;
+        String serial = parsed.has("serial") ? Js.cast(parsed.get("serial")) : null;
+        String field = parsed.has("field") ? Js.cast(parsed.get("field")) : null;
+        presenceTracker.update(user, userName, type, serial, field);
     }
 
     private void refreshDocuments() {

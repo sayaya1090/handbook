@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Type
+import dev.sayaya.handbook.domain.TypePatch
 import dev.sayaya.handbook.usecase.TypeService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -30,6 +31,16 @@ class TypeController(private val typeService: TypeService) {
         @PathVariable workspace: UUID,
         @RequestBody types: List<Type>,
     ): Flux<Type> = typeService.save(workspace, types)
+
+    @PatchMapping(
+        consumes = ["application/vnd.sayaya.handbook.v1+json"],
+        produces = ["application/vnd.sayaya.handbook.v1+json"],
+    )
+    @ResponseStatus(HttpStatus.OK)
+    fun patch(
+        @PathVariable workspace: UUID,
+        @RequestBody patches: List<TypePatch>,
+    ): Flux<Type> = typeService.patch(workspace, patches)
 
     @DeleteMapping(consumes = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.NO_CONTENT)

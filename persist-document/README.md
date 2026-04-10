@@ -7,6 +7,7 @@
 | Method | Path | 설명 |
 |--------|------|------|
 | PUT | `/workspace/{id}/documents` | 문서 저장 (upsert) |
+| PATCH | `/workspace/{id}/documents` | 문서 부분 업데이트 (JSONB 머지) |
 | DELETE | `/workspace/{id}/documents` | 문서 삭제 |
 
 모든 엔드포인트는 `application/vnd.sayaya.handbook.v1+json` Content-Type을 사용한다.

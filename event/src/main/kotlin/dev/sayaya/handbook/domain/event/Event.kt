@@ -22,6 +22,7 @@ import java.util.*
     JsonSubTypes.Type(value = TypeEvent::class, name = "TYPE_DELETED"),
     JsonSubTypes.Type(value = ValidationEvent::class, name = "VALIDATION_REQUESTED"),
     JsonSubTypes.Type(value = AgentCommandEvent::class, name = "AGENT_COMMAND"),
+    JsonSubTypes.Type(value = PresenceEvent::class, name = "PRESENCE"),
 )
 @JsonInclude(JsonInclude.Include.NON_NULL)
 interface Event<T : Serializable> : Serializable {
@@ -37,5 +38,6 @@ interface Event<T : Serializable> : Serializable {
         TYPE_DELETED,
         VALIDATION_REQUESTED,
         AGENT_COMMAND,
+        PRESENCE,
     }
 }

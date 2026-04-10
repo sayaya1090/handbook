@@ -174,14 +174,50 @@ sequenceDiagram
 | **정상 흐름** | 1. 행을 선택하고 Delete 버튼을 클릭한다.<br>2. `DeleteDocumentAction`이 실행되고, `DirtyTracker.deleted`에 등록된다.<br>3. 행이 `.deleted` 상태로 표시된다 (취소선, 75% 투명화). 즉시 제거되지 않고 Save 전까지 시각적으로 표시된다.<br>4. Undo로 삭제를 취소할 수 있다. |
 | **대안 흐름** | 에이전트가 `DOC_DELETE <serial>` 명령으로 실행 (동일한 DirtyTracker 경로). |
 
-## UC-D5: 저장 (원자적)
+## UC-D5: 저장 (패치 기반 원자적)
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자, AI 에이전트 |
-| **선행조건** | `DirtyTracker.hasDirty() == true` (Save 버튼 활성화 상태) |
-| **정상 흐름** | 1. Save 버튼 클릭 (또는 에이전트 `DOC_SAVE`) → `SaveAction` 실행.<br>2. `DirtyTracker.created + changed` 문서는 `PUT /workspace/{id}/documents`로, `deleted` 문서는 `DELETE`로 **하나의 트랜잭션으로 원자적 전송**한다.<br>3. 전체 성공 시: Undo/Redo 스택 초기화, `DirtyTracker.reset()`, 모든 더티 상태(created/changed/deleted) 해제.<br>4. 부분 실패 시: 실패 항목만 더티 유지, 실패 셀에 `.invalid` 표시, 토스트 "N건 저장 실패". |
-| **대안 흐름 (충돌)** | 409 Conflict 응답 시 해당 문서에 `.conflict` 표시, 최신 서버 데이터 재로드 안내. |
+| **선행조건** | `ChangeTracker.hasChanges() == true` (Save 버튼 활성화 상태) |
+| **정상 흐름** | 1. Save 버튼 클릭 (또는 에이전트 `DOC_SAVE`) → `SaveAction` 실행.<br>2. **created** 문서: `PUT /documents` (전체 데이터 전송, 새 문서 생성).<br>3. **changed** 문서: `PATCH /documents` (ChangeTracker가 추적한 변경 필드 + rev만 전송). 서버에서 JSONB 머지로 기존 데이터에 병합.<br>4. **deleted** 문서: `DELETE /documents`.<br>5. 전체 성공 시: Undo/Redo 스택 초기화, `ChangeTracker.reset()`, 모든 더티 상태 해제.<br>6. 부분 실패 시: 실패 항목만 더티 유지, 실패 셀에 `.invalid` 표시, 토스트. |
+| **대안 흐름 (충돌)** | 409 Conflict: 같은 문서의 같은 필드를 동시 수정한 경우. `.conflict` 표시 + 사용자 선택. 서로 다른 필드 수정 시에는 JSONB 머지로 충돌 없이 병합됨. |
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant UI as document-ui
+    participant CT as ChangeTracker
+    participant GW as Gateway
+    participant DB as Database
+
+    User->>UI: Save 버튼 클릭
+    UI->>CT: getChangedKeys(), getDeletedKeys()
+    CT-->>UI: 변경 필드 맵, 삭제 키 목록
+
+    alt 신규 문서 (created)
+        UI->>GW: PUT /documents [{id:null, data:{전체}}]
+        GW->>DB: INSERT
+    end
+    alt 수정 문서 (changed)
+        UI->>GW: PATCH /documents [{id, rev, data:{변경필드만}}]
+        GW->>DB: UPDATE data = data || patch, rev 체크
+        alt rev 일치
+            DB-->>GW: OK (rev+1)
+        else rev 불일치 (동일 필드 충돌)
+            DB-->>GW: OptimisticLockingFailure
+            GW-->>UI: 409 Conflict
+            Note over UI: .conflict 표시
+        end
+    end
+    alt 삭제 문서 (deleted)
+        UI->>GW: DELETE /documents [{id, rev}]
+        GW->>DB: DELETE
+    end
+
+    GW-->>UI: 200 OK
+    UI->>CT: reset()
+```
 
 ## UC-D6: 타입 전환
 

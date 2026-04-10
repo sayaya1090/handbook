@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.domain.DocumentValue;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.AddDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import jsinterop.base.JsPropertyMap;
 import org.jboss.elemento.IsElement;
 
@@ -18,9 +19,9 @@ public class AddButton implements IsElement<elemental2.dom.HTMLElement> {
     private final elemental2.dom.HTMLElement element;
 
     @Inject
-    public AddButton(ActionManager actionManager, DocumentList documentList) {
+    public AddButton(ActionManager actionManager, DocumentList documentList, LabelProvider labelProvider) {
         this.element = button().css("doc-ctrl-btn", "doc-ctrl-btn-add").element();
-        element.textContent = "Add";
+        labelProvider.subscribe(labels -> element.textContent = labels.getOrDefault("document.add", "Add"));
         element.addEventListener("click", e -> {
             DocumentValue newDoc = new DocumentValue();
             newDoc.data = JsPropertyMap.of();

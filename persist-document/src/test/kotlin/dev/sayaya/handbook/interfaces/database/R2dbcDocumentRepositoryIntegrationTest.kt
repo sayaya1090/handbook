@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Document
+import dev.sayaya.handbook.domain.DocumentPatch
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -51,7 +52,8 @@ class R2dbcDocumentRepositoryIntegrationTest : BehaviorSpec({
         .registerModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
         .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
     val tx = TransactionalOperator.create(R2dbcTransactionManager(connectionFactory))
-    val adapter = R2dbcDocumentRepositoryAdapter(repo, objectMapper, tx)
+    val databaseClient = DatabaseClient.create(connectionFactory)
+    val adapter = R2dbcDocumentRepositoryAdapter(repo, objectMapper, tx, databaseClient)
 
     val workspace = UUID.randomUUID()
 
@@ -131,6 +133,41 @@ class R2dbcDocumentRepositoryIntegrationTest : BehaviorSpec({
 
                 // 삭제 후 조회해서 없는지 확인
                 StepVerifier.create(repo.findById(docId))
+                    .verifyComplete()
+            }
+        }
+    }
+
+    Given("패치 기반 부분 업데이트") {
+        val patchDocId = UUID.randomUUID()
+        val original = Document(
+            id = patchDocId,
+            type = "invoice",
+            serial = "PATCH-001",
+            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
+            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
+            createDateTime = Instant.parse("2026-01-01T00:00:00Z"),
+            creator = "tester",
+            data = mapOf("name" to "홍길동", "phone" to "010-1234"),
+        )
+
+        beforeTest {
+            adapter.saveAll(workspace, listOf(original)).collectList().block()
+        }
+
+        When("patchAll로 일부 필드만 변경하면") {
+            Then("변경 필드만 업데이트되고 나머지는 유지된다") {
+                val savedRev = repo.findById(patchDocId).block()!!.rev!!
+                val patch = DocumentPatch(
+                    id = patchDocId,
+                    rev = savedRev,
+                    data = mapOf("phone" to "010-5678"),
+                )
+                StepVerifier.create(adapter.patchAll(workspace, listOf(patch)))
+                    .assertNext { patched ->
+                        patched.data["name"] shouldBe "홍길동"
+                        patched.data["phone"] shouldBe "010-5678"
+                    }
                     .verifyComplete()
             }
         }

@@ -62,13 +62,49 @@ subprojects {
         val copyTestResources = tasks.register<Copy>("copyTestWebResources") {
             from("${rootProject.projectDir}/shell-ui/src/test/webapp/js")
             into("${project.projectDir}/src/test/webapp/js")
+            exclude("language.*.json")
         }
         val copyTestCss = tasks.register<Copy>("copyTestCssResources") {
             from("${rootProject.projectDir}/shell-ui/src/test/webapp/css")
             into("${project.projectDir}/src/test/webapp/css")
         }
+        // I18N: 모든 모듈의 src/main/i18n/language.*.json을 머지하여 테스트 webapp에 출력
+        val mergeI18n = tasks.register("mergeI18n") {
+            val i18nDirs = rootProject.subprojects.map { it.file("src/main/i18n") }
+            inputs.files(i18nDirs.filter { it.exists() }.flatMap { dir ->
+                dir.listFiles()?.filter { it.name.startsWith("language.") && it.name.endsWith(".json") } ?: emptyList()
+            })
+            val outputDir = file("${project.projectDir}/src/test/webapp/js")
+            outputs.dir(outputDir)
+            doLast {
+                val locales = mutableSetOf<String>()
+                val allFiles = mutableListOf<java.io.File>()
+                rootProject.subprojects.forEach { sub ->
+                    val i18nDir = sub.file("src/main/i18n")
+                    if (i18nDir.exists()) {
+                        i18nDir.listFiles()?.filter { it.name.startsWith("language.") && it.name.endsWith(".json") }?.forEach { f ->
+                            allFiles.add(f)
+                            val locale = f.name.removePrefix("language.").removeSuffix(".json")
+                            locales.add(locale)
+                        }
+                    }
+                }
+                locales.forEach { locale ->
+                    val merged = mutableMapOf<String, Any>()
+                    allFiles.filter { it.name == "language.${locale}.json" }.forEach { f ->
+                        @Suppress("UNCHECKED_CAST")
+                        val map = groovy.json.JsonSlurper().parse(f) as Map<String, Any>
+                        merged.putAll(map)
+                    }
+                    val sorted = merged.toSortedMap()
+                    val output = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(sorted))
+                    outputDir.mkdirs()
+                    File(outputDir, "language.${locale}.json").writeText(output + "\n")
+                }
+            }
+        }
         tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") }.configureEach {
-            dependsOn(copyTestResources, copyTestCss)
+            dependsOn(copyTestResources, copyTestCss, mergeI18n)
         }
     }
 }

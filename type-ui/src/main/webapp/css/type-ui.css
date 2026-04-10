@@ -319,3 +319,25 @@
     margin: 4px 0;
     background: var(--md-sys-color-outline-variant, #e0e0e0);
 }
+
+/* 프레즌스 — 다른 사용자 편집 위치 표시 */
+.type-box.presence {
+    box-shadow: 0 0 0 3px var(--presence-color, var(--md-sys-color-primary));
+}
+.presence-type-label {
+    position: absolute;
+    top: -20px;
+    right: 0;
+    font-size: var(--md-sys-typescale-label-small-size, 11px);
+    padding: 2px 8px;
+    border-radius: var(--md-sys-shape-corner-small, 8px) var(--md-sys-shape-corner-small, 8px) 0 0;
+    background: var(--presence-color, var(--md-sys-color-primary));
+    color: var(--md-sys-color-on-primary);
+    white-space: nowrap;
+    pointer-events: none;
+    animation: presence-type-fade 3s ease-in-out forwards;
+}
+@keyframes presence-type-fade {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+}

@@ -1136,7 +1136,7 @@ graph LR
 
     subgraph "브로드캐스트"
         K --> EB["event-broadcaster"]
-        EB -->|SSE /workspace/{id}/messages| WEL["WorkspaceEventListener"]
+        EB -->|"SSE messages"| WEL["WorkspaceEventListener"]
     end
 
     subgraph "수신 측 (Frontend)"

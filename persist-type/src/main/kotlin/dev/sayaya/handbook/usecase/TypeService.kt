@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.Type
+import dev.sayaya.handbook.domain.TypePatch
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Instant
@@ -20,6 +21,11 @@ class TypeService(
 
     fun save(workspace: UUID, types: List<Type>): Flux<Type> {
         return typeRepository.save(workspace, types)
+            .doOnNext { type -> eventPublisher.publishCreated(workspace, type) }
+    }
+
+    fun patch(workspace: UUID, patches: List<TypePatch>): Flux<Type> {
+        return typeRepository.patch(workspace, patches)
             .doOnNext { type -> eventPublisher.publishCreated(workspace, type) }
     }
 

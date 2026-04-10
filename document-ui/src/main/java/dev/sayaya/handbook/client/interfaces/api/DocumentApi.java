@@ -15,6 +15,8 @@ import jsinterop.base.Js;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import jsinterop.base.JsPropertyMap;
+
 import java.util.List;
 
 /** DocumentRepository 구현. FetchApi를 사용하여 HTTP 요청을 보낸다. */
@@ -57,6 +59,25 @@ public class DocumentApi implements DocumentRepository {
                 .catch_(err -> {
                     GWT.log("DocumentApi.save failed: " + err);
                     return Promise.resolve((Void) null);
+                });
+        return AsyncSubject.await(promise);
+    }
+
+    @Override
+    public Observable<Void> patch(List<JsPropertyMap<?>> patches) {
+        String url = "workspace/" + workspace + "/documents";
+        RequestInit init = RequestInit.create();
+        init.setMethod("PATCH");
+        init.setHeaders(jsonHeaders());
+        init.setBody(Global.JSON.stringify(patches.toArray()));
+        Promise<Void> promise = fetchApi.request(url, init)
+                .then(r -> {
+                    if (r.status == 409) return Promise.reject("Conflict");
+                    return Promise.resolve((Void) null);
+                })
+                .catch_(err -> {
+                    GWT.log("DocumentApi.patch failed: " + err);
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }

@@ -16,6 +16,7 @@ import dev.sayaya.handbook.usecase.TypeService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
 
 @Configuration
@@ -36,7 +37,8 @@ class TypeConfig {
         attrRepo: R2dbcAttributeEntityRepository,
         objectMapper: ObjectMapper,
         tx: TransactionalOperator,
-    ) = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, objectMapper, tx)
+        databaseClient: DatabaseClient,
+    ) = R2dbcTypeRepositoryAdapter(typeRepo, attrRepo, objectMapper, tx, databaseClient)
 
     @Bean
     fun layoutRepositoryAdapter(repository: R2dbcLayoutEntityRepository, objectMapper: ObjectMapper) =

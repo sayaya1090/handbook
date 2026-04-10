@@ -68,52 +68,72 @@ Handsontable 6.2.4 (MIT)를 JsInterop으로 래핑하며, MD3 디자인 토큰�
 > `.changed` 상태의 셀은 valid/invalid 표시를 억제한다 (저장 전까지는 변경 중임을 우선 표시).
 > 단, `.changed.invalid` 조합이 필요한 경우: `error` 1px + `tertiary` 2px 이중 inset shadow.
 
-### 2.4 저장 플로우
+### 2.4 저장 플로우 (패치 기반)
+
+저장 시 변경된 필드만 서버에 전송한다. 이를 통해 두 사용자가 같은 문서의 서로 다른 속성을 동시에 수정해도 충돌 없이 병합된다.
+
+| 변경 유형 | HTTP 메서드 | 페이로드 | 서버 동작 |
+|-----------|-----------|---------|---------|
+| created | PUT | 전체 문서 | INSERT |
+| changed | PATCH | `{id, rev, data: {변경필드만}}` | `data = data \|\| patch_data`, rev 체크 |
+| deleted | DELETE | `{id, rev}` | DELETE, rev 체크 |
 
 ```mermaid
 sequenceDiagram
     actor User as 사용자
     participant Sheet as SpreadsheetElement
     participant AM as ActionManager
-    participant DL as DocumentList
+    participant CT as ChangeTracker
     participant DA as DocumentApi
 
     Note over Sheet: 편집 중 — 로컬 상태만 변경
     User->>Sheet: 셀 편집 / 행 추가 / 행 삭제
     Sheet->>AM: execute(Action)
-    AM->>DL: 로컬 상태 업데이트
-    DL-->>Sheet: 시각적 상태 반영 (created/changed/deleted)
+    AM->>CT: markChanged(serial, field)
+    CT-->>Sheet: 시각적 상태 반영 (created/changed/deleted)
 
-    Note over Sheet: Save 버튼 클릭 — 원자적 저장
+    Note over Sheet: Save 버튼 클릭 — 패치 기반 저장
     User->>Sheet: Save 클릭
     Sheet->>AM: execute(SaveAction)
-    AM->>DA: PUT  /workspace/{id}/documents (created + changed)
-    AM->>DA: DELETE /workspace/{id}/documents (deleted)
-    DA-->>AM: 207 Multi-Status (개별 결과)
+    AM->>CT: getChangedKeys()
+    AM->>DA: PUT /documents (created: 전체 데이터)
+    AM->>DA: PATCH /documents (changed: 변경 필드 + rev만)
+    AM->>DA: DELETE /documents (deleted: id + rev)
     
     alt 전체 성공
         AM->>AM: Undo/Redo 스택 초기화
-        AM->>DL: 모든 더티 플래그 제거
-        DL-->>Sheet: 셀 상태 초기화 (기본 상태로)
+        AM->>CT: reset()
+        CT-->>Sheet: 셀 상태 초기화
+    else 409 Conflict (rev 불일치)
+        DA-->>Sheet: 충돌 문서에 .conflict 표시
+        Note over Sheet: 사용자 선택: 내 변경 유지 / 서버 수락
     else 부분 실패
-        AM->>DL: 실패 항목만 더티 유지
-        DL-->>Sheet: 실패 셀에 error 상태 표시
-        Note over Sheet: 토스트: "N건 저장 실패"
+        AM->>CT: 실패 항목만 더티 유지
+        CT-->>Sheet: 실패 셀에 error 표시
     end
 ```
 
 ### 2.5 더티 추적 자료구조
 
 ```
-DirtyTracker
-├── created: Set<String>        // serial 기준, 새로 추가된 문서
-├── changed: Map<String, Map<String, [before, after]>>  // serial → {field → [원본값, 현재값]}
-└── deleted: Set<String>        // serial 기준, 삭제 마킹된 문서
+ChangeTracker (ui-components)
+├── state: Map<String, ChangeState>  // key(serial) → NOT_CHANGED/CHANGED/DELETED
+├── markChanged(key)                 // CHANGED로 마킹
+├── markDeleted(key)                 // DELETED로 마킹
+├── unmark(key)                      // NOT_CHANGED로 복원 (Undo 시)
+├── hasChanges(): boolean
+├── getChangedKeys(): Set<String>    // PATCH 대상
+├── getDeletedKeys(): Set<String>    // DELETE 대상
+└── reset()                          // 저장 성공 후 초기화
 
-hasDirty(): boolean             // created ∪ changed ∪ deleted 비어있지 않으면 true
-summary(): {created: int, changed: int, deleted: int}  // Save 버튼 뱃지 표시용
-reset()                         // 저장 성공 후 초기화
+DocumentDirtyTracker (document-ui 확장)
+├── fieldChanges: Map<String, Map<String, Object>>  // serial → {변경필드: 값}
+├── trackFieldChange(serial, field, value)           // 개별 필드 변경 추적
+├── getFieldChanges(serial): Map<String, Object>     // PATCH 페이로드 생성용
+└── clearFieldChanges(serial)                        // 저장 성공 후 필드 변경 초기화
 ```
+
+PATCH 요청 시 `fieldChanges`에서 해당 문서의 변경 필드만 추출하여 전송한다.
 
 ### 2.6 Save 버튼 UX
 

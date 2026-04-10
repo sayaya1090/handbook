@@ -256,6 +256,9 @@ flowchart LR
 - primitive 플래그로 기본 타입을 표시할 수 있다.
 - 타입별로 접근 권한을 별도로 설정할 수 있다.
 - 일괄(batch) 처리를 지원한다.
+- **패치 기반 저장**: 변경된 속성만 서버에 전송하여 부분 업데이트한다. 두 사용자가 같은 타입의 서로 다른 속성을 동시에 수정해도 충돌 없이 병합된다.
+  - 속성: 변경된 속성만 개별 upsert (전체 삭제-재삽입 대신)
+  - `@Version`으로 타입 레벨 동시성 보장, 속성 레벨에서는 비충돌 병합
 
 ### 3.5 타입 시각화 (Type Layout)
 
@@ -277,6 +280,10 @@ flowchart LR
 - **원자적 저장**: Save 버튼을 누르면 생성/수정/삭제 변경점이 하나의 트랜잭션으로 일괄 저장된다.
 - **시각적 상태 구분**: 생성(created), 수정(changed), 삭제 예정(deleted) 셀/행을 색상과 스타일로 구분하여 편집 중에 변경 내역을 즉시 확인할 수 있다.
 - **충돌 감지**: 다른 사용자가 같은 문서를 동시에 수정한 경우 `@Version` 기반 낙관적 잠금으로 충돌을 감지하고, 409 Conflict 시 사용자에게 알린다.
+- **패치 기반 저장**: 변경된 필드만 서버에 전송하여 부분 업데이트한다. 두 사용자가 같은 문서의 서로 다른 속성을 동시에 수정해도 충돌 없이 병합된다.
+  - 문서: ChangeTracker가 추적한 변경 필드만 PATCH로 전송 → 백엔드에서 JSONB 머지 (`||` 연산자)
+  - 타입: 변경된 속성만 개별 업데이트 (전체 삭제-재삽입 대신 upsert)
+  - `@Version`으로 문서/타입 레벨 동시성 보장, 필드 레벨에서는 비충돌 병합
 
 ### 3.7 이력 조회
 
@@ -380,11 +387,13 @@ flowchart LR
 | GET    | `/workspace/{workspace}/types`              | 타입 목록 조회 (날짜 필터링)     |
 | GET    | `/workspace/{workspace}/types/{type}?version=` | 특정 타입 버전 조회           |
 | PUT    | `/workspace/{workspace}/types`              | 타입 일괄 저장 (새 버전 생성)    |
+| PATCH  | `/workspace/{workspace}/types`              | 타입 부분 업데이트 (변경 속성만) |
 | DELETE | `/workspace/{workspace}/types`              | 타입 일괄 삭제                  |
 | GET    | `/workspace/{workspace}/documents`          | 문서 검색 (페이지네이션)         |
 | GET    | `/workspace/{workspace}/{type}/{serial}`    | 특정 문서 조회                  |
 | GET    | `/workspace/{workspace}/{type}/{serial}?date=` | 특정 시점 문서 조회 (이력)    |
 | PUT    | `/workspace/{workspace}/documents`          | 문서 일괄 저장 (새 버전 생성)    |
+| PATCH  | `/workspace/{workspace}/documents`          | 문서 부분 업데이트 (변경 필드만) |
 | DELETE | `/workspace/{workspace}/documents`          | 문서 일괄 삭제                  |
 | GET    | `/workspace/{workspace}/compliance`         | 호환성 검증 결과 조회           |
 | GET    | `/workspace/{workspace}/layouts`            | 레이아웃 목록 조회              |
