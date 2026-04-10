@@ -1,0 +1,44 @@
+{
+  "namespace": "dev.sayaya.handbook.event",
+  "type": "record",
+  "name": "TypeEventPayload",
+  "doc": "타입 이벤트 페이로드 스키마",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "doc": "타입 ID"
+    },
+    {
+      "name": "version",
+      "type": "string",
+      "doc": "타입 버전"
+    },
+    {
+      "name": "workspace",
+      "type": "string",
+      "doc": "워크스페이스 ID (UUID)"
+    },
+    {
+      "name": "effect_date_time",
+      "type": "string",
+      "doc": "유효 시작일 (ISO-8601)"
+    },
+    {
+      "name": "expire_date_time",
+      "type": "string",
+      "doc": "유효 종료일 (ISO-8601)"
+    },
+    {
+      "name": "description",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "타입 설명"
+    },
+    {
+      "name": "primitive",
+      "type": "boolean",
+      "doc": "원시 타입 여부"
+    }
+  ]
+}

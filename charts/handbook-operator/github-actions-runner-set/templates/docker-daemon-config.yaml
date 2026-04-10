@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: docker-daemon-config
+  namespace: {{ .Release.Namespace }}
+data:
+  daemon.json: |
+    {
+      "mtu": 1350,
+      "storage-driver": "fuse-overlayfs"
+    }

@@ -1,0 +1,6 @@
+annotations:
+  charts.openshift.io/name: handbook
+apiVersion: v2
+kubeVersion: '>= 1.20.0-0'
+name: handbook
+version: 0.1.0

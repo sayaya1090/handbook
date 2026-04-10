@@ -1,0 +1,13 @@
+{
+  "agent.send": "전송",
+  "agent.abort": "중단",
+  "agent.label.idle": "무엇을 도와드릴까요?",
+  "agent.placeholder": "자연어로 요청하세요. 예: \"고객 타입에 전화번호 필드 추가해줘\"",
+  "agent.label.planning": "요청을 분석 중입니다...",
+  "agent.label.executing": "작업을 실행 중입니다...",
+  "agent.label.confirming": "확인을 기다리는 중입니다...",
+  "agent.progress.execution": "실행",
+  "agent.progress.parallel_steps": "병렬 {0}개 스텝",
+  "agent.complete.with_changes": "완료: {0}건 변경",
+  "agent.artifact.title": "실행 결과"
+}

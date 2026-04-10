@@ -1,0 +1,14 @@
+{
+  "type.add": "Add Type",
+  "type.remove": "Remove",
+  "type.save": "Save",
+  "type.undo": "Undo",
+  "type.redo": "Redo",
+  "type.attr.name": "Name",
+  "type.attr.type": "Type",
+  "type.attr.description": "Description",
+  "type.attr.apply": "Apply",
+  "type.attr.close": "Close",
+  "type.attr.nullable": "Nullable",
+  "type.event.changed": "Another user has modified the type"
+}

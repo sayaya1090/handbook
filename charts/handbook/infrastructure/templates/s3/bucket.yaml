@@ -1,0 +1,10 @@
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: bucket
+  namespace: {{ .Release.Namespace }}
+spec:
+  bucketName: {{ .Values.s3.bucket.name }}
+  storageClassName: ocs-storagecluster-ceph-rgw
+  additionalConfig:
+    maxSize: {{ .Values.s3.bucket.maxSize }}

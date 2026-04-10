@@ -1,0 +1,38 @@
+# 스테이지별 설정
+stages:
+  dev:
+    database: 192.168.1.212
+    host: handbook-dev.sayaya.cloud
+    color: green
+    backup:
+      schedule: '0 0 6 * * 1'  # 매주 월요일 오전 6시
+    bucket:
+      maxSize: 10G
+  staging:
+    database: 192.168.1.211
+    host: handbook.sayaya.cloud
+    color: red
+    backup:
+      schedule: ''  # 백업 안 함
+    bucket:
+      maxSize: 20G
+  prod:
+    database: 192.168.1.210
+    host: handbook.sayaya.dev
+    color: blue
+    backup:
+      schedule: '0 0 3 * * *'  # 매일 새벽 3시
+    bucket:
+      maxSize: 50G
+
+# 서비스 목록 및 스테이지 설정
+services:
+  - name: gateway
+    stages:
+      - dev
+      - staging
+      - prod
+  - name: event-broadcaster
+    stages:
+      - dev
+      - prod

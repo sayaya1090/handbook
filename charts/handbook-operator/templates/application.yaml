@@ -1,0 +1,26 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+  name: handbook
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handbook
+  namespace: openshift-gitops
+spec:
+  project: handbook
+  destination:
+    namespace: handbook
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: charts/handbook
+    repoURL: 'https://github.com/sayaya1090/handbook.git'
+    targetRevision: HEAD
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jqPathExpressions:
+        - .spec.source.helm.parameters[] | select(.name == "image.tag")

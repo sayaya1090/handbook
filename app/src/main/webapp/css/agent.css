@@ -1,0 +1,243 @@
+/* ── Agent Input ── */
+.agent-input-container {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: center; align-items: center;
+    padding: 16px 24px 24px; z-index: 9998;
+    pointer-events: none;
+}
+.agent-input-wrapper {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; max-width: 720px;
+    background: var(--md-sys-color-surface-container-low, white); border-radius: 28px;
+    padding: 6px 6px 6px 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+    pointer-events: auto; transition: box-shadow 0.2s;
+}
+.agent-input-wrapper:focus-within { box-shadow: 0 6px 32px color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent), 0 0 0 2px var(--md-sys-color-primary); }
+.agent-input-field {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 16px; line-height: 24px; padding: 12px 0;
+    color: var(--md-sys-color-on-surface, #1a1a1a); font-family: inherit;
+}
+.agent-input-field::placeholder { color: var(--md-sys-color-outline, #999); }
+.agent-input-field:disabled { color: var(--md-sys-color-on-surface-variant, #888); }
+.agent-input-send, .agent-input-abort {
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px 20px; border-radius: 22px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; user-select: none;
+    transition: background 0.15s, transform 0.1s; white-space: nowrap;
+}
+.agent-input-send { background: var(--md-sys-color-primary, #2196F3); color: var(--md-sys-color-on-primary, white); }
+.agent-input-send:hover { filter: brightness(0.9); }
+.agent-input-abort { background: var(--md-sys-color-error, #f44336); color: var(--md-sys-color-on-error, white); }
+.agent-input-abort:hover { filter: brightness(0.9); }
+
+/* ── Navigate indicator ── */
+.agent-navigate-indicator {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 10002; padding: 16px 28px; border-radius: 12px;
+    background: var(--md-sys-color-primary, #1565c0); color: var(--md-sys-color-on-primary, white);
+    font-size: 16px; font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    display: flex; align-items: center; gap: 8px; animation: agent-navigate-in 0.3s ease;
+}
+.agent-navigate-fadeout { animation: agent-navigate-out 0.5s ease forwards; }
+@keyframes agent-navigate-in { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes agent-navigate-out { from { opacity: 1; } to { opacity: 0; transform: translate(-50%, -60%); } }
+
+/* ── Mutate log ── */
+.agent-mutate-log {
+    position: fixed; left: 20px; bottom: 100px;
+    z-index: 10002; padding: 12px 16px; border-radius: 10px;
+    background: var(--md-sys-color-primary-container); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-primary-container);
+    font-size: 13px; min-width: 280px; max-width: 400px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); animation: ui-toast-in 0.3s ease;
+}
+.agent-mutate-line { padding: 3px 0; }
+.agent-mutate-fadeout { animation: ui-toast-out 0.5s ease forwards; }
+
+/* ── Progress bar ── */
+.progress-container {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 10002; display: flex; flex-direction: column;
+    transition: opacity 0.3s ease;
+}
+.progress-label {
+    text-align: center; font-size: 13px; padding: 4px 0;
+    background: color-mix(in srgb, var(--md-sys-color-surface) 90%, transparent);
+    color: var(--md-sys-color-on-surface, #333);
+}
+
+/* ── 모바일 (< 768px) ── */
+@media (max-width: 768px) {
+    /* AgentInputElement: 하단 고정, safe-area-inset + 가상 키보드 지원 */
+    .agent-input-container {
+        padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+    }
+    .agent-input-wrapper {
+        max-width: 100%;
+        border-radius: 20px;
+        padding: 4px 4px 4px 16px;
+    }
+    .agent-input-send, .agent-input-abort {
+        min-height: 48px;
+        min-width: 48px;
+        padding: 8px 16px;
+    }
+    .agent-mutate-log {
+        left: 8px; right: 8px;
+        bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+        max-width: none; min-width: auto;
+    }
+    .agent-navigate-indicator {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    /* ArtifactSummaryPanel: 전체 폭, 최대 높이 60vh, 스크롤 */
+    .agent-artifact-panel {
+        position: fixed;
+        right: 0; left: 0;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+        width: 100%;
+        max-height: 60vh;
+        border-radius: var(--md-sys-shape-corner-medium, 12px) var(--md-sys-shape-corner-medium, 12px) 0 0;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    }
+    .agent-artifact-content {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Preview: 세로 스택 */
+    .agent-preview-panel {
+        flex-direction: column;
+    }
+    .agent-preview-before, .agent-preview-after {
+        width: 100%;
+    }
+
+    /* ConfirmDialog: bottom sheet 스타일 */
+    .ui-confirm-wrapper {
+        position: fixed;
+        bottom: 0; left: 0; right: 0; top: 0;
+        z-index: 10003;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+    .ui-confirm-dialog,
+    .agent-confirm-dialog {
+        position: fixed;
+        bottom: 0; left: 0; right: 0; top: auto;
+        width: 100%;
+        max-width: 100%;
+        border-radius: var(--md-sys-shape-corner-extra-large, 28px) var(--md-sys-shape-corner-extra-large, 28px) 0 0;
+        max-height: 60vh;
+        overflow-y: auto;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        animation: confirm-slide-up var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, ease);
+    }
+    .ui-confirm-actions {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
+    }
+    .ui-confirm-option {
+        width: 100%;
+        min-height: 48px;
+    }
+}
+
+@keyframes confirm-slide-up {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+
+/* ── Artifact Summary Panel ── */
+.agent-artifact-panel {
+    position: fixed; right: 24px; bottom: 100px;
+    z-index: 10001;
+    display: flex; flex-direction: column;
+    width: 380px; max-height: 60vh;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    overflow: hidden;
+    animation: agent-artifact-in 0.3s var(--md-sys-motion-easing-standard, ease);
+}
+.agent-artifact-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.agent-artifact-title {
+    font-family: var(--md-sys-typescale-label-large-font, sans-serif);
+    font-size: var(--md-sys-typescale-label-large-size, 0.75rem);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+.agent-artifact-close {
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+    padding: 4px;
+    transition: background var(--md-sys-motion-duration-medium2, 300ms);
+}
+.agent-artifact-close:hover {
+    background: var(--md-sys-color-surface-container-highest);
+}
+.agent-artifact-content {
+    padding: 12px 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+.agent-artifact-summary {
+    font-family: var(--md-sys-typescale-body-medium-font, monospace);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.75rem);
+    line-height: var(--md-sys-typescale-body-medium-line-height, 1rem);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 12px;
+}
+.agent-artifact-changes {
+    display: flex; flex-direction: column; gap: 6px;
+}
+.agent-artifact-change-row {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    background: var(--md-sys-color-surface-container);
+}
+.agent-artifact-change-icon {
+    font-size: 18px;
+    color: var(--md-sys-color-primary);
+    flex-shrink: 0;
+    line-height: 1.2;
+}
+.agent-artifact-change-target {
+    font-family: var(--md-sys-typescale-body-medium-font, monospace);
+    font-size: var(--md-sys-typescale-body-medium-size, 0.75rem);
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    flex-shrink: 0;
+}
+.agent-artifact-change-desc {
+    font-family: var(--md-sys-typescale-body-small-font, monospace);
+    font-size: var(--md-sys-typescale-body-small-size, 0.6875rem);
+    color: var(--md-sys-color-on-surface-variant);
+    flex: 1;
+}
+@keyframes agent-artifact-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Artifact Panel mobile rules are consolidated in the main mobile block above ── */
+
+/* ── Dark mode ── */
+[color-theme="dark"] .agent-mutate-log { background: var(--md-sys-color-primary-container); border-color: var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-primary-container); }

@@ -1,0 +1,34 @@
+name: 타입 영속화 모듈 배포
+on:
+  push:
+    paths:
+      - persist-type/**
+  workflow_dispatch:
+jobs:
+  test-and-deploy:
+    runs-on: handbook-operator
+    env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+      BASE_IMAGE: eclipse-temurin:21-jre-ubi10-minimal
+      SUBMODULE: persist-type
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build
+        run: gradle $SUBMODULE:jar
+      - name: Test & Report
+        run: gradle $SUBMODULE:koverXmlReport
+      - name: Deploy
+        run: |
+          IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
+          echo "Deploying with IMAGE=$IMAGE"
+          oc registry login
+          gradle $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest -Djib.allowInsecureRegistries=true -Djib.console=plain

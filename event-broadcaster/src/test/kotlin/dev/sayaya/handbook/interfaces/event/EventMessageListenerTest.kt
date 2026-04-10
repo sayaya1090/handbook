@@ -1,0 +1,59 @@
+package dev.sayaya.handbook.interfaces.event
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.PropertyAccessor
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import dev.sayaya.handbook.domain.Document
+import dev.sayaya.handbook.domain.event.DocumentEvent
+import dev.sayaya.handbook.domain.event.Event
+import dev.sayaya.handbook.usecase.Broadcaster
+import dev.sayaya.handbook.usecase.WorkspaceSinkManager
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import reactor.test.StepVerifier
+import java.time.Instant
+import java.util.*
+
+class EventMessageListenerTest : DescribeSpec({
+
+    val objectMapper = JsonMapper.builder()
+        .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        .addModule(JavaTimeModule())
+        .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .build()
+
+    val workspace = UUID.randomUUID()
+    val now = Instant.now()
+
+    describe("EventMessageListener는") {
+
+        it("JSON 문자열을 받아 Broadcaster로 위임한다") {
+            val sinkManager = WorkspaceSinkManager()
+            val broadcaster = Broadcaster(objectMapper, sinkManager)
+            val listener = EventMessageListener(broadcaster)
+
+            val event = DocumentEvent(
+                UUID.randomUUID(), workspace, Event.EventType.DOCUMENT_CREATED,
+                Document(UUID.randomUUID(), "order", "O-100", now, now.plusSeconds(3600), now, "user-1", emptyMap())
+            )
+            val json = objectMapper.writeValueAsString(event)
+
+            StepVerifier.create(broadcaster.listen(workspace).take(1))
+                .then { listener.accept(json) }
+                .assertNext { received ->
+                    received.eventType shouldBe Event.EventType.DOCUMENT_CREATED
+                    received.workspace shouldBe workspace
+                }
+                .verifyComplete()
+        }
+    }
+})

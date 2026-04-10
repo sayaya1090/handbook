@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: s3
+  namespace: {{ .Release.Namespace }}
+spec:
+  gateways:
+    - gateway-https
+  hosts:
+    - s3.{{ .Values.host }}
+  http:
+    - route:
+        - destination:
+            host: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+            port:
+              number: 80

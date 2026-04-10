@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <inherits name="com.google.gwt.user.User"/>
+    <inherits name="elemental2.dom.Dom"/>
+    <inherits name="elemental2.promise.Promise"/>
+    <inherits name="jsinterop.base.Base"/>
+    <inherits name="dev.sayaya.Rx"/>
+    <source path="domain"/>
+    <source path="usecase"/>
+</module>

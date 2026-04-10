@@ -1,0 +1,139 @@
+.drawer {
+    z-index: 1000;   /* frame 보다 위에 있어야 함 */
+    background-color: color-mix(in srgb, var(--md-sys-color-surface-container-high) 60%, transparent);
+    border-top-right-radius: 0rem;
+    border-bottom-right-radius: 0rem;
+    backdrop-filter: blur(5px);
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
+    transition-property: background-color, box-shadow, border-top-right-radius, border-bottom-right-radius;
+    transition-duration: 300ms;
+    transition-timing-function: ease-in-out;
+}
+:root[color-theme='light'] .drawer[open] {
+    box-shadow: 0 4px 30px color-mix(in srgb, var(--md-sys-color-outline-variant) 80%, transparent);
+}
+:root[color-theme='dark'] .drawer[open] {
+
+}
+.drawer[hide] {
+    background-color: transparent;
+}
+.drawer .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.drawer .header .workspace {
+    min-width: 0px;
+    max-width: 16rem;
+    --_text-field-label-text-line-height: 0.8rem;
+    --_text-field-input-text-line-height: 0.8rem;
+    --md-outlined-field-top-space: 14px;
+    --md-outlined-field-bottom-space: 14px;
+    transition: margin-left 400ms cubic-bezier(.2,0,0,1), opacity 400ms cubic-bezier(.2,0,0,1);
+}
+.rail {
+    display: flex;
+    flex-direction: column;
+    width: 0px;
+    overflow: hidden;
+    white-space: pre;
+    transition: width 400ms cubic-bezier(.2,0,0,1), padding-left 400ms cubic-bezier(.2,0,0,1);
+}
+.rail[collapse] {
+    width: 3.5rem;
+    padding-top: 0px !important;
+}
+.rail[expand] {
+    width: 16rem;
+    align-items: flex-start;
+    padding: 0 0.6rem;
+}
+.rail[hide] {
+    width: 0px;
+    padding-top: 0px !important;
+}
+.rail[expand]:not(:first-of-type) {
+    border-left: 1px solid var(--md-sys-color-outline-variant);
+}
+.rail .item {
+    width: 100%;
+    color: unset;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    outline: none;
+    padding: 8px 0;
+    position: relative;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    --md-list-item-label-text-font: var(--md-sys-typescale-headline-large-font);
+    --md-ripple-hover-color: var(--md-list-item-hover-state-layer-color, var(--md-sys-color-on-surface, #1d1b20));
+    --md-ripple-hover-opacity: var(--md-list-item-hover-state-layer-opacity, 0.08);
+    --md-ripple-pressed-color: var(--md-list-item-pressed-state-layer-color, var(--md-sys-color-on-surface, #1d1b20));
+    --md-ripple-pressed-opacity: var(--md-list-item-pressed-state-layer-opacity, 0.12);
+}
+.rail .item .collapse {
+    margin: 10px 8px;
+}
+.rail .item .expand {
+    border-radius: 2rem;
+    position: relative;
+    flex: 1;
+    max-width: inherit;
+    min-width: inherit;
+    outline: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    width: 100%;
+}
+.rail[expand] .item .collapse {
+    position: absolute;
+}
+.rail[expand] .item .expand {
+    display: flex;
+}
+.rail[collapse] .item .expand {
+    display: none;
+}
+.rail[hide] .item .expand {
+    display: none;
+}
+.rail .item[selected] .expand {
+    --md-list-item-label-text-color: var(--md-sys-color-primary);
+    --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
+}
+.rail .item md-item {
+    border-radius: inherit;
+    flex: 1;
+    height: 100%;
+    color: var(--md-list-item-label-text-color, var(--md-sys-color-on-surface, #1d1b20));
+    font-family: var(--md-list-item-label-text-font, var(--md-sys-typescale-body-large-font, var(--md-ref-typeface-plain, Roboto)));
+    font-size: var(--md-list-item-label-text-size, var(--md-sys-typescale-body-large-size, 1rem));
+    line-height: var(--md-list-item-label-text-line-height, var(--md-sys-typescale-body-large-line-height, 1.5rem));
+    font-weight: var(--md-list-item-label-text-weight, var(--md-sys-typescale-body-large-weight, var(--md-ref-typeface-weight-regular, 400)));
+    min-height: var(--md-list-item-one-line-container-height, 60px);
+    padding-top: var(--md-list-item-top-space, 12px);
+    padding-bottom: var(--md-list-item-bottom-space, 12px);
+    padding-inline-start: var(--md-list-item-leading-space, 16px);
+    padding-inline-end: var(--md-list-item-trailing-space, 16px);
+}
+.frame {
+    position: absolute;
+    left: 56px;
+    right: 0;
+    top: 4px;
+    bottom: 0;
+    border: 0px hidden;
+    transition: all 100ms ease-in-out;
+    opacity: 1;
+}
+.frame-in {
+    top: 1rem;
+    opacity: 0;
+}
+.frame-out {
+    top: -1rem;
+    opacity: 0;
+}

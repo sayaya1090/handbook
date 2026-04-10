@@ -1,0 +1,10 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: {{ .Release.Namespace }}
+spec:
+  promotionPolicies:
+    {{- range $service := .Values.services }}
+    - autoPromotionEnabled: true
+      stage: {{ $service.name }}-{{ index $service.stages 0 }}
+    {{- end }}

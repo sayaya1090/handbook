@@ -1,0 +1,9 @@
+{
+  "document.add": "추가",
+  "document.save": "저장",
+  "document.delete": "삭제",
+  "document.undo": "실행 취소",
+  "document.redo": "다시 실행",
+  "document.event.changed": "다른 사용자가 문서를 변경했습니다",
+  "document.pagination.empty": "결과 없음"
+}

@@ -1,0 +1,2 @@
+dev.sayaya.handbook.interfaces.authentication.AuthenticationAutoConfig
+dev.sayaya.handbook.interfaces.authentication.SecurityContextUuidAuditorConfig

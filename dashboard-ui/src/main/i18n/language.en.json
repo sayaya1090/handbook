@@ -1,0 +1,10 @@
+{
+  "dashboard.stats.types": "Types",
+  "dashboard.stats.documents": "Documents",
+  "dashboard.stats.users": "Users",
+  "dashboard.activity.title": "Agent Activity",
+  "dashboard.activity.empty": "No agent activity",
+  "dashboard.activity.count_suffix": "commands",
+  "dashboard.quality.title": "Quality Status",
+  "dashboard.quality.empty": "No quality issues"
+}

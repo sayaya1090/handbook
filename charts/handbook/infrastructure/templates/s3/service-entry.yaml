@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: s3
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: 80
+      protocol: HTTP
+    - name: https
+      number: 443
+      protocol: HTTPS
+  resolution: DNS

@@ -1,0 +1,26 @@
+package dev.sayaya.handbook.client.drawer;
+
+import com.google.gwt.core.client.EntryPoint;
+import org.jboss.elemento.EventType;
+
+import static org.jboss.elemento.Elements.*;
+
+public class Application implements EntryPoint {
+    private final Component components = DaggerComponent.create();
+    @Override
+    public void onModuleLoad() {
+        components.historyManager().initialize();
+        components.urlBasedToolResolver().initialize();
+        components.toolBasedMenuResolver().initialize();
+        components.script().initialize();
+        body().add(components.drawer())
+            .add(div().id("test-controls").style("position: fixed; top: 0; right: 0; z-index: 9999;")
+                .add(button("URL 1").id("url1")
+                    .on(EventType.click, evt -> components.uri().next("menu1-tool1")))
+                .add(button("URL 2").id("url2")
+                    .on(EventType.click, evt -> components.uri().next("menu3-tool1")))
+                .add(button("URL 3").id("url3")
+                    .on(EventType.click, evt -> components.uri().next("menu3-tool2")))
+            );
+    }
+}

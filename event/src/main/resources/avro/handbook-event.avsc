@@ -1,0 +1,45 @@
+{
+  "namespace": "dev.sayaya.handbook.event",
+  "type": "record",
+  "name": "HandbookEvent",
+  "doc": "Handbook 도메인 이벤트 공통 스키마. Kafka 'handbook-events' 토픽으로 발행된다.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "doc": "이벤트 고유 ID (UUID)"
+    },
+    {
+      "name": "workspace",
+      "type": "string",
+      "doc": "워크스페이스 ID (UUID). Kafka 파티션 키로 사용"
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "EventType",
+        "symbols": [
+          "DOCUMENT_CREATED",
+          "DOCUMENT_DELETED",
+          "TYPE_CREATED",
+          "TYPE_DELETED",
+          "VALIDATION_REQUESTED",
+          "AGENT_COMMAND"
+        ]
+      },
+      "doc": "이벤트 타입"
+    },
+    {
+      "name": "payload",
+      "type": "string",
+      "doc": "이벤트 페이로드 (JSON 직렬화된 도메인 객체)"
+    },
+    {
+      "name": "timestamp",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "이벤트 발생 시각"
+    }
+  ]
+}

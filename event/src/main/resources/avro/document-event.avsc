@@ -1,0 +1,40 @@
+{
+  "namespace": "dev.sayaya.handbook.event",
+  "type": "record",
+  "name": "DocumentEventPayload",
+  "doc": "문서 이벤트 페이로드 스키마",
+  "fields": [
+    {
+      "name": "id",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "문서 ID (UUID)"
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "doc": "문서 타입명"
+    },
+    {
+      "name": "serial",
+      "type": "string",
+      "doc": "문서 시리얼 번호"
+    },
+    {
+      "name": "effect_date_time",
+      "type": "string",
+      "doc": "유효 시작일 (ISO-8601)"
+    },
+    {
+      "name": "expire_date_time",
+      "type": "string",
+      "doc": "유효 종료일 (ISO-8601)"
+    },
+    {
+      "name": "data",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "문서 데이터 (JSON)"
+    }
+  ]
+}

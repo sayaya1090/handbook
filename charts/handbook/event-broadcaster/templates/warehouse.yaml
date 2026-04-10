@@ -1,0 +1,18 @@
+{{- if not .Values.stage.prev }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: event-broadcaster
+  namespace: handbook
+spec:
+  freightCreationPolicy: Automatic
+  interval: 1m0s
+  subscriptions:
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: image-registry.openshift-image-registry.svc:5000/handbook/event-broadcaster
+        strictSemvers: true
+{{- end }}

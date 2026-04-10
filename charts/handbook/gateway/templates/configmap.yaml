@@ -1,0 +1,30 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: gateway
+data:
+  application.yaml: |
+    spring:
+      application.name: gateway
+      main:
+        web-application-type: reactive
+      threads.virtual.enabled: true
+      config:
+        import:
+          - classpath:observability.yaml
+    management:
+      endpoint:
+        health:
+          probes:
+            enabled: true
+    server:
+      port: 8080
+    services:
+      - name: login
+      - name: search-type
+      - name: search-workspace
+      - name: search-user
+      - name: search-document

@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ignore-resources-{{ .Release.Namespace }}-job
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  # Job 완료 후 30초가 지나면 자동으로 삭제되도록 설정합니다.
+  # Job 완료 후 자체 삭제 기능은 Hook 정책과 중복될 수 있지만, 안전장치로 남겨둡니다.
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      serviceAccountName: openshift-gitops-argocd-application-controller
+      containers:
+        - name: generate-token
+          image: registry.redhat.io/openshift4/ose-cli
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              set -e
+              NAMESPACE="{{ .Release.Namespace }}"
+              ANNOTATION="argocd.argoproj.io/compare-options=IgnoreExtraneous"
+
+              echo "Annotating RoleBinding and Role in namespace $NAMESPACE..."
+
+              # 'AutoscalingListener' CR의 이름을 모두 가져옵니다.
+              LISTENER_NAMES=$(oc get autoscalinglistener -n github-actions-runner -o jsonpath='{.items[*].metadata.name}' --ignore-not-found=true)
+              if [ -z "$LISTENER_NAMES" ]; then
+                echo "No AutoscalingListener resources found to process. Exiting."
+                exit 0
+              fi
+              echo "Found AutoscalingListener(s): ${LISTENER_NAMES}"
+              for name in $LISTENER_NAMES; do
+                echo "Processing listener: ${name}"
+                oc annotate --overwrite -n github-actions-runner autoscalinglistener/${name} "${ANNOTATION}"
+
+                # 해당 이름의 Role이 존재하는지 확인하고 어노테이션을 추가합니다.
+                if oc get role "$name" -n ${NAMESPACE} >/dev/null 2>&1; then
+                  echo "Annotating role/${name}..."
+                  oc annotate --overwrite -n ${NAMESPACE} role/${name} "${ANNOTATION}"
+                else
+                  echo "Warning: Role '${name}' not found. Skipping."
+                fi
+
+                # 해당 이름의 RoleBinding이 존재하는지 확인하고 어노테이션을 추가합니다.
+                if oc get rolebinding "$name" -n ${NAMESPACE} >/dev/null 2>&1; then
+                  echo "Annotating rolebinding/${name}..."
+                  oc annotate --overwrite -n ${NAMESPACE} rolebinding/${name} "${ANNOTATION}"
+                else
+                  echo "Warning: RoleBinding '${name}' not found. Skipping."
+                fi
+              done
+
+              echo "Annotation process complete."
+      restartPolicy: Never
+  backoffLimit: 2

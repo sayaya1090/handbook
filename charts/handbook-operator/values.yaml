@@ -1,0 +1,2 @@
+# Operator는 단일 handbook Application만 생성
+# 서비스 목록은 handbook chart의 values.yaml에서 관리
