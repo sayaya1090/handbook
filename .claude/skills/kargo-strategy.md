@@ -1,233 +1,431 @@
-# Kargo 배포 전략 설계 (제안)
+# 배포 전략 v2 — Preview + Kargo + Canary (검토용)
 
-> 상태: **제안 / 검토 대기**. 현재 차트의 `stage.yaml`, `warehouse.yaml` 과 대비해 개선점을 정리한 문서. 합의 후 단계별로 적용.
+> 상태: **제안 / 검토 대기**. v1 (과설계) 대체. 사용자 확정 사항: 단일 클러스터, 3 환경(dev/staging/prod), 태그 전략 TBD, AnalysisTemplate 신규 작성 필요, 옵션 D(Preview + Canary) 방향.
+>
+> **주의**: 옵션 D 원본은 staging 삭제 포함이었으나, 이 문서는 "3 환경 유지 + Preview 추가 + Prod Canary" 로 각색했다. staging 삭제 버전이 맞으면 §2, §4, §7.2 를 제거하면 됨.
 
-## 1. 현재 구현 요약
+## 1. 큰 그림
 
-`charts/handbook/<service>/templates/warehouse.yaml` + `stage.yaml` 이 서비스×스테이지 매트릭스로 Kargo 리소스를 찍어낸다.
+세 겹의 도구가 각자의 역할만 담당:
 
-- **Warehouse**: OpenShift ImageStream(`handbook/<service>`) 구독, `imageSelectionStrategy: NewestBuild`, `strictSemvers: true`, interval 1m.
-- **Stage (dev)**: Warehouse 를 direct 로 구독 → `argocd-update` 스텝으로 ArgoCD Application 의 Helm image.tag 를 갱신.
-- **Stage (staging)**: dev 를 upstream 으로 → 같은 `argocd-update` 스텝 + AnalysisTemplate `<svc>-staging` 검증.
-- **Stage (prod)**: staging 을 upstream 으로 → `http` 스텝으로 GitHub `repository_dispatch` (event_type `release`) 호출.
+| 층위 | 도구 | 역할 |
+|------|------|------|
+| Stage 승격 | **Kargo** | dev → staging → prod 간 Freight 이동. 승격 기록·롤백 관리 |
+| Preview | **ArgoCD ApplicationSet (PR generator)** | PR 별 ephemeral 환경 자동 생성/삭제 |
+| Prod 안전장치 | **Argo Rollouts + Istio** | prod 배포를 canary 로 점진 확장, SLO 위반 시 자동 롤백 |
 
-## 2. 문제점
+Kargo 는 stage 승격에만 집중 — preview 와 canary 는 Kargo 바깥. 각 도구가 잘하는 일만 시키는 게 핵심.
 
-| # | 포인트 | 영향 |
-|---|--------|------|
-| 1 | `strictSemvers: true` + `NewestBuild` 조합 모순 — 전자는 semver 태그만 필터, 후자는 레지스트리 생성 시각 기준 정렬 | 태그 선택 규칙이 의도대로 안 먹고, 설계 의도가 불명확 |
-| 2 | prod 단계에서 `http` → GitHub dispatch 호출 | 동일 Freight 를 그대로 전진해야 할 시점에 CI 재빌드가 끼어들면 **이미지 digest 가 바뀔 수 있어 Freight immutability 가 깨짐**. dev/staging 과 경로가 비대칭이라 감사·롤백이 어려움 |
-| 3 | Warehouse 가 **image 만 구독** | chart/values 변경만 일어난 배포가 Freight 에 기록되지 않음 → "무엇이 프로모션되는가" 가 이미지 한 건에 한정 |
-| 4 | verification 불균형 — dev 는 주석, staging 만 AnalysisTemplate, prod 는 없음 | 가장 위험한 prod 프로모션에 자동 SLO 게이트가 없음 |
-| 5 | Promotion 트리거가 Stage spec 에 명시되지 않음 | auto/manual 경계가 암묵적. 누가 언제 promote 할 수 있는지 코드만 봐서 모름 |
-| 6 | 멀티 서비스 release train 개념 없음 | 각 서비스가 독립 Warehouse → gateway+event-broadcaster 를 한 릴리즈로 묶어 동기 배포할 수단이 없음 |
-| 7 | ArgoCD Application 이 Helm chart 경로를 직접 싱크 | Kargo 가 image.tag 를 pokes in-place. diff 가 "helm value 한 줄" 으로만 보여 사람이 배포 시점에 실제 매니페스트 변화를 못 본다 |
+## 2. 네임스페이스 레이아웃 (단일 클러스터)
 
-## 3. Kargo 베스트 프랙티스 원칙
+| 네임스페이스 | 용도 | 비고 |
+|--------------|------|------|
+| `handbook-dev` | dev 환경 | Kargo 관리 |
+| `handbook-staging` | staging 환경 | Kargo 관리 |
+| `handbook-prod` | prod 환경 | Kargo + Argo Rollouts |
+| `handbook-preview-pr-<N>` | PR 별 ephemeral | ApplicationSet 자동 생성·삭제 |
+| `kargo` | Kargo controller | 신규 설치 |
+| `argocd` | ArgoCD | 기존 |
+| `argo-rollouts` | Argo Rollouts controller | 신규 설치 |
+| `github-actions-runner` | CI runner | 기존 |
 
-Kargo 공식 docs / 샘플 리포 (`akuity/kargo`) 에서 반복적으로 강조되는 원칙:
+**격리:**
+- **NetworkPolicy**: 각 env 네임스페이스는 기본 `deny-all` ingress. `istio-system`, `kargo`, `argocd` 에서만 ingress 허용. env 간 cross-namespace 트래픽 차단.
+- **ResourceQuota**: dev(`cpu=4, memory=8Gi`), staging(`cpu=8, memory=16Gi`), prod(`cpu=16, memory=32Gi`), preview(`cpu=2, memory=4Gi`). 실제 사용량 측정 후 조정.
+- **LimitRange**: 각 env 에 기본 컨테이너 request/limit 고정.
+- **Observability**: Prometheus relabel 로 `namespace` → `env` 레이블 변환. 대시보드/알람이 env 축으로 필터 가능.
 
-1. **Freight Immutability** — Freight = `{image digest, git commit, chart version}` 스냅샷. 한번 만들어지면 수정 없이 stage 를 따라 그대로 승격. 롤백은 "오래된 Freight 를 다시 승격".
-2. **Rendered Manifests Pattern** — 소스 브랜치(main)는 Helm/Kustomize 그대로 두고, 스테이지별 **렌더된 YAML 을 전용 브랜치 또는 폴더** (`env/dev`, `env/staging`, `env/prod`) 에 커밋. ArgoCD Application 은 렌더 결과만 싱크. 장점: 사람이 diff 로 변화를 직접 검토 가능, Kargo promotion 이 파일 수준의 `git-commit` 으로 완결.
-3. **Promotion Steps 표준화** — `git-clone` → `kustomize-set-image` or `helm-template` or `yaml-update` → `git-commit` → `git-push` → `argocd-update`. 외부 CI HTTP 호출은 회피.
-4. **Verification 은 모든 stage** — AnalysisTemplate(Argo Rollouts) 혹은 `verification.args` 로 Prometheus 쿼리 / smoke 엔드포인트 / 수동 approval. 실패 시 promotion 자동 취소.
-5. **PromotionPolicy 명시** — `Project` 레벨에 AutoPromotionPolicy + approver 목록. Stage 는 실행 내용만, 권한은 Project 가 관리.
-6. **Warehouse 는 image + git 동시 구독** — Freight 에 이미지 digest 뿐 아니라 commit SHA 를 묶어 "이 이미지 안의 코드가 정확히 어떤 상태였는지" 가 Freight 로 추적 가능.
-7. **자격증명은 annotated Secret** — `kargo.akuity.io/cred-type: git|image|helm` 레이블. Kargo controller 가 자동 발견.
-8. **Tag 선택 전략 일관성** — Git SHA 태그 → `NewestBuild`(레지스트리 시각) 또는 `Lexical`. Semver 태그(v1.2.3) → `SemVer` + 제약(`constraint: ^1.0.0`). 하나만 택일.
+## 3. 태그 전략 (제안)
 
-## 4. 제안 설계 (Target State)
+**원칙**: 운영 배포 아티팩트는 **불변 태그만** 소비. mutable 태그 (`latest`, `main`) 는 디버그 편의용일 뿐 어떤 배포 경로도 참조하지 않는다.
 
-### 4.1 아티팩트 태깅
-- CI(GitHub Actions) 가 이미지를 `sha-<git-short-sha>` 로 푸시 (불변). `latest` 는 편의용으로만 사용.
-- Git 리포는 main 브랜치가 소스.
+| 용도 | 태그 형식 | 생성 주체 | 소비 주체 |
+|------|-----------|-----------|-----------|
+| 주 배포 아티팩트 | `sha-<8char>` | CI (main push) | Kargo Warehouse |
+| PR preview | `pr-<num>-<8char>` | CI (PR open/sync) | ApplicationSet |
+| 릴리즈 스냅샷(선택) | `v<major>.<minor>.<patch>` | main 태그 push | 수동 승격·보존 |
+| 디버그 | `main` (mutable) | CI main push 마다 덮어씀 | 로컬 실험만, 배포 금지 |
 
-### 4.2 Warehouse
-하나의 `handbook` 프로젝트 네임스페이스에 서비스별 Warehouse. 각 Warehouse 는:
-
+Warehouse 구독 조건:
 ```yaml
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Warehouse
-metadata:
-  name: gateway
-  namespace: handbook
-spec:
-  interval: 1m
-  freightCreationPolicy: Automatic
-  subscriptions:
-    - image:
-        repoURL: image-registry.openshift-image-registry.svc:5000/handbook/gateway
-        imageSelectionStrategy: NewestBuild   # sha-* 태그는 semver 아니므로 NewestBuild
-        allowTags: ^sha-[a-f0-9]+$
-        strictSemvers: false
-        insecureSkipTLSVerify: true
-        discoveryLimit: 10
-    - git:
-        repoURL: https://github.com/sayaya1090/handbook.git
-        branch: main
-        includePaths:
-          - charts/handbook/gateway/**
-          - gateway/**
+subscriptions:
+  - image:
+      repoURL: image-registry.openshift-image-registry.svc:5000/handbook/gateway
+      allowTags: ^sha-[a-f0-9]{8}$
+      imageSelectionStrategy: NewestBuild
+      strictSemvers: false
+      insecureSkipTLSVerify: true
+      discoveryLimit: 5
 ```
 
-핵심 변경:
-- `strictSemvers: false` + `allowTags` 정규식으로 sha 태그만 통과.
-- **Git subscription 추가**: 차트/소스가 바뀌어도 Freight 가 생성되어 "설정만 변경된" 릴리즈를 추적 가능. `includePaths` 로 무관 경로 제외.
+**Retention**: OpenShift ImageStream 은 `spec.tags[].referencePolicy` 기본값으로 20 태그 보존. 초과 시 오래된 sha 폐기. 릴리즈 스냅샷(`v*`) 은 별도 ImageStream 또는 보존 CronJob 으로 분리 관리.
 
-### 4.3 Stage — 공통 Promotion Template (Rendered Manifests)
+**CI 변경점** (GitHub Actions deploy 워크플로):
+```yaml
+# 기존: jib 에 latest 태그
+# 변경: jib 에 sha + latest (latest 는 편의, 소비되지 않음)
+- name: Deploy
+  run: |
+    SHA_TAG=sha-${GITHUB_SHA:0:8}
+    ./gradlew $SUBMODULE:jib \
+      -Djib.to.tags=$SHA_TAG,latest \
+      -Djib.to.image=$IMAGE
+```
 
+PR 워크플로는 별도 추가:
+```yaml
+- name: Build PR preview image
+  if: github.event_name == 'pull_request'
+  run: |
+    PR_TAG=pr-${{ github.event.pull_request.number }}-${GITHUB_SHA:0:8}
+    ./gradlew $SUBMODULE:jib -Djib.to.tags=$PR_TAG -Djib.to.image=$IMAGE
+```
+
+## 4. Kargo Stage 승격 파이프라인
+
+### 4.1 Warehouse (서비스당 1개)
+§3 의 태그 필터 그대로. `freightCreationPolicy: Automatic`, `interval: 1m`.
+
+### 4.2 Stage: dev (auto)
 ```yaml
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
-metadata:
-  name: gateway-dev
-  namespace: handbook
+metadata: {name: gateway-dev, namespace: kargo}
 spec:
   requestedFreight:
-    - origin: { kind: Warehouse, name: gateway }
-      sources: { direct: true }
+    - origin: {kind: Warehouse, name: gateway}
+      sources: {direct: true}
   promotionTemplate:
     spec:
-      vars:
-        - name: targetBranch
-          value: env/dev
-        - name: servicePath
-          value: env/dev/gateway
       steps:
-        - uses: git-clone
-          config:
-            repoURL: https://github.com/sayaya1090/handbook.git
-            checkout:
-              - branch: main
-                path: ./src
-              - branch: ${{ vars.targetBranch }}
-                create: true
-                path: ./out
-        - uses: helm-template
-          config:
-            path: ./src/charts/handbook/gateway
-            outPath: ./out/${{ vars.servicePath }}
-            releaseName: gateway
-            namespace: handbook
-            valuesFiles:
-              - ./src/charts/handbook/gateway/values.yaml
-              - ./src/charts/handbook/gateway/values-dev.yaml
-        - uses: yaml-update
-          config:
-            path: ./out/${{ vars.servicePath }}/deployment.yaml
-            updates:
-              - key: spec.template.spec.containers.0.image
-                value: ${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/gateway").tag }}@${{ imageFrom(...).digest }}
-        - uses: git-commit
-          as: commit
-          config:
-            path: ./out
-            message: |
-              chore(release): gateway-dev ${{ outputs.commit.commit }}
-              Freight: ${{ ctx.freight.name }}
-        - uses: git-push
-          config: { path: ./out, targetBranch: ${{ vars.targetBranch }} }
         - uses: argocd-update
           config:
             apps:
               - name: handbook-gateway-dev
                 sources:
                   - repoURL: https://github.com/sayaya1090/handbook.git
-                    desiredRevision: ${{ outputs.commit.commit }}
+                    helm:
+                      images:
+                        - key: image.tag
+                          value: ${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/gateway").tag }}
   verification:
     analysisTemplates:
       - name: gateway-smoke
 ```
 
-- **dev → staging → prod 동일한 promotionTemplate**. 차이는 `vars.targetBranch` / `vars.servicePath` + `verification` 뿐.
-- prod 에서도 `argocd-update` 를 사용하고 **GitHub dispatch 제거**. 같은 Freight 의 digest 가 그대로 전진함.
-- ArgoCD Application 3 개 (`handbook-gateway-{dev,staging,prod}`) 는 각각 `env/dev`, `env/staging`, `env/prod` 브랜치 경로를 참조.
-
-### 4.4 PromotionPolicy & 승인
-
+Project spec 에 AutoPromotionPolicy:
 ```yaml
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Project
-metadata: { name: handbook }
-spec:
-  promotionPolicies:
-    - stageSelector: { name: gateway-dev }
-      autoPromotionEnabled: true
-    - stageSelector: { name: gateway-staging }
-      autoPromotionEnabled: false   # 수동
-    - stageSelector: { name: gateway-prod }
-      autoPromotionEnabled: false
+promotionPolicies:
+  - stageSelector: {name: gateway-dev}
+    autoPromotionEnabled: true
 ```
 
-추가로 **Approval 필요**: Kargo UI 에서 staging/prod promotion 시 RBAC 의 `promote` 권한 보유자만 허용. Git 측에서 `env/prod` 브랜치를 Protected Branch 로 걸고 Kargo service account 만 push 가능하도록 제한.
+### 4.3 Stage: staging (auto 검증 통과 시)
+- `requestedFreight.sources.stages: [gateway-dev]` 로 dev 를 upstream.
+- 동일 `argocd-update` 스텝, target = `handbook-gateway-staging`.
+- `verification.analysisTemplates: [gateway-staging]`.
+- PromotionPolicy 에서 `autoPromotionEnabled: true`. 단 verification 실패 시 Kargo 가 자동으로 승격 차단.
 
-### 4.5 Verification (AnalysisTemplate)
+### 4.4 Stage: prod (manual + canary)
+- upstream: `gateway-staging`.
+- `argocd-update` 가 가리키는 Application 은 prod 용이며 리소스가 **Rollout**. image 태그를 갱신하면 Argo Rollouts 가 canary 진행.
+- `verification.analysisTemplates: [gateway-canary]` — Rollouts 내부 AnalysisRun 과 별개로 Kargo 가 "승격 직후 15분 안정성" 을 한 번 더 체크.
+- PromotionPolicy `autoPromotionEnabled: false`. Kargo UI 에서 승인자가 버튼 클릭.
 
-단계별로 난이도 상승:
+## 5. Preview Environments — ApplicationSet PR Generator
 
-- **dev (`gateway-smoke`)**: 롤링 완료 후 `/actuator/health/readiness` 200 확인 + 3분간 5xx 비율 < 5%.
-- **staging (`gateway-staging`)**: p95 latency < 500ms, 5xx < 1%, Kafka consumer lag(event-broadcaster 쪽) < 100 을 10분 유지.
-- **prod (`gateway-prod`)**: Canary 분할이 가능하면 Argo Rollouts 연동. 불가하면 staging 과 동일 쿼리 + 수동 사인오프.
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata: {name: handbook-previews, namespace: argocd}
+spec:
+  generators:
+    - pullRequest:
+        github:
+          owner: sayaya1090
+          repo: handbook
+          tokenRef: {secretName: github-token, key: token}
+          labels: ["preview"]
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: 'preview-pr-{{.number}}'
+      finalizers: ["resources-finalizer.argocd.argoproj.io"]
+    spec:
+      project: handbook
+      source:
+        repoURL: https://github.com/sayaya1090/handbook.git
+        targetRevision: '{{.head_sha}}'
+        path: charts/handbook/gateway
+        helm:
+          values: |
+            image:
+              tag: pr-{{.number}}-{{.head_sha_short}}
+            host: pr-{{.number}}.preview.handbook.sayaya.cloud
+            replicaCount: 1
+            resources:
+              limits: {cpu: 500m, memory: 512Mi}
+              requests: {cpu: 100m, memory: 256Mi}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'handbook-preview-pr-{{.number}}'
+      syncPolicy:
+        automated: {prune: true, selfHeal: true}
+        syncOptions: [CreateNamespace=true]
+```
 
-Prometheus 기반 AnalysisTemplate 예시:
+**라이프사이클:**
+1. PR 에 `preview` 레이블 부착 → ApplicationSet 이 감지 → Application + namespace 생성.
+2. PR 에 커밋 푸시 → CI 가 `pr-<num>-<sha>` 태그 이미지 빌드 → ApplicationSet 이 `targetRevision`, `image.tag` 갱신 → ArgoCD 가 rolling update.
+3. PR 닫힘/머지 → 레이블 조건 이탈 → Application 제거 → finalizer 가 namespace 자원 정리 → namespace 삭제.
+
+**주의점:**
+- Preview 는 infrastructure(PG, Kafka) 공유가 곤란하므로 **별도 SQLite/embedded Kafka** 또는 **dev 네임스페이스 리소스 공유** 중 하나를 선택해야 함. 기본 권장: dev 네임스페이스 PG 의 PR 별 schema 분리 (`pr_<num>`). Kafka 는 topic 접두어 (`pr-<num>-`).
+- Preview 도메인 wildcard 인증서 (`*.preview.handbook.sayaya.cloud`) 필요.
+- Preview 는 Kargo 와 **무관**. Kargo Warehouse 의 태그 필터가 `sha-*` 로 고정되어 있어 `pr-*` 태그는 수집되지 않음. 의도된 분리.
+
+## 6. Prod Canary — Argo Rollouts + Istio
+
+### 6.1 Deployment → Rollout 교체
+`charts/handbook/gateway/templates/deployment.yaml` 를 prod 에서만 `Rollout` 으로 렌더:
+
+```yaml
+{{- if eq .Values.stage.name "prod" }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+{{- else }}
+kind: Deployment
+apiVersion: apps/v1
+{{- end }}
+metadata: {...}
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: gateway}}
+  template:
+    # 기존 podTemplate 그대로
+  {{- if eq .Values.stage.name "prod" }}
+  strategy:
+    canary:
+      canaryService: service-gateway-canary
+      stableService: service-gateway
+      trafficRouting:
+        istio:
+          virtualService:
+            name: gateway
+            routes: [primary]
+      steps:
+        - setWeight: 10
+        - pause: {duration: 2m}
+        - analysis:
+            templates: [{templateName: gateway-canary}]
+        - setWeight: 30
+        - pause: {duration: 3m}
+        - analysis:
+            templates: [{templateName: gateway-canary}]
+        - setWeight: 60
+        - pause: {duration: 3m}
+        - setWeight: 100
+  {{- else }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 25%, maxUnavailable: 25%}
+  {{- end }}
+```
+
+### 6.2 Service 분리
+`service-gateway` (stable) 와 `service-gateway-canary` (canary) 두 개 생성. 셀렉터는 Rollouts 이 주입하는 `rollouts-pod-template-hash` 로 자동 분리.
+
+### 6.3 Istio VirtualService
+기존 infrastructure 차트의 VirtualService 에 subset 추가:
+```yaml
+spec:
+  http:
+    - name: primary
+      route:
+        - destination:
+            host: service-gateway
+            subset: stable
+          weight: 100
+        - destination:
+            host: service-gateway
+            subset: canary
+          weight: 0
+```
+Rollouts 가 weight 를 동적 변경. 실패 → `setWeight: 0` 자동 롤백.
+
+## 7. AnalysisTemplate 라이브러리
+
+`charts/handbook/infrastructure/templates/analysis/` 아래에 세 템플릿. 서비스당 복제 (이름에 service 프리픽스). 메트릭 이름은 Spring Boot Actuator + Micrometer 기본값 가정.
+
+> **확인 필요**: Spring Boot 4 는 Micrometer Observation 기반이라 메트릭 이름이 `http_server_requests_*` 에서 바뀔 수 있음. 배포 전 실제 `/actuator/prometheus` 출력 확인.
+
+### 7.1 `<svc>-smoke` (dev)
+목적: 배포가 "살아 있고 에러 폭발은 없는지" 만 확인. 2 분.
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
-metadata: { name: gateway-smoke, namespace: handbook }
+metadata: {name: gateway-smoke, namespace: handbook-dev}
 spec:
+  args:
+    - name: service
+      value: gateway
   metrics:
-    - name: 5xx-ratio
-      interval: 30s
-      count: 6
-      successCondition: result[0] < 0.05
+    - name: readiness-up
+      interval: 15s
+      count: 8
+      successCondition: result[0] == 1
+      failureLimit: 2
       provider:
         prometheus:
-          address: http://prometheus.observability:9090
+          address: http://prometheus-k8s.openshift-monitoring:9090
           query: |
-            sum(rate(http_server_requests_seconds_count{app="gateway",status=~"5.."}[2m]))
+            min(up{job=~".*{{args.service}}.*"})
+    - name: error-rate
+      interval: 30s
+      count: 4
+      successCondition: result[0] < 0.05
+      failureLimit: 1
+      provider:
+        prometheus:
+          address: http://prometheus-k8s.openshift-monitoring:9090
+          query: |
+            sum(rate(http_server_requests_seconds_count{application="{{args.service}}",status=~"5.."}[2m]))
             /
-            sum(rate(http_server_requests_seconds_count{app="gateway"}[2m]))
+            clamp_min(sum(rate(http_server_requests_seconds_count{application="{{args.service}}"}[2m])), 0.001)
 ```
 
-### 4.6 멀티 서비스 Release Train (선택)
+### 7.2 `<svc>-staging` (staging)
+목적: 소크 테스트. p95 레이턴시·에러율·서비스별 특화 메트릭을 10 분 관측.
 
-개별 서비스 독립 프로모션이 기본. 그러나 "gateway 와 event-broadcaster 를 한 묶음으로" 배포할 필요가 생기면:
+```yaml
+spec:
+  args:
+    - {name: service, value: gateway}
+  metrics:
+    - name: p95-latency
+      interval: 1m
+      count: 10
+      successCondition: result[0] < 0.5
+      provider:
+        prometheus:
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(http_server_requests_seconds_bucket{application="{{args.service}}"}[2m])) by (le)
+            )
+    - name: error-rate
+      interval: 1m
+      count: 10
+      successCondition: result[0] < 0.01
+      provider:
+        prometheus:
+          query: |
+            sum(rate(http_server_requests_seconds_count{application="{{args.service}}",status=~"5.."}[2m]))
+            /
+            clamp_min(sum(rate(http_server_requests_seconds_count{application="{{args.service}}"}[2m])), 0.001)
+```
 
-- 공통 Warehouse `handbook-train` 에 두 이미지 + git 을 동시 구독.
-- 공통 Stage `train-dev` 가 이 Warehouse 를 구독 → 개별 서비스 Stage 는 `train-<stage>` 를 upstream 으로.
-- Freight 하나에 두 이미지가 묶여 atomic 승격.
+**서비스별 확장:**
+- event-broadcaster: Kafka consumer lag 메트릭 추가 — `max(kafka_consumer_records_lag{application="event-broadcaster"}) < 100`.
+- persist-*: DB 풀 고갈 감지 — `max(r2dbc_pool_acquired{application="..."} / r2dbc_pool_max) < 0.9`.
 
-## 5. 현재 → Target 이행 순서
+### 7.3 `<svc>-canary` (prod canary)
+목적: Istio subset 기준 canary vs stable 비교. 2 분 × 3 회 = 6 분.
 
-| Phase | 작업 | 리스크 |
-|-------|------|--------|
-| **P0** | Warehouse `strictSemvers` 오동작 수정 (`false` + `allowTags`), prod stage 의 http dispatch 를 argocd-update 로 교체, prod verification 추가 | 낮음. 동일 Freight 재사용으로 즉시 일관성 회복 |
-| **P1** | Warehouse 에 git subscription 추가 | 낮음. 기존 Freight 와 호환 |
-| **P2** | Rendered Manifests 전환 — `env/<stage>` 브랜치 생성, ArgoCD Application repoURL/path 변경, promotionTemplate 을 `git-clone + helm-template + yaml-update + git-commit + git-push + argocd-update` 로 재작성 | 중간. ArgoCD 리소스 경로 변경을 수반. 한 서비스 먼저 파일럿 후 확산 권장 |
-| **P3** | AnalysisTemplate 표준화 (smoke / staging / prod) | 낮음. 실패해도 promotion 취소만 될 뿐 기존 파드 영향 없음 |
-| **P4** | PromotionPolicy 를 Project CR 에 명시 + Kargo RBAC 설정 | 낮음 |
-| **P5** | (선택) 멀티 서비스 release train 도입 | 중간. 서비스간 독립성 약화의 트레이드오프 검토 필요 |
+```yaml
+spec:
+  args:
+    - {name: service, value: gateway}
+  metrics:
+    - name: canary-error-rate
+      interval: 1m
+      count: 3
+      successCondition: result[0] < 0.01
+      failureLimit: 1
+      provider:
+        prometheus:
+          query: |
+            sum(rate(istio_requests_total{
+              destination_service_name="service-gateway",
+              destination_version="canary",
+              response_code=~"5.."
+            }[2m]))
+            /
+            clamp_min(sum(rate(istio_requests_total{
+              destination_service_name="service-gateway",
+              destination_version="canary"
+            }[2m])), 0.001)
+    - name: canary-vs-stable-latency
+      interval: 1m
+      count: 3
+      successCondition: result[0] < 1.2    # canary p95 가 stable p95 의 120% 미만
+      failureLimit: 1
+      provider:
+        prometheus:
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="service-gateway",destination_version="canary"}[2m])) by (le)
+            )
+            /
+            clamp_min(
+              histogram_quantile(0.95,
+                sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="service-gateway",destination_version="stable"}[2m])) by (le)
+              ), 1)
+```
 
-각 Phase 는 단일 서비스(`gateway`) 로 먼저 검증한 뒤 `event-broadcaster` 와 후속 서비스에 복제.
+**AnalysisTemplate 은 Helm 서브차트 `infrastructure/templates/analysis/` 로 배치**, 서비스별 `service` 인자를 주입. 공용 템플릿 1벌 + env 별 override 가 아니라 **env 별 1벌씩 복제** — 네임스페이스 격리 때문에 AnalysisTemplate 도 env 별 존재해야 한다.
 
-## 6. 검토 체크리스트
+## 8. 이행 로드맵
 
-- [ ] 이미지 태깅 컨벤션 합의 (`sha-<short>` vs semver `v*.*.*`)
-- [ ] Rendered Manifests 브랜치 전략 승인 (`env/<stage>` 브랜치 vs main 의 `stages/<stage>/` 폴더)
-- [ ] GitHub dispatch 를 제거해도 CI 가 해야 할 다른 일이 남아 있지 않은지 확인 (예: 외부 알림, 감사 로그). 남아 있으면 Kargo `http` 스텝으로 promote 후 notify 만 호출하도록 분리.
-- [ ] AnalysisTemplate 이 참조할 Prometheus 메트릭 이름이 실제 Actuator export 이름과 일치하는지 (예: Spring Boot 4 의 `http_server_requests_seconds_*` 여부)
-- [ ] `env/prod` 브랜치에 대한 Protected Branch + Kargo SA push 권한 설정 완료 여부
-- [ ] Kargo Project CR 을 누가 소유할지 (chart 에 포함 vs 별도 `kargo-projects/` 리포)
-- [ ] 롤백 플로우: Kargo UI 에서 "이전 Freight 재승격" 동작을 매뉴얼로 기록 (`docs/runbook/rollback.md`)
+| Phase | 작업 | 예상 소요 | 의존성 |
+|-------|------|-----------|--------|
+| P0 | 태그 전략 CI 적용 (jib `sha-*` 태그 push) | 2h | 없음 |
+| P1 | Kargo Project/Warehouse/Stage 리팩토링 (v1 버그 fix + 새 태그 필터) | 4h | P0 |
+| P2 | AnalysisTemplate 3 벌 작성 + staging 실제 동작 검증 | 1d | P1, Prometheus 메트릭 이름 확인 |
+| P3 | Argo Rollouts 설치 + gateway prod 를 Rollout 으로 교체 + Istio subset wiring | 1d | P2 |
+| P4 | ApplicationSet PR Generator + preview CI job + wildcard 인증서 | 1d | P0 |
+| P5 | NetworkPolicy / ResourceQuota / LimitRange 적용 | 0.5d | 네임스페이스 분리 완료 |
+| P6 | event-broadcaster 및 후속 서비스에 동일 패턴 복제 | 서비스당 1h | P3 |
 
-## 7. 오픈 질문
+**P0 → P1 → P2 순서는 엄격**. P3/P4/P5 는 병렬 가능.
 
-1. 이미지 태그가 현재 `latest` 만 쓰이는 것 같은데, CI 가 sha 태그를 동시에 푸시하고 있는가? 아니면 `latest` 를 ImageStream 트리거로 쓰고 있는가?
-2. staging 환경은 dev 와 같은 클러스터인가 별도인가? 같은 클러스터면 namespace 만 분리. 다른 클러스터면 Kargo controller 에 각 ArgoCD instance 자격증명이 필요.
-3. 현재 AnalysisTemplate `gateway-staging` 이 실제로 정의되어 있는가? 템플릿에 참조만 있고 정의 매니페스트는 아직 못 찾았음 — 존재 여부 확인 필요.
-4. prod 만 Kargo 밖에서 dispatch 로 돌아가는 현재 방식에 "CI 재빌드" 같은 의도가 있었는지 — 있다면 그 의도를 Kargo 안으로 어떻게 옮길지.
+## 9. 검토 체크리스트
+- [ ] **staging 유지**: 이 문서는 staging 유지로 작성. 실제로 3 환경 운영 원하시면 OK. 옵션 D 원본(삭제) 원하시면 §2 의 `handbook-staging` 제거 + §4.3 삭제 + §7.2 삭제
+- [ ] **태그 포맷**: `sha-<8char>` vs full 40 자 vs `<8char>-<short-timestamp>` 어느 게 나은지
+- [ ] **태그 push 위치**: 현재 CI 가 jib 로 `latest` 만 푸시 중. `sha-*` 로 전환 OK?
+- [ ] **Prometheus 엔드포인트**: `prometheus-k8s.openshift-monitoring:9090` 이 실제 주소인지, 아니면 별도 `prometheus-stack` 인지
+- [ ] **Spring Boot 4 메트릭 이름**: `http_server_requests_seconds_*` 가 실제 Micrometer Observation 에서도 동일하게 나오는지 (`/actuator/prometheus` 출력 확인)
+- [ ] **Istio VirtualService subset**: 현재 infrastructure 차트의 VirtualService 가 single destination 인지, subset 구조로 되어 있는지 확인 필요. 단순 destination 이면 canary 전 재구성 필요
+- [ ] **Preview infrastructure 공유**: PG schema 분리, Kafka topic prefix 전략 합의 필요
+- [ ] **Wildcard 인증서**: `*.preview.handbook.sayaya.cloud` OpenShift Route + cert-manager 발급 가능한지
+- [ ] **ResourceQuota 값**: 현재 가정치. 실제 사용량 측정 후 조정
+- [ ] **Kargo 설치 주체**: ArgoCD 로 Kargo 자체를 싱크 (operator-of-operator 패턴) vs helm 으로 직접 설치
+- [ ] **Kargo ↔ ArgoCD 인증**: `argocd-update` 스텝이 사용할 ServiceAccount 토큰의 생성/관리 방법
+- [ ] **롤백 런북**: Rollouts abort, Kargo 이전 Freight 재승격, git revert 각각의 경계 문서화 필요
+
+## 10. 현재 차트와의 델타 요약
+
+| 파일 | 변경 방향 |
+|------|-----------|
+| `.github/workflows/*-deploy.yaml` | jib 에 `sha-<8char>` 태그 푸시 추가 |
+| `.github/workflows/*-preview.yaml` (신규) | PR 이벤트로 `pr-<num>-<sha>` 태그 푸시 |
+| `charts/handbook/<svc>/templates/warehouse.yaml` | `allowTags`, `strictSemvers: false` 적용, git subscription 제거 (v1 제안 철회) |
+| `charts/handbook/<svc>/templates/stage.yaml` | prod 단계 `http` 스텝 제거, `argocd-update` 로 통일 |
+| `charts/handbook/<svc>/templates/deployment.yaml` | prod 전용 `Rollout` 렌더 분기 |
+| `charts/handbook/<svc>/templates/service.yaml` | canary service 추가 |
+| `charts/handbook/infrastructure/templates/analysis/*.yaml` (신규) | AnalysisTemplate 3벌 × env |
+| `charts/handbook/templates/application-set.yaml` | preview ApplicationSet 추가 |
+| `charts/handbook/infrastructure/templates/s3/virtual-service.yaml` | subset 기반 canary routing 재구성 |
+| `charts/handbook/templates/namespace.yaml` (신규) | env 별 namespace + NetworkPolicy + ResourceQuota + LimitRange |
+| `.claude/skills/deployment.md` | 전략 확정 시 내용 갱신 |
+
+## 11. 오픈 질문
+1. staging 유지/삭제 최종 결정 (§9 첫 번째 항목)
+2. Preview 에서 PG/Kafka 를 dev 와 공유할지, 완전 독립 in-memory 로 갈지
+3. canary 판정 지표를 Istio 메트릭으로 할지 Spring Actuator 메트릭으로 할지 (Istio 쪽이 trafficRouting 과 정합성 좋지만, JVM 내부 상태 반영은 Actuator 가 더 정확)
+4. Kargo 를 이미 운영 중인지, 이번에 처음 설치하는지
+5. Argo Rollouts 이 이미 설치되어 있는지 (OpenShift GitOps operator 에 포함되는 경우 있음)
 
 ---
 
-이 문서는 제안이며, 4장과 5장을 먼저 검토해 주시고 합의된 Phase 부터 실제 차트에 반영하면 됩니다.
+검토 후 §9 체크리스트 답변 + §11 오픈 질문 답을 주시면 P0 부터 실행 가능한 PR 단위로 쪼개 드리겠습니다.
