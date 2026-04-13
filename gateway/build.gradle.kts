@@ -9,8 +9,6 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
-    implementation(project(":persist-document"))
-    implementation(project(":search-document"))
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")

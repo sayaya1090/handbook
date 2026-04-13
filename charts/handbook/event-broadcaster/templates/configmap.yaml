@@ -12,6 +12,9 @@ data:
       main:
         web-application-type: reactive
       threads.virtual.enabled: true
+      config:
+        import:
+          - classpath:postgresql.yaml
       security:
         authentication:
           header: ${AUTH_HEADER:Authorization}
