@@ -130,3 +130,50 @@ management:
 ### 접속 URL
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000 (admin/admin)
+
+## GitHub Actions Runner 이미지
+
+`charts/handbook-operator/github-actions-runner-set/templates/actions-runner.yaml`는 OpenShift BuildConfig로 러너 이미지를 빌드한다 (UBI10 기반). 업데이트는 항상 **로컬 podman 검증 → yaml 반영** 순서로 한다.
+
+### 업데이트가 필요할 때
+- **러너 버전 올리기**: `RUNNER_VERSION`, `RUNNER_CONTAINER_HOOKS_VERSION`, `HELM_VERSION` `ARG`를 해당 프로젝트의 GitHub 릴리즈 최신 태그로 맞춘다.
+  ```bash
+  curl -sL https://api.github.com/repos/actions/runner/releases/latest | grep tag_name
+  curl -sL https://api.github.com/repos/actions/runner-container-hooks/releases/latest | grep tag_name
+  curl -sL https://api.github.com/repos/helm/helm/releases/latest | grep tag_name
+  ```
+- **UBI 베이스 올리기** (ubi10 → ubi11 등): `FROM registry.access.redhat.com/ubi<N>/ubi-init:latest`. el 메이저가 바뀌면 패키지가 사라지거나 이름이 바뀔 수 있으므로 아래 "패키지 해결 순서"를 따른다.
+- **도구 추가/제거**: dnf 설치 목록을 수정하기 전에 아래 "도구별 주의점" 확인.
+
+### 로컬 검증 (필수, Apple Silicon 기준)
+```bash
+# 1) BuildConfig 안의 dockerfile 블록을 /tmp/runner-build/Dockerfile 로 복사
+# 2) arm64로 빌드 (amd64 에뮬레이션 금지)
+mkdir -p /tmp/runner-build && $EDITOR /tmp/runner-build/Dockerfile
+podman build --arch=arm64 -t handbook-actions-runner:test /tmp/runner-build
+
+# 3) 한국어 로케일 + 주요 도구 스모크 체크
+podman run --rm --user root --arch=arm64 handbook-actions-runner:test bash -c '
+  LANG=ko_KR.UTF-8 date &&
+  helm version --short &&
+  for c in docker gh oc kubectl aws zsh openssl git git-lfs jq; do command -v $c; done &&
+  ls /home/runner/run.sh /home/runner/k8s/index.js'
+```
+- **반드시 `--arch=arm64`**: Apple Silicon에서 `--arch=amd64`로 UBI를 빌드하면 qemu 환경의 OpenSSL provider 서명 검증이 깨져 `cdn-ubi.redhat.com` TLS 실패가 난다.
+- `oc`는 mirror.openshift.com에 amd64 바이너리만 있어 arm64 실행 시 `rosetta error`가 나지만, 실제 OpenShift(amd64) 빌드에선 정상이므로 무시한다.
+- 로컬 검증 통과 후 yaml의 dockerfile 블록에 변경사항을 그대로 복사한다 (들여쓰기가 `|` 블록이라 rendering 주의).
+
+### 빌드 실패 시 패키지 해결 순서
+`dnf install ... No match for argument: <pkg>`가 뜨면 다음 순서로 조치한다.
+1. **대체 이름 검색**: 베이스 이미지에서 `dnf --enablerepo='*' list --available '<pattern>*'`. 예: `liberation-sans-fonts` 제거 → `dejavu-sans-fonts`.
+2. **리포 추가**: UBI/CRB에 없으면 EPEL10(`epel-release-latest-10.noarch.rpm`). CRB는 `/usr/bin/crb enable`로 활성화 (이미 스크립트에 포함).
+3. **제거 가능성 판단**: 러너 구동에 진짜 필요한 라이브러리는 `libicu openssl krb5-libs zlib`뿐. 나머지는 워크플로 요구사항에 따라 유지/삭제.
+
+### 도구별 주의점
+- **docker**: runner-container-hooks가 job 컨테이너를 k8s API로 스폰하므로 **daemon 불필요**. `docker-ce-cli`만 쓴다. daemon을 다시 넣으려면 UBI에 없는 `iptables-nft`를 별도로 해결해야 한다.
+- **Chrome/Chromium**: Playwright가 `npx playwright install`로 자체 브라우저를 받으므로 **시스템 브라우저 설치 금지**. 워크플로가 시스템 Chrome을 직접 호출하는 경우에만 예외.
+- **한국어 로케일**: UBI10부터는 `glibc-langpack-ko`가 개별 패키지로 없다. `glibc-all-langpacks`(~200MB) 대신 `glibc-langpack-en` + `glibc-locale-source`를 설치한 뒤 `localedef -c -i ko_KR -f UTF-8 ko_KR.UTF-8`로 ko_KR만 컴파일한다 (로케일 디렉토리 ~8MB로 감축).
+- **`./bin/installdependencies.sh` 호출 금지**: 러너 tarball에 딸려오는 이 스크립트는 `lttng-ust` 등 el10에 없는 패키지를 강제로 깔려다 실패한다. 위의 필수 라이브러리 4개만 우리가 직접 설치하면 runner는 정상 기동한다.
+- **helm 설치**: `get-helm-3` 스크립트는 `get.helm.sh`에 대한 실패 시 재시도 로직이 없어 빌드 네트워크 플레이키에 취약하다. **GitHub/CDN에서 pinned tarball을 curl `--retry`로 직접 받는다** (`HELM_VERSION` ARG로 고정).
+- **pip**: el10+ Python은 PEP 668 환경이라 `pip3 install` 에 `--break-system-packages` 필수.
+- **GitHub 릴리즈 CDN**: `runner-container-hooks` zip 등에 간헐적 504가 뜨므로 tarball/zip 다운로드 curl에는 `--retry 8 --retry-delay 10 --retry-all-errors` 유지.

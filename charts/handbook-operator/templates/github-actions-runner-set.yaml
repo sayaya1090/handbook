@@ -29,7 +29,7 @@ spec:
     targetRevision: HEAD
     helm:
       values: |
-        ubi9:
+        ubi10:
           runnerScaleSetName: {{ .Release.Namespace }}
           githubConfigUrl: https://github.com/sayaya1090/handbook
           githubConfigSecret: github-secret

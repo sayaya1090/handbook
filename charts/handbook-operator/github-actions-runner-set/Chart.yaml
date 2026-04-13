@@ -8,4 +8,4 @@ dependencies:
   - name: gha-runner-scale-set
     version: "*"
     repository: "oci://ghcr.io/actions/actions-runner-controller-charts"
-    alias: ubi9
+    alias: ubi10

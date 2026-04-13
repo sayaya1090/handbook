@@ -1,4 +1,4 @@
-{{- range .Values.ubi9.template.spec.volumes }}
+{{- range .Values.ubi10.template.spec.volumes }}
   {{- if eq .name "cache" }}
 kind: PersistentVolumeClaim
 apiVersion: v1
