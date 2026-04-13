@@ -54,6 +54,11 @@ spec:
           env:
             - name: TZ
               value: Asia/Seoul
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: handbook-jwt
+                  key: jwt-secret
           resources:
             limits:
               cpu: '2'
