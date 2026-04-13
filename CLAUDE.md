@@ -44,6 +44,8 @@
 - `@Version` 있는 엔티티는 `fromDomain()`에서 rev를 반드시 전달
 - `switchIfEmpty` 인자는 `Mono.defer { }` 감싸기 (eager evaluation 방지)
 - 이벤트 구현 클래스에 `@JsonProperty("event_type")` 명시
+- **Spring Boot 엔트리포인트는 top-level `fun main` 패턴만 사용.** `class Application { companion object { @JvmStatic fun main } }` 금지 — `Application` + `Application$Companion` 둘 다에 main이 생겨 jib `MainClassInferenceException` 발생.
+- **다른 서비스가 project dependency로 참조하는 Spring Boot 모듈에는 `tasks.jar { enabled = false }` 금지.** bootJar만 만들면 library 소비자가 plain jar variant를 못 받아 jib가 `Obtaining project build output files failed` 로 실패. Spring Boot 3.x 기본 동작(bootJar + `-plain.jar` 공존)에 맡긴다.
 
 ### Java (GWT 프론트엔드)
 - **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.claude/skills/sayaya-ui.md` 참조.
@@ -92,5 +94,8 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | GWT `ReferenceError` | `@JsOverlay` 재귀 호출 | static 헬퍼로 우회 |
 | GWT 컴파일 실패 (record) | Java record를 GWT 모듈에서 사용 | GWT 2.13.0은 record 미지원, 일반 class 사용 |
 | MockK slot 다중 캡처 | 같은 mock에서 여러 verify | 각 Given에서 별도 mock 생성 |
+| jib `Obtaining project build output files failed` | 의존 서비스 모듈에 `tasks.jar { enabled = false }` → 라이브러리 variant 없음 | 해당 모듈에서 `tasks.jar` 비활성화 라인 제거 (Spring Boot 기본 동작 복원) |
+| jib `MainClassInferenceException: Multiple valid main classes` | Kotlin `companion object` + `@JvmStatic fun main` → `Application`과 `Application$Companion` 둘 다 main 후보 | top-level `fun main { runApplication<Application>(*args) }` 패턴으로 변경 |
+| CI `gradle: command not found` | `gradle/actions/setup-gradle@v5`는 gradle CLI를 PATH에 깔지 않음 | 워크플로에서 `./gradlew` 사용 (wrapper 호출) |
 
 상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.

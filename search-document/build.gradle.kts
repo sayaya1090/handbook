@@ -22,4 +22,3 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }
-tasks.jar { enabled = false }
