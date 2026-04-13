@@ -79,12 +79,21 @@ spec:
             - name: observability-config
               mountPath: /app/resources/observability.yaml
               subPath: observability.yaml
+          # 부팅 완료까지 최대 150초 (30 × 5s) 허용. 그 전에는 liveness/readiness 가 평가되지 않는다.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
               scheme: HTTP
-            timeoutSeconds: 1
+            timeoutSeconds: 3
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
@@ -93,7 +102,7 @@ spec:
               path: /actuator/health/readiness
               port: 8080
               scheme: HTTP
-            timeoutSeconds: 1
+            timeoutSeconds: 3
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
