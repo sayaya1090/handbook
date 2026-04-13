@@ -6,9 +6,10 @@ metadata:
   labels:
     app.kubernetes.io/instance: gateway
 data:
+  # jar 내부 src/main/resources/application.yml 을 기반으로 하고 이 파일은 override 만 담는다.
+  # Deployment 가 SPRING_CONFIG_ADDITIONAL_LOCATION 으로 이 파일을 가리켜 merge 된다.
   application.yaml: |
     spring:
-      application.name: gateway
       main:
         web-application-type: reactive
       threads.virtual.enabled: true
@@ -24,11 +25,9 @@ data:
         health:
           probes:
             enabled: true
-    server:
-      port: 8080
+    # gateway MenuService 가 /menu 를 집계할 대상 서비스 목록
     services:
       - name: login
       - name: search-type
-      - name: search-workspace
-      - name: search-user
       - name: search-document
+      - name: persist-workspace

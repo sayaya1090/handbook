@@ -97,5 +97,6 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | jib `Obtaining project build output files failed` | 의존 서비스 모듈에 `tasks.jar { enabled = false }` → 라이브러리 variant 없음 | 해당 모듈에서 `tasks.jar` 비활성화 라인 제거 (Spring Boot 기본 동작 복원) |
 | jib `MainClassInferenceException: Multiple valid main classes` | Kotlin `companion object` + `@JvmStatic fun main` → `Application`과 `Application$Companion` 둘 다 main 후보 | top-level `fun main { runApplication<Application>(*args) }` 패턴으로 변경 |
 | CI `gradle: command not found` | `gradle/actions/setup-gradle@v5`는 gradle CLI를 PATH에 깔지 않음 | 워크플로에서 `./gradlew` 사용 (wrapper 호출) |
+| 배포 후 gateway routes 가 전부 사라지거나 kafka 가 localhost 로 접속 | ConfigMap 을 `/app/resources/application.yaml` 에 subPath 마운트해 jar 내부 application.yml 을 override 로 **대체** | ConfigMap 은 `/app/config/application.yaml` 에 마운트하고 env `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/application.yaml` 로 merge. ConfigMap 에는 override 만, 코드가 요구하는 공통 값(routes, kafka brokers 등)은 jar 에 둔다 |
 
 상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.

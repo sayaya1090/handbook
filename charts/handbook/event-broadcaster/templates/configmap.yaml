@@ -6,30 +6,23 @@ metadata:
   labels:
     app.kubernetes.io/instance: event-broadcaster
 data:
+  # jar 내부 src/main/resources/application.yml 에 merge 되는 override 파일.
+  # Deployment 가 SPRING_CONFIG_ADDITIONAL_LOCATION 으로 이 파일을 가리킨다.
+  # event-broadcaster 는 R2DBC 의존이 없어 PostgreSQL import 는 넣지 않는다.
   application.yaml: |
     spring:
-      application.name: event-broadcaster
       main:
         web-application-type: reactive
       threads.virtual.enabled: true
       config:
         import:
-          - classpath:postgresql.yaml
+          - classpath:observability.yaml
       security:
         authentication:
           header: ${AUTH_HEADER:Authorization}
           jwt-secret: ${JWT_SECRET}
-      cloud:
-        function:
-          definition: event
-        stream:
-          bindings:
-            event-in-0:
-              destination: event
     management:
       endpoint:
         health:
           probes:
             enabled: true
-    server:
-      port: 8080

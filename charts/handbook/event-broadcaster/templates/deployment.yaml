@@ -5,7 +5,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/event-broadcaster'
-    configmap.reloader.stakater.com/reload: "event-broadcaster,postgresql-ro,observability,authentication,kafka"
+    configmap.reloader.stakater.com/reload: "event-broadcaster,observability"
   name: event-broadcaster
   namespace: {{ .Release.Namespace }}
   finalizers:
@@ -59,6 +59,11 @@ spec:
                 secretKeyRef:
                   name: handbook-jwt
                   key: jwt-secret
+            # jar 내부 application.yml 에 이 파일을 덮어쓰기로 merge
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: "file:/app/config/application.yaml"
+            - name: KAFKA_BROKERS
+              value: "kafka-bootstrap:9092"
           resources:
             limits:
               cpu: '2'
@@ -67,8 +72,9 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
+            # jar 내부 application.yml 을 가리지 않는 별도 경로에 마운트 → SPRING_CONFIG_ADDITIONAL_LOCATION 으로 merge
             - name: config
-              mountPath: /app/resources/application.yaml
+              mountPath: /app/config/application.yaml
               subPath: application.yaml
             - name: observability-config
               mountPath: /app/resources/observability.yaml
