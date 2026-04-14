@@ -1,0 +1,51 @@
+name: 쉘 UI 모듈 빌드
+on:
+  push:
+    paths:
+      - shell-ui/**
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: handbook-operator
+    env:
+      SUBMODULE: shell-ui
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Force LFS pull
+        run: |
+          git lfs pull
+          git lfs ls-files
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build & Test
+        run: ./gradlew $SUBMODULE:build
+      - name: Pack static assets
+        run: |
+          mkdir -p dist/static
+          unzip -o $SUBMODULE/build/libs/*.war "**/*.js" "**/*.json" "**/*.css" "*.html" -d dist/static
+          mv dist/static/shell dist/static/js/shell
+          sed -i 's|"shell/shell.nocache.js"|"js/shell/shell.nocache.js"|g' dist/static/shell.html
+          tar -czf shell-ui.tar.gz -C dist/static .
+      # Kargo Warehouse 가 git tag 패턴 `shell-ui-*` 로 watch → Stage promotion 이
+      # release asset 을 다운로드해서 vars.bucket 에 sync.
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+        run: |
+          TAG="shell-ui-${GITHUB_SHA::7}"
+          gh release create "$TAG" \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "shell-ui ${GITHUB_SHA::7}" \
+            --notes "shell-ui build for commit ${GITHUB_SHA}" \
+            shell-ui.tar.gz

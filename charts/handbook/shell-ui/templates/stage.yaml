@@ -1,0 +1,56 @@
+{{- if .Values.stage.name }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: shell-ui-{{ .Values.stage.name }}
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.stage.color }}
+spec:
+  # 환경별 차이는 Kargo 변수로 선언. argocd-update 가 helm parameter 로 주입.
+  vars:
+    - name: bucket
+      value: handbook-{{ .Values.stage.name }}
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: shell-ui
+      sources:
+        {{- if .Values.stage.prev }}
+        direct: false
+        stages:
+          - shell-ui-{{ .Values.stage.prev }}
+        {{- else }}
+        direct: true
+        {{- end }}
+  promotionTemplate:
+    spec:
+      steps:
+        # 백엔드 dev/staging 과 동일 패턴 — argocd-update 가 ArgoCD Application 의
+        # helm parameter 를 갱신해 freight tag 와 bucket 을 chart 에 주입한다.
+        # ArgoCD reconcile 시 sync-job.yaml 이 새 freight 마다 새 Job 으로 생성되어
+        # GitHub release 다운로드 + S3 sync 를 수행한다.
+        - uses: argocd-update
+          as: sync
+          config:
+            apps:
+              - name: handbook-shell-ui-{{ .Values.stage.name }}
+                sources:
+                  - repoURL: https://github.com/sayaya1090/handbook.git
+                    helm:
+                      # Kargo argocd-update step 의 helm 블록은 스키마상 `images` 배열만 허용.
+                      # 이미지 업데이트 전용 필드지만 key 에 임의 helm parameter path 를 쓸 수 있어
+                      # 이를 이용해 freight 정보와 stage 변수를 chart 에 주입한다.
+                      # commit 필드는 Kargo 표현식의 Go struct 필드명(ID 대문자)으로만 접근 가능.
+                      images:
+                        - key: freight.commit
+                          value: {{ printf `${{ commitFrom("https://github.com/sayaya1090/handbook.git").ID }}` }}
+                        - key: bucket
+                          value: {{ printf `${{ vars.bucket }}` }}
+  {{- if eq .Values.stage.name "staging" }}
+  verification:
+    analysisTemplates:
+    - name: shell-ui-staging
+  {{- end }}
+{{- end }}

@@ -36,3 +36,8 @@ services:
     stages:
       - dev
       - prod
+  - name: shell-ui
+    stages:
+      - dev
+      - staging
+      - prod
