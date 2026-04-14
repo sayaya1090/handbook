@@ -1,0 +1,36 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: combined
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.cluster.name }}
+spec:
+  replicas: {{ .Values.kafka.cluster.replicas }}
+  roles:
+    - controller
+    - broker
+  template:
+    pod:
+      metadata:
+        # Ambient mesh 에서 ztunnel 이 Kafka 자체 mTLS(9090 controller listener)를
+        # 또 감싸면서 TLS 핸드셰이크가 깨지므로 데이터플레인에서 제외한다.
+        labels:
+          istio.io/dataplane-mode: none
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: {{ .Values.kafka.persistence.size | quote }}
+        {{- with .Values.kafka.persistence.storageClass }}
+        class: {{ . | quote }}
+        {{- end }}
+        deleteClaim: false
+        kraftMetadata: shared
+  resources:
+    requests:
+      cpu: {{ .Values.kafka.resources.requests.cpu | quote }}
+      memory: {{ .Values.kafka.resources.requests.memory | quote }}
+    limits:
+      cpu: {{ .Values.kafka.resources.limits.cpu | quote }}
+      memory: {{ .Values.kafka.resources.limits.memory | quote }}

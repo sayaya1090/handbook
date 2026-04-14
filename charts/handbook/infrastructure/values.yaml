@@ -12,3 +12,35 @@ s3:
   bucket:
     name: ''
     maxSize: 10G
+kafka:
+  cluster:
+    name: handbook
+    replicas: 3
+  version: '4.0.0'
+  metadataVersion: '4.0'
+  persistence:
+    size: 10Gi
+    storageClass: ''
+  resources:
+    requests:
+      cpu: '500m'
+      memory: '2Gi'
+    limits:
+      cpu: '2'
+      memory: '4Gi'
+  config:
+    replicationFactor: 3
+    minInSyncReplicas: 2
+  topics:
+    - name: handbook-events
+      partitions: 3
+      replicas: 3
+      config:
+        retention.ms: 604800000  # 7d
+        cleanup.policy: delete
+    - name: handbook-events-dlq
+      partitions: 3
+      replicas: 3
+      config:
+        retention.ms: 1209600000  # 14d
+        cleanup.policy: delete

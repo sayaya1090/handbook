@@ -63,7 +63,7 @@ spec:
             - name: SPRING_CONFIG_ADDITIONAL_LOCATION
               value: "file:/app/config/application.yaml"
             - name: KAFKA_BROKERS
-              value: "kafka-bootstrap:9092"
+              value: "handbook-kafka-bootstrap:9092"
           resources:
             limits:
               cpu: '2'
