@@ -155,16 +155,17 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
   - `s3/` · `observability/` — 기존 공용 인프라
 - **handbook-operator** — github-actions-runner-set (CI/CD)
 
-### 공통 Spring config fragment 주입 패턴
+### Spring 설정 주입 모델
 
-DB / Kafka / JWT 같이 여러 서비스가 공통으로 쓰는 Spring 설정은 `infrastructure/` 서브차트가 소유하는 ConfigMap 에 **fragment 단위** 로 선언된다. 각 서비스는 필요한 fragment 만 골라 쓴다:
+운영 환경의 모든 Spring 설정은 ConfigMap 이 소유한다. jar 의 `src/main/resources/application.yml` 은 로컬 IDE 실행용 default 로만 사용한다.
 
-1. 서비스의 jar 내부 `application.yml` 에서 `spring.config.import: [classpath:postgresql.yaml, classpath:kafka.yaml, ...]` 로 가져올 fragment 를 선언
-2. Deployment 는 해당 ConfigMap 을 `/app/resources/<name>.yaml` 경로에 `subPath` 로 마운트
+- **서비스 ConfigMap** 의 `application.yml` 키가 jar 의 동명 파일을 **파일 단위로 overwrite** 한다 (`/app/resources/application.yml` 에 subPath 마운트). 머지가 아니므로 jar 와 중복되더라도 운영에 필요한 모든 설정(application.name, routes, cloud.stream bindings, kafka producer 등)을 서비스 ConfigMap 안에 다 적는다.
+- `SPRING_CONFIG_ADDITIONAL_LOCATION` 은 사용하지 않는다 — 머지 우선순위가 모호해진다.
+- DB / Kafka / JWT / observability 처럼 여러 서비스가 공통으로 쓰는 설정은 `infrastructure/` 서브차트의 **fragment ConfigMap** 으로 선언되고, 각 서비스 ConfigMap 의 `spring.config.import: [classpath:observability.yaml, ...]` 로 import 된다. fragment ConfigMap 도 `/app/resources/<name>.yaml` 에 subPath 마운트되어 classpath 에 노출.
 
 | Fragment ConfigMap | classpath 리소스 | 소유 리소스 | 대상 서비스 |
 |--------------------|-----------------|-------------|-------------|
 | `handbook-postgresql` | `classpath:postgresql.yaml` | `infrastructure/templates/cloudnative-pg/postgresql.yaml` | persist-\*, search-\*, login |
 | `handbook-kafka` | `classpath:kafka.yaml` | `infrastructure/templates/kafka/kafka.yaml` | persist-\*, event-broadcaster, assistant |
 | `handbook-authentication` | `classpath:authentication.yaml` | `infrastructure/templates/authentication/authentication.yaml` | gateway, event-broadcaster, persist-\*, search-\* |
-| `observability` | `classpath:observability.yaml` | `infrastructure/templates/observability/` | 모든 Spring 서비스 |
+| `observability` | `classpath:observability.yaml` | `infrastructure/templates/observability/configmap.yaml` | 모든 Spring 서비스 (management/health probes/metrics tags/prometheus exposure/console 로깅 패턴 — correlationId 포함) |

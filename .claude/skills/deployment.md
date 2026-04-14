@@ -61,11 +61,17 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 | 파일 | 역할 |
 |------|------|
-| `templates/configmap.yaml` | **jar 내부 `src/main/resources/application.yml` 에 merge 되는 override 파일**. routes/kafka 같은 "코드가 요구하는 구성"은 jar 에 둔 채, 이 ConfigMap 에는 클러스터에 종속적인 값(`spring.security.authentication.header/jwt-secret`, `spring.config.import`, `management.endpoint.health.probes.enabled`, gateway 의 `services:` 리스트 등)만 넣는다. `application.name` / `server.port` 같이 jar 에 이미 정의된 값은 중복하지 않는다 |
-| `templates/deployment.yaml` | Deployment. **공통 환경변수**: `TZ=Asia/Seoul`, `JWT_SECRET` (secret `handbook-jwt` 의 `jwt-secret`), `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/application.yaml` (jar 기본값 위에 ConfigMap override 를 merge). 서비스별 추가 env: gateway 는 `LOGIN_URI`/`EVENT_BROADCASTER_URI`/… + `CORS_ALLOWED_ORIGINS`, event-broadcaster 는 `KAFKA_BROKERS`. **볼륨 마운트**: ConfigMap 을 `/app/config/application.yaml` (NOT `/app/resources`) 에 subPath 마운트 — jar classpath 의 application.yml 을 덮지 않게 분리. observability ConfigMap 은 `/app/resources/observability.yaml` 에 마운트해 `classpath:observability.yaml` 로 import 된다. **Reloader**: `configmap.reloader.stakater.com/reload: "<service>,observability"`. **프로브**: `/actuator/health/{liveness,readiness}` |
+| `templates/configmap.yaml` | **jar 의 `application.yml` 을 파일 단위로 대체하는 운영 설정**. Deployment 가 이 ConfigMap 의 `application.yml` 키를 `/app/resources/application.yml` 에 subPath 로 마운트하여 jar 의 동명 파일을 덮어쓴다. **머지(SPRING_CONFIG_ADDITIONAL_LOCATION)는 사용하지 않는다** — 운영 환경에서 필요한 모든 설정(application.name, routes, cloud.stream bindings, kafka producer, server.port, cors 등)을 jar 와 중복되더라도 이 파일 안에 다 넣는다. jar 의 application.yml 은 로컬 IDE 실행용 default 로만 사용. 공통 단편(observability, postgresql, kafka, authentication)은 `spring.config.import: [classpath:observability.yaml, ...]` 로 fragment ConfigMap 에서 가져온다 |
+| `templates/deployment.yaml` | Deployment. **공통 환경변수**: `TZ=Asia/Seoul`, `JWT_SECRET` (secret `handbook-jwt`). `SPRING_CONFIG_ADDITIONAL_LOCATION` 을 절대 사용하지 않는다 — 머지 우선순위가 모호해진다. 서비스별 추가 env 는 placeholder(`${KAFKA_BROKERS}` 등)를 채우는 값만. **볼륨 마운트**: 서비스 ConfigMap 을 `/app/resources/application.yml` 에 subPath 마운트(jar classpath 파일 덮어쓰기). 공통 fragment ConfigMap(observability / handbook-authentication / handbook-kafka 등)은 `/app/resources/<name>.yaml` 에 subPath 마운트하여 `classpath:<name>.yaml` 로 import 되게 한다. **Reloader**: 마운트한 모든 ConfigMap 이름을 `configmap.reloader.stakater.com/reload` 에 나열. **프로브**: `/actuator/health/{liveness,readiness}` |
 | `templates/service.yaml` | ClusterIP Service (포트 8080) |
 | `templates/stage.yaml` | **Kargo `Stage`** — 서비스 × 스테이지 promotion 파이프라인 |
 | `templates/warehouse.yaml` | **Kargo `Warehouse`** — dev 스테이지의 첫 서비스에만 생성, ImageStream 을 1분 간격으로 감시해 새 빌드 Freight 생성 |
+
+### Spring 설정 주입 모델 (요약)
+- **운영 설정의 단일 진리는 ConfigMap.** jar 의 `application.yml` 은 로컬 dev fallback.
+- **머지 안 함, 파일 단위 overwrite.** `/app/resources/application.yml` 위치에 subPath 마운트해 jar 의 동명 파일을 통째로 대체. SPRING_CONFIG_ADDITIONAL_LOCATION 금지.
+- **공통 fragment** 는 `infrastructure/` 서브차트가 소유하고, `spring.config.import: classpath:<name>.yaml` 로 끌어온다. fragment 는 `/app/resources/<name>.yaml` 에 subPath 마운트.
+- **fragment 카탈로그**: `observability` (management/metrics/logging), `handbook-postgresql` (r2dbc), `handbook-kafka` (spring.kafka.bootstrap-servers), `handbook-authentication` (security.authentication).
 
 ### Kargo Promotion 파이프라인
 - **Warehouse**: OpenShift ImageStream 변화를 감지 → Freight 발행
@@ -78,10 +84,14 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 |------|------|
 | `cloudnative-pg/cluster.yaml` | CloudNativePG `Cluster` — 3 인스턴스 PostgreSQL. `values.stages.<stage>.database` 가 비어 있지 않으면 외부 PG IP 로 프록시, 비어 있으면 자체 운영. Barman S3 백업 설정 (스케줄 조건부). 복구 시 bootstrap 모드 전환 |
 | `cloudnative-pg/backup.yaml` | `ScheduledBackup` — `backup.schedule` 이 빈 문자열이면 생성 안 함 |
-| `cloudnative-pg/configmap.yaml` · `service.yaml` | PG 접속 정보 노출 (`postgresql-ro.yaml` 등 — 서비스 configmap 의 `spring.config.import` 타깃) |
+| `cloudnative-pg/configmap.yaml` · `service.yaml` | PG 접속 정보 노출 |
+| `cloudnative-pg/postgresql.yaml` | **`handbook-postgresql` ConfigMap** — `classpath:postgresql.yaml` fragment. r2dbc URL/credential 을 env(`DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USERNAME`/`DB_PASSWORD`) placeholder 로 노출 |
+| `kafka/cluster.yaml` · `node-pool.yaml` · `topics.yaml` | **Strimzi KRaft Kafka**. `Kafka` + `KafkaNodePool` (combined controller+broker, ambient mesh 제외 라벨) + `KafkaTopic` (handbook-events / handbook-events-dlq) |
+| `kafka/kafka.yaml` | **`handbook-kafka` ConfigMap** — `classpath:kafka.yaml` fragment. `spring.kafka.bootstrap-servers: ${KAFKA_BROKERS}` |
+| `authentication/authentication.yaml` | **`handbook-authentication` ConfigMap** — `classpath:authentication.yaml` fragment. JWT 검증 설정. `JWT_SECRET` env 와 짝 |
 | `s3/bucket.yaml` | Ceph `ObjectBucketClaim` — `bucket.maxSize` 만큼 할당 |
 | `s3/service-entry.yaml` + `virtual-service.yaml` | Istio `ServiceEntry` (외부 RGW) + `VirtualService` (메시 내부 라우팅) — S3 호출을 Istio 게이트웨이로 투명 프록시 |
-| `observability/configmap.yaml` | Spring Boot Actuator / Prometheus exposure 공통 설정 (`spring.config.import: classpath:observability.yaml` 로 각 서비스가 참조) |
+| `observability/configmap.yaml` | **`observability` ConfigMap** — `classpath:observability.yaml` fragment. Actuator/Prometheus exposure, health probes, metrics tags, console 로깅 패턴(correlationId 포함) 등 모든 서비스 공통 management/logging 설정 |
 | `observability/pod-monitor.yaml` | `PodMonitor` — Istio 사이드카 메트릭 스크래이프 |
 
 ## 외부 시크릿 일람 (Git 에 저장하지 않음)
@@ -94,10 +104,13 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 ## 새 서비스를 추가할 때
 1. `charts/handbook/<service>/` 디렉토리 생성. gateway 또는 event-broadcaster 템플릿을 복사 → `configmap`, `deployment`, `service`, `stage`, `warehouse`, `Chart.yaml`, `values.yaml` 수정.
 2. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, stages:[...]}` 추가. ApplicationSet 이 자동으로 Application 을 생성한다.
-3. **ConfigMap 은 override 전용**으로 유지. `configmap.yaml` 의 `application.yaml` 에는 `spring.security.authentication.jwt-secret: ${JWT_SECRET}` + `spring.config.import: [classpath:observability.yaml]` + `management.endpoint.health.probes.enabled: true` + 서비스 고유 override 만 넣는다. **jar 가 이미 가지고 있는 값(routes, kafka brokers, application.name, server.port 등)을 복사하지 말 것** — additional-location 으로 자동 merge 된다.
-4. `deployment.yaml` 의 env 에 `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/application.yaml` 와 `JWT_SECRET` 을 넣고, 서비스가 요구하는 외부 URL/브로커(예: `KAFKA_BROKERS`, `*_URI`, `CORS_ALLOWED_ORIGINS`) 를 **env 로만** 주입한다. `KAFKA_BROKERS` 같은 값을 ConfigMap 에 하드코딩하지 말 것.
-5. **볼륨 마운트 경로는 `/app/config/application.yaml`** (NOT `/app/resources/application.yaml`). 후자는 jar classpath 와 겹쳐 jar 내부 application.yml 을 덮어버리므로 routes/kafka 설정이 사라진다. 과거 해당 실수로 gateway routes 전체가 사라졌던 이력 있음.
-6. reloader 애노테이션에 새 ConfigMap 이름 + `observability` 를 포함시킨다. `postgresql-ro` 같이 실제로 import 하지 않는 이름은 넣지 말 것.
+3. **ConfigMap 의 `application.yml` 키에 운영 설정을 다 적는다**. jar 의 `src/main/resources/application.yml` 에 있는 값(application.name, routes, cloud.stream bindings, kafka producer, server.port, cors 등)을 그대로 옮겨 적는다. **머지가 아닌 파일 단위 overwrite** 이므로 jar 와 중복돼도 OK. 공통 단편은 `spring.config.import: [classpath:observability.yaml, classpath:authentication.yaml, classpath:kafka.yaml, classpath:postgresql.yaml]` 로 필요한 것만 가져온다.
+4. `deployment.yaml`:
+   - **env 는 placeholder 채우는 값만**. `JWT_SECRET` (Secret), `KAFKA_BROKERS` 등. **`SPRING_CONFIG_ADDITIONAL_LOCATION` 절대 금지** — 머지 우선순위가 모호해진다.
+   - 서비스 ConfigMap 을 `/app/resources/application.yml` 에 subPath 마운트 (jar 의 동명 파일을 file-level overwrite).
+   - 사용하는 fragment ConfigMap(observability + 필요한 것만)을 각각 `/app/resources/<name>.yaml` 에 subPath 마운트.
+5. reloader 애노테이션 `configmap.reloader.stakater.com/reload` 에 마운트한 모든 ConfigMap 이름을 나열 (`<service>,observability,handbook-authentication,handbook-kafka` 식).
+6. 로컬 IDE 에서 jar 를 직접 실행할 때는 jar 의 `application.yml` 이 default 로 로드된다 — 별도 profile 활성화 불필요.
 7. 새 서비스의 gradle 모듈이 다른 서비스 모듈을 `implementation(project(":x"))` 로 참조하지 않는지 확인. 참조 시 그쪽의 `@Configuration` 이 딸려 올라와 Bean 충돌이 난다 (CLAUDE.md 디버깅 표 참조).
 
 ## 운영 명령 치트시트
