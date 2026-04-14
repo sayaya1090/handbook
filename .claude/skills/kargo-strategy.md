@@ -3,14 +3,15 @@
 > 상태: **제안 / 검토 대기**. v1 (과설계) 대체. 사용자 확정 사항: 단일 클러스터, 3 환경(dev/staging/prod), 태그 전략 TBD, AnalysisTemplate 신규 작성 필요, 옵션 D(Preview + Canary) 방향.
 >
 > **환경 용도 (확정)**:
-> - **dev** — **기능 테스트 환경**. 서비스별 독립. Kargo 가 배포 후 Argo Workflows 로 Playwright E2E job 을 실행하고, 통과해야 staging 으로 승격.
-> - **staging** — **부하 테스트 환경**. 서비스별 독립. k6-operator 로 TestRun 을 실행하고 부하 중 Prometheus 메트릭 + k6 threshold 를 모두 만족해야 prod release train 후보가 됨.
-> - **prod** — **Release Train (번들 릴리즈)**. 모든 서비스의 staging-통과 Freight 를 하나의 `release-prod` Stage 가 모아서 atomic 으로 승격. 실사용자 트래픽은 Argo Rollouts canary 로 점진 확장.
+> - **dev** — **기능 테스트 환경**. **서비스별 독립**. Kargo 가 배포 후 Argo Workflows 로 Playwright E2E job 을 실행하고, 통과해야 release-staging 승격 후보가 됨.
+> - **release-staging** — **통합 부하 테스트 환경 (번들)**. 모든 서비스의 dev-통과 Freight 를 하나의 `release-staging` Stage 가 모아 atomic 으로 배포. k6-operator 가 번들 전체를 대상으로 integration load test 실행. 통과 시 prod 후보.
+> - **release-prod** — **Release Train 배포**. `release-staging` 이 통과한 번들을 그대로 prod 로 승격. 각 서비스는 Argo Rollouts canary 로 점진 확장.
 >
 > **승격 모델**:
-> - dev → staging → prod 까지 **서비스별 독립 Stage** 유지 (`<svc>-dev`, `<svc>-staging`)
-> - 최종 prod 는 **단일 `release-prod` Stage** 가 모든 `<svc>-staging` 을 upstream 으로 모아 한 번에 승격
-> - 긴급 핫픽스가 필요하면 `<svc>-hotfix-prod` 보조 경로로 우회 (§4.5)
+> - **dev 만 서비스별 독립 Stage** (`<svc>-dev`) — 기능 테스트의 개별 피드백 유지
+> - **staging 부터 번들** — `release-staging` 하나가 모든 Warehouse 를 구독하여 cross-service 회귀를 integration load test 로 검증
+> - **prod 도 번들** — `release-prod` 이 `release-staging` 을 upstream 으로 구독 (동일 digest 그대로 전진)
+> - 긴급 핫픽스 경로는 §4.5 (선택)
 
 ## 1. 큰 그림
 
@@ -33,9 +34,9 @@
 
 | 네임스페이스 | 용도 | 비고 |
 |--------------|------|------|
-| `handbook-dev` | dev 환경 | Kargo 관리 |
-| `handbook-staging` | staging 환경 | Kargo 관리 |
-| `handbook-prod` | prod 환경 | Kargo + Argo Rollouts |
+| `handbook-dev` | dev 환경 (서비스별 독립) | Kargo 관리 |
+| `handbook-staging` | release-staging 번들 배포 대상 | Kargo 가 번들을 여기에 한 번에 배포, k6 가 여기에 부하 |
+| `handbook-prod` | prod 환경 (번들) | Kargo + Argo Rollouts |
 | `handbook-preview-pr-<N>` | PR 별 ephemeral | ApplicationSet 자동 생성·삭제 |
 | `kargo` | Kargo controller | 신규 설치 |
 | `argocd` | ArgoCD | 기존 |
@@ -160,19 +161,25 @@ promotionPolicies:
     autoPromotionEnabled: true   # Warehouse → dev 자동
 ```
 
-### 4.3 Stage: staging (auto 검증 통과 시) — 부하 테스트 환경
+### 4.3 Stage: release-staging (manual, 번들 통합 부하 테스트)
+
+**모든 서비스의 dev-통과 Freight 를 하나의 Stage 가 구독**하여, 사람이 승격 버튼을 누른 시점의 각 서비스 최신 passed Freight 를 번들로 묶어 `handbook-staging` 네임스페이스에 atomic 배포한다. 그 위에 k6 integration load test 를 1회 실행.
+
 ```yaml
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
-metadata: {name: gateway-staging, namespace: kargo}
+metadata: {name: release-staging, namespace: kargo}
 spec:
   requestedFreight:
     - origin: {kind: Warehouse, name: gateway}
       sources: {stages: [gateway-dev]}
+    - origin: {kind: Warehouse, name: event-broadcaster}
+      sources: {stages: [event-broadcaster-dev]}
+    # 서비스 추가 시 여기에 한 줄씩 append
   promotionTemplate:
     spec:
       steps:
-        # 1) staging 배포
+        # 1) 번들을 handbook-staging 네임스페이스에 atomic 배포
         - uses: argocd-update
           config:
             apps:
@@ -182,31 +189,39 @@ spec:
                     helm:
                       images:
                         - key: image.tag
-                          value: ${{ imageFrom(...).tag }}
-        # 2) k6-operator 에 TestRun CR 생성 요청 (argocd-update 를 통해 매니페스트 commit/sync)
+                          value: ${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/gateway").tag }}
+              - name: handbook-event-broadcaster-staging
+                sources:
+                  - repoURL: https://github.com/sayaya1090/handbook.git
+                    helm:
+                      images:
+                        - key: image.tag
+                          value: ${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/event-broadcaster").tag }}
+        # 2) k6 TestRun 트리거 — 번들 전체에 부하
         - uses: argocd-update
           config:
             apps:
-              - name: handbook-gateway-staging-loadtest
-                # 별도 ArgoCD Application 이 k6 TestRun 매니페스트를 watch. image tag 변경으로 trigger
+              - name: handbook-release-staging-loadtest
                 sources:
                   - repoURL: https://github.com/sayaya1090/handbook.git
                     helm:
                       parameters:
                         - {name: testRunId, value: '${{ ctx.freight.name }}'}
-                        - {name: targetImage, value: '${{ imageFrom(...).tag }}'}
   verification:
     analysisTemplates:
-      - name: gateway-loadtest
+      - name: release-loadtest
 ```
 
-**staging 의 검증 = "부하 중 SLO 유지"**. k6-operator 가 parallel runner pod 를 spin up 해 `staging.handbook.sayaya.cloud` 로 부하 발생. AnalysisTemplate `gateway-loadtest` 가 부하 중 Prometheus 메트릭 (RPS, p95, 5xx, CPU/mem saturation) 을 관측 + k6 threshold 결과 CR status 도 cross-check.
+**PromotionPolicy: `autoPromotionEnabled: false`** — 사람이 "이번 릴리즈 후보를 통합 검증하자" 고 판단한 시점에만 승격. 이게 "릴리즈는 한번에 모아서" 의 핵심 접점.
 
-PromotionPolicy: `autoPromotionEnabled: true` (dev 통과 즉시 staging 자동 시작). verification 실패 시 Kargo 가 자동 차단.
+**부하 테스트 의미**:
+- `handbook-staging` 네임스페이스에는 번들의 모든 서비스가 올라가 있고, k6 가 gateway 프론트를 때리면서 **내부적으로 event-broadcaster 로 이벤트 흐름이 발생** → cross-service 통합 경로 전체가 부하 대상
+- gateway 버전이 바뀌었지만 event-broadcaster 와 Kafka schema 호환이 깨진 경우, 이 시점에서 메시지 유실/consumer lag 증가로 노출됨 (per-service staging 에서는 못 잡음)
+- 승격 실패 시 Kargo 가 staging 승격 차단 → 사람이 어느 서비스 때문에 깨졌는지 Prometheus per-service 레이블로 분기 추적
 
 ### 4.4 Stage: release-prod (Release Train, 번들 승격)
 
-**단일 Stage 가 모든 서비스의 staging 을 upstream 으로** 구독하여, 승격 시 각 서비스의 verification-통과 최신 Freight 를 하나의 원자 단위로 묶어 prod 에 배포한다.
+**release-staging 을 단일 upstream 으로** 구독. release-staging 에서 이미 묶여서 integration load test 를 통과한 번들 digest 를 그대로 prod 에 전진시킨다. Freight 가 upstream Stage 의 collection 으로 전파되기 때문에 **동일 이미지 digest 가 수정 없이 그대로** 적용됨.
 
 ```yaml
 apiVersion: kargo.akuity.io/v1alpha1
@@ -215,10 +230,10 @@ metadata: {name: release-prod, namespace: kargo}
 spec:
   requestedFreight:
     - origin: {kind: Warehouse, name: gateway}
-      sources: {stages: [gateway-staging]}
+      sources: {stages: [release-staging]}
     - origin: {kind: Warehouse, name: event-broadcaster}
-      sources: {stages: [event-broadcaster-staging]}
-    # 서비스 추가 시 여기에 한 줄씩 append
+      sources: {stages: [release-staging]}
+    # 서비스 추가 시 여기에 한 줄씩 append (Warehouse 구분 유지)
   promotionTemplate:
     spec:
       steps:
@@ -268,7 +283,7 @@ PromotionPolicy: `autoPromotionEnabled: false`. Kargo UI 에서 승인자가 버
 
 ### 4.5 핫픽스 레인 (선택)
 
-번들 릴리즈가 기다릴 수 없는 긴급 수정이 필요할 때의 backdoor:
+번들 릴리즈가 기다릴 수 없는 긴급 수정이 필요할 때의 backdoor. **dev 에서 바로 prod 로** 단일 서비스 Freight 를 승격 (release-staging 우회).
 
 ```yaml
 apiVersion: kargo.akuity.io/v1alpha1
@@ -277,7 +292,7 @@ metadata: {name: gateway-hotfix-prod, namespace: kargo}
 spec:
   requestedFreight:
     - origin: {kind: Warehouse, name: gateway}
-      sources: {stages: [gateway-staging]}
+      sources: {stages: [gateway-dev]}   # release-staging 우회 — dev 기능 테스트만 통과하면 됨
   promotionTemplate:
     spec:
       steps:
@@ -291,9 +306,10 @@ spec:
       - name: gateway-canary
 ```
 
-- 평소엔 **사용 안 함**. release-prod 경로가 기본.
+- 평소엔 **사용 안 함**. release-staging → release-prod 경로가 기본.
 - 긴급 사용 시 Kargo RBAC 로 `promote` 권한을 hotfix responder 에게만 부여.
-- hotfix-prod 로 승격된 Freight 는 다음 번 release-prod 승격 시 자동으로 "이미 반영됨" 으로 인식되어 덮어쓰기 충돌 없음 (같은 digest).
+- **integration load test 를 skip** 한다는 점을 명시적으로 인지. dev 기능 테스트만 통과한 상태로 prod 에 직행.
+- hotfix 로 승격된 Freight 는 다음 번 release-staging 승격 시 자동으로 "이미 반영됨" 으로 인식 (같은 digest).
 
 운영 규칙: **월 1회 이상 hotfix 경로를 쓰면 테스트/릴리즈 주기 설계를 재검토**. hotfix 는 예외.
 
@@ -424,8 +440,8 @@ Rollouts 가 weight 를 동적 변경. 실패 → `setWeight: 0` 자동 롤백.
 
 | 환경 | 실행 주체 | 판정 주체 (AnalysisTemplate) |
 |------|-----------|------------------------------|
-| dev | Argo Workflows `gateway-e2e` WorkflowTemplate (Playwright) | `gateway-functional` — Workflow 완료 상태 polling |
-| staging | k6-operator `gateway-load` TestRun CR | `gateway-loadtest` — 부하 중 Prometheus SLO + k6 threshold cross-check |
+| dev (서비스별) | Argo Workflows `<svc>-e2e` WorkflowTemplate (Playwright) | `<svc>-functional` — Workflow 완료 상태 polling |
+| release-staging (번들) | k6-operator `release-load` TestRun CR — gateway 프론트에 부하 → 내부 서비스 체인 활성화 | `release-loadtest` — k6 threshold + Prometheus SLO (p95/5xx + Kafka consumer lag + JVM heap) 교차 검증 |
 | release-prod canary | 실 트래픽 (각 서비스 Rollouts 독립 canary) | `<svc>-canary` per service (Rollouts 가 참조) + `release-canary` (release-prod Stage verification, 번들 전체 관점) |
 
 `charts/handbook/infrastructure/templates/analysis/` 아래에 env 별로 배치. Spring Boot 4 Actuator 메트릭 이름(`http_server_requests_seconds_*`) 가정 — 실제 `/actuator/prometheus` 출력 확인 필요.
@@ -494,16 +510,16 @@ spec:
 
 **핵심**: Kargo 가 Workflow 를 submit 한 뒤 AnalysisTemplate 이 "완료" 를 기다린다. 실패 시 Kargo 가 자동으로 staging 승격을 차단.
 
-### 7.2 staging 부하 테스트 — k6-operator TestRun
+### 7.2 release-staging 통합 부하 테스트 — k6-operator TestRun (번들)
 
 ```yaml
 apiVersion: k6.io/v1alpha1
 kind: TestRun
-metadata: {name: gateway-load, namespace: handbook-staging}
+metadata: {name: release-load, namespace: handbook-staging}
 spec:
   parallelism: 4                       # runner pod 4개 병렬
   script:
-    configMap: {name: k6-gateway-script, file: test.js}
+    configMap: {name: k6-release-script, file: test.js}
   runner:
     env:
       - {name: BASE_URL, value: https://staging.handbook.sayaya.cloud}
@@ -512,13 +528,13 @@ spec:
     resources:
       limits: {cpu: 1, memory: 1Gi}
   arguments: --out experimental-prometheus-rw
-  # Prometheus remote_write 로 k6 메트릭을 집계 → Prometheus 쿼리로 cross-check 가능
 ```
 
-k6 스크립트 (`test.js`, ConfigMap 으로 배포):
+번들 integration 시나리오 — **gateway 프론트만 때려도 내부 라우팅/이벤트 경로가 자동 활성화**:
+
 ```javascript
 import http from 'k6/http'
-import { check } from 'k6'
+import { check, group } from 'k6'
 export const options = {
   scenarios: {
     ramp: {
@@ -533,40 +549,51 @@ export const options = {
     },
   },
   thresholds: {
-    http_req_failed: ['rate<0.01'],           // 5xx < 1%
-    http_req_duration: ['p(95)<500'],          // p95 < 500ms
+    http_req_failed: ['rate<0.01'],
+    http_req_duration: ['p(95)<500'],
+    'group_duration{group:::menu-aggregate}': ['p(95)<800'],  // 여러 서비스 집계 경로
+    'group_duration{group:::sse}': ['p(95)<1500'],            // event-broadcaster SSE 스트림
   },
 }
 export default function () {
-  const r = http.get(`${__ENV.BASE_URL}/actuator/health`)
-  check(r, { 'status 200': (r) => r.status === 200 })
+  group('menu-aggregate', () => {
+    // gateway → search-type/search-document/... 의 /menu 여러 개 집계
+    const r = http.get(`${__ENV.BASE_URL}/api/menus`)
+    check(r, { 'menu 200': (r) => r.status === 200 })
+  })
+  group('sse', () => {
+    // event-broadcaster 로 라우팅되는 SSE 연결
+    const r = http.get(`${__ENV.BASE_URL}/workspace/demo/messages`, {
+      headers: { Accept: 'text/event-stream' },
+      timeout: '5s',
+    })
+    check(r, { 'sse 200': (r) => r.status === 200 })
+  })
 }
 ```
 
-**`gateway-loadtest` AnalysisTemplate** — TestRun 상태 + Prometheus 메트릭 이중 판정:
+**`release-loadtest` AnalysisTemplate** — k6 TestRun 상태 + 서비스별 Prometheus 메트릭 병합 판정. 번들의 모든 구성 서비스를 동시 평가해 어느 하나라도 SLO 위반 시 Kargo 승격 차단:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
-metadata: {name: gateway-loadtest, namespace: handbook-staging}
+metadata: {name: release-loadtest, namespace: handbook-staging}
 spec:
-  args:
-    - {name: service, value: gateway}
   metrics:
-    # 1차: k6 TestRun CR 상태가 finished 상태일 때 통과
+    # 1차: k6 TestRun 상태
     - name: k6-finished
       interval: 30s
-      count: 40                        # 최대 20분 폴링
+      count: 40
       successCondition: "result == 'finished'"
       failureCondition: "result == 'error' || result == 'stopped'"
       provider:
         web:
-          url: "https://kubernetes.default.svc/apis/k6.io/v1alpha1/namespaces/handbook-staging/testruns/{{args.service}}-load"
+          url: "https://kubernetes.default.svc/apis/k6.io/v1alpha1/namespaces/handbook-staging/testruns/release-load"
           headers:
             - {key: Authorization, value: "Bearer $SA_TOKEN"}
           jsonPath: "{$.status.stage}"
-    # 2차: 부하 중 서버 측 5xx 비율이 k6 threshold 와 일치하는지 cross-check
-    - name: server-error-rate
+    # 2차: 번들 전체의 서버 측 5xx 비율 (application 레이블 무관)
+    - name: bundle-error-rate
       interval: 1m
       count: 10
       successCondition: result[0] < 0.01
@@ -574,21 +601,48 @@ spec:
         prometheus:
           address: http://prometheus-k8s.openshift-monitoring:9090
           query: |
-            sum(rate(http_server_requests_seconds_count{application="{{args.service}}",status=~"5..",namespace="handbook-staging"}[2m]))
+            sum(rate(http_server_requests_seconds_count{namespace="handbook-staging",status=~"5.."}[2m]))
             /
-            clamp_min(sum(rate(http_server_requests_seconds_count{application="{{args.service}}",namespace="handbook-staging"}[2m])), 0.001)
-    # 3차: JVM 리소스 saturation — 부하 중 GC 과다 / 힙 포화 감지
-    - name: heap-saturation
+            clamp_min(sum(rate(http_server_requests_seconds_count{namespace="handbook-staging"}[2m])), 0.001)
+    # 3차: gateway p95 latency
+    - name: gateway-p95
+      interval: 1m
+      count: 10
+      successCondition: result[0] < 0.5
+      provider:
+        prometheus:
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(http_server_requests_seconds_bucket{application="gateway",namespace="handbook-staging"}[2m])) by (le)
+            )
+    # 4차: event-broadcaster Kafka consumer lag — 부하 중에도 이벤트 스트림이 뒤쳐지지 않는지
+    - name: kafka-consumer-lag
+      interval: 1m
+      count: 10
+      successCondition: result[0] < 100
+      provider:
+        prometheus:
+          query: |
+            max(kafka_consumer_records_lag{application="event-broadcaster",namespace="handbook-staging"})
+    # 5차: 번들 내 어떤 서비스든 heap saturation 검사
+    - name: max-heap-saturation
       interval: 1m
       count: 10
       successCondition: result[0] < 0.85
       provider:
         prometheus:
           query: |
-            max(jvm_memory_used_bytes{area="heap",application="{{args.service}}",namespace="handbook-staging"})
-            /
-            max(jvm_memory_max_bytes{area="heap",application="{{args.service}}",namespace="handbook-staging"})
+            max(
+              jvm_memory_used_bytes{area="heap",namespace="handbook-staging"}
+              /
+              on(pod,application) jvm_memory_max_bytes{area="heap",namespace="handbook-staging"}
+            )
 ```
+
+**핵심 차이점 (per-service 버전 대비)**:
+- AnalysisTemplate 이 **서비스 인자 없이 번들 전체**를 하나의 단위로 판정
+- k6 스크립트가 cross-service 경로 (`menu-aggregate`, `sse`) 를 **그룹 단위**로 측정해 "통합 경로 자체" 의 SLO 를 명시
+- 서비스 추가 시 메트릭 자체는 그대로, 새 서비스 특화 지표(예: r2dbc pool saturation) 만 추가 append 하면 됨
 
 **서비스별 확장:**
 - event-broadcaster: `kafka_consumer_records_lag < 100` 추가 (부하 중에도 consumer 가 뒤쳐지지 않는지)
@@ -684,12 +738,12 @@ release-canary 실패 시 Kargo 가 `release-prod` 승격을 retrospectively "Un
 | P0 | 태그 전략 CI 적용 (jib `sha-<8char>` 태그 push) | 2h | 없음 |
 | P1 | Kargo Project/Warehouse/Stage 리팩토링 (v1 버그 fix + 새 태그 필터) | 4h | P0 |
 | P2a | **Argo Workflows 설치** + Playwright `gateway-e2e` WorkflowTemplate 작성 + `gateway-functional` AnalysisTemplate 작성 + dev 실제 동작 검증 | 1~2d | P1, E2E 시나리오 스크립트 준비 |
-| P2b | **k6-operator 설치** + `gateway-load` k6 스크립트/TestRun 작성 + `gateway-loadtest` AnalysisTemplate 작성 + staging 실제 동작 검증 | 1~2d | P1, Prometheus remote_write 설정 |
+| P2b | **k6-operator 설치** + `release-load` 번들 k6 스크립트/TestRun + `release-loadtest` AnalysisTemplate + **release-staging Stage** (번들 승격 + `handbook-staging` 에 atomic 배포) 검증 | 1~2d | P1, Prometheus remote_write 설정 |
 | P3 | Argo Rollouts 설치 + gateway prod 를 Rollout 으로 교체 + Istio subset wiring + `gateway-canary` AnalysisTemplate | 1d | P2b |
 | P4 | **`release-prod` Stage + `release-canary` AnalysisTemplate 구성**. 처음엔 서비스 1개로 시작 → 2개로 확장 | 0.5d | P3 |
 | P5 | ApplicationSet PR Generator + preview CI job + wildcard 인증서 | 1d | P0 |
 | P6 | NetworkPolicy / ResourceQuota / LimitRange 적용 | 0.5d | 네임스페이스 분리 완료 |
-| P7 | event-broadcaster 및 후속 서비스에 동일 패턴 복제 + `release-prod.requestedFreight` 에 upstream 한 줄 추가 | 서비스당 0.5~1d | P2a, P2b, P3, P4 |
+| P7 | event-broadcaster 및 후속 서비스에 동일 패턴 복제 + `release-staging.requestedFreight` / `release-prod.requestedFreight` 양쪽에 upstream 한 줄씩 추가 | 서비스당 0.5~1d | P2a, P2b, P3, P4 |
 | P8 (선택) | 핫픽스 레인 `<svc>-hotfix-prod` Stage + RBAC | 0.5d | P4 |
 
 **P0 → P1 → (P2a, P2b 병렬) → P3 순서는 엄격**. P4/P5 는 P1 이후 병렬 가능.
@@ -701,7 +755,7 @@ release-canary 실패 시 Kargo 가 `release-prod` 승격을 retrospectively "Un
 4. `charts/handbook/infrastructure/templates/analysis/<svc>-{functional,loadtest,canary}.yaml` — AnalysisTemplate 3벌 × 서비스 × env
 
 ## 9. 검토 체크리스트
-- [ ] **dev = 기능 테스트 / staging = 부하 테스트 확정** (이 문서가 쓰는 전제)
+- [ ] **환경 모델 확정**: dev = 서비스별 기능 테스트, release-staging = 번들 통합 부하 테스트, release-prod = 번들 canary. 번들 단위는 staging/prod 양쪽 모두 동일
 - [ ] **기능 테스트 프레임워크**: Playwright E2E 권장. 현재 `e2e/` 디렉토리 시나리오가 dev 대상으로 재사용 가능한지, 전용 smoke 세트를 새로 쓸지
 - [ ] **부하 테스트 도구**: k6-operator 권장. Gatling/JMeter/Locust 선호 있으면 표시
 - [ ] **부하 시나리오 설계 초안**: 타깃 RPS(예: 200), 지속 시간(10m), 램프업/다운 곡선, 엔드포인트 조합. 최소 gateway `/menu` 집계 + persist-document 쓰기 정도는 포함해야 병목 노출 가능
@@ -731,8 +785,9 @@ release-canary 실패 시 Kargo 가 `release-prod` 승격을 retrospectively "Un
 | `.github/workflows/*-deploy.yaml` | jib 에 `sha-<8char>` 태그 푸시 추가 |
 | `.github/workflows/*-preview.yaml` (신규) | PR 이벤트로 `pr-<num>-<sha>` 태그 푸시 |
 | `charts/handbook/<svc>/templates/warehouse.yaml` | `allowTags`, `strictSemvers: false` 적용, git subscription 제거 (v1 제안 철회) |
-| `charts/handbook/<svc>/templates/stage.yaml` | dev/staging 만 유지. **서비스별 prod Stage 제거** (release-prod 로 통합) |
-| `charts/handbook/templates/release-prod.yaml` (신규) | 모든 서비스 staging 을 upstream 으로 집계하는 단일 `release-prod` Stage |
+| `charts/handbook/<svc>/templates/stage.yaml` | **dev Stage 만 유지**. 서비스별 staging/prod Stage 모두 제거 (release-staging / release-prod 로 통합) |
+| `charts/handbook/templates/release-staging.yaml` (신규) | 모든 Warehouse 의 dev Stage 를 upstream 으로 집계하는 단일 `release-staging` Stage + k6 TestRun ArgoCD Application |
+| `charts/handbook/templates/release-prod.yaml` (신규) | `release-staging` 을 upstream 으로 구독하는 단일 `release-prod` Stage |
 | `charts/handbook/<svc>/templates/deployment.yaml` | prod 전용 `Rollout` 렌더 분기 |
 | `charts/handbook/<svc>/templates/service.yaml` | canary service 추가 |
 | `charts/handbook/infrastructure/templates/analysis/*.yaml` (신규) | AnalysisTemplate — functional/loadtest/canary × env |
