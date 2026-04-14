@@ -54,7 +54,7 @@ flowchart TB
     GW -.->|optional / circuit breaker| ASSIST
 
     PG[(PostgreSQL 17<br/>R2DBC)]
-    KAFKA[[Kafka<br/>handbook-events<br/>workspace-events<br/>+ DLQ]]
+    KAFKA[[Kafka Strimzi KRaft<br/>handbook-events<br/>handbook-events-dlq]]
     S3[(MinIO / S3)]
 
     LOGIN --> PG
@@ -117,12 +117,15 @@ flowchart TB
 
 ### Kafka 토픽
 
-- **handbook-events** — 메인 도메인 이벤트
-  - Producer: persist-document, persist-type, assistant
+단일 도메인 이벤트 토픽 `handbook-events` 로 모든 이벤트가 통합 발행된다 (파티션 키: 워크스페이스 UUID).
+
+- **handbook-events** — 도메인 이벤트 통합 토픽
+  - Producer: persist-document, persist-type, persist-workspace, assistant
   - Consumer: event-broadcaster, assistant
   - 재시도 3회 후 `handbook-events-dlq`
-- **workspace-events** — persist-workspace 전용, handbook-events 로 집계
 - **handbook-events-dlq** — Dead Letter Queue
+
+Kafka 브로커는 OpenShift 에 설치된 **Streams for Apache Kafka** 오퍼레이터(Strimzi) 가 KRaft 모드로 운영. Helm 차트는 `Kafka` / `KafkaNodePool` / `KafkaTopic` CR 만 선언한다.
 
 ### 실시간 경로
 
@@ -145,5 +148,23 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 
 - **gateway** — API Gateway 배포
 - **event-broadcaster** — Kafka→SSE 브로드캐스트 배포
-- **infrastructure** — MinIO(S3), RBAC 등 공용 인프라
+- **infrastructure** — 공용 인프라
+  - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
+  - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
+  - `authentication/` — `handbook-authentication` 공통 Spring fragment (JWT)
+  - `s3/` · `observability/` — 기존 공용 인프라
 - **handbook-operator** — github-actions-runner-set (CI/CD)
+
+### 공통 Spring config fragment 주입 패턴
+
+DB / Kafka / JWT 같이 여러 서비스가 공통으로 쓰는 Spring 설정은 `infrastructure/` 서브차트가 소유하는 ConfigMap 에 **fragment 단위** 로 선언된다. 각 서비스는 필요한 fragment 만 골라 쓴다:
+
+1. 서비스의 jar 내부 `application.yml` 에서 `spring.config.import: [classpath:postgresql.yaml, classpath:kafka.yaml, ...]` 로 가져올 fragment 를 선언
+2. Deployment 는 해당 ConfigMap 을 `/app/resources/<name>.yaml` 경로에 `subPath` 로 마운트
+
+| Fragment ConfigMap | classpath 리소스 | 소유 리소스 | 대상 서비스 |
+|--------------------|-----------------|-------------|-------------|
+| `handbook-postgresql` | `classpath:postgresql.yaml` | `infrastructure/templates/cloudnative-pg/postgresql.yaml` | persist-\*, search-\*, login |
+| `handbook-kafka` | `classpath:kafka.yaml` | `infrastructure/templates/kafka/kafka.yaml` | persist-\*, event-broadcaster, assistant |
+| `handbook-authentication` | `classpath:authentication.yaml` | `infrastructure/templates/authentication/authentication.yaml` | gateway, event-broadcaster, persist-\*, search-\* |
+| `observability` | `classpath:observability.yaml` | `infrastructure/templates/observability/` | 모든 Spring 서비스 |
