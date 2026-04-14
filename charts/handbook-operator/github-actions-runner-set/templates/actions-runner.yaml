@@ -50,7 +50,13 @@ spec:
       dnf install -y unzip wget rsync python3-pip openssl \
           docker-ce-cli gh git git-lfs jq \
           libicu libyaml-devel net-tools zsh \
-          glibc-langpack-en glibc-locale-source && \
+          glibc-langpack-en glibc-locale-source \
+          nodejs \
+          nss atk at-spi2-atk at-spi2-core cups-libs libdrm \
+          libXcomposite libXdamage libXext libXfixes libXrandr libXcursor \
+          mesa-libgbm pango alsa-lib libxkbcommon libxshmfence \
+          gtk3 cairo-gobject gdk-pixbuf2 \
+          dejavu-sans-fonts dejavu-serif-fonts dejavu-sans-mono-fonts && \
       localedef -c -i ko_KR -f UTF-8 ko_KR.UTF-8 && \
 
       pip3 install --break-system-packages awscli && \
@@ -68,10 +74,13 @@ spec:
 
       usermod -aG docker "${USERNAME}" && \
 
+      PLAYWRIGHT_BROWSERS_PATH=/opt/playwright \
+        npx -y playwright@1.57.0 install chromium && \
+
       dnf clean all && \
       rm -rf /var/cache/dnf /tmp/* /var/tmp/* && \
 
-      chown -R "${USERNAME}":"${GID}" "${WORKDIR}"
+      chown -R "${USERNAME}":"${GID}" "${WORKDIR}" /opt/playwright
 
       USER "${USERNAME}"
       RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended && \
@@ -82,6 +91,13 @@ spec:
       ENV LANGUAGE='ko_KR;ko'
       ENV LC_ALL='ko_KR.UTF-8'
       ENV ENV="$HOME/.shrc"
+
+      # Playwright 에 미리 받아둔 chromium 경로를 알림
+      ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
+      # playwright-java 가 test 기동 시 `npx playwright install` 을 자동 호출해
+      # firefox/webkit 까지 받으려 하므로 runtime 다운로드를 막는다.
+      # 테스트가 chromium 만 쓰므로 이미지 내장 chromium 으로 충분.
+      ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
       # Default command to start the runner
       CMD ["./run.sh"]

@@ -171,7 +171,13 @@ podman run --rm --user root --arch=arm64 handbook-actions-runner:test bash -c '
 
 ### 도구별 주의점
 - **docker**: runner-container-hooks가 job 컨테이너를 k8s API로 스폰하므로 **daemon 불필요**. `docker-ce-cli`만 쓴다. daemon을 다시 넣으려면 UBI에 없는 `iptables-nft`를 별도로 해결해야 한다.
-- **Chrome/Chromium**: Playwright가 `npx playwright install`로 자체 브라우저를 받으므로 **시스템 브라우저 설치 금지**. 워크플로가 시스템 Chrome을 직접 호출하는 경우에만 예외.
+- **Chromium / Playwright**: GWT 모듈의 Kotest + Playwright 테스트가 러너에서 돌려면 **(a) chromium 런타임 OS 라이브러리**, **(b) chromium 바이너리 자체**, **(c) runtime 자동 install 차단** 세 가지가 필요하다.
+  - **OS 라이브러리**: `nss atk at-spi2-atk at-spi2-core cups-libs libdrm libXcomposite libXdamage libXext libXfixes libXrandr libXcursor mesa-libgbm pango alsa-lib libxkbcommon libxshmfence gtk3 cairo-gobject gdk-pixbuf2` + 폰트(`dejavu-sans-fonts dejavu-serif-fonts dejavu-sans-mono-fonts`). UBI10 에 `liberation-sans-fonts` 는 없고 `dejavu-*-fonts` 만 있다. `gtk3/cairo-gobject/gdk-pixbuf2/libXcursor` 누락 시 Playwright 가 "Host system is missing dependencies" 경고를 찍고 browser launch 시 crash.
+  - **Node.js**: `nodejs` (playwright 드라이버가 Node 기반). 별도 버전 고정 안 함 — UBI10 기본 stream 사용.
+  - **Chromium 바이너리 pre-install (chromium 만)**: `PLAYWRIGHT_BROWSERS_PATH=/opt/playwright npx -y playwright@<ver> install chromium` 을 빌드 시 root 로 실행 후 `chown -R runner:0 /opt/playwright`. **`install` (인자 없음)을 쓰면 firefox + webkit 까지 받으려고 해서 Azure fallback CDN 에서 ~500MB 를 다운로드** — 빌드가 수 십 분 걸리고 이미지 크기 폭증. 테스트가 chromium 만 쓰므로 인자를 명시한다.
+  - **Runtime 자동 install 차단**: playwright-java 는 `Playwright.create()` 시점에 `node cli.js install` 을 자동 호출하고 기본적으로 **전체 브라우저를 설치**하려 한다. 이미지 ENV 에 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` 을 박아서 runtime install 을 no-op 으로 만든다. 기존 pre-installed chromium 은 그대로 사용.
+  - **버전 동기화**: 이미지에 pre-install 하는 playwright 버전은 `libs.versions.toml` 의 `version("playwright", ...)` 와 맞춘다. 불일치 시 playwright-java 가 경고 후 재다운로드.
+  - **dbus 경고는 무시**: 러너 파드엔 dbus 가 없어 chromium 이 `Failed to connect to the bus` 를 찍지만 기능에 영향 없음.
 - **한국어 로케일**: UBI10부터는 `glibc-langpack-ko`가 개별 패키지로 없다. `glibc-all-langpacks`(~200MB) 대신 `glibc-langpack-en` + `glibc-locale-source`를 설치한 뒤 `localedef -c -i ko_KR -f UTF-8 ko_KR.UTF-8`로 ko_KR만 컴파일한다 (로케일 디렉토리 ~8MB로 감축).
 - **`./bin/installdependencies.sh` 호출 금지**: 러너 tarball에 딸려오는 이 스크립트는 `lttng-ust` 등 el10에 없는 패키지를 강제로 깔려다 실패한다. 위의 필수 라이브러리 4개만 우리가 직접 설치하면 runner는 정상 기동한다.
 - **helm 설치**: `get-helm-3` 스크립트는 `get.helm.sh`에 대한 실패 시 재시도 로직이 없어 빌드 네트워크 플레이키에 취약하다. **GitHub/CDN에서 pinned tarball을 curl `--retry`로 직접 받는다** (`HELM_VERSION` ARG로 고정).
