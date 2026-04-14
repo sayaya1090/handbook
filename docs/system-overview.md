@@ -148,12 +148,24 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 
 - **gateway** — API Gateway 배포
 - **event-broadcaster** — Kafka→SSE 브로드캐스트 배포
+- **shell-ui** — GWT 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). GHA 가 prerelease 로 빌드 산출물을 publish, Kargo Stage 가 환경별 S3 버킷으로 promotion
 - **infrastructure** — 공용 인프라
   - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
   - `authentication/` — `handbook-authentication` 공통 Spring fragment (JWT)
   - `s3/` · `observability/` — 기존 공용 인프라
 - **handbook-operator** — github-actions-runner-set (CI/CD)
+
+### 정적 자산 배포 모델 (GWT 프론트엔드)
+
+JVM 백엔드와 동일한 `argocd-update` promotion 패턴을 사용하되, deploy 액션은 ArgoCD Sync Hook Job 이 수행한다.
+
+1. **Build** (`<module>-deploy.yaml`): `:<module>:build` → 정적 자산 추출 → tar → `gh release create <module>-<sha> --prerelease`. GHA 는 빌드 + publish 까지만, deploy 액션 0번
+2. **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` 로 새 prerelease 감지 → Freight. (Lexical 은 sha 기반 tag 에 대해 사전순 정렬이라 "최신" 을 보장 못 하므로 publish 시 이전 release 를 정리하는 것이 전제)
+3. **Stage** (`vars.bucket: handbook-{dev,staging,prod}`): promotion step 이 `argocd-update` 로 ArgoCD Application 의 helm parameter(`freight.commit`, `bucket`) 갱신. Kargo argocd-update 의 `helm` 블록은 `parameters` 를 허용하지 않고 `images` 배열만 받지만 key 에 임의 helm path 를 지정할 수 있어 이 경로로 값을 주입. commit SHA 추출은 `${{ commitFrom("...").ID }}` (Go struct 필드명, 대문자)
+4. **Sync Job** (`templates/sync-job.yaml`): ArgoCD reconcile 시 매 freight commit 마다 새 Job 으로 인스턴스화 (`argocd.argoproj.io/hook: Sync` + `BeforeHookCreation` 정리). Job 컨테이너(`amazon/aws-cli`)가 **unauthenticated** `curl` 로 GitHub release asset 다운로드(public repo) → `aws s3 sync s3://${bucket}/static/` 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
+
+Kargo `vars` 와 chart helm parameter 가 환경별 차이(버킷명, S3 endpoint, release repo, asset 이름)를 흡수해 promote 워크플로 같은 외부 runner 가 필요 없다. 모든 deploy 액션이 클러스터 안 ArgoCD + Job 으로 끝난다.
 
 ### Spring 설정 주입 모델
 

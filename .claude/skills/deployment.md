@@ -74,10 +74,21 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 - **fragment 카탈로그**: `observability` (management/metrics/logging), `handbook-postgresql` (r2dbc), `handbook-kafka` (spring.kafka.bootstrap-servers), `handbook-authentication` (security.authentication).
 
 ### Kargo Promotion 파이프라인
-- **Warehouse**: OpenShift ImageStream 변화를 감지 → Freight 발행
-- **Stage (dev)**: Warehouse 구독 → ArgoCD Update task 로 `image.tag` 업데이트해 dev 환경에 자동 배포
-- **Stage (staging/prod)**: 이전 스테이지를 upstream 으로 두고, promotion 시 GitHub repository dispatch API 호출(`release` 이벤트)로 CI/CD 파이프라인 트리거
-- 즉, dev 는 자동 전진, staging/prod 는 수동 (또는 승인) promotion. 승격 단위는 Freight = 이미지 태그 스냅샷.
+서비스 종류에 따라 두 가지 형태가 공존한다.
+
+**(A) JVM 백엔드 — 컨테이너 이미지 기반** (gateway, event-broadcaster, persist-\*, search-\*, login, assistant)
+- **Warehouse**: OpenShift ImageStream 변화를 감지 → Freight 발행 (image digest)
+- **Stage (dev/staging)**: Warehouse 구독 → ArgoCD Update task 로 `image.tag` 업데이트해 환경에 자동 배포
+- **Stage (prod)**: 이전 스테이지를 upstream 으로 두고, promotion 시 GitHub `repository_dispatch`(`release` 이벤트) 호출로 CI/CD 파이프라인 트리거
+
+**(B) GWT 프론트엔드 정적 자산 — GitHub Release + ArgoCD Hook Job 기반** (shell-ui, …)
+- **Build**: GHA(`<module>-deploy.yaml`) 가 `:<module>:build` → WAR 에서 정적 자산 추출 → tar 묶음 → `gh release create <module>-<sha> --prerelease` 로 GitHub prerelease + asset 업로드. GHA 는 빌드 + publish 까지만, deploy 액션 0번
+- **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` → 새 prerelease tag 마다 Freight 발행. **`NewestTag` 는 Kargo 의 유효한 enum 이 아니어서** 설정 시 기본 `NewestFromBranch` 로 fallback 되고 tag 가 무시되는 함정이 있으니 `Lexical` 을 쓴다. ⚠️ **Lexical 은 문자열 사전순 정렬이라 sha 기반 tag(`shell-ui-<7자 sha>`) 에선 "알파벳 상 가장 큰 것" = 반드시 최신이 아님**. 워크플로가 publish 시 이전 release/tag 를 정리하거나, 정렬 가능한 prefix(타임스탬프 등)를 tag 에 붙이는 형태로 운영해야 한다
+- **Stage**: `vars.bucket: handbook-{dev,staging,prod}` 선언. promotion step 은 `argocd-update` 로 ArgoCD Application 의 helm parameter 를 갱신한다. ⚠️ **Kargo `argocd-update` step 의 `helm` 블록은 스키마상 `parameters` 를 허용하지 않고 `images` 배열만 받는다** — 이름은 image 용이지만 `key` 에 임의 helm parameter path 를 쓸 수 있어 `freight.commit` / `bucket` 같은 값 주입에 재활용한다. 표현식으로 commit SHA 를 얻을 때는 `${{ commitFrom("...").ID }}` — Kargo 표현식 엔진이 Go struct 필드명(대문자 포함)을 그대로 노출하므로 `.id`/`.tag` 는 `has no field` 에러를 낸다
+- **Sync Job (chart 내장)**: ArgoCD reconcile 시 `templates/sync-job.yaml` 이 새 freight commit 마다 새 Job 을 만든다 (`argocd.argoproj.io/hook: Sync` + `hook-delete-policy: BeforeHookCreation`). Job 컨테이너(`amazon/aws-cli`)가 GitHub release asset 을 **unauthenticated** (public repo) 로 `curl -fsSL "https://github.com/.../releases/download/<tag>/<asset>"` 로 받아 `aws s3 sync s3://${bucket}/static/` 수행 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
+- 백엔드 `argocd-update` 패턴과 100% 동일 — Kargo 가 Application 갱신, ArgoCD 가 reconcile, K8s 가 실행
+
+즉, dev 는 자동 전진, staging/prod 는 수동 (또는 승인) promotion. 승격 단위는 Freight — JVM 은 image digest, 정적 자산은 git tag.
 
 ### 서브차트 `infrastructure/`
 | 파일 | 역할 |
@@ -101,7 +112,15 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `github-secret` | `github-actions-runner` | `github_app_*` | Actions Runner GitHub App 인증 | `charts/handbook-operator/github-actions-runner-set/README.md` |
 | S3/백업 자격증명 | 각 서비스 네임스페이스 | 차트별 | bucket, PG 백업 | infrastructure 차트가 참조 |
 
-## 새 서비스를 추가할 때
+## 새 정적 자산 모듈을 추가할 때 (GWT 프론트엔드)
+1. `charts/handbook/<module>/` 디렉토리 생성. shell-ui 템플릿(`Chart.yaml`, `values.yaml`, `templates/{warehouse,stage,sync-job}.yaml`)을 복사. Deployment/Service/configmap 은 없다.
+2. Warehouse `includeTags` 패턴(`^<module>-`), Stage 의 `argocd-update` 가 가리키는 Application 이름, Job 이름 prefix 를 새 모듈 이름으로 치환.
+3. `.github/workflows/<module>-deploy.yaml`: `:<module>:build` → 정적 자산 unpack/sed/tar → `gh release create <module>-<short-sha> --prerelease`.
+4. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, stages: [dev, staging, prod]}` 추가. ApplicationSet 이 자동으로 Application 을 만든다.
+5. **promote 워크플로는 필요 없다** — Kargo 가 `argocd-update` 로 chart 의 helm parameter(`freight.tag`, `bucket`)를 갱신하면 chart 안 `sync-job.yaml` 이 ArgoCD Sync Hook 으로 매 freight 마다 새 Job 으로 실행되어 release 다운로드 + S3 sync 를 수행한다.
+6. **정적 자산 모듈은 ConfigMap fragment / 서비스 ConfigMap 패턴이 적용되지 않는다** — Spring Boot 가 아니므로 `application.yml` 자체가 없음.
+
+## 새 JVM 서비스를 추가할 때
 1. `charts/handbook/<service>/` 디렉토리 생성. gateway 또는 event-broadcaster 템플릿을 복사 → `configmap`, `deployment`, `service`, `stage`, `warehouse`, `Chart.yaml`, `values.yaml` 수정.
 2. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, stages:[...]}` 추가. ApplicationSet 이 자동으로 Application 을 생성한다.
 3. **ConfigMap 의 `application.yml` 키에 운영 설정을 다 적는다**. jar 의 `src/main/resources/application.yml` 에 있는 값(application.name, routes, cloud.stream bindings, kafka producer, server.port, cors 등)을 그대로 옮겨 적는다. **머지가 아닌 파일 단위 overwrite** 이므로 jar 와 중복돼도 OK. 공통 단편은 `spring.config.import: [classpath:observability.yaml, classpath:authentication.yaml, classpath:kafka.yaml, classpath:postgresql.yaml]` 로 필요한 것만 가져온다.
