@@ -3,11 +3,14 @@
 > 상태: **제안 / 검토 대기**. v1 (과설계) 대체. 사용자 확정 사항: 단일 클러스터, 3 환경(dev/staging/prod), 태그 전략 TBD, AnalysisTemplate 신규 작성 필요, 옵션 D(Preview + Canary) 방향.
 >
 > **환경 용도 (확정)**:
-> - **dev** — **기능 테스트 환경**. Kargo 가 배포 후 Argo Workflows 로 Playwright E2E job 을 실행하고, 통과해야 staging 으로 승격.
-> - **staging** — **부하 테스트 환경**. k6-operator 로 TestRun 을 실행하고 부하 중 Prometheus 메트릭 + k6 threshold 를 모두 만족해야 prod 승격 가능.
-> - **prod** — 실사용자 트래픽. Argo Rollouts canary 로 점진 확장.
+> - **dev** — **기능 테스트 환경**. 서비스별 독립. Kargo 가 배포 후 Argo Workflows 로 Playwright E2E job 을 실행하고, 통과해야 staging 으로 승격.
+> - **staging** — **부하 테스트 환경**. 서비스별 독립. k6-operator 로 TestRun 을 실행하고 부하 중 Prometheus 메트릭 + k6 threshold 를 모두 만족해야 prod release train 후보가 됨.
+> - **prod** — **Release Train (번들 릴리즈)**. 모든 서비스의 staging-통과 Freight 를 하나의 `release-prod` Stage 가 모아서 atomic 으로 승격. 실사용자 트래픽은 Argo Rollouts canary 로 점진 확장.
 >
-> **주의**: 옵션 D 원본은 staging 삭제 포함이었으나, dev=기능/staging=부하로 용도가 분리되므로 staging 은 유지해야 의미가 있다.
+> **승격 모델**:
+> - dev → staging → prod 까지 **서비스별 독립 Stage** 유지 (`<svc>-dev`, `<svc>-staging`)
+> - 최종 prod 는 **단일 `release-prod` Stage** 가 모든 `<svc>-staging` 을 upstream 으로 모아 한 번에 승격
+> - 긴급 핫픽스가 필요하면 `<svc>-hotfix-prod` 보조 경로로 우회 (§4.5)
 
 ## 1. 큰 그림
 
@@ -201,11 +204,98 @@ spec:
 
 PromotionPolicy: `autoPromotionEnabled: true` (dev 통과 즉시 staging 자동 시작). verification 실패 시 Kargo 가 자동 차단.
 
-### 4.4 Stage: prod (manual + canary)
-- upstream: `gateway-staging`.
-- `argocd-update` 가 가리키는 Application 은 prod 용이며 리소스가 **Rollout**. image 태그를 갱신하면 Argo Rollouts 가 canary 진행.
-- `verification.analysisTemplates: [gateway-canary]` — Rollouts 내부 AnalysisRun 과 별개로 Kargo 가 "승격 직후 15분 안정성" 을 한 번 더 체크.
-- PromotionPolicy `autoPromotionEnabled: false`. Kargo UI 에서 승인자가 버튼 클릭.
+### 4.4 Stage: release-prod (Release Train, 번들 승격)
+
+**단일 Stage 가 모든 서비스의 staging 을 upstream 으로** 구독하여, 승격 시 각 서비스의 verification-통과 최신 Freight 를 하나의 원자 단위로 묶어 prod 에 배포한다.
+
+```yaml
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata: {name: release-prod, namespace: kargo}
+spec:
+  requestedFreight:
+    - origin: {kind: Warehouse, name: gateway}
+      sources: {stages: [gateway-staging]}
+    - origin: {kind: Warehouse, name: event-broadcaster}
+      sources: {stages: [event-broadcaster-staging]}
+    # 서비스 추가 시 여기에 한 줄씩 append
+  promotionTemplate:
+    spec:
+      steps:
+        # 각 서비스 prod Application 의 image 태그를 번들 Freight 에서 끌어와 동시 갱신
+        - uses: argocd-update
+          config:
+            apps:
+              - name: handbook-gateway-prod
+                sources:
+                  - repoURL: https://github.com/sayaya1090/handbook.git
+                    helm:
+                      images:
+                        - key: image.tag
+                          value: ${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/gateway").tag }}
+              - name: handbook-event-broadcaster-prod
+                sources:
+                  - repoURL: https://github.com/sayaya1090/handbook.git
+                    helm:
+                      images:
+                        - key: image.tag
+                          value: ${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/event-broadcaster").tag }}
+        # 릴리즈 노트 자동 커밋 (선택)
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/sayaya1090/handbook.git
+            checkout:
+              - {branch: main, path: ./repo}
+        - uses: git-commit
+          as: release-note
+          config:
+            path: ./repo
+            message: "release: ${{ ctx.freight.name }}"
+  verification:
+    analysisTemplates:
+      - name: release-canary
+```
+
+PromotionPolicy: `autoPromotionEnabled: false`. Kargo UI 에서 승인자가 버튼 클릭 → Kargo 가 이 시점의 각 upstream 최신 passed Freight 를 묶어 배포.
+
+**release-prod 가 "한 릴리즈 = 한 이벤트" 를 보장**:
+- 승격 = 단일 Kargo Promotion 리소스 = 단일 audit log 엔트리
+- 포함되는 서비스별 image digest 가 Freight 에 스냅샷으로 고정 → 재현 가능한 롤백
+- Slack/GitHub 알림이 "릴리즈 2026-04-14" 수준으로 단일화
+
+**Rollout 상호작용**:
+각 서비스의 prod Rollout 은 image 태그가 동시에 갱신되지만 **canary 진행은 독립**. 즉 gateway 는 10% → 30% → 100% 진행 중인데 event-broadcaster 는 10% 에서 SLO 위반으로 자동 롤백될 수 있음. 번들 롤백이 필요하면 Kargo UI 에서 `release-prod` 의 이전 Freight 로 재승격 → 모든 서비스 동시 롤백.
+
+### 4.5 핫픽스 레인 (선택)
+
+번들 릴리즈가 기다릴 수 없는 긴급 수정이 필요할 때의 backdoor:
+
+```yaml
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata: {name: gateway-hotfix-prod, namespace: kargo}
+spec:
+  requestedFreight:
+    - origin: {kind: Warehouse, name: gateway}
+      sources: {stages: [gateway-staging]}
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: argocd-update
+          config:
+            apps:
+              - name: handbook-gateway-prod
+                sources: [...]   # release-prod 와 동일한 앱에 덮어씀
+  verification:
+    analysisTemplates:
+      - name: gateway-canary
+```
+
+- 평소엔 **사용 안 함**. release-prod 경로가 기본.
+- 긴급 사용 시 Kargo RBAC 로 `promote` 권한을 hotfix responder 에게만 부여.
+- hotfix-prod 로 승격된 Freight 는 다음 번 release-prod 승격 시 자동으로 "이미 반영됨" 으로 인식되어 덮어쓰기 충돌 없음 (같은 digest).
+
+운영 규칙: **월 1회 이상 hotfix 경로를 쓰면 테스트/릴리즈 주기 설계를 재검토**. hotfix 는 예외.
 
 ## 5. Preview Environments — ApplicationSet PR Generator
 
@@ -336,7 +426,7 @@ Rollouts 가 weight 를 동적 변경. 실패 → `setWeight: 0` 자동 롤백.
 |------|-----------|------------------------------|
 | dev | Argo Workflows `gateway-e2e` WorkflowTemplate (Playwright) | `gateway-functional` — Workflow 완료 상태 polling |
 | staging | k6-operator `gateway-load` TestRun CR | `gateway-loadtest` — 부하 중 Prometheus SLO + k6 threshold cross-check |
-| prod canary | 실 트래픽 (Rollouts 가 subset 라우팅) | `gateway-canary` — Istio 메트릭 |
+| release-prod canary | 실 트래픽 (각 서비스 Rollouts 독립 canary) | `<svc>-canary` per service (Rollouts 가 참조) + `release-canary` (release-prod Stage verification, 번들 전체 관점) |
 
 `charts/handbook/infrastructure/templates/analysis/` 아래에 env 별로 배치. Spring Boot 4 Actuator 메트릭 이름(`http_server_requests_seconds_*`) 가정 — 실제 `/actuator/prometheus` 출력 확인 필요.
 
@@ -548,7 +638,44 @@ spec:
               ), 1)
 ```
 
-**AnalysisTemplate 은 Helm 서브차트 `infrastructure/templates/analysis/` 로 배치**, 서비스별 `service` 인자를 주입. 공용 템플릿 1벌 + env 별 override 가 아니라 **env 별 1벌씩 복제** — 네임스페이스 격리 때문에 AnalysisTemplate 도 env 별 존재해야 한다.
+`<svc>-canary` 는 각 서비스 Rollouts 가 canary step 에서 직접 참조한다 (`analysis.templates[].templateName: gateway-canary`). 서비스 단독 판정.
+
+### 7.4 `release-canary` (release-prod Stage verification)
+
+목적: 번들 승격 직후 **전체 릴리즈 관점** 에서 prod 안정성 확인. 각 서비스 Rollouts 가 개별 canary 를 돌리는 동안, Kargo `release-prod` Stage 는 "번들 전체" 지표로 15 분 모니터링.
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata: {name: release-canary, namespace: handbook-prod}
+spec:
+  metrics:
+    - name: prod-error-rate
+      interval: 1m
+      count: 15
+      successCondition: result[0] < 0.01
+      provider:
+        prometheus:
+          query: |
+            sum(rate(istio_requests_total{
+              destination_workload_namespace="handbook-prod",
+              response_code=~"5.."
+            }[2m]))
+            /
+            clamp_min(sum(rate(istio_requests_total{destination_workload_namespace="handbook-prod"}[2m])), 0.001)
+    - name: any-rollout-failed
+      interval: 1m
+      count: 15
+      successCondition: result[0] == 0
+      provider:
+        prometheus:
+          query: |
+            sum(kube_rollout_status_phase{namespace="handbook-prod",phase="Degraded"})
+```
+
+release-canary 실패 시 Kargo 가 `release-prod` 승격을 retrospectively "Unhealthy" 로 표시하고, 운영자가 "이전 Freight 로 재승격" 으로 번들 롤백.
+
+**AnalysisTemplate 배치**: Helm 서브차트 `infrastructure/templates/analysis/` 로, 서비스별 `service` 인자를 주입. 공용 템플릿 1벌 + env 별 override 가 아니라 **env 별 1벌씩 복제** — 네임스페이스 격리 때문에 AnalysisTemplate 도 env 별 존재해야 한다.
 
 ## 8. 이행 로드맵
 
@@ -559,9 +686,11 @@ spec:
 | P2a | **Argo Workflows 설치** + Playwright `gateway-e2e` WorkflowTemplate 작성 + `gateway-functional` AnalysisTemplate 작성 + dev 실제 동작 검증 | 1~2d | P1, E2E 시나리오 스크립트 준비 |
 | P2b | **k6-operator 설치** + `gateway-load` k6 스크립트/TestRun 작성 + `gateway-loadtest` AnalysisTemplate 작성 + staging 실제 동작 검증 | 1~2d | P1, Prometheus remote_write 설정 |
 | P3 | Argo Rollouts 설치 + gateway prod 를 Rollout 으로 교체 + Istio subset wiring + `gateway-canary` AnalysisTemplate | 1d | P2b |
-| P4 | ApplicationSet PR Generator + preview CI job + wildcard 인증서 | 1d | P0 |
-| P5 | NetworkPolicy / ResourceQuota / LimitRange 적용 | 0.5d | 네임스페이스 분리 완료 |
-| P6 | event-broadcaster 및 후속 서비스에 동일 패턴 복제 (E2E/k6 스크립트는 서비스별 작성) | 서비스당 0.5~1d | P2a, P2b, P3 |
+| P4 | **`release-prod` Stage + `release-canary` AnalysisTemplate 구성**. 처음엔 서비스 1개로 시작 → 2개로 확장 | 0.5d | P3 |
+| P5 | ApplicationSet PR Generator + preview CI job + wildcard 인증서 | 1d | P0 |
+| P6 | NetworkPolicy / ResourceQuota / LimitRange 적용 | 0.5d | 네임스페이스 분리 완료 |
+| P7 | event-broadcaster 및 후속 서비스에 동일 패턴 복제 + `release-prod.requestedFreight` 에 upstream 한 줄 추가 | 서비스당 0.5~1d | P2a, P2b, P3, P4 |
+| P8 (선택) | 핫픽스 레인 `<svc>-hotfix-prod` Stage + RBAC | 0.5d | P4 |
 
 **P0 → P1 → (P2a, P2b 병렬) → P3 순서는 엄격**. P4/P5 는 P1 이후 병렬 가능.
 
@@ -591,6 +720,9 @@ spec:
 - [ ] **Kargo ↔ ArgoCD 인증**: `argocd-update` 스텝용 ServiceAccount 토큰의 생성/관리
 - [ ] **Kargo ↔ Argo Workflows 인증**: `http` 스텝에서 Workflows API 호출용 토큰 어떻게 발급
 - [ ] **롤백 런북**: Rollouts abort, Kargo 이전 Freight 재승격, git revert 각각의 경계 문서화 필요
+- [ ] **릴리즈 트레인 주기**: release-prod 를 사람 판단으로 언제든 찍을지, 정기(주 1 회 · 격주) 로 고정할지
+- [ ] **핫픽스 정책**: `<svc>-hotfix-prod` 레인 구축 여부. 필요 없으면 P8 생략
+- [ ] **번들 부분 실패 시 대응**: release-prod canary 중 일부 서비스만 Rollouts 가 롤백하는 상황을 허용할지 (partial 가능), 아니면 전체 번들 롤백을 강제할지 (atomic). partial 이 기본, 강제 atomic 이면 Rollouts pre/post hook 추가 필요
 
 ## 10. 현재 차트와의 델타 요약
 
@@ -599,7 +731,8 @@ spec:
 | `.github/workflows/*-deploy.yaml` | jib 에 `sha-<8char>` 태그 푸시 추가 |
 | `.github/workflows/*-preview.yaml` (신규) | PR 이벤트로 `pr-<num>-<sha>` 태그 푸시 |
 | `charts/handbook/<svc>/templates/warehouse.yaml` | `allowTags`, `strictSemvers: false` 적용, git subscription 제거 (v1 제안 철회) |
-| `charts/handbook/<svc>/templates/stage.yaml` | prod 단계 `http` 스텝 제거, `argocd-update` 로 통일 |
+| `charts/handbook/<svc>/templates/stage.yaml` | dev/staging 만 유지. **서비스별 prod Stage 제거** (release-prod 로 통합) |
+| `charts/handbook/templates/release-prod.yaml` (신규) | 모든 서비스 staging 을 upstream 으로 집계하는 단일 `release-prod` Stage |
 | `charts/handbook/<svc>/templates/deployment.yaml` | prod 전용 `Rollout` 렌더 분기 |
 | `charts/handbook/<svc>/templates/service.yaml` | canary service 추가 |
 | `charts/handbook/infrastructure/templates/analysis/*.yaml` (신규) | AnalysisTemplate — functional/loadtest/canary × env |
