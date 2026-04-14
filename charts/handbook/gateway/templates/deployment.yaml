@@ -25,6 +25,9 @@ spec:
       app: gateway
   template:
     metadata:
+      # Gateway 는 외부 트래픽 진입점이라 Istio ambient mesh(ztunnel) 를 유지한다.
+      # mTLS · L7 텔레메트리 · AuthorizationPolicy 적용 대상.
+      # 자체 mTLS 를 가진 stateful 컴포넌트(Kafka 등)와 달리 dataplane-mode:none 라벨을 붙이지 않는다.
       labels:
         app: gateway
         version: 0.0.1
@@ -63,28 +66,8 @@ spec:
                 secretKeyRef:
                   name: handbook-jwt
                   key: jwt-secret
-            # jar 내부 application.yml 에 이 파일을 덮어쓰기로 merge 한다
-            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
-              value: "file:/app/config/application.yaml"
-            - name: CORS_ALLOWED_ORIGINS
-              value: "https://{{ .Values.host | default "handbook.sayaya.cloud" }}"
-            # 백엔드 서비스 Service DNS (각 서비스가 차트화되면 갱신)
-            - name: LOGIN_URI
-              value: "http://service-login:8080"
-            - name: EVENT_BROADCASTER_URI
-              value: "http://event-broadcaster:8080"
-            - name: SEARCH_TYPE_URI
-              value: "http://service-search-type:8080"
-            - name: PERSIST_TYPE_URI
-              value: "http://service-persist-type:8080"
-            - name: SEARCH_DOCUMENT_URI
-              value: "http://service-search-document:8080"
-            - name: PERSIST_DOCUMENT_URI
-              value: "http://service-persist-document:8080"
-            - name: PERSIST_WORKSPACE_URI
-              value: "http://service-persist-workspace:8080"
-            - name: ASSISTANT_URI
-              value: "http://service-assistant:8080"
+            # 운영 설정은 ConfigMap "gateway" 가 /app/resources/application.yml 에
+            # subPath 마운트되어 jar 의 application.yml 을 파일 단위로 덮어쓴다.
           resources:
             limits:
               cpu: '2'
@@ -93,10 +76,10 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            # jar 내부 application.yml 을 가리지 않는 별도 경로에 마운트 → SPRING_CONFIG_ADDITIONAL_LOCATION 으로 merge
+            # jar 의 application.yml 을 파일 단위로 덮어쓴다 (머지가 아닌 완전 대체).
             - name: config
-              mountPath: /app/config/application.yaml
-              subPath: application.yaml
+              mountPath: /app/resources/application.yml
+              subPath: application.yml
             - name: observability-config
               mountPath: /app/resources/observability.yaml
               subPath: observability.yaml

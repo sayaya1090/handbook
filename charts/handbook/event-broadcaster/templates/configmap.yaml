@@ -6,21 +6,43 @@ metadata:
   labels:
     app.kubernetes.io/instance: event-broadcaster
 data:
-  # jar 내부 src/main/resources/application.yml 에 merge 되는 override 파일.
-  # Deployment 가 SPRING_CONFIG_ADDITIONAL_LOCATION 으로 이 파일을 가리킨다.
-  # event-broadcaster 는 R2DBC 의존이 없어 PostgreSQL import 는 넣지 않는다.
-  application.yaml: |
+  # /app/resources/application.yml 에 subPath 마운트되어 jar 의 application.yml 을
+  # 파일 단위로 덮어쓴다. 머지가 아니라 완전 대체이므로 운영 환경에서 필요한 모든
+  # 설정은 jar 와 중복되더라도 이 파일에 다 적는다. (jar 의 application.yml 은
+  # 로컬 IDE 실행용 default 로만 사용)
+  application.yml: |
     spring:
+      application:
+        name: event-broadcaster
       main:
         web-application-type: reactive
-      threads.virtual.enabled: true
+      threads:
+        virtual:
+          enabled: true
       config:
         import:
           - classpath:observability.yaml
           - classpath:authentication.yaml
           - classpath:kafka.yaml
-    management:
-      endpoint:
-        health:
-          probes:
-            enabled: true
+      cloud:
+        stream:
+          bindings:
+            event-in-0:
+              destination: handbook-events
+              consumer:
+                max-attempts: 3
+              group: event-broadcaster
+          kafka:
+            binder:
+              brokers: ${KAFKA_BROKERS:localhost:9092}
+            bindings:
+              event-in-0:
+                consumer:
+                  enableDlq: true
+                  dlqName: handbook-events-dlq
+      kafka:
+        bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    # management / logging / metrics 는 observability fragment 에서 import 됨

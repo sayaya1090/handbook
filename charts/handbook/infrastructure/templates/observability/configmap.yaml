@@ -9,11 +9,19 @@ data:
       endpoints:
         web:
           exposure:
-            include: health,info,prometheus
+            include: health,info,prometheus,metrics
       endpoint:
         health:
           show-details: always
+          probes:
+            enabled: true
+      metrics:
+        tags:
+          application: ${spring.application.name}
       prometheus:
         metrics:
           export:
             enabled: true
+    logging:
+      pattern:
+        console: "%d{ISO8601} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"

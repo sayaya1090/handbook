@@ -9,12 +9,12 @@ spring:
       routes:
         # 인증
         - id: login
-          uri: ${LOGIN_URI:http://localhost:8081}
+          uri: ${gateway.routes.login:http://localhost:8081}
           predicates:
             - Path=/auth/**,/user
         # 실시간 이벤트 (SSE) — search-document보다 먼저 매칭해야 한다
         - id: event-broadcaster
-          uri: ${EVENT_BROADCASTER_URI:http://localhost:8088}
+          uri: ${gateway.routes.event-broadcaster:http://localhost:8088}
           predicates:
             - Path=/workspace/*/messages
             - Method=GET
@@ -25,31 +25,31 @@ spring:
                 fallbackUri: forward:/fallback/empty
         # 타입 조회
         - id: search-type
-          uri: ${SEARCH_TYPE_URI:http://localhost:8082}
+          uri: ${gateway.routes.search-type:http://localhost:8082}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=GET
         # 타입 저장
         - id: persist-type
-          uri: ${PERSIST_TYPE_URI:http://localhost:8083}
+          uri: ${gateway.routes.persist-type:http://localhost:8083}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=PUT,DELETE
         # 문서 조회 + 대시보드 통계
         - id: search-document
-          uri: ${SEARCH_DOCUMENT_URI:http://localhost:8084}
+          uri: ${gateway.routes.search-document:http://localhost:8084}
           predicates:
             - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
             - Method=GET
         # 문서 저장
         - id: persist-document
-          uri: ${PERSIST_DOCUMENT_URI:http://localhost:8085}
+          uri: ${gateway.routes.persist-document:http://localhost:8085}
           predicates:
             - Path=/workspace/*/documents/**
             - Method=PUT,DELETE
         # 워크스페이스
         - id: persist-workspace
-          uri: ${PERSIST_WORKSPACE_URI:http://localhost:8086}
+          uri: ${gateway.routes.persist-workspace:http://localhost:8086}
           predicates:
             - Path=/workspace,/workspace/**
             - Method=POST,PUT,DELETE
@@ -57,7 +57,7 @@ spring:
         # CircuitBreaker 필터는 event-broadcaster, assistant에 적용
         # 에이전트 (선택 서비스 — 장애 시 빈 응답)
         - id: assistant
-          uri: ${ASSISTANT_URI:http://localhost:8087}
+          uri: ${gateway.routes.assistant:http://localhost:8087}
           predicates:
             - Path=/assistant/**
           filters:
@@ -68,7 +68,7 @@ spring:
         # 메뉴 (여러 서비스에서 합산 — MenuService에서 처리)
         # 정적 리소스
         - id: static
-          uri: ${STATIC_URI:http://localhost:8080}
+          uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
             - Path=/js/**,/css/**,/icons/**
 server:

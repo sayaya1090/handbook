@@ -6,22 +6,107 @@ metadata:
   labels:
     app.kubernetes.io/instance: gateway
 data:
-  # jar 내부 src/main/resources/application.yml 을 기반으로 하고 이 파일은 override 만 담는다.
-  # Deployment 가 SPRING_CONFIG_ADDITIONAL_LOCATION 으로 이 파일을 가리켜 merge 된다.
-  application.yaml: |
+  # /app/resources/application.yml 에 subPath 마운트되어 jar 의 application.yml 을
+  # 파일 단위로 덮어쓴다. 머지가 아니라 완전 대체이므로 운영 환경에서 필요한 모든
+  # 설정은 jar 와 중복되더라도 이 파일에 다 적는다. (jar 의 application.yml 은
+  # 로컬 IDE 실행용 default 로만 사용)
+  application.yml: |
     spring:
+      application:
+        name: gateway
       main:
         web-application-type: reactive
-      threads.virtual.enabled: true
+      threads:
+        virtual:
+          enabled: true
       config:
         import:
           - classpath:observability.yaml
           - classpath:authentication.yaml
-    management:
-      endpoint:
-        health:
-          probes:
-            enabled: true
+      cloud:
+        gateway:
+          discovery:
+            locator:
+              enabled: true
+          routes:
+            # 인증
+            - id: login
+              uri: ${gateway.routes.login}
+              predicates:
+                - Path=/auth/**,/user
+            # 실시간 이벤트 (SSE) — search-document보다 먼저 매칭해야 한다
+            - id: event-broadcaster
+              uri: ${gateway.routes.event-broadcaster}
+              predicates:
+                - Path=/workspace/*/messages
+                - Method=GET
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: eventBroadcasterCB
+                    fallbackUri: forward:/fallback/empty
+            # 타입 조회
+            - id: search-type
+              uri: ${gateway.routes.search-type}
+              predicates:
+                - Path=/workspace/*/types/**,/workspace/*/layouts/**
+                - Method=GET
+            # 타입 저장
+            - id: persist-type
+              uri: ${gateway.routes.persist-type}
+              predicates:
+                - Path=/workspace/*/types/**,/workspace/*/layouts/**
+                - Method=PUT,DELETE
+            # 문서 조회 + 대시보드 통계
+            - id: search-document
+              uri: ${gateway.routes.search-document}
+              predicates:
+                - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
+                - Method=GET
+            # 문서 저장
+            - id: persist-document
+              uri: ${gateway.routes.persist-document}
+              predicates:
+                - Path=/workspace/*/documents/**
+                - Method=PUT,DELETE
+            # 워크스페이스
+            - id: persist-workspace
+              uri: ${gateway.routes.persist-workspace}
+              predicates:
+                - Path=/workspace,/workspace/**
+                - Method=POST,PUT,DELETE
+            # 에이전트 (선택 서비스 — 장애 시 빈 응답)
+            - id: assistant
+              uri: ${gateway.routes.assistant}
+              predicates:
+                - Path=/assistant/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: assistantCB
+                    fallbackUri: forward:/fallback/empty
+            # 정적 리소스 — gateway 자기 자신
+            - id: static
+              uri: http://localhost:8080
+              predicates:
+                - Path=/js/**,/css/**,/icons/**
+    server:
+      port: 8080
+    cors:
+      allowed-origins: "https://{{ .Values.host | default "handbook.sayaya.cloud" }}"
+    # management / logging / metrics 는 observability fragment 에서 import 됨
+    # 백엔드 라우팅 대상. spring.cloud.gateway.routes[*].uri 가 ${gateway.routes.<id>} 로 참조.
+    # 새 서비스 추가 시 이 키만 갱신하면 reloader 가 핫 리로드.
+    gateway:
+      routes:
+        login: http://service-login:8080
+        event-broadcaster: http://event-broadcaster:8080
+        search-type: http://service-search-type:8080
+        persist-type: http://service-persist-type:8080
+        search-document: http://service-search-document:8080
+        persist-document: http://service-persist-document:8080
+        persist-workspace: http://service-persist-workspace:8080
+        assistant: http://service-assistant:8080
     # gateway MenuService 가 /menu 를 집계할 대상 서비스 목록
     services:
       - name: login
