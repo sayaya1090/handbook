@@ -17,10 +17,8 @@ data:
       config:
         import:
           - classpath:observability.yaml
-      security:
-        authentication:
-          header: ${AUTH_HEADER:Authorization}
-          jwt-secret: ${JWT_SECRET}
+          - classpath:authentication.yaml
+          - classpath:kafka.yaml
     management:
       endpoint:
         health:

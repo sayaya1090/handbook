@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: handbook-postgresql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+data:
+  # spring.config.import: classpath:postgresql.yaml 용 fragment.
+  # 각 Deployment 가 /app/resources/postgresql.yaml 에 subPath 로 마운트한다.
+  # 연결 env(DB_HOST / DB_PORT / DB_NAME / DB_USERNAME / DB_PASSWORD)는
+  # 서비스 Deployment 에서 postgres Secret 등으로 별도 주입한다.
+  postgresql.yaml: |
+    spring:
+      r2dbc:
+        url: r2dbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:handbook}
+        username: ${DB_USERNAME:postgres}
+        password: ${DB_PASSWORD}

@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: handbook-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+data:
+  # spring.config.import: classpath:kafka.yaml 용 fragment.
+  # 각 Deployment 가 /app/resources/kafka.yaml 에 subPath 로 마운트한다.
+  # KAFKA_BROKERS env 는 서비스 Deployment 에서 주입
+  # (기본값: {{ .Values.kafka.cluster.name }}-kafka-bootstrap:9092).
+  kafka.yaml: |
+    spring:
+      kafka:
+        bootstrap-servers: ${KAFKA_BROKERS}

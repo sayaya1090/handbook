@@ -1,0 +1,18 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: handbook-authentication
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+data:
+  # spring.config.import: classpath:authentication.yaml 용 fragment.
+  # 각 Deployment 가 /app/resources/authentication.yaml 에 subPath 로 마운트한다.
+  # JWT_SECRET 은 handbook-jwt Secret 에서 Deployment 가 env 로 주입.
+  authentication.yaml: |
+    spring:
+      security:
+        authentication:
+          header: ${AUTH_HEADER:Authorization}
+          jwt-secret: ${JWT_SECRET}

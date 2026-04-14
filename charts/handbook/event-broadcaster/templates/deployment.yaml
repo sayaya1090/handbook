@@ -5,7 +5,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: '*'
     app.openshift.io/route-disabled: 'false'
     app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/event-broadcaster'
-    configmap.reloader.stakater.com/reload: "event-broadcaster,observability"
+    configmap.reloader.stakater.com/reload: "event-broadcaster,observability,handbook-authentication,handbook-kafka"
   name: event-broadcaster
   namespace: {{ .Release.Namespace }}
   finalizers:
@@ -41,6 +41,14 @@ spec:
         - name: observability-config
           configMap:
             name: observability
+            defaultMode: 420
+        - name: authentication-config
+          configMap:
+            name: handbook-authentication
+            defaultMode: 420
+        - name: kafka-config
+          configMap:
+            name: handbook-kafka
             defaultMode: 420
       containers:
         - name: event-broadcaster
@@ -79,6 +87,12 @@ spec:
             - name: observability-config
               mountPath: /app/resources/observability.yaml
               subPath: observability.yaml
+            - name: authentication-config
+              mountPath: /app/resources/authentication.yaml
+              subPath: authentication.yaml
+            - name: kafka-config
+              mountPath: /app/resources/kafka.yaml
+              subPath: kafka.yaml
           # 부팅 완료까지 최대 150초 (30 × 5s) 허용. 그 전에는 liveness/readiness 가 평가되지 않는다.
           startupProbe:
             httpGet:

@@ -13,13 +13,10 @@ data:
       main:
         web-application-type: reactive
       threads.virtual.enabled: true
-      security:
-        authentication:
-          header: ${AUTH_HEADER:Authorization}
-          jwt-secret: ${JWT_SECRET}
       config:
         import:
           - classpath:observability.yaml
+          - classpath:authentication.yaml
     management:
       endpoint:
         health:
