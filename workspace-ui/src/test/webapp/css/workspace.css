@@ -19,7 +19,7 @@
     gap: 16px;
     background: var(--md-sys-color-surface, white);
     box-shadow: var(--md-sys-elevation-level3);
-    transition: height 300ms ease;
+    transition: height var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, ease);
 }
 
 /* ── Section (CREATE / JOIN) ── */
@@ -39,7 +39,7 @@
     flex: 1;
 }
 .ws-section-label {
-    font-size: 15px;
+    font-size: var(--md-sys-typescale-body-large-size, 16px);
     font-weight: 500;
     color: var(--md-sys-color-on-surface, #1a1a1a);
     line-height: 1.4;
@@ -54,7 +54,7 @@
     align-items: center;
     text-align: center;
     color: var(--md-sys-color-on-surface-variant, #666);
-    font-size: 14px;
+    font-size: var(--md-sys-typescale-body-medium-size, 14px);
 }
 .ws-divider::before,
 .ws-divider::after {
@@ -92,7 +92,7 @@
         padding: 4px 0;
     }
     .ws-section-label {
-        font-size: 16px;
+        font-size: var(--md-sys-typescale-body-large-size, 16px);
         min-height: 44px;
         display: flex;
         align-items: center;
