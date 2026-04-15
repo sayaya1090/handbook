@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             library("spring-webflux", "org.springframework.boot", "spring-boot-starter-webflux").withoutVersion()
             library("kotlin-reactor", "io.projectreactor.kotlin", "reactor-kotlin-extensions").withoutVersion()
             library("kotlin-coroutines-reactor", "org.jetbrains.kotlinx", "kotlinx-coroutines-reactor").withoutVersion()
-            library("kotlin-jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").withoutVersion()
+            library("kotlin-jackson", "tools.jackson.module", "jackson-module-kotlin").withoutVersion()
             library("spring-actuator", "org.springframework.boot", "spring-boot-starter-actuator").withoutVersion()
             library("prometheus", "io.micrometer", "micrometer-registry-prometheus").withoutVersion()
             bundle("kotlin-webflux", listOf("spring-webflux", "kotlin-reactor", "kotlin-coroutines-reactor", "kotlin-jackson", "spring-actuator", "prometheus"))

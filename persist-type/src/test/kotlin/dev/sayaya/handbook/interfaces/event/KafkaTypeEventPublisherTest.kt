@@ -1,8 +1,7 @@
 package dev.sayaya.handbook.interfaces.event
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.event.Event
 import io.kotest.core.spec.style.BehaviorSpec
@@ -17,7 +16,6 @@ import java.util.*
 class KafkaTypeEventPublisherTest : BehaviorSpec({
     val objectMapper = JsonMapper.builder()
         .addModule(KotlinModule.Builder().build())
-        .addModule(JavaTimeModule())
         .build()
     val topic = "handbook-events"
     val workspace = UUID.randomUUID()

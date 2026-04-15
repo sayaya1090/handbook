@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.interfaces.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.usecase.DocumentSearchService
@@ -16,9 +16,9 @@ import java.util.*
 
 class ExportControllerTest : BehaviorSpec({
     val service = mockk<DocumentSearchService>()
-    val objectMapper = ObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerModule(KotlinModule.Builder().build())
+    val objectMapper: ObjectMapper = JsonMapper.builder()
+        .addModule(KotlinModule.Builder().build())
+        .build()
     val controller = ExportController(service, objectMapper)
     val client = WebTestClient.bindToController(controller)
         .argumentResolvers { it.addCustomResolver(SearchArgumentResolver()) }

@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.interfaces.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.usecase.CsvSerializer
 import dev.sayaya.handbook.usecase.DocumentSearchService

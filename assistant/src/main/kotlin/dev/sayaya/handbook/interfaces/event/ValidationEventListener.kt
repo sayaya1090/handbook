@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.interfaces.event
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.domain.event.ValidationPayload
 import dev.sayaya.handbook.usecase.QualityMonitorService

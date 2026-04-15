@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.interfaces.event
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.domain.event.TypeEvent

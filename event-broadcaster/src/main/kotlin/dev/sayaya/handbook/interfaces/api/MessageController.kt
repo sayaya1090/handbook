@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.interfaces.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.usecase.Broadcaster
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType

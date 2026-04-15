@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.interfaces.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.usecase.DocumentService
 import io.kotest.core.spec.style.BehaviorSpec
@@ -25,7 +24,7 @@ import java.util.*
  */
 class ImportExportControllerTest : BehaviorSpec({
     val service = mockk<DocumentService>()
-    val objectMapper = ObjectMapper().registerModule(JavaTimeModule())
+    val objectMapper = ObjectMapper()
     val controller = ImportExportController(service, objectMapper)
     val client = WebTestClient.bindToController(controller).build()
     val workspace = UUID.randomUUID()

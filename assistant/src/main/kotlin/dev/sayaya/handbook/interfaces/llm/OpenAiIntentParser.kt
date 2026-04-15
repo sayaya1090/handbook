@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.interfaces.llm
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.AgentCommand
 import dev.sayaya.handbook.domain.CommandType
 import dev.sayaya.handbook.domain.ExecutionPlan

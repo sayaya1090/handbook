@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.usecase
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.event.Event
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux

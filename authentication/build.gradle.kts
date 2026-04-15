@@ -19,5 +19,6 @@ dependencies {
     api(libs.jjwt.api)
     runtimeOnly(libs.bundles.jjwt.runtime)
     testImplementation(libs.bundles.test.api)
+    testImplementation(libs.r2dbc)
 }
 

@@ -2,10 +2,10 @@ package dev.sayaya.handbook.interfaces.config
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import tools.jackson.databind.*
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.interfaces.discovery.ServiceDiscovery
 import dev.sayaya.handbook.interfaces.discovery.ServiceListProperties
 import dev.sayaya.handbook.usecase.MenuService
@@ -15,8 +15,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.http.codec.json.Jackson2JsonDecoder
-import org.springframework.http.codec.json.Jackson2JsonEncoder
+import org.springframework.http.codec.json.JacksonJsonDecoder
+import org.springframework.http.codec.json.JacksonJsonEncoder
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.reactive.CorsWebFilter
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
@@ -36,22 +36,20 @@ import org.springframework.web.reactive.function.client.WebClient
 @EnableConfigurationProperties(ServiceListProperties::class)
 class GatewayConfig {
     @Bean
-    fun objectMapper(): ObjectMapper = JsonMapper.builder()
-        .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+    fun objectMapper(): JsonMapper = JsonMapper.builder()
+        .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        .addModule(JavaTimeModule())
+        .changeDefaultVisibility { it.withVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY) }
         .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
         .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         .build()
 
-    @Suppress("DEPRECATION")
     @Bean
-    fun webClientBuilder(objectMapper: ObjectMapper): WebClient.Builder {
+    fun webClientBuilder(objectMapper: JsonMapper): WebClient.Builder {
         return WebClient.builder().codecs { configurer ->
-            configurer.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper))
-            configurer.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper))
+            configurer.defaultCodecs().jacksonJsonEncoder(JacksonJsonEncoder(objectMapper))
+            configurer.defaultCodecs().jacksonJsonDecoder(JacksonJsonDecoder(objectMapper))
         }
     }
 

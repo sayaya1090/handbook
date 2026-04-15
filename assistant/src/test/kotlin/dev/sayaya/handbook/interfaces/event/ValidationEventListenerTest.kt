@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.interfaces.event
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import dev.sayaya.handbook.usecase.QualityMonitorService
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every

@@ -45,7 +45,13 @@
 - `switchIfEmpty` 인자는 `Mono.defer { }` 감싸기 (eager evaluation 방지)
 - 이벤트 구현 클래스에 `@JsonProperty("event_type")` 명시
 - **Spring Boot 엔트리포인트는 top-level `fun main` 패턴만 사용.** `class Application { companion object { @JvmStatic fun main } }` 금지 — `Application` + `Application$Companion` 둘 다에 main이 생겨 jib `MainClassInferenceException` 발생.
-- **다른 서비스가 project dependency로 참조하는 Spring Boot 모듈에는 `tasks.jar { enabled = false }` 금지.** bootJar만 만들면 library 소비자가 plain jar variant를 못 받아 jib가 `Obtaining project build output files failed` 로 실패. Spring Boot 3.x 기본 동작(bootJar + `-plain.jar` 공존)에 맡긴다.
+- **다른 서비스가 project dependency로 참조하는 Spring Boot 모듈에는 `tasks.jar { enabled = false }` 금지.** bootJar만 만들면 library 소비자가 plain jar variant를 못 받아 jib가 `Obtaining project build output files failed` 로 실패. Spring Boot 3.x/4.x 기본 동작(bootJar + `-plain.jar` 공존)에 맡긴다.
+- **Jackson 3 패키지**: Spring Boot 4 는 Jackson 3(`tools.jackson.*`) 를 사용한다. 신규 코드는 `tools.jackson.databind.*`, `tools.jackson.core.*`, `tools.jackson.module.kotlin.*` 을 쓰고 annotation(`@JsonProperty` 등) 만 `com.fasterxml.jackson.annotation.*` 에 그대로 둔다.
+  - `ObjectMapper` 는 생성 후 불변 — 뮤테이터 체인(`ObjectMapper().setVisibility().registerModule()...`) 금지. `JsonMapper.builder().addModule(...).propertyNamingStrategy(...).build()` 패턴만 사용.
+  - 날짜 관련 feature 는 `SerializationFeature` 에서 떨어져나왔다: `DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS`, `DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS` (`tools.jackson.databind.cfg.DateTimeFeature`).
+  - `visibility(PA, V)` → `changeDefaultVisibility { it.withVisibility(PA, V) }`, `serializationInclusion/defaultPropertyInclusion(...)` → `changeDefaultPropertyInclusion { it.withValueInclusion(...) }` (UnaryOperator 기반).
+  - `jackson-datatype-jsr310` 은 붙이지 않는다. Jackson 3 가 `java.time` 을 기본 내장하므로 `JavaTimeModule` 등록 불필요. 만약 커스텀 포맷이 필요해지면 그 지점에서만 해당 모듈을 재도입.
+  - WebFlux codec: Spring Boot 4 부터 `Jackson2JsonEncoder/Decoder` 대신 `JacksonJsonEncoder/Decoder` (`JsonMapper` 를 요구). `CodecConfigurer.defaultCodecs().jackson2Json*` 도 `.jacksonJson*` 로.
 
 ### Java (GWT 프론트엔드)
 - **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.claude/skills/sayaya-ui.md` 참조.

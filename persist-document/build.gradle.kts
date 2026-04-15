@@ -15,10 +15,8 @@ dependencies {
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
     implementation(libs.spring.kafka)
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation(libs.springdoc.webflux)
     testImplementation(libs.bundles.test.api)
     testImplementation(platform(libs.testcontainers.bom))
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }

@@ -12,5 +12,4 @@ dependencies {
     api(project(":schema"))
     implementation(libs.bundles.kotlin.webflux)
     testImplementation(libs.bundles.test.api)
-    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
 }

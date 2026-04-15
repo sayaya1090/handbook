@@ -14,9 +14,7 @@ dependencies {
     implementation(libs.spring.kafka)
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation(libs.springdoc.webflux)
     testImplementation(libs.bundles.test.api)
-    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }
 tasks.jar { enabled = false }

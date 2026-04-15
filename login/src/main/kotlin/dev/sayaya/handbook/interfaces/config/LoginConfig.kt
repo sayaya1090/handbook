@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.interfaces.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.usecase.TokenFactory
 import dev.sayaya.handbook.usecase.TokenPublisher
 import dev.sayaya.handbook.usecase.UserRepository
