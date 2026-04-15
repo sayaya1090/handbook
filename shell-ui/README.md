@@ -36,25 +36,31 @@ client/
 │
 ├── interfaces/                          # 인터페이스 (UI 어댑터)
 │   ├── ContentElement                  # 루트 컨테이너 (div#content, flex 레이아웃)
+│   ├── ShellStylesheet                 # css/shell.css 를 런타임에 document.head 에 주입 (모듈 자율 자산 로드)
 │   ├── api/                            # API 클라이언트
 │   │   ├── FetchApi                   # fetch API 래퍼 인터페이스
 │   │   ├── MenuApi                    # MenuRepository 구현 (/menus 엔드포인트)
 │   │   ├── UserApi                    # UserRepository 구현 (/user + 10분 갱신)
 │   │   └── ApiModule                  # Dagger 바인딩 (Repository → Api)
 │   └── drawer/                         # 드로어 네비게이션 UI
-│       ├── DrawerElement              # 드로어 컨테이너 (header + body)
+│       ├── DrawerElement              # 드로어 컨테이너 (header[workspace+hamburger] + body[rails])
+│       │                              #   ThemeToggle 을 navMenu 자식으로 직접 추가
 │       ├── NavigationRailElement      # 레일 공통 인터페이스 (expand/collapse/hide)
-│       ├── NavigationRailItemElement  # 레일 아이템 추상 클래스 (md-item 기반)
-│       ├── MenuRailElement            # 메뉴 레일 (정렬, bottom 분리)
+│       ├── NavigationRailItemElement  # 레일 아이템 추상 클래스 (.item > .collapse + .expand 구조)
+│       ├── MenuRailElement            # 메뉴 레일. bottom 메뉴에 .bottom-menu 클래스만 부여
+│       │                              #   (위치는 CSS order 가 결정, 동적 margin-top:auto 계산 X)
 │       ├── MenuRailItemElement        # 개별 메뉴 아이템 (@AssistedInject)
 │       ├── MenuRailItemFactory        # 메뉴 아이템 팩토리
 │       ├── ToolRailElement            # 도구 레일 (offset 계산, debounce)
 │       ├── ToolRailItemElement        # 개별 도구 아이템 (@AssistedInject)
 │       ├── ToolRailItemFactory        # 도구 아이템 팩토리
-│       ├── ThemeToggle                # 라이트/다크 테마 전환 토글
-│       ├── MenuToggleButton           # SVG 햄버거 토글 (애니메이션)
+│       ├── ThemeToggle                # NavigationRailItemElement 상속. 라이트/다크 테마 전환
+│       │                              #   .collapse + md-item slot=start 두 곳에 sun/moon SVG morph
+│       │                              #   headline 라벨은 i18n (theme.switch_to_dark / theme.switch_to_light)
+│       │                              #   토글 순간만 :root.theme-changing 클래스로 일출/일몰 애니메이션 트리거
+│       ├── MenuToggleButton           # SVG 햄버거 토글 (애니메이션, drawer-header 안에서 워크스페이스 셀렉터와 가로 일렬)
 │       ├── CloseToolRailButton        # 도구 레일 닫기 버튼
-│       ├── WorkspaceSelectElement     # 워크스페이스 셀렉트 드롭다운
+│       ├── WorkspaceSelectElement     # 워크스페이스 셀렉트 드롭다운 (drawer-header)
 │       └── MenuHoverElementProvider   # 호버 메뉴 아이템 위치 추적
 │
 ├── HostSharedModule                     # Dagger 모듈: URI 상태 (BehaviorSubject + Observable)
@@ -167,6 +173,12 @@ stateDiagram-v2
 | NavigationRailElement 인터페이스 | MenuRail, ToolRail의 expand/collapse/hide 동작 통일 |
 | FetchApi 인터페이스 | 테스트 시 API 호출 모킹 가능 |
 | UserApi 10분 주기 갱신 | 세션 유지 + 토큰 자동 갱신 |
+| ThemeToggle 이 NavigationRailItemElement 를 상속 | 일반 메뉴 아이템과 동일한 .item > (.collapse + .expand) 구조를 가져 시각/스페이싱이 자동으로 일치한다. expand 모드에선 md-item 의 headline 라벨이, collapse 모드에선 .collapse 아이콘 버튼만 노출 |
+| theme/menu 위치를 CSS order 로 통제 | 일반 메뉴(0) → ThemeToggle(.rail-bottom, order:1) → bottom 메뉴(.bottom-menu, order:2) 순으로 정렬. ThemeToggle 한 곳에만 `margin-top: auto` 가 있어 free space 분배 충돌이 없고, MenuRailElement 가 동적으로 첫 bottom 메뉴를 찾아 margin 을 부여하던 로직을 제거. 모바일(.rail[bottom-nav]) 에서는 row 방향이라 margin-top auto 가 push 효과 없고 ThemeToggle 자체가 hidden, .bottom-menu 들은 horizontal navbar 끝쪽으로 자연스럽게 배치 |
+| 테마 색 트랜지션 600ms cubic-bezier | 부드럽지만 빠르게 점진 전환. shell.css 의 :root/body/.drawer/.frame/.rail 트랜지션 블록이 background-color/color/border-color/fill/stroke 를 한 번에 보간 |
+| Sun/Moon SVG morph 는 :root.theme-changing 클래스 500ms 부착으로 트리거 | 토글 순간에만 클래스가 부착되어 keyframe(theme-icon-rise/set) 이 재생. 500ms 후 자동 제거되어 drawer expand/collapse 같은 다른 DOM 변화(예: md-item 의 start svg 가 display:none → visible 로 바뀌는 시점) 에서는 animation-name 매칭이 안 돼 의도치 않은 재생을 차단 |
+| ThemeToggle 헤드라인이 darkMode 에 따라 i18n 키 동적 변경 | 현재 light → "Switch to Dark" (theme.switch_to_dark), 현재 dark → "Switch to Light" (theme.switch_to_light). LabelProvider 구독으로 locale 변경 시에도 자동 갱신 |
+| ShellStylesheet 가 css/shell.css 를 런타임에 head 주입 | shell-ui 모듈이 자기 스타일시트의 정본 소유자가 됨. app.html 이 shell.css 를 미리 link 할 필요 없고, 빌드/배포 차원에서 shell-ui 의 src/main/webapp 만이 정본을 가짐 |
 
 ## 테스트
 

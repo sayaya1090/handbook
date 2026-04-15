@@ -369,10 +369,16 @@ classDiagram
     }
     class ThemeToggle {
         <<@Singleton>>
-        -UserPreferences prefs
-        +element(): HTMLElement
-        -toggleTheme()
+        -LabelProvider labelProvider
+        -boolean darkMode
+        -HTMLElement headlineEl
+        -Labels currentLabels
+        -toggle()
+        -updateHeadline()
+        -applyTheme()
+        -createThemeSvg(): SVGElement
     }
+    NavigationRailItemElement <|-- ThemeToggle
     ShellInitializer --> SessionManager
     class HostSharedModule {
         <<@Module>>

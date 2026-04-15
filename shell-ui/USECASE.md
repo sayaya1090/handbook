@@ -290,9 +290,12 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 인증 완료, Shell 로딩 완료 |
-| **정상 흐름** | 1. 사용자가 설정 패널(Drawer 내 또는 별도 모달)을 연다.<br>2. 언어(ko/en)를 변경하면 localStorage에 저장되고 `LabelProvider`가 즉시 갱신된다.<br>3. 테마(다크/라이트)를 변경하면 CSS 변수가 전환되고 설정이 퍼시스트된다. |
+| **정상 흐름** | 1. 사용자가 설정 패널(Drawer 내 또는 별도 모달)을 연다.<br>2. 언어(ko/en)를 변경하면 localStorage에 저장되고 `LabelProvider`가 즉시 갱신된다.<br>3. **MenuRail 의 ThemeToggle 버튼** (sun/moon 아이콘) 을 클릭하면 `<html>` 의 `color-theme` 속성이 light↔dark 로 토글되고 localStorage 에 저장된다. 동시에 `<html>` 에 `theme-changing` 클래스가 500ms 동안 부착되어, 그 구간에만 sun/moon morph 애니메이션이 재생된다. |
 | **요구사항** | 6.8 사용자 설정 |
-| **상태** | 부분 구현 (UserPreferences, ThemeToggle, BrowserLanguageDetector 구현 완료. 설정 패널 UI 미완) |
+| **상태** | 부분 구현 (UserPreferences, ThemeToggle 구현 완료. 언어 설정 패널 UI 미완) |
+| **레이아웃** | `ThemeToggle` 은 `NavigationRailItemElement` 를 상속하여 일반 메뉴와 동일한 `.item > .collapse + md-item` 구조를 갖는다. MenuRail 의 마지막 자식으로 append 되며 `.rail-bottom` 클래스(+ `margin-top: auto`, `order: 1`) 로 하단에 고정. `bottom=true` 메뉴는 `.bottom-menu` 클래스(`order: 2`) 가 붙어 ThemeToggle 의 **아래쪽** 에 배치된다 — 즉 시각 순서는 일반 메뉴(0) → ThemeToggle(1) → bottom 메뉴(2). 모바일 `[bottom-nav]` 에서는 `.rail-bottom` 이 `display: none` 으로 숨겨진다. |
+| **i18n** | Headline 텍스트는 `LabelProvider` 를 구독하여 `darkMode` 상태에 따라 `theme.switch_to_dark` / `theme.switch_to_light` 키를 동적으로 바꿔 표시한다. expand 모드에서만 보이며 collapse 모드에서는 아이콘만 노출. |
+| **애니메이션** | (1) 색 전환 — 전역 CSS 트랜지션으로 background/color/fill/stroke 가 점진 변화. (2) 아이콘 morph — sun/moon path 를 SVG 안에 동시 렌더. `:root.theme-changing[color-theme='...']` 조합 셀렉터로 rise/set keyframes 를 200ms 적용, 200ms stagger 로 교체. `.theme-changing` 는 클릭 시에만 500ms 부착되므로 드로어 expand/collapse 전환에는 재생되지 않는다. |
 
 ## UC-S16: 사용자 설정 패널 UI
 
@@ -334,7 +337,7 @@ sequenceDiagram
 | UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ProgressTest: 컨테이너/라벨 존재, 초기 opacity=0, indeterminate → opacity=1 + 라벨 숨김, 30% → "처리 중" + "3/10", 70% → "거의 완료" + "7/10", 100% → "완료" + "10/10", hide → opacity=0, 재표시 검증 |
 | UC-S13 (모바일) | 모바일 Drawer 전환 | Drawer UI | ViewportObserver, DrawerMode(OVERLAY), MenuRailMode(BOTTOM_NAV), ToolRailMode(HORIZONTAL_CHIPS), DrawerElement | DrawerModeTest: OVERLAY→BOTTOM_NAV, OVERLAY→HORIZONTAL_CHIPS 상태 전이 검증 |
 | UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspace/{id}/messages, 이벤트 타입별 UI 갱신 | UrlBasedMenuResolverTest: SSE 이벤트 기반 메뉴 갱신 검증 |
-| UC-S15 (언어/테마) | — | Drawer UI | UserPreferences (activity), ThemeToggle, BrowserLanguageDetector, LabelProvider | ❌ 테스트 미작성 (UserPreferences, ThemeToggle, BrowserLanguageDetector 구현 완료) |
+| UC-S15 (언어/테마) | — | Drawer UI | UserPreferences (activity), ThemeToggle (NavigationRailItemElement 상속, `.rail-bottom` 하단 고정, i18n headline, theme-changing 500ms 애니메이션 트리거), BrowserLanguageDetector, LabelProvider | DrawerTest: `.rail .rail-bottom.item` 존재, `.collapse` SVG 와 `md-item` start slot SVG 동시 렌더, 초기 color-theme light/dark, 클릭 시 토글 + theme-changing 클래스 일시 부착, expand 시 `.collapse` 숨김 / `md-item` 표시, bottom-menu 가 rail-bottom 아래 순서 |
 | UC-S16 (설정패널) | — | Drawer UI | ThemeToggle (DrawerElement 내 통합), UserPreferences | ❌ 테스트 미작성 (ThemeToggle 구현 완료, 설정 패널 UI 미완) |
 | UC-S17 (세션관리) | — | Frame+API | SessionManager, FetchApi, ToastContainer, LabelProvider | ❌ 테스트 미작성 (SessionManager 구현 완료) |
 | UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
