@@ -40,3 +40,6 @@ services:
   - name: shell-ui
     color: pink
     stages: [dev, staging, prod]
+  - name: login-ui
+    color: magenta
+    stages: [dev, staging, prod]

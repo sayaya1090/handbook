@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    war
     id("dev.sayaya.gwt")
 }
 dependencies {
@@ -17,6 +18,15 @@ tasks {
         enabled = true
         from(sourceSets.main.get().allSource)
         duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+    war {
+        // GWT 컴파일 출력(build/gwt/war/{login,logout}) 을 js/ 하위로 포함해
+        // src/main/webapp/login.html, logout.html 이 참조하는 경로와 일치시킨다.
+        dependsOn("gwtCompile")
+        from("build/gwt/war") {
+            into("js")
+        }
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
     gwt {
         gwtVersion = "2.13.0"

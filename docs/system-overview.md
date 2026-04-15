@@ -148,7 +148,7 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 
 - **gateway** — API Gateway 배포
 - **event-broadcaster** — Kafka→SSE 브로드캐스트 배포
-- **shell-ui** — GWT 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). GHA 가 prerelease 로 빌드 산출물을 publish, Kargo Stage 가 환경별 S3 버킷으로 promotion
+- **shell-ui** / **login-ui** — GWT 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). GHA 가 prerelease 로 빌드 산출물을 publish, Kargo Stage 가 환경별 S3 버킷으로 promotion. login-ui 는 `/js/login/**`, `/js/logout/**` 만 HTTPRoute 로 노출(HTML 엔트리포인트 없음 — shell 이 동적 로드)
 - **infrastructure** — 공용 인프라
   - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
@@ -187,14 +187,15 @@ dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard 
 [gateway-dev]            ┐
 [event-broadcaster-dev]  ┤   release-staging              release-prod
 [login-dev]              ┼─→ (모든 서비스 dev 통과     →  (release-staging
-[shell-ui-dev]           ┘    Freight 를 한 번에            통과 번들을 그대로
-   (auto promote)              atomic 배포, 수동 trigger)    전진, 수동 trigger)
+[shell-ui-dev]           ┤    Freight 를 한 번에            통과 번들을 그대로
+[login-ui-dev]           ┘    atomic 배포, 수동 trigger)    전진, 수동 trigger)
+   (auto promote)
 ```
 
 - **dev**: 서비스별 독립 `<svc>-dev` Stage. 자기 Warehouse 만 구독 + autoPromotion=true → Freight 발행 즉시 dev 환경 자동 배포
 - **release-staging**: 모든 서비스 Warehouse 를 multi-source 로 구독 (`sources.stages: [<svc>-dev]`). 사람이 릴리즈 후보 결정 시점에 수동 승격 → 모든 서비스의 staging Application 동시 update
 - **release-prod**: release-staging 단일 upstream 구독 → 동일 digest/commit 번들이 그대로 prod 로 전파, 수동 승격
-- **promotionTemplate 분기**: JVM 백엔드는 `compose-output(imageFrom)` + `argocd-update.helm.images[image.tag]`, shell-ui 는 `argocd-update.helm.images[freight.commit, bucket]` 로 같은 release-* Stage 에서 두 패턴이 공존
+- **promotionTemplate 분기**: JVM 백엔드는 `compose-output(imageFrom)` + `argocd-update.helm.images[image.tag]`, GWT 프론트엔드(`*-ui`) 는 `argocd-update.helm.images[freight.commit, bucket]` 로 같은 release-* Stage 에서 두 패턴이 `hasSuffix "-ui"` 분기로 공존
 
 **ApplicationSet** 은 (service × stage) 매트릭스로 staging/prod Application 도 계속 생성 — Kargo Stage 가 그 Application 들의 helm parameter 를 update 해야 하므로 deployment manifest 가 필요. Stage CR 자체는 dev 만 서비스별로 생성.
 

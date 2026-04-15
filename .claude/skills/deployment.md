@@ -85,11 +85,11 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 **dev 만 서비스별 독립 stage, staging/prod 는 모든 서비스가 한 묶음(번들)**:
 
 ```
-[gateway-dev]    ┐
+[gateway-dev]           ┐
 [event-broadcaster-dev] ┤
-[login-dev]      ┼──→ release-staging ──→ release-prod
-[shell-ui-dev]   ┘    (모든 서비스 동시       (release-staging 통과 번들을
-                       atomic 배포)            그대로 prod 로 전진)
+[login-dev]             ┼──→ release-staging ──→ release-prod
+[shell-ui-dev]          ┤   (모든 서비스 동시       (release-staging 통과 번들을
+[login-ui-dev]          ┘    atomic 배포)            그대로 prod 로 전진)
 ```
 
 - **`<svc>-dev` Stage** (서비스 subchart `templates/stage.yaml`, dev 일 때만 렌더): 자기 Warehouse 만 구독 + autoPromotion=true. 새 Freight 가 발행되면 즉시 dev 환경에 자동 배포
@@ -99,14 +99,14 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 **서비스 종류별 promotion key 처리**:
 - **JVM 백엔드** (image 기반): `compose-output` 으로 imageFrom 결과 캡처 → `argocd-update.helm.images[key=image.tag, value=tag@digest]` 로 Application 갱신
-- **shell-ui** (git tag 기반): `argocd-update.helm.images[key=freight.commit, value=${{ commitFrom(...).ID }}]` 직접 주입 (compose-output 불필요)
-- 두 패턴이 release-staging/release-prod 의 promotionTemplate 안에 service 종류 분기로 공존
+- **GWT 프론트엔드** (shell-ui, login-ui — name 에 `-ui` 접미사, git tag 기반): `argocd-update.helm.images[key=freight.commit, value=${{ commitFrom(...).ID }}]` 직접 주입 (compose-output 불필요)
+- 두 패턴이 release-staging/release-prod 의 promotionTemplate 안에 `hasSuffix "-ui"` 분기로 공존
 
 **기존 (v1) 잔재**:
 - 서비스 subchart 의 `templates/stage.yaml` 은 `if eq .Values.stage.name "dev"` 가드로 dev 만 렌더. staging/prod 인스턴스가 helm parameter 로 들어와도 빈 manifest 를 만들어 Kargo CR 충돌 방지
 - ApplicationSet 은 여전히 (service × stage) 매트릭스로 Application 을 생성 — staging/prod 는 deployment manifest 만 들고 Kargo Stage 가 직접 update
 
-**(B) GWT 프론트엔드 정적 자산 — GitHub Release + ArgoCD Hook Job 기반** (shell-ui, …)
+**(B) GWT 프론트엔드 정적 자산 — GitHub Release + ArgoCD Hook Job 기반** (shell-ui, login-ui, …)
 - **Build**: GHA(`<module>-deploy.yaml`) 가 `:<module>:build` → WAR 에서 정적 자산 추출 → tar 묶음 → `gh release create <module>-<sha> --prerelease` 로 GitHub prerelease + asset 업로드. GHA 는 빌드 + publish 까지만, deploy 액션 0번
 - **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` → 새 prerelease tag 마다 Freight 발행. **`NewestTag` 는 Kargo 의 유효한 enum 이 아니어서** 설정 시 기본 `NewestFromBranch` 로 fallback 되고 tag 가 무시되는 함정이 있으니 `Lexical` 을 쓴다. ⚠️ **Lexical 은 문자열 사전순 정렬이라 sha 기반 tag(`shell-ui-<7자 sha>`) 에선 "알파벳 상 가장 큰 것" = 반드시 최신이 아님**. 워크플로가 publish 시 이전 release/tag 를 정리하거나, 정렬 가능한 prefix(타임스탬프 등)를 tag 에 붙이는 형태로 운영해야 한다
 - **dev Stage** (서비스 subchart `templates/stage.yaml`): JVM 백엔드와 마찬가지로 `<svc>-dev` Stage 가 자기 Warehouse 만 구독, autoPromotion=true. helm parameter `freight.commit` 으로 chart 의 sync-job 에 commit SHA 주입

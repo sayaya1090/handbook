@@ -29,7 +29,7 @@ spec:
     spec:
       steps:
         {{- range $service := .Values.services }}
-        {{- if eq $service.name "shell-ui" }}
+        {{- if hasSuffix "-ui" $service.name }}
         - uses: argocd-update
           as: sync-{{ $service.name }}
           config:

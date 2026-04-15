@@ -1,0 +1,7 @@
+annotations:
+  charts.openshift.io/name: login-ui
+apiVersion: v2
+kubeVersion: '>= 1.20.0-0'
+name: login-ui
+version: 0.1.0
+description: Login UI (GWT) static asset deploy pipeline for handbook
