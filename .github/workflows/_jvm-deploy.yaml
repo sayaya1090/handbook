@@ -1,0 +1,46 @@
+name: JVM 모듈 배포 (reusable)
+on:
+  workflow_call:
+    inputs:
+      submodule:
+        description: 빌드/배포 대상 gradle subproject 이름 (예 — gateway, login)
+        type: string
+        required: true
+      base-image:
+        description: jib base image 태그
+        type: string
+        required: false
+        default: eclipse-temurin:25-jre-ubi10-minimal
+      runs-on:
+        description: self-hosted 러너 라벨
+        type: string
+        required: false
+        default: handbook-operator
+jobs:
+  test-and-deploy:
+    runs-on: ${{ inputs.runs-on }}
+    env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+      BASE_IMAGE: ${{ inputs.base-image }}
+      SUBMODULE: ${{ inputs.submodule }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build
+        run: ./gradlew $SUBMODULE:jar
+      - name: Test & Report
+        run: ./gradlew $SUBMODULE:koverXmlReport
+      - name: Deploy
+        run: |
+          IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
+          echo "Deploying with IMAGE=$IMAGE"
+          oc registry login
+          ./gradlew $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest -Djib.allowInsecureRegistries=true -Djib.console=plain

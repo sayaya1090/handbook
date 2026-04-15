@@ -5,30 +5,8 @@ on:
       - persist-document/**
   workflow_dispatch:
 jobs:
-  test-and-deploy:
-    runs-on: handbook-operator
-    env:
-      GITHUB_USERNAME: ${{ github.actor }}
-      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
-      BASE_IMAGE: eclipse-temurin:25-jre-ubi10-minimal
-      SUBMODULE: persist-document
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 25
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
-      - name: Build
-        run: ./gradlew $SUBMODULE:jar
-      - name: Test & Report
-        run: ./gradlew $SUBMODULE:koverXmlReport
-      - name: Deploy
-        run: |
-          IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
-          echo "Deploying with IMAGE=$IMAGE"
-          oc registry login
-          ./gradlew $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest -Djib.allowInsecureRegistries=true -Djib.console=plain
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: persist-document
+    secrets: inherit

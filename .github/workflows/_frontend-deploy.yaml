@@ -1,0 +1,77 @@
+name: 프론트엔드 모듈 빌드 (reusable)
+on:
+  workflow_call:
+    inputs:
+      submodule:
+        description: 빌드 대상 gradle subproject 이름 (예 — app, shell-ui, login-ui, workspace-ui)
+        type: string
+        required: true
+      release-asset:
+        description: 패킹 후 release 에 올릴 tar.gz 파일 이름. 기본값 — <submodule>.tar.gz
+        type: string
+        required: false
+        default: ''
+      runs-on:
+        description: self-hosted 러너 라벨
+        type: string
+        required: false
+        default: handbook-operator
+permissions:
+  contents: write  # Publish prerelease step 이 gh release create 로 tag/release 를 만든다
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    env:
+      SUBMODULE: ${{ inputs.submodule }}
+      RELEASE_ASSET: ${{ inputs.release-asset || format('{0}.tar.gz', inputs.submodule) }}
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Force LFS pull
+        run: |
+          git lfs pull
+          git lfs ls-files
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build & Test
+        run: ./gradlew $SUBMODULE:build
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.submodule }}-test-reports
+          path: ${{ inputs.submodule }}/build/reports/tests/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Pack static assets
+        run: |
+          # war 플러그인이 src/main/webapp 과 GWT 컴파일 출력을 하나의 WAR 로 묶는다.
+          # META-INF/WEB-INF 는 정적 호스팅에 불필요하므로 제외.
+          mkdir -p dist/static
+          unzip -o $SUBMODULE/build/libs/*.war -x "META-INF/*" "WEB-INF/*" -d dist/static
+          tar -czf $RELEASE_ASSET -C dist/static .
+          echo "tarball contents:" && tar -tzf $RELEASE_ASSET | head -30
+      # Kargo Warehouse 가 git tag 패턴 `<submodule>-*` 로 watch → Stage promotion 이
+      # release asset 을 다운로드해서 vars.bucket 에 sync.
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${SUBMODULE}-${GITHUB_SHA::7}"
+          # 같은 commit 재실행 시 tag 충돌 방지 — 기존 release 와 tag 를 선제적으로 제거
+          gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "${SUBMODULE} ${GITHUB_SHA::7}" \
+            --notes "${SUBMODULE} build for commit ${GITHUB_SHA}" \
+            "$RELEASE_ASSET"
