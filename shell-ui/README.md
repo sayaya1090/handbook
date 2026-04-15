@@ -178,6 +178,7 @@ stateDiagram-v2
 | 테마 색 트랜지션 600ms cubic-bezier | 부드럽지만 빠르게 점진 전환. shell.css 의 :root/body/.drawer/.frame/.rail 트랜지션 블록이 background-color/color/border-color/fill/stroke 를 한 번에 보간 |
 | Sun/Moon SVG morph 는 :root.theme-changing 클래스 500ms 부착으로 트리거 | 토글 순간에만 클래스가 부착되어 keyframe(theme-icon-rise/set) 이 재생. 500ms 후 자동 제거되어 drawer expand/collapse 같은 다른 DOM 변화(예: md-item 의 start svg 가 display:none → visible 로 바뀌는 시점) 에서는 animation-name 매칭이 안 돼 의도치 않은 재생을 차단 |
 | ThemeToggle 헤드라인이 darkMode 에 따라 i18n 키 동적 변경 | 현재 light → "Switch to Dark" (theme.switch_to_dark), 현재 dark → "Switch to Light" (theme.switch_to_light). LabelProvider 구독으로 locale 변경 시에도 자동 갱신 |
+| 선택 상태는 배경 채움이 아니라 outline→filled 아이콘 스왑 | MD3 nav rail 가이드("선택 시 filled, 미선택 시 outlined")를 따름. MenuRailItemElement/ToolRailItemElement 가 `fa-light`(`.icon-outline`) 와 `fa-solid`(`.icon-filled`) 두 아이콘을 동시 렌더하고, 셀렉터 `.rail .item[selected] .icon-outline { display:none }` / `.icon-filled { display:inline-flex }` 로 가시성을 토글. `.item[selected] .expand` 의 label 색은 `--md-sys-color-primary` 로 유지되어 배경 없이도 선택 신호가 유지된다 |
 | ShellStylesheet 가 css/shell.css 를 런타임에 head 주입 | shell-ui 모듈이 자기 스타일시트의 정본 소유자가 됨. app.html 이 shell.css 를 미리 link 할 필요 없고, 빌드/배포 차원에서 shell-ui 의 src/main/webapp 만이 정본을 가짐 |
 
 ## 테스트

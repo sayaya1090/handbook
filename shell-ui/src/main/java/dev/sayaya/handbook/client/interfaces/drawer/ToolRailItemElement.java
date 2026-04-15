@@ -17,8 +17,10 @@ public class ToolRailItemElement extends NavigationRailItemElement {
     private final Tool tool;
     @AssistedInject ToolRailItemElement(@Assisted Tool tool, ToolSelected selected, LabelProvider labelProvider) {
         this.tool = tool;
-        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon()))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon()))
+        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"))
+                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled"))
+                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"))
+                .start(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled"))
                 .headline(headline.element());
         labelProvider.subscribe(labels -> {
             headline.element().innerHTML = labels.getOrDefault(tool.title(), tool.title() != null ? tool.title() : "");

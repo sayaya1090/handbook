@@ -145,11 +145,19 @@ body,
 .rail[hide] .item .expand {
     display: none;
 }
-.rail .item[selected] .collapse {
-    background: var(--md-sys-color-secondary-container);
-    /* border-radius 는 default(.rail .item .collapse) 의 50% 를 그대로 상속.
-       var(--md-sys-shape-corner-full) 를 직접 쓰면 토큰 미정의 시 IACVT 로
-       border-radius:0 이 되어 모서리가 사각형으로 보이는 버그가 있었음. */
+/* 선택 상태는 배경 채움이 아니라 outline → filled 아이콘 스왑 + label color 로 표현.
+   MD3 는 nav rail 에서 "선택 시 filled, 미선택 시 outlined" 아이콘 패턴을 권장한다.
+   MenuRailItemElement/ToolRailItemElement 가 두 weight 의 아이콘을 동시 렌더하고 .icon-outline /
+   .icon-filled 로 구분하며, 여기 셀렉터가 선택 상태에 따라 가시성을 토글한다.
+   ThemeToggle 의 sun/moon SVG 는 이 클래스를 쓰지 않으므로 영향받지 않는다. */
+.rail .item .icon-filled {
+    display: none;
+}
+.rail .item[selected] .icon-outline {
+    display: none;
+}
+.rail .item[selected] .icon-filled {
+    display: inline-flex;
 }
 .rail .item[selected] .expand {
     --md-list-item-label-text-color: var(--md-sys-color-primary);

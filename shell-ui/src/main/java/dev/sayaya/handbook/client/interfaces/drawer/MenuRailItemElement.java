@@ -19,8 +19,10 @@ public class MenuRailItemElement extends NavigationRailItemElement {
     private final Menu menu;
     @AssistedInject MenuRailItemElement(@Assisted Menu menu, MenuSelected selected, MenuHover hover, MenuHoverElementProvider hoverElement, LabelProvider labelProvider) {
         this.menu = menu;
-        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon()))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon()))
+        icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"))
+                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled"))
+                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"))
+                .start(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled"))
                 .headline(headline.element()).supportingText(supportingText.element());
         if(menu.tools() != null && menu.tools().length > 1) trailingSupportingText("\u25B6");
         labelProvider.subscribe(labels -> {

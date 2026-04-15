@@ -156,6 +156,7 @@ sequenceDiagram
 | **선행조건** | 메뉴 목록 로딩 완료 |
 | **정상 흐름** | 1. Menu Rail에서 메뉴 아이템을 클릭한다.<br>2. `MenuSelected`에 선택된 메뉴가 발행된다.<br>3. 도구가 1개뿐이면 `ToolSelected`에 자동 선택된다.<br>4. `ModuleScriptManager`가 메뉴의 `script` 필드에 지정된 JavaScript를 동적으로 `<script>` 태그로 주입한다.<br>5. `HistoryManager`가 `pushState()`로 URL을 업데이트한다.<br>6. `DrawerMode`가 COLLAPSE로 전환된다. |
 | **대안 흐름** | 도구가 여러 개이면 Tool Rail이 EXPAND되어 도구 목록을 표시한다. |
+| **선택 시각 표현** | 선택된 아이템은 `[selected]` 속성이 붙고 (1) 아이콘이 `fa-light` outline → `fa-solid` filled 로 교체되며, (2) `md-item` headline 라벨 색이 `--md-sys-color-primary` 로 변한다. 배경 채움은 사용하지 않는다 (MD3 nav rail 가이드: "선택 시 filled, 미선택 시 outlined"). 아이콘 스왑은 두 weight 를 동시 렌더해 두고 CSS 로 가시성을 토글하는 방식이라 JS 재렌더가 필요 없다. |
 
 ## UC-S3: 도구 선택 및 실행
 
@@ -324,7 +325,7 @@ sequenceDiagram
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
 | UC-S1 (인증) | 초기 로딩 → 메뉴 선택 | 유스케이스, Frame+API | Application, UserApi, UserProvider, MenuList, MenuApi, UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, WorkspaceList, DrawerMode | DrawerTest: 메뉴 초기화, Drawer DOM 존재, 메뉴 토글 버튼, 메뉴 레일 아이템 수 = 메뉴 수, 아이콘 수 = 아이템 수 |
-| UC-S2 (메뉴선택) | 메뉴 클릭 → 모듈 로딩 | 유스케이스, Drawer UI | MenuRailElement, MenuRailItemElement, MenuSelected, ToolSelected, ModuleScriptManager, HistoryManager, DrawerMode | DrawerTest: URL 버튼 클릭 → selected 아이템 정확히 1개, 다른 URL 클릭 → 이전 선택 해제 + 새 선택 |
+| UC-S2 (메뉴선택) | 메뉴 클릭 → 모듈 로딩 | 유스케이스, Drawer UI | MenuRailElement, MenuRailItemElement, MenuSelected, ToolSelected, ModuleScriptManager, HistoryManager, DrawerMode | DrawerTest: URL 버튼 클릭 → selected 아이템 정확히 1개, 다른 URL 클릭 → 이전 선택 해제 + 새 선택, 선택 아이템에서 `.icon-outline` 숨김·`.icon-filled` 표시, 미선택 아이템은 그 반대 |
 | UC-S3 (도구실행) | 메뉴 클릭 → 모듈 로딩 (alt) | 유스케이스, Drawer UI | ToolRailElement, ToolRailItemElement, ToolSelected, ToolExecutionManager | DrawerTest: 메뉴1 도구 ≤1, 메뉴2 도구 >1, 같은 메뉴 다른 Tool URL → 선택 아이템 유지 |
 | UC-S4 (딥링크) | 초기 로딩과 동일 경로 | 유스케이스 | UrlBasedMenuResolver, HistoryManager, MenuSelected | DrawerTest: URL hash 변경 → Drawer/레일 아이템 수 유지 |
 | UC-S5 (Drawer토글) | Drawer 토글 | 유스케이스, Drawer UI | MenuToggleButton, DrawerMode, MenuRailMode, ToolRailMode, DrawerElement, MenuRailElement, ToolRailElement | DrawerModeTest: MenuRailState/ToolRailState 상태 전이 검증 |

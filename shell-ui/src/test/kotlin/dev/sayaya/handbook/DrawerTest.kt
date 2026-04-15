@@ -129,6 +129,39 @@ internal class DrawerTest: GwtTestSpec({
             items.count() shouldBeGreaterThan 0
         }
 
+        Then("미선택 아이템은 .icon-outline 이 보이고 .icon-filled 는 숨겨진다") {
+            // 초기 상태: 아직 아무 메뉴도 선택되지 않은 아이템 기준.
+            // computed display 가 outline 은 non-none, filled 는 none 이어야 함.
+            val outlineDisplay = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child .item:not([selected]) .icon-outline')).display"
+            ).toString()
+            val filledDisplay = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child .item:not([selected]) .icon-filled')).display"
+            ).toString()
+            filledDisplay shouldBe "none"
+            (outlineDisplay != "none") shouldBe true
+        }
+        Then("모든 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
+            // 각 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 를 렌더 → menu.size * 2
+            // .rail-bottom 은 ThemeToggle(FA 아이콘 미사용) 이므로 제외
+            val expected = DrawerMock.menu.size * 2
+            val outlineCount = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom) .icon-outline").count()
+            val filledCount = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom) .icon-filled").count()
+            outlineCount shouldBe expected
+            filledCount shouldBe expected
+        }
+        Then("선택 상태에서 .collapse 배경이 secondary-container 가 아니다") {
+            // 배경 채움을 제거했으므로 어떤 아이템이 선택되어 있든 배경이 채워지지 않아야 함.
+            // rgb(a) 포맷 문자열 안에 transparent/0 값 포함 여부로 확인.
+            page.click("#url1")
+            Thread.sleep(500)
+            val bg = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child .item[selected] .collapse')).backgroundColor"
+            ).toString()
+            // transparent → 'rgba(0, 0, 0, 0)'
+            (bg.contains("0, 0") || bg == "transparent") shouldBe true
+        }
+
         When("첫번째 URL 버튼을 클릭하면") {
             page.click("#url1")
             Thread.sleep(500)
@@ -139,6 +172,16 @@ internal class DrawerTest: GwtTestSpec({
             Then("선택된 아이템은 정확히 1개이다") {
                 val selected = page.querySelectorAll(".rail .item[selected]")
                 selected.count() shouldBe 1
+            }
+            Then("선택 아이템은 .icon-filled 가 보이고 .icon-outline 은 숨겨진다") {
+                val outlineDisplay = page.evaluate(
+                    "getComputedStyle(document.querySelector('.rail:first-child .item[selected] .icon-outline')).display"
+                ).toString()
+                val filledDisplay = page.evaluate(
+                    "getComputedStyle(document.querySelector('.rail:first-child .item[selected] .icon-filled')).display"
+                ).toString()
+                outlineDisplay shouldBe "none"
+                (filledDisplay != "none") shouldBe true
             }
         }
 
