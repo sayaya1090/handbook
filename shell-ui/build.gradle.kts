@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     war
     id("dev.sayaya.gwt")
+    id("com.adarshr.test-logger")
 }
 dependencies {
     implementation(project(":activity"))
@@ -43,15 +44,6 @@ tasks {
             strict = true
         }
     }
-    test {
-        useJUnitPlatform()
-        testLogging {
-            events("passed", "skipped", "failed", "standardError")
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
-    }
+    test { useJUnitPlatform() }
 }
 
