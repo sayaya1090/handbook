@@ -80,14 +80,18 @@ subprojects {
         }
         // 다른 GWT UI 모듈은 shell-ui/src/test/webapp/css 에서 복사 (global/fontawesome 포함).
         // shell-ui 자체는 아래에서 main/webapp/css → test/webapp/css 로 shell.css 만 먼저 동기화.
+        // shell-ui 가 아닌 모듈은 shell-ui:syncShellCssFromMain 의 출력을 input 으로 사용하므로
+        // Gradle 9 의 implicit-dependency 검증을 통과하려면 명시적으로 dependsOn 을 걸어야 한다.
         val copyTestCss = tasks.register<Copy>("copyTestCssResources") {
             from("${rootProject.projectDir}/shell-ui/src/test/webapp/css")
             into("${project.projectDir}/src/test/webapp/css")
+            if (project.name != "shell-ui") {
+                dependsOn(":shell-ui:syncShellCssFromMain")
+            }
         }
         // shell-ui 에 한해 main → test 의 shell.css 단방향 동기화 태스크를 추가해
         // 정본(ShellStylesheet 가 런타임 주입하는 main/webapp/css/shell.css)과 테스트 사본의
-        // drift 를 막는다. 다른 모듈의 copyTestCssResources 가 이 태스크 이후에 실행되도록
-        // mustRunAfter 관계도 걸어둔다.
+        // drift 를 막는다. shell-ui 의 test 계열 태스크들이 이 sync 에 의존.
         if (project.name == "shell-ui") {
             val syncShellCss = tasks.register<Copy>("syncShellCssFromMain") {
                 from("${project.projectDir}/src/main/webapp/css/shell.css")
