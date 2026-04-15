@@ -80,18 +80,38 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 - **공통 fragment** 는 `infrastructure/` 서브차트가 소유하고, `spring.config.import: classpath:<name>.yaml` 로 끌어온다. fragment 는 `/app/resources/<name>.yaml` 에 subPath 마운트.
 - **fragment 카탈로그**: `observability` (management/metrics/logging), `handbook-postgresql` (r2dbc), `handbook-kafka` (spring.kafka.bootstrap-servers), `handbook-authentication` (security.authentication).
 
-### Kargo Promotion 파이프라인
-서비스 종류에 따라 두 가지 형태가 공존한다.
+### Kargo Promotion 파이프라인 — Release Train (v2)
 
-**(A) JVM 백엔드 — 컨테이너 이미지 기반** (gateway, event-broadcaster, persist-\*, search-\*, login, assistant)
-- **Warehouse**: OpenShift ImageStream 변화를 감지 → Freight 발행 (image digest)
-- **Stage (dev/staging)**: Warehouse 구독 → ArgoCD Update task 로 `image.tag` 업데이트해 환경에 자동 배포
-- **Stage (prod)**: 이전 스테이지를 upstream 으로 두고, promotion 시 GitHub `repository_dispatch`(`release` 이벤트) 호출로 CI/CD 파이프라인 트리거
+**dev 만 서비스별 독립 stage, staging/prod 는 모든 서비스가 한 묶음(번들)**:
+
+```
+[gateway-dev]    ┐
+[event-broadcaster-dev] ┤
+[login-dev]      ┼──→ release-staging ──→ release-prod
+[shell-ui-dev]   ┘    (모든 서비스 동시       (release-staging 통과 번들을
+                       atomic 배포)            그대로 prod 로 전진)
+```
+
+- **`<svc>-dev` Stage** (서비스 subchart `templates/stage.yaml`, dev 일 때만 렌더): 자기 Warehouse 만 구독 + autoPromotion=true. 새 Freight 가 발행되면 즉시 dev 환경에 자동 배포
+- **`release-staging` Stage** (`templates/release-staging.yaml`): 모든 서비스의 `<svc>-dev` 를 sources 로 받아 한 Stage 에 multi-Warehouse 구독. autoPromotion=false 라 사람이 "이번 릴리즈 후보를 묶자" 는 시점에 Kargo UI 에서 수동 승격. promotion 시 모든 서비스의 staging Application 을 동시 update
+- **`release-prod` Stage** (`templates/release-prod.yaml`): release-staging 을 단일 upstream 으로 구독. release-staging 을 통과한 동일 digest/commit 번들이 그대로 prod 로 전진. autoPromotion=false (사람이 출시 결정)
+- **ProjectConfig** (`templates/project-config.yaml`): `<svc>-dev` 에만 autoPromotion=true, release-staging/release-prod 는 explicit autoPromotion=false
+
+**서비스 종류별 promotion key 처리**:
+- **JVM 백엔드** (image 기반): `compose-output` 으로 imageFrom 결과 캡처 → `argocd-update.helm.images[key=image.tag, value=tag@digest]` 로 Application 갱신
+- **shell-ui** (git tag 기반): `argocd-update.helm.images[key=freight.commit, value=${{ commitFrom(...).ID }}]` 직접 주입 (compose-output 불필요)
+- 두 패턴이 release-staging/release-prod 의 promotionTemplate 안에 service 종류 분기로 공존
+
+**기존 (v1) 잔재**:
+- 서비스 subchart 의 `templates/stage.yaml` 은 `if eq .Values.stage.name "dev"` 가드로 dev 만 렌더. staging/prod 인스턴스가 helm parameter 로 들어와도 빈 manifest 를 만들어 Kargo CR 충돌 방지
+- ApplicationSet 은 여전히 (service × stage) 매트릭스로 Application 을 생성 — staging/prod 는 deployment manifest 만 들고 Kargo Stage 가 직접 update
 
 **(B) GWT 프론트엔드 정적 자산 — GitHub Release + ArgoCD Hook Job 기반** (shell-ui, …)
 - **Build**: GHA(`<module>-deploy.yaml`) 가 `:<module>:build` → WAR 에서 정적 자산 추출 → tar 묶음 → `gh release create <module>-<sha> --prerelease` 로 GitHub prerelease + asset 업로드. GHA 는 빌드 + publish 까지만, deploy 액션 0번
 - **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` → 새 prerelease tag 마다 Freight 발행. **`NewestTag` 는 Kargo 의 유효한 enum 이 아니어서** 설정 시 기본 `NewestFromBranch` 로 fallback 되고 tag 가 무시되는 함정이 있으니 `Lexical` 을 쓴다. ⚠️ **Lexical 은 문자열 사전순 정렬이라 sha 기반 tag(`shell-ui-<7자 sha>`) 에선 "알파벳 상 가장 큰 것" = 반드시 최신이 아님**. 워크플로가 publish 시 이전 release/tag 를 정리하거나, 정렬 가능한 prefix(타임스탬프 등)를 tag 에 붙이는 형태로 운영해야 한다
-- **Stage**: `vars.bucket: handbook-{dev,staging,prod}` 선언. promotion step 은 `argocd-update` 로 ArgoCD Application 의 helm parameter 를 갱신한다. ⚠️ **Kargo `argocd-update` step 의 `helm` 블록은 스키마상 `parameters` 를 허용하지 않고 `images` 배열만 받는다** — 이름은 image 용이지만 `key` 에 임의 helm parameter path 를 쓸 수 있어 `freight.commit` / `bucket` 같은 값 주입에 재활용한다. 표현식으로 commit SHA 를 얻을 때는 `${{ commitFrom("...").ID }}` — Kargo 표현식 엔진이 Go struct 필드명(대문자 포함)을 그대로 노출하므로 `.id`/`.tag` 는 `has no field` 에러를 낸다
+- **dev Stage** (서비스 subchart `templates/stage.yaml`): JVM 백엔드와 마찬가지로 `<svc>-dev` Stage 가 자기 Warehouse 만 구독, autoPromotion=true. helm parameter `freight.commit` 으로 chart 의 sync-job 에 commit SHA 주입
+- **staging/prod Stage**: 서비스 subchart 가 만들지 않고 **release-staging/release-prod 번들** Stage 가 multi-Warehouse 구독으로 묶어서 처리 (위 Release Train 섹션 참조)
+- ⚠️ **Kargo `argocd-update` step 의 `helm` 블록은 스키마상 `parameters` 를 허용하지 않고 `images` 배열만 받는다** — 이름은 image 용이지만 `key` 에 임의 helm parameter path 를 쓸 수 있어 `freight.commit` / `bucket` 같은 값 주입에 재활용한다. 표현식으로 commit SHA 를 얻을 때는 `${{ commitFrom("...").ID }}` — Kargo 표현식 엔진이 Go struct 필드명(대문자 포함)을 그대로 노출하므로 `.id`/`.tag` 는 `has no field` 에러를 낸다
 - **Sync Job (chart 내장)**: ArgoCD reconcile 시 `templates/sync-job.yaml` 이 새 freight commit 마다 새 Job 을 만든다 (`argocd.argoproj.io/hook: Sync` + `hook-delete-policy: BeforeHookCreation`). Job 컨테이너(`amazon/aws-cli`)가 GitHub release asset 을 **unauthenticated** (public repo) 로 `curl -fsSL "https://github.com/.../releases/download/<tag>/<asset>"` 로 받아 `aws s3 sync s3://${bucket}/static/` 수행 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
 - 백엔드 `argocd-update` 패턴과 100% 동일 — Kargo 가 Application 갱신, ArgoCD 가 reconcile, K8s 가 실행
 

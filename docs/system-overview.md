@@ -181,16 +181,33 @@ Browser ──TLS──▶ DNS *.apps.sayaya.cloud → 192.168.1.9 (nginx LB, L4
 
 dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard cert 자동 적용). HTTPRoute 더 구체적인 path 가 catch-all 보다 우선. 상세는 `docs/ingress-options.md` 참조.
 
+### Kargo Promotion 파이프라인 — Release Train (v2)
+
+```
+[gateway-dev]            ┐
+[event-broadcaster-dev]  ┤   release-staging              release-prod
+[login-dev]              ┼─→ (모든 서비스 dev 통과     →  (release-staging
+[shell-ui-dev]           ┘    Freight 를 한 번에            통과 번들을 그대로
+   (auto promote)              atomic 배포, 수동 trigger)    전진, 수동 trigger)
+```
+
+- **dev**: 서비스별 독립 `<svc>-dev` Stage. 자기 Warehouse 만 구독 + autoPromotion=true → Freight 발행 즉시 dev 환경 자동 배포
+- **release-staging**: 모든 서비스 Warehouse 를 multi-source 로 구독 (`sources.stages: [<svc>-dev]`). 사람이 릴리즈 후보 결정 시점에 수동 승격 → 모든 서비스의 staging Application 동시 update
+- **release-prod**: release-staging 단일 upstream 구독 → 동일 digest/commit 번들이 그대로 prod 로 전파, 수동 승격
+- **promotionTemplate 분기**: JVM 백엔드는 `compose-output(imageFrom)` + `argocd-update.helm.images[image.tag]`, shell-ui 는 `argocd-update.helm.images[freight.commit, bucket]` 로 같은 release-* Stage 에서 두 패턴이 공존
+
+**ApplicationSet** 은 (service × stage) 매트릭스로 staging/prod Application 도 계속 생성 — Kargo Stage 가 그 Application 들의 helm parameter 를 update 해야 하므로 deployment manifest 가 필요. Stage CR 자체는 dev 만 서비스별로 생성.
+
 ### 정적 자산 배포 모델 (GWT 프론트엔드)
 
-JVM 백엔드와 동일한 `argocd-update` promotion 패턴을 사용하되, deploy 액션은 ArgoCD Sync Hook Job 이 수행한다.
+JVM 백엔드와 동일한 Release Train 흐름을 따르되, deploy 액션은 ArgoCD Sync Hook Job 이 수행한다.
 
 1. **Build** (`<module>-deploy.yaml`): `:<module>:build` → 정적 자산 추출 → tar → `gh release create <module>-<sha> --prerelease`. GHA 는 빌드 + publish 까지만, deploy 액션 0번
 2. **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` 로 새 prerelease 감지 → Freight. (Lexical 은 sha 기반 tag 에 대해 사전순 정렬이라 "최신" 을 보장 못 하므로 publish 시 이전 release 를 정리하는 것이 전제)
-3. **Stage** (`vars.bucket: handbook-{dev,staging,prod}`): promotion step 이 `argocd-update` 로 ArgoCD Application 의 helm parameter(`freight.commit`, `bucket`) 갱신. Kargo argocd-update 의 `helm` 블록은 `parameters` 를 허용하지 않고 `images` 배열만 받지만 key 에 임의 helm path 를 지정할 수 있어 이 경로로 값을 주입. commit SHA 추출은 `${{ commitFrom("...").ID }}` (Go struct 필드명, 대문자)
+3. **Stage**: `<module>-dev` 만 서비스 subchart 가 만들고, staging/prod 는 release-staging/release-prod 번들 Stage 가 처리. promotion 시 `argocd-update.helm.images[freight.commit, bucket]` 으로 chart 의 sync-job 에 commit SHA + 환경별 bucket 주입
 4. **Sync Job** (`templates/sync-job.yaml`): ArgoCD reconcile 시 매 freight commit 마다 새 Job 으로 인스턴스화 (`argocd.argoproj.io/hook: Sync` + `BeforeHookCreation` 정리). Job 컨테이너(`amazon/aws-cli`)가 **unauthenticated** `curl` 로 GitHub release asset 다운로드(public repo) → `aws s3 sync s3://${bucket}/static/` 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
 
-Kargo `vars` 와 chart helm parameter 가 환경별 차이(버킷명, S3 endpoint, release repo, asset 이름)를 흡수해 promote 워크플로 같은 외부 runner 가 필요 없다. 모든 deploy 액션이 클러스터 안 ArgoCD + Job 으로 끝난다.
+⚠️ **Kargo argocd-update 표현식 함정**: `helm` 블록은 `parameters` 를 허용하지 않고 `images` 배열만 받는다. key 에 임의 helm path 지정 가능. commit SHA 는 `${{ commitFrom("...").ID }}` (Go struct 필드명 대문자) — `.id`/`.tag` 는 `has no field` 에러.
 
 ### Spring 설정 주입 모델
 
