@@ -1,3 +1,24 @@
+/* ── 라이트/다크 테마 전환 — 부드럽지만 빠르게 ── */
+/* shell 에 색을 칠하는 모든 host element 에 transition 을 걸어 일관되게 점진 전환.
+   MD3 web component 들은 shadow DOM 내부 색을 갖고 있어 외부 transition 이 직접
+   shadow 에는 안 먹지만, host 의 background/color 변화는 inherit 되어 거의 모든
+   가시 element 에 자연스럽게 적용된다. */
+:root,
+body,
+.drawer,
+.drawer .header,
+.drawer .header .workspace,
+.frame,
+.rail,
+.rail .item,
+.rail .item .collapse,
+.rail .item .expand,
+.rail .item md-item {
+    transition-property: background-color, color, border-color, box-shadow, fill, stroke;
+    transition-duration: 600ms;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+
 .drawer {
     z-index: 1000;   /* frame 보다 위에 있어야 함 */
     background-color: color-mix(in srgb, var(--md-sys-color-surface-container-high) 60%, transparent);
@@ -6,10 +27,18 @@
     backdrop-filter: blur(5px);
     display: flex;
     width: fit-content;
+    height: 100dvh;
     flex-direction: column;
-    transition-property: background-color, box-shadow, border-top-right-radius, border-bottom-right-radius;
-    transition-duration: 300ms;
-    transition-timing-function: ease-in-out;
+    /* drawer 자체 레이아웃 트랜지션은 별도 — 색 트랜지션과 분리해 더 짧게 */
+    transition-property: background-color, color, border-color, box-shadow, fill, stroke,
+                         border-top-right-radius, border-bottom-right-radius;
+    transition-duration: 600ms, 600ms, 600ms, 300ms, 600ms, 600ms, 300ms, 300ms;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+.drawer .body {
+    display: flex;
+    flex: 1;
+    min-height: 0;  /* flex 자식이 컨테이너를 넘어 grow 하는 것을 막음 */
 }
 :root[color-theme='light'] .drawer[open] {
     box-shadow: var(--md-sys-elevation-level3);
@@ -65,8 +94,15 @@
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     outline: none;
     padding: 8px 0;
+    /* 두 모드의 .item natural height 를 64px 로 통일.
+       collapse: 16(padding) + (4+40+4) (.collapse with 40px button + 축소된 margin) = 64
+       expand : 16(padding) + 48(md-item 축소된 min-height) = 64
+       justify-content: center 로 .item 안의 컨텐츠(.collapse 또는 .expand) 를 vertical
+       하게 가운데 정렬 → 부족분이 위/아래로 균등하게 나뉜다. */
+    min-height: 64px;
     position: relative;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     --md-list-item-label-text-font: var(--md-sys-typescale-headline-large-font);
@@ -76,7 +112,12 @@
     --md-ripple-pressed-opacity: var(--md-list-item-pressed-state-layer-opacity, 0.12);
 }
 .rail .item .collapse {
-    margin: 10px 8px;
+    /* 좌우 8px 유지(원래대로). 상하는 4px 로 줄여 .item 전체 height 를 작게 만든다 —
+       collapse 모드 아이콘 버튼 사이 간격이 너무 멀어 보이지 않도록. */
+    margin: 4px 8px;
+    /* selected 상태 background 가 정원으로 그려지도록 host 자체를 원형으로 클립.
+       selected 규칙은 background 만 입히고 border-radius 는 여기서 상속받는다. */
+    border-radius: 50%;
 }
 .rail .item .expand {
     border-radius: 2rem;
@@ -89,7 +130,11 @@
     width: 100%;
 }
 .rail[expand] .item .collapse {
+    /* expand mode 에서는 md-item 의 slot="start" 아이콘이 메뉴 좌측에 따로 그려지므로
+       .collapse 의 아이콘 버튼은 visibility:hidden 으로 숨긴다. position:absolute 만으로는
+       흐름에서 빠질 뿐 여전히 렌더링되어 두 아이콘이 1픽셀 정도 겹쳐 ghost 처럼 보였음. */
     position: absolute;
+    visibility: hidden;
 }
 .rail[expand] .item .expand {
     display: flex;
@@ -100,15 +145,113 @@
 .rail[hide] .item .expand {
     display: none;
 }
-.rail .item[selected] .collapse {
-    background: var(--md-sys-color-secondary-container);
-    border-radius: var(--md-sys-shape-corner-full);
-    padding: 4px 20px;
+/* 선택 상태는 배경 채움이 아니라 outline → filled 아이콘 스왑 + label color 로 표현.
+   MD3 는 nav rail 에서 "선택 시 filled, 미선택 시 outlined" 아이콘 패턴을 권장한다.
+   MenuRailItemElement/ToolRailItemElement 가 두 weight 의 아이콘을 동시 렌더하고 .icon-outline /
+   .icon-filled 로 구분하며, 여기 셀렉터가 선택 상태에 따라 가시성을 토글한다.
+   ThemeToggle 의 sun/moon SVG 는 이 클래스를 쓰지 않으므로 영향받지 않는다. */
+.rail .item .icon-filled {
+    display: none;
+}
+.rail .item[selected] .icon-outline {
+    display: none;
+}
+.rail .item[selected] .icon-filled {
+    display: inline-flex;
 }
 .rail .item[selected] .expand {
     --md-list-item-label-text-color: var(--md-sys-color-primary);
     --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
 }
+/* ── Rail 하단 컨트롤 (테마 토글 등) ── */
+/* ThemeToggle 은 NavigationRailItemElement 를 상속해 자기 자신이 .item 구조다.
+   navMenu 자식으로 직접 append 되며, CSS 가 flex order 와 push-to-bottom 을 모두 처리:
+     - order: 1   → 일반 메뉴(0)와 bottom-flagged 메뉴(2) 사이에 위치
+     - margin-top: auto → 위쪽 free space 를 모두 흡수해 theme + .bottom-menu 들이
+                          한 덩어리로 rail 하단에 밀려난다
+   .bottom-menu (Menu.bottom=true 인 메뉴 아이템) 는 order: 2 로 theme 다음에 정렬되어
+   "theme button → m4 → m3" 순으로 stacked. 동적인 margin-top: auto 계산 불필요.
+   모바일(.rail[bottom-nav]) 에서는 flex-direction: row 로 바뀌어 margin-top: auto 가
+   push 효과를 잃는다. ThemeToggle 은 order:1 덕분에 일반 메뉴(0)와 bottom 메뉴(2) 사이에
+   자연스럽게 배치되어 horizontal navbar 에도 노출된다. 숨기지 않는다 — 모바일에서 유일한
+   테마 전환 진입점이기 때문. */
+.rail .rail-bottom {
+    order: 1;
+    margin-top: auto;
+}
+.rail .item.bottom-menu {
+    order: 2;
+}
+.rail[hide] .rail-bottom {
+    display: none;
+}
+
+/* ── 테마 토글 SVG morph (일출/일몰, 항상 위로 스크롤) ── */
+/* 초기 렌더는 정적 상태(현재 테마에 맞는 아이콘이 이미 떠 있음)로 시작하고,
+   사용자가 처음 토글했을 때 ThemeToggle 이 SVG 에 .has-toggled 클래스를 추가 →
+   그때부터 keyframe 애니메이션으로 일출/일몰 morph 가 동작한다. */
+.theme-toggle-svg {
+    overflow: visible;
+}
+.theme-toggle-svg .sun,
+.theme-toggle-svg .moon {
+    transform-origin: 12px 12px;
+}
+/* 정적 초기 상태 — 현재 테마에 맞는 아이콘만 노출 */
+:root[color-theme='light'] .theme-toggle-svg .sun {
+    opacity: 1;
+    transform: translateY(0);
+}
+:root[color-theme='light'] .theme-toggle-svg .moon {
+    opacity: 0;
+    transform: translateY(-24px);
+}
+:root[color-theme='dark'] .theme-toggle-svg .sun {
+    opacity: 0;
+    transform: translateY(-24px);
+}
+:root[color-theme='dark'] .theme-toggle-svg .moon {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* 사용자가 테마 토글 버튼을 클릭한 순간에만 :root.theme-changing 이 부착되어 일출/일몰
+   keyframe 애니메이션이 재생된다. 500ms 후 클래스가 제거되어 이후의 다른 DOM 변화
+   (예: drawer expand/collapse 로 md-item 의 start svg 가 display:none → visible 로
+   바뀌는 시점) 에서는 animation-name 이 매칭되지 않아 애니메이션이 재생되지 않는다.
+   stagger:
+     0   → 200ms : 현재 떠 있던 쪽이 위로 set (out)
+     200 → 400ms : 새 쪽이 아래에서 위로 rise (in) */
+@keyframes theme-icon-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes theme-icon-set {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-24px); }
+}
+:root.theme-changing .theme-toggle-svg .sun,
+:root.theme-changing .theme-toggle-svg .moon {
+    animation-duration: 200ms;
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+    animation-fill-mode: both;
+}
+:root.theme-changing[color-theme='light'] .theme-toggle-svg .sun {
+    animation-name: theme-icon-rise;
+    animation-delay: 200ms;
+}
+:root.theme-changing[color-theme='light'] .theme-toggle-svg .moon {
+    animation-name: theme-icon-set;
+    animation-delay: 0ms;
+}
+:root.theme-changing[color-theme='dark'] .theme-toggle-svg .sun {
+    animation-name: theme-icon-set;
+    animation-delay: 0ms;
+}
+:root.theme-changing[color-theme='dark'] .theme-toggle-svg .moon {
+    animation-name: theme-icon-rise;
+    animation-delay: 200ms;
+}
+
 .rail .item md-item {
     border-radius: inherit;
     flex: 1;
@@ -118,9 +261,14 @@
     font-size: var(--md-list-item-label-text-size, var(--md-sys-typescale-body-large-size, 1rem));
     line-height: var(--md-list-item-label-text-line-height, var(--md-sys-typescale-body-large-line-height, 1.5rem));
     font-weight: var(--md-list-item-label-text-weight, var(--md-sys-typescale-body-large-weight, var(--md-ref-typeface-weight-regular, 400)));
-    min-height: var(--md-list-item-one-line-container-height, 56px);
-    padding-top: var(--md-list-item-top-space, 12px);
-    padding-bottom: var(--md-list-item-bottom-space, 12px);
+    /* collapse 모드에서 아이콘 버튼 사이 간격이 너무 멀어 보이지 않도록 md-item 의
+       top/bottom 패딩과 min-height 를 줄여 .item 전체 height 를 작게 만든다. */
+    --md-list-item-top-space: 8px;
+    --md-list-item-bottom-space: 8px;
+    --md-list-item-one-line-container-height: 48px;
+    min-height: 48px;
+    padding-top: 8px;
+    padding-bottom: 8px;
     padding-inline-start: var(--md-list-item-leading-space, 16px);
     padding-inline-end: var(--md-list-item-trailing-space, 16px);
 }
@@ -210,7 +358,10 @@
     padding: 4px 16px;
 }
 
-/* ── Horizontal chips (tool rail on mobile) ── */
+/* ── Horizontal chips (tool rail on mobile) ──
+   pointer-events: 컨테이너 빈 여백은 통과시키고 .item 에서만 포인터를 받는다.
+   그렇지 않으면 chips 바 위에 떠 있는 AgentInput 같은 상위 z-index 요소 영역이
+   시각적으로는 비어 있어도 터치가 chips 컨테이너에 가로채여 입력 포커스를 잃는다. */
 .rail[horizontal-chips] {
     position: fixed;
     bottom: calc(56px + env(safe-area-inset-bottom, 0px));
@@ -226,6 +377,7 @@
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding: 4px 8px;
     gap: 8px;
+    pointer-events: none;
 }
 .rail[horizontal-chips] .item {
     flex: 0 0 auto;
@@ -234,6 +386,7 @@
     padding: 6px 12px;
     border-radius: var(--md-sys-shape-corner-small, 8px);
     background: var(--md-sys-color-surface-container);
+    pointer-events: auto;
 }
 .rail[horizontal-chips] .item .expand {
     display: none;

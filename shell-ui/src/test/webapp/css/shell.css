@@ -171,9 +171,10 @@ body,
                           한 덩어리로 rail 하단에 밀려난다
    .bottom-menu (Menu.bottom=true 인 메뉴 아이템) 는 order: 2 로 theme 다음에 정렬되어
    "theme button → m4 → m3" 순으로 stacked. 동적인 margin-top: auto 계산 불필요.
-   모바일(.rail[bottom-nav]) 에서는 flex-direction: row 로 바뀌므로 margin-top: auto 가
-   push 효과가 없고, theme 자체를 display: none 으로 숨겨서 horizontal navbar 에서 제외한다.
-   .bottom-menu 들은 order: 2 로 horizontal navbar 의 끝쪽에 자연스럽게 배치된다. */
+   모바일(.rail[bottom-nav]) 에서는 flex-direction: row 로 바뀌어 margin-top: auto 가
+   push 효과를 잃는다. ThemeToggle 은 order:1 덕분에 일반 메뉴(0)와 bottom 메뉴(2) 사이에
+   자연스럽게 배치되어 horizontal navbar 에도 노출된다. 숨기지 않는다 — 모바일에서 유일한
+   테마 전환 진입점이기 때문. */
 .rail .rail-bottom {
     order: 1;
     margin-top: auto;
@@ -181,8 +182,7 @@ body,
 .rail .item.bottom-menu {
     order: 2;
 }
-.rail[hide] .rail-bottom,
-.rail[bottom-nav] .rail-bottom {
+.rail[hide] .rail-bottom {
     display: none;
 }
 
@@ -358,7 +358,10 @@ body,
     padding: 4px 16px;
 }
 
-/* ── Horizontal chips (tool rail on mobile) ── */
+/* ── Horizontal chips (tool rail on mobile) ──
+   pointer-events: 컨테이너 빈 여백은 통과시키고 .item 에서만 포인터를 받는다.
+   그렇지 않으면 chips 바 위에 떠 있는 AgentInput 같은 상위 z-index 요소 영역이
+   시각적으로는 비어 있어도 터치가 chips 컨테이너에 가로채여 입력 포커스를 잃는다. */
 .rail[horizontal-chips] {
     position: fixed;
     bottom: calc(56px + env(safe-area-inset-bottom, 0px));
@@ -374,6 +377,7 @@ body,
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding: 4px 8px;
     gap: 8px;
+    pointer-events: none;
 }
 .rail[horizontal-chips] .item {
     flex: 0 0 auto;
@@ -382,6 +386,7 @@ body,
     padding: 6px 12px;
     border-radius: var(--md-sys-shape-corner-small, 8px);
     background: var(--md-sys-color-surface-container);
+    pointer-events: auto;
 }
 .rail[horizontal-chips] .item .expand {
     display: none;
