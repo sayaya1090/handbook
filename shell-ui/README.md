@@ -125,6 +125,11 @@ stateDiagram-v2
     EXPAND --> COLLAPSE : Drawer=COLLAPSE & 도구 ≤ 1개
     COLLAPSE --> EXPAND : Drawer=EXPAND
     COLLAPSE --> HIDE : Drawer=HIDE\nDrawer=COLLAPSE & 도구 > 1개
+    note right of [*]
+      모바일(isMobile=true)이면
+      DrawerState와 무관하게
+      항상 BOTTOM_NAV로 고정
+    end note
 ```
 
 ### ToolRailMode
@@ -138,6 +143,11 @@ stateDiagram-v2
     EXPAND --> COLLAPSE : Drawer=COLLAPSE & MenuRail!=COLLAPSE
     COLLAPSE --> EXPAND : Drawer=EXPAND
     COLLAPSE --> HIDE : Drawer=HIDE\n도구 ≤ 1개\nMenuRail=COLLAPSE
+    note right of [*]
+      모바일이면 DrawerState 무관:
+      도구>1 → HORIZONTAL_CHIPS
+      도구≤1 → HIDE
+    end note
 ```
 
 ### MenuSelected / ToolSelected
@@ -174,7 +184,7 @@ stateDiagram-v2
 | FetchApi 인터페이스 | 테스트 시 API 호출 모킹 가능 |
 | UserApi 10분 주기 갱신 | 세션 유지 + 토큰 자동 갱신 |
 | ThemeToggle 이 NavigationRailItemElement 를 상속 | 일반 메뉴 아이템과 동일한 .item > (.collapse + .expand) 구조를 가져 시각/스페이싱이 자동으로 일치한다. expand 모드에선 md-item 의 headline 라벨이, collapse 모드에선 .collapse 아이콘 버튼만 노출 |
-| theme/menu 위치를 CSS order 로 통제 | 일반 메뉴(0) → ThemeToggle(.rail-bottom, order:1) → bottom 메뉴(.bottom-menu, order:2) 순으로 정렬. ThemeToggle 한 곳에만 `margin-top: auto` 가 있어 free space 분배 충돌이 없고, MenuRailElement 가 동적으로 첫 bottom 메뉴를 찾아 margin 을 부여하던 로직을 제거. 모바일(.rail[bottom-nav]) 에서는 row 방향이라 margin-top auto 가 push 효과 없고 ThemeToggle 자체가 hidden, .bottom-menu 들은 horizontal navbar 끝쪽으로 자연스럽게 배치 |
+| theme/menu 위치를 CSS order 로 통제 | 일반 메뉴(0) → ThemeToggle(.rail-bottom, order:1) → bottom 메뉴(.bottom-menu, order:2) 순으로 정렬. ThemeToggle 한 곳에만 `margin-top: auto` 가 있어 free space 분배 충돌이 없고, MenuRailElement 가 동적으로 첫 bottom 메뉴를 찾아 margin 을 부여하던 로직을 제거. 모바일(.rail[bottom-nav]) 에서는 row 방향이라 margin-top auto 가 push 효과를 잃지만 order:1 만으로 일반 메뉴와 bottom 메뉴 사이에 자연스럽게 배치되어 horizontal navbar 에도 그대로 노출된다 (모바일의 유일한 테마 전환 진입점) |
 | 테마 색 트랜지션 600ms cubic-bezier | 부드럽지만 빠르게 점진 전환. shell.css 의 :root/body/.drawer/.frame/.rail 트랜지션 블록이 background-color/color/border-color/fill/stroke 를 한 번에 보간 |
 | Sun/Moon SVG morph 는 :root.theme-changing 클래스 500ms 부착으로 트리거 | 토글 순간에만 클래스가 부착되어 keyframe(theme-icon-rise/set) 이 재생. 500ms 후 자동 제거되어 drawer expand/collapse 같은 다른 DOM 변화(예: md-item 의 start svg 가 display:none → visible 로 바뀌는 시점) 에서는 animation-name 매칭이 안 돼 의도치 않은 재생을 차단 |
 | ThemeToggle 헤드라인이 darkMode 에 따라 i18n 키 동적 변경 | 현재 light → "Switch to Dark" (theme.switch_to_dark), 현재 dark → "Switch to Light" (theme.switch_to_light). LabelProvider 구독으로 locale 변경 시에도 자동 갱신 |

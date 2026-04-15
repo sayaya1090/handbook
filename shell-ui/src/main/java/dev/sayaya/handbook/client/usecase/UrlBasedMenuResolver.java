@@ -58,7 +58,9 @@ public class UrlBasedMenuResolver {
             .findFirst().map(map::get)
             .ifPresent(t -> {
                 select.next(t);
-                drawer.next(DrawerState.COLLAPSE);
+                // 모바일에서는 drawer 가 primary nav 가 아니라 secondary 오버레이이므로
+                // URL 해석 결과로도 항상 HIDE 로 남겨 bottom-nav 만 노출한다.
+                drawer.next(drawer.isMobile() ? DrawerState.HIDE : DrawerState.COLLAPSE);
             });
     }
     private static String baseUrl() {

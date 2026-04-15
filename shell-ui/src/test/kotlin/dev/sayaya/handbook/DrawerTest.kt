@@ -221,6 +221,64 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
+        // UC-S13 (모바일) + UC-S15 (ThemeToggle): bottom-nav 모드에서도 테마 토글이 숨겨지지 않는다.
+        // 실제 상태 기계(DrawerMode.OVERLAY 전환) 와 무관하게 CSS 규칙만 검증 — 레일에 [bottom-nav]
+        // 속성을 직접 부착해 계산 스타일을 확인한다. 앞선 URL 클릭들로 남은 [hide] 등 다른 상태
+        // 속성은 일시 제거해 격리시킨 뒤 원복한다.
+        Then("bottom-nav 속성이 부착된 레일에서도 테마 토글의 display 가 none 이 아니다") {
+            val priorAttrs = page.evaluate(
+                """
+                (() => {
+                    const r = document.querySelector('.rail:first-child');
+                    const prior = ['expand','collapse','hide','bottom-nav']
+                        .filter(a => r.hasAttribute(a));
+                    prior.forEach(a => r.removeAttribute(a));
+                    r.setAttribute('bottom-nav', 'true');
+                    return JSON.stringify(prior);
+                })()
+                """.trimIndent()
+            ).toString()
+            val themeDisplay = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child .item.rail-bottom')).display"
+            ).toString()
+            page.evaluate(
+                """
+                (() => {
+                    const r = document.querySelector('.rail:first-child');
+                    r.removeAttribute('bottom-nav');
+                    JSON.parse('$priorAttrs').forEach(a => r.setAttribute(a, 'true'));
+                })()
+                """.trimIndent()
+            )
+            themeDisplay shouldNotBe "none"
+        }
+
+        // UC-S13: 모바일 뷰포트로 실시간 전환 — ViewportObserver 가 matchMedia 리스너로 감지
+        // 해서 MenuRailMode/ToolRailMode 가 BOTTOM_NAV / HORIZONTAL_CHIPS 로 전이해야 한다.
+        When("뷰포트를 모바일(375x800) 로 변경하면") {
+            page.setViewportSize(375, 800)
+            Thread.sleep(400)
+            Then("matchMedia(max-width:768px) 가 true 이다") {
+                val matches = page.evaluate("window.matchMedia('(max-width: 768px)').matches").toString()
+                matches shouldBe "true"
+            }
+            Then("첫 번째 rail 에 bottom-nav attribute 가 부착된다") {
+                val attr = page.evaluate(
+                    "document.querySelector('.rail:first-child').getAttribute('bottom-nav')"
+                ).toString()
+                attr shouldNotBe "null"
+            }
+            Then("테마 토글이 bottom-nav 레일 안에서 보인다 (display != none)") {
+                val display = page.evaluate(
+                    "getComputedStyle(document.querySelector('.rail:first-child .item.rail-bottom')).display"
+                ).toString()
+                display shouldNotBe "none"
+            }
+            // 원복: 이후 테스트들이 desktop 뷰포트에서 돌아가도록 복원
+            page.setViewportSize(1280, 720)
+            Thread.sleep(200)
+        }
+
         // UC-S15: ThemeToggle 배치 순서 — ThemeToggle 이 bottom 메뉴보다 시각적으로 위에 위치
         Then("bottom 메뉴가 DOM 상 ThemeToggle 뒤에 위치한다 (flex order: theme=1, bottom=2)") {
             // MenuRailElement 는 일반 메뉴 → ThemeToggle append 순서로 DOM 구성.
