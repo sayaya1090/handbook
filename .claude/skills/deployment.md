@@ -67,6 +67,13 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `templates/stage.yaml` | **Kargo `Stage`** — 서비스 × 스테이지 promotion 파이프라인 |
 | `templates/warehouse.yaml` | **Kargo `Warehouse`** — dev 스테이지의 첫 서비스에만 생성, ImageStream 을 1분 간격으로 감시해 새 빌드 Freight 생성 |
 
+### 외부 진입점 (Ingress)
+- **Kubernetes Gateway API** + OpenShift Route 로 `handbook.apps.sayaya.cloud` (dev) 호스트 노출. 사용자 nginx LB(192.168.1.9, L4 stream) 가 cluster nodes :443 으로 forward → OpenShift Router → `handbook-istio` Service → Istio Gateway
+- `infrastructure/templates/gateway/` 의 `Gateway` CR → Istio(istio GatewayClass) 가 `handbook-istio` Service 자동 프로비저닝 → OpenShift `Route` 가 TLS edge 로 외부 노출 (`*.apps.sayaya.cloud` 기본 wildcard cert 사용)
+- 트래픽 분기: 서비스별 HTTPRoute 가 구체 path 매칭으로 우선하고, `infrastructure/templates/gateway/http-route.yaml` 의 catch-all 이 나머지를 Spring Cloud Gateway(`service-gateway:8080`) 로 포워딩
+- **Cross-namespace backend 우회**: Istio gateway 컨트롤러가 `ReferenceGrant` 를 올바로 인식 못 해서 HTTPRoute 가 `openshift-storage` 의 Ceph RGW 를 직접 참조하면 `RefNotPermitted` 가 난다. 같은 ns 에 `ExternalName` Service `ceph-rgw` 를 두고 (`infrastructure/templates/gateway/ceph-rgw-service.yaml`) HTTPRoute 가 이를 가리키게 우회
+- 상세 비교 + 매칭 우선순위 + 점진적 이전 계획은 `docs/ingress-options.md` 참조
+
 ### Spring 설정 주입 모델 (요약)
 - **운영 설정의 단일 진리는 ConfigMap.** jar 의 `application.yml` 은 로컬 dev fallback.
 - **머지 안 함, 파일 단위 overwrite.** `/app/resources/application.yml` 위치에 subPath 마운트해 jar 의 동명 파일을 통째로 대체. SPRING_CONFIG_ADDITIONAL_LOCATION 금지.
@@ -102,6 +109,9 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `authentication/authentication.yaml` | **`handbook-authentication` ConfigMap** — `classpath:authentication.yaml` fragment. JWT 검증 설정. `JWT_SECRET` env 와 짝 |
 | `s3/bucket.yaml` | Ceph `ObjectBucketClaim` — `bucket.maxSize` 만큼 할당 |
 | `s3/service-entry.yaml` + `virtual-service.yaml` | Istio `ServiceEntry` (외부 RGW) + `VirtualService` (메시 내부 라우팅) — S3 호출을 Istio 게이트웨이로 투명 프록시 |
+| `gateway/gateway.yaml` | **`gateway.networking.k8s.io/v1/Gateway`** — `gatewayClassName: istio`, listener hostname 은 `.Values.host`. Istio 컨트롤러가 감지해 `handbook-istio` Deployment + Service(ClusterIP) 를 자동 프로비저닝 |
+| `gateway/route.yaml` | OpenShift `Route` — 자동 생성된 `handbook-istio` Service 를 `.Values.host` 로 TLS edge 노출 (`insecureEdgeTerminationPolicy: Redirect`) |
+| `gateway/http-route.yaml` | **catch-all** HTTPRoute (`name: gateway`) — 모든 `/` 요청을 `service-gateway:8080` (Spring Cloud Gateway) 로 포워딩. 서비스별 HTTPRoute 가 구체 매칭으로 먼저 가로챈 나머지 경로를 처리 |
 | `observability/configmap.yaml` | **`observability` ConfigMap** — `classpath:observability.yaml` fragment. Actuator/Prometheus exposure, health probes, metrics tags, console 로깅 패턴(correlationId 포함) 등 모든 서비스 공통 management/logging 설정 |
 | `observability/pod-monitor.yaml` | `PodMonitor` — Istio 사이드카 메트릭 스크래이프 |
 

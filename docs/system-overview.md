@@ -154,7 +154,32 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
   - `authentication/` — `handbook-authentication` 공통 Spring fragment (JWT)
   - `s3/` · `observability/` — 기존 공용 인프라
+  - `gateway/` — **Kubernetes Gateway API 진입점** (Gateway + OpenShift Route + catch-all HTTPRoute). Istio GatewayClass 가 `handbook-istio` Service 를 자동 프로비저닝하고, OpenShift Route 가 `handbook-<stage>.sayaya.cloud` 호스트로 TLS edge 노출. catch-all HTTPRoute 는 나머지 경로를 Spring Cloud Gateway 로 포워딩
 - **handbook-operator** — github-actions-runner-set (CI/CD)
+
+### 외부 진입점 (Ingress)
+
+```
+Browser ──TLS──▶ DNS *.apps.sayaya.cloud → 192.168.1.9 (nginx LB, L4 stream)
+                    │
+                    ▼
+               OpenShift Router (cluster nodes :443, wildcard cert)
+                    │  Route `handbook` (TLS edge)
+                    ▼
+               handbook-istio Service (Gateway API 자동 프로비저닝, MetalLB)
+                    │
+               ┌────┴────┐
+               ▼         ▼
+      HTTPRoute "shell-ui"            HTTPRoute "gateway" (catch-all)
+      (/, /shell.html, /js/shell/**)  (/*)
+               │                              │
+               ▼                              ▼
+       Service `ceph-rgw` (ExternalName)  service-gateway:8080 (Spring Cloud Gateway)
+       → openshift-storage Ceph RGW       → 백엔드 서비스
+       → bucket=handbook-<stage>/static
+```
+
+dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard cert 자동 적용). HTTPRoute 더 구체적인 path 가 catch-all 보다 우선. 상세는 `docs/ingress-options.md` 참조.
 
 ### 정적 자산 배포 모델 (GWT 프론트엔드)
 
