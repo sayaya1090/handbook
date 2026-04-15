@@ -1,0 +1,91 @@
+{{- /*
+  handbook.frontend-sync-job — 정적 자산 GWT 모듈(app, shell-ui, login-ui, workspace-ui,
+  ...)이 공통으로 사용하는 ArgoCD Sync Hook Job 의 named template.
+
+  Kargo Stage 의 argocd-update 가 freight.commit, bucket 을 helm parameter 로 주입하면
+  이 Job 이 GitHub prerelease asset 을 받아 S3 버킷으로 sync 한다. 새 freight 마다 job
+  이름에 short SHA 가 포함되어 ArgoCD 가 매번 새 Job 을 생성한다.
+
+  각 서브차트의 templates/sync-job.yaml 은 한 줄이면 충분:
+      {{ include "handbook.frontend-sync-job" . }}
+  필요한 values:
+      stage.name
+      freight.commit
+      bucket
+      s3.endpoint
+      release.repo
+      release.asset
+  tag prefix / job name / label 은 .Chart.Name 에서 자동 유도된다.
+*/ -}}
+{{- define "handbook.frontend-sync-job" -}}
+{{- if and .Values.stage.name .Values.freight.commit .Values.bucket }}
+{{- $short := .Values.freight.commit | trunc 7 }}
+{{- $tag := printf "%s-%s" .Chart.Name $short }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Chart.Name }}-sync-{{ $short }}
+  namespace: handbook-{{ .Values.stage.name }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/component: sync
+    handbook.sayaya.dev/freight: {{ $tag | quote }}
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 86400  # 1d
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/component: sync
+        # 외부 GitHub/S3 호출이 ztunnel 과 충돌 가능 — ambient mesh 제외
+        istio.io/dataplane-mode: none
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: sync
+          image: amazon/aws-cli:latest
+          env:
+            - name: TAG
+              value: {{ $tag | quote }}
+            - name: BUCKET
+              value: {{ .Values.bucket | quote }}
+            - name: S3_ENDPOINT
+              value: {{ .Values.s3.endpoint | quote }}
+            - name: RELEASE_REPO
+              value: {{ .Values.release.repo | quote }}
+            - name: RELEASE_ASSET
+              value: {{ .Values.release.asset | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: bucket
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bucket
+                  key: AWS_SECRET_ACCESS_KEY
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              # amazon/aws-cli (AL2023) 이미지는 tar/gzip CLI 가 없고 OpenShift 는 non-root
+              # 를 강제해 dnf 로 런타임 설치도 불가능하므로, 이미지에 번들된 Python 으로
+              # tarfile 모듈을 써서 풀어낸다. handbook repo 는 public 이라 인증 불필요.
+              echo "Resolving release $TAG from $RELEASE_REPO"
+              ASSET_URL="https://github.com/$RELEASE_REPO/releases/download/$TAG/$RELEASE_ASSET"
+              echo "Downloading $ASSET_URL"
+              curl -fsSL -o "/tmp/$RELEASE_ASSET" "$ASSET_URL"
+              mkdir -p /tmp/static
+              python3 -c "import tarfile; tarfile.open('/tmp/$RELEASE_ASSET').extractall('/tmp/static')"
+              echo "Syncing to s3://$BUCKET/static via $S3_ENDPOINT"
+              aws s3 sync --endpoint-url "$S3_ENDPOINT" /tmp/static "s3://$BUCKET/static" \
+                --acl public-read --no-verify-ssl
+{{- end }}
+{{- end }}

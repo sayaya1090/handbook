@@ -1,0 +1,5 @@
+apiVersion: v2
+name: handbook-lib
+description: Shared Helm library templates for handbook subcharts (frontend sync-job, JVM backend deployment, …)
+type: library
+version: 0.1.0
