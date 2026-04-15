@@ -4,11 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class SearchTypeApplication {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            runApplication<SearchTypeApplication>(*args)
-        }
-    }
+class SearchTypeApplication
+
+fun main(args: Array<String>) {
+    runApplication<SearchTypeApplication>(*args)
 }
