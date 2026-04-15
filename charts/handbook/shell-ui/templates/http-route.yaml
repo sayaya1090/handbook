@@ -18,17 +18,33 @@ spec:
   hostnames:
     - {{ .Values.host | quote }}
   rules:
-    # /js/shell/** → S3 bucket/static/js/shell/**  (PathPrefix rewrite)
+    # /js/** → S3 bucket/static/js/**  (공용 정적 리소스: rxjs, fontawesome, sayaya-ui 등)
+    # /js/login/**, /js/workspace/** 등 모듈별 더 구체적인 PathPrefix 는 각 모듈 HTTPRoute 가
+    # 더 긴 매칭으로 선행(Gateway API 는 longer prefix 가 승)하므로 간섭 없음.
     - matches:
         - path:
             type: PathPrefix
-            value: /js/shell/
+            value: /js/
       filters:
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/js/shell/
+              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/js/
+      backendRefs:
+        - name: ceph-rgw
+          port: 80
+    # /css/** → S3 bucket/static/css/**  (global.css, shell.css, fontawesome.min.css …)
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /css/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/css/
       backendRefs:
         - name: ceph-rgw
           port: 80
