@@ -1,0 +1,63 @@
+name: 워크스페이스 UI 모듈 빌드
+on:
+  push:
+    paths:
+      - workspace-ui/**
+  workflow_dispatch:
+permissions:
+  contents: write  # Publish prerelease step 이 gh release create 로 tag/release 를 만든다
+jobs:
+  build:
+    runs-on: handbook-operator
+    env:
+      SUBMODULE: workspace-ui
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Force LFS pull
+        run: |
+          git lfs pull
+          git lfs ls-files
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build & Test
+        run: ./gradlew $SUBMODULE:build
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-ui-test-reports
+          path: workspace-ui/build/reports/tests/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Pack static assets
+        run: |
+          # war 플러그인이 src/main/webapp + GWT 컴파일 결과(js/workspace/) 를 하나의 WAR 로 묶는다.
+          mkdir -p dist/static
+          unzip -o $SUBMODULE/build/libs/*.war -x "META-INF/*" "WEB-INF/*" -d dist/static
+          tar -czf workspace-ui.tar.gz -C dist/static .
+          echo "tarball contents:" && tar -tzf workspace-ui.tar.gz | head -20
+      # Kargo Warehouse 가 git tag 패턴 `workspace-ui-*` 로 watch → Stage promotion 이
+      # release asset 을 다운로드해서 vars.bucket 에 sync.
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="workspace-ui-${GITHUB_SHA::7}"
+          # 같은 commit 재실행 시 tag 충돌 방지 — 기존 release 와 tag 를 선제적으로 제거
+          gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "workspace-ui ${GITHUB_SHA::7}" \
+            --notes "workspace-ui build for commit ${GITHUB_SHA}" \
+            workspace-ui.tar.gz

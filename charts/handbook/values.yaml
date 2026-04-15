@@ -37,9 +37,15 @@ services:
   - name: login
     color: purple
     stages: [dev, staging, prod]
+  - name: persist-workspace
+    color: yellow
+    stages: [dev, staging, prod]
   - name: shell-ui
     color: pink
     stages: [dev, staging, prod]
   - name: login-ui
     color: magenta
+    stages: [dev, staging, prod]
+  - name: workspace-ui
+    color: teal
     stages: [dev, staging, prod]

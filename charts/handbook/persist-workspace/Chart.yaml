@@ -1,0 +1,7 @@
+annotations:
+  charts.openshift.io/name: persist-workspace
+apiVersion: v2
+kubeVersion: '>= 1.20.0-0'
+name: persist-workspace
+version: 0.1.0
+description: Persist workspace (write side) service for handbook application

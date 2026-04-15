@@ -1,0 +1,9 @@
+image:
+  name:
+  tag:
+color: ""
+
+stage:
+  name: ""
+  color: ""
+  prev: ""

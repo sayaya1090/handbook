@@ -148,7 +148,8 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 
 - **gateway** — API Gateway 배포
 - **event-broadcaster** — Kafka→SSE 브로드캐스트 배포
-- **shell-ui** / **login-ui** — GWT 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). GHA 가 prerelease 로 빌드 산출물을 publish, Kargo Stage 가 환경별 S3 버킷으로 promotion. login-ui 는 `/js/login/**`, `/js/logout/**` 만 HTTPRoute 로 노출(HTML 엔트리포인트 없음 — shell 이 동적 로드)
+- **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포. image 기반 Kargo Warehouse 구독
+- **shell-ui** / **login-ui** / **workspace-ui** — GWT 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). GHA 가 prerelease 로 빌드 산출물을 publish, Kargo Stage 가 환경별 S3 버킷으로 promotion. shell-ui 만 `/shell.html` · `/` 엔트리포인트를 HTTPRoute 로 노출하고, 나머지 `*-ui` 는 `/js/<module>/**` 만 매칭(쉘이 동적 로드)
 - **infrastructure** — 공용 인프라
   - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
@@ -185,10 +186,12 @@ dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard 
 
 ```
 [gateway-dev]            ┐
-[event-broadcaster-dev]  ┤   release-staging              release-prod
-[login-dev]              ┼─→ (모든 서비스 dev 통과     →  (release-staging
+[event-broadcaster-dev]  ┤
+[login-dev]              ┤   release-staging              release-prod
+[persist-workspace-dev]  ┼─→ (모든 서비스 dev 통과     →  (release-staging
 [shell-ui-dev]           ┤    Freight 를 한 번에            통과 번들을 그대로
-[login-ui-dev]           ┘    atomic 배포, 수동 trigger)    전진, 수동 trigger)
+[login-ui-dev]           ┤    atomic 배포, 수동 trigger)    전진, 수동 trigger)
+[workspace-ui-dev]       ┘
    (auto promote)
 ```
 

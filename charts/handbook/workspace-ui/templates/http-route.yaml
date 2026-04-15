@@ -1,0 +1,34 @@
+{{- if and .Values.stage.name .Values.host }}
+---
+# 워크스페이스 UI 정적 자산 전용 HTTPRoute.
+# /js/workspace/** 을 Ceph RGW(S3) bucket=handbook-<stage>/static/<key> 로 rewrite.
+# 쉘 모듈이 동적으로 스크립트를 로드하므로 HTML 엔트리포인트는 없다 (shell-ui 의 /shell.html 만).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: workspace-ui
+  namespace: handbook-{{ .Values.stage.name }}
+  labels:
+    app.kubernetes.io/instance: workspace-ui
+    app.kubernetes.io/part-of: handbook
+spec:
+  parentRefs:
+    - name: handbook
+  hostnames:
+    - {{ .Values.host | quote }}
+  rules:
+    # /js/workspace/** → S3 bucket/static/js/workspace/**
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /js/workspace/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/js/workspace/
+      backendRefs:
+        - name: ceph-rgw
+          port: 80
+{{- end }}

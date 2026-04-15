@@ -1,0 +1,165 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/persist-workspace'
+    configmap.reloader.stakater.com/reload: "persist-workspace,observability,handbook-authentication,handbook-postgresql,handbook-kafka"
+  name: persist-workspace
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - foregroundDeletion
+  labels:
+    app: persist-workspace
+    app.kubernetes.io/component: handbook
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/name: handbook
+    app.kubernetes.io/part-of: handbook
+    app.openshift.io/runtime: spring-boot
+    app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
+    app.openshift.io/runtime-version: latest
+spec:
+  selector:
+    matchLabels:
+      app: persist-workspace
+  template:
+    metadata:
+      labels:
+        app: persist-workspace
+        version: 0.0.1
+        deployment: persist-workspace
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: persist-workspace
+            defaultMode: 420
+        - name: observability-config
+          configMap:
+            name: observability
+            defaultMode: 420
+        - name: authentication-config
+          configMap:
+            name: handbook-authentication
+            defaultMode: 420
+        - name: postgresql-config
+          configMap:
+            name: handbook-postgresql
+            defaultMode: 420
+        - name: kafka-config
+          configMap:
+            name: handbook-kafka
+            defaultMode: 420
+      containers:
+        - name: persist-workspace
+          image: {{ .Values.image.name | default "image-registry.openshift-image-registry.svc:5000/handbook/persist-workspace" }}:{{ .Values.image.tag | default "latest" }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          env:
+            - name: TZ
+              value: Asia/Seoul
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: handbook-jwt
+                  key: jwt-secret
+            - name: KAFKA_BROKERS
+              value: "handbook-kafka-bootstrap:9092"
+            # CNPG 가 자동 생성한 postgresql-app Secret 에서 모든 r2dbc 연결정보 주입
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: dbname
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: password
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            # jar 의 application.yml 을 파일 단위로 덮어쓴다 (머지가 아닌 완전 대체).
+            - name: config
+              mountPath: /app/resources/application.yml
+              subPath: application.yml
+            - name: observability-config
+              mountPath: /app/resources/observability.yaml
+              subPath: observability.yaml
+            - name: authentication-config
+              mountPath: /app/resources/authentication.yaml
+              subPath: authentication.yaml
+            - name: postgresql-config
+              mountPath: /app/resources/postgresql.yaml
+              subPath: postgresql.yaml
+            - name: kafka-config
+              mountPath: /app/resources/kafka.yaml
+              subPath: kafka.yaml
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 0
+  progressDeadlineSeconds: 600
+  paused: false
