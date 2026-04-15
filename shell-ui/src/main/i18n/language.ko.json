@@ -7,5 +7,7 @@
   "type_canvas": "타입 캔버스",
   "document_editor": "문서 편집기",
   "compliance": "정합성 검증",
-  "audit_logs": "감사 로그"
+  "audit_logs": "감사 로그",
+  "theme.switch_to_dark": "다크 모드로 전환",
+  "theme.switch_to_light": "라이트 모드로 전환"
 }

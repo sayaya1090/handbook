@@ -31,8 +31,16 @@ import static org.jboss.elemento.Elements.nav;
  *   <li>{@link MenuRailElement} — 메뉴 레일</li>
  *   <li>{@link ToolRailElement} — 도구 레일</li>
  *   <li>{@link WorkspaceSelectElement} — 워크스페이스 셀렉터</li>
- *   <li>{@link ThemeToggle} — 테마 토글 버튼 (RailFooter 에 order=10 으로 등록)</li>
- *   <li>{@link RailFooter} — MenuRail 하단 슬롯 (조립 우선순위 기반 버튼 배치)</li>
+ *   <li>{@link ThemeToggle} — 라이트/다크 테마 토글 (MenuRail 하단에 margin-top:auto 로 고정)</li>
+ * </ul></p>
+ *
+ * <p><b>레이아웃:</b>
+ * <ul>
+ *   <li>header — 워크스페이스 셀렉터 + 햄버거 토글 가로 일렬 (justify-content: space-between)</li>
+ *   <li>본문 — MenuRail + ToolRail 가로 배치</li>
+ *   <li>ThemeToggle 은 MenuRail 의 마지막 자식으로 직접 추가되어 Menu 도메인의 {@code bottom=true}
+ *       와 동일한 {@code margin-top: auto} 패턴으로 rail 하단에 고정. rail 의 width 트랜지션과
+ *       자동으로 동기화되어 expand/collapse 전환 시 같이 움직인다.</li>
  * </ul></p>
  *
  * <p><b>주의:</b> 스와이프 제스처는 왼쪽 가장자리 30px 이내에서 시작하고 60px 이상 이동 시 트리거된다.</p>
@@ -48,7 +56,7 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private double touchStartX;
     private boolean trackingSwipe;
 
-    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, RailFooter railFooter, ShellStylesheet shellStylesheet) {
+    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, ShellStylesheet shellStylesheet) {
         this.mode = mode;
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
@@ -56,20 +64,17 @@ public class DrawerElement implements IsElement<HTMLElement> {
         scrim = div().css("drawer-scrim").element();
         scrim.addEventListener("click", e -> mode.toggleOverlay());
 
-        // 헤더에는 워크스페이스 셀렉터만 남는다. 테마 토글과 햄버거 토글은 RailFooter 로 이관되어
-        // 조립 우선순위(order CSS) 기반으로 Rail 하단에 세로 스택된다.
-        //   order=10  → 테마 토글
-        //   order=100 → 햄버거 토글 (항상 최하단)
-        //   order=20  → 향후 로그아웃 (login-ui 모듈이 CustomEvent 로 등록)
-        railFooter.register(themeToggle.element(), 10);
-        railFooter.register(btnToggle.element(), 100);
-        // RailFooter 는 MenuRail flex-column 의 마지막 자식으로 추가되어 margin-top: auto 로 하단 고정.
-        navMenu.element().appendChild(railFooter.element());
+        // 테마 토글은 이제 NavigationRailItemElement 를 상속하므로 자기 자신이 .item 구조다.
+        // navMenu 자식으로 직접 append. theme 은 margin-top: auto 를 두지 않음 — m4(첫 bottom
+        // 메뉴) 의 margin-top: auto 가 m4 + m3 + theme 덩어리를 한꺼번에 rail 하단으로 밀고,
+        // theme 은 .rail-bottom CSS 의 order: 9999 로 flex 마지막 자리에 위치해 m3 바로 아래에 정렬된다.
+        navMenu.element().appendChild(themeToggle.element());
 
         _this.css("drawer")
                 .add(div().css("header", "drawer-header")
-                        .add(workspace.css("workspace")))
-                .add(div().style("display: flex; flex: 1; min-height: 0;")
+                        .add(workspace.css("workspace"))
+                        .add(btnToggle.style("margin: 8px;")))
+                .add(div().css("body")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);
         initSwipeGesture();

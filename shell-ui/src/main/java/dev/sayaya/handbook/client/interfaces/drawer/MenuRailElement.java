@@ -4,7 +4,6 @@ import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.usecase.MenuList;
 import dev.sayaya.handbook.client.usecase.MenuRailMode;
 import dev.sayaya.handbook.domain.Menu;
-import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLDivElement;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
@@ -14,7 +13,6 @@ import javax.inject.Singleton;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Comparator.comparing;
@@ -49,12 +47,14 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     private void update(List<Menu> menu) {
         clear();
         if(menu == null) return;
-        AtomicBoolean bottom = new AtomicBoolean(false);
-        menu.stream().sorted(MENU_COMPARATOR).map(item -> createItem(item, bottom)).forEach(this::add);
+        menu.stream().sorted(MENU_COMPARATOR).map(this::createItem).forEach(this::add);
     }
-    private MenuRailItemElement createItem(Menu menu, AtomicBoolean bottom) {
+    private MenuRailItemElement createItem(Menu menu) {
         var child = factory.item(menu);
-        if(TRUE.equals(menu.bottom()) && !bottom.getAndSet(true)) child.element().style.marginTop = CSSProperties.MarginTopUnionType.of("auto");
+        // bottom 메뉴는 .bottom-menu 클래스만 부여. flex order 와 push-to-bottom 은 CSS 가 처리.
+        // (.rail .item.bottom-menu { order: 2 }, .rail .rail-bottom { order: 1; margin-top: auto })
+        // margin-top: auto 는 ThemeToggle(.rail-bottom) 한 곳에서만 발생해 동적 계산 불필요.
+        if(TRUE.equals(menu.bottom())) child.element().classList.add("bottom-menu");
         children.add(child);
         return child;
     }

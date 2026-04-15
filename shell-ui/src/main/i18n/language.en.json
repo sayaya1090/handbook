@@ -7,5 +7,7 @@
   "type_canvas": "Type Canvas",
   "document_editor": "Document Editor",
   "compliance": "Compliance",
-  "audit_logs": "Audit Logs"
+  "audit_logs": "Audit Logs",
+  "theme.switch_to_dark": "Switch to Dark",
+  "theme.switch_to_light": "Switch to Light"
 }
