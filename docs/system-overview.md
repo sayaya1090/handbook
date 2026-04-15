@@ -146,11 +146,9 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 
 ## 헬름차트 구성 (`charts/handbook/`)
 
-- **gateway** — API Gateway 배포
-- **event-broadcaster** — Kafka→SSE 브로드캐스트 배포
-- **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포. image 기반 Kargo Warehouse 구독
-- **app** — SPA 루트 번들 (app.html, manifest, service-worker, 공용 js/css, app GWT 모듈 출력). 루트 `/` 및 `/app.html` 엔트리포인트 · `/js/**` · `/css/**` 공용 catch-all HTTPRoute 를 담당. shell/login/workspace 서브 모듈이 공유하는 라이브러리(rxjs, fontawesome, sayaya-ui, global.css, shell.css …)가 여기에 포함된다
-- **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). 각각 자기 모듈이 컴파일된 `/js/<module>/**` (및 shell-ui 는 `/shell.html`) 만 HTTPRoute 로 노출. Gateway API longer-prefix 매칭 규칙에 따라 `/js/shell/` 등 모듈별 규칙이 app 의 `/js/` catch 보다 먼저 매칭된다
+- **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독
+- **app** — SPA 루트 번들 차트 (kind: frontend). `app.html`, `manifest.json`, `service-worker.js`, 공용 `js/*.js`·`css/*.css`, app GWT 모듈 컴파일 출력(`/app/**`) 을 포함. HTTPRoute 가 `/` 와 `/app.html` 엔트리포인트 및 `/js/**`·`/css/**`·`/app/**`·`/manifest.json`·`/service-worker.js` 를 S3 `handbook-<stage>/static/` 으로 rewrite 하는 유일한 HTML 진입 차트
+- **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 전용 정적 자산 deploy 파이프라인 (kind: frontend, Warehouse + Stage + sync-job 만, Deployment 없음, HTTPRoute 도 없음). 각 모듈의 GWT 컴파일 출력만 동일한 S3 버킷의 `/static/js/<module>/**` 아래로 sync 하고, 브라우저 접근 경로는 app 차트의 `/js/` PathPrefix HTTPRoute 가 공통 처리
 - **infrastructure** — 공용 인프라
   - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
@@ -172,8 +170,10 @@ Browser ──TLS──▶ DNS *.apps.sayaya.cloud → 192.168.1.9 (nginx LB, L4
                     │
                ┌────┴────┐
                ▼         ▼
-      HTTPRoute "shell-ui"            HTTPRoute "gateway" (catch-all)
-      (/, /shell.html, /js/shell/**)  (/*)
+      HTTPRoute "app"                       HTTPRoute "gateway" (catch-all)
+      (/, /app.html, /js/**, /css/**,       (/*)
+       /app/**, /manifest.json,
+       /service-worker.js)
                │                              │
                ▼                              ▼
        Service `ceph-rgw` (ExternalName)  service-gateway:8080 (Spring Cloud Gateway)
@@ -200,7 +200,7 @@ dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard 
 - **dev**: 서비스별 독립 `<svc>-dev` Stage. 자기 Warehouse 만 구독 + autoPromotion=true → Freight 발행 즉시 dev 환경 자동 배포
 - **release-staging**: 모든 서비스 Warehouse 를 multi-source 로 구독 (`sources.stages: [<svc>-dev]`). 사람이 릴리즈 후보 결정 시점에 수동 승격 → 모든 서비스의 staging Application 동시 update
 - **release-prod**: release-staging 단일 upstream 구독 → 동일 digest/commit 번들이 그대로 prod 로 전파, 수동 승격
-- **promotionTemplate 분기**: JVM 백엔드는 `compose-output(imageFrom)` + `argocd-update.helm.images[image.tag]`, GWT 프론트엔드(`*-ui`) 는 `argocd-update.helm.images[freight.commit, bucket]` 로 같은 release-* Stage 에서 두 패턴이 `hasSuffix "-ui"` 분기로 공존
+- **promotionTemplate 분기**: values.yaml `services[].kind` 로 구분. `backend` 는 `compose-output(imageFrom)` + `argocd-update.helm.images[image.tag]`, `frontend` 는 `argocd-update.helm.images[freight.commit, bucket]` 로 같은 release-* Stage 에서 두 패턴이 공존
 
 **ApplicationSet** 은 (service × stage) 매트릭스로 staging/prod Application 도 계속 생성 — Kargo Stage 가 그 Application 들의 helm parameter 를 update 해야 하므로 deployment manifest 가 필요. Stage CR 자체는 dev 만 서비스별로 생성.
 

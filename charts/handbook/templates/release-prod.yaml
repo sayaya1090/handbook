@@ -29,7 +29,7 @@ spec:
     spec:
       steps:
         {{- range $service := .Values.services }}
-        {{- if hasSuffix "-ui" $service.name }}
+        {{- if eq $service.kind "frontend" }}
         - uses: argocd-update
           as: sync-{{ $service.name }}
           config:

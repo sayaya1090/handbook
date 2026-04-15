@@ -3,10 +3,9 @@
   handbook-staging 네임스페이스에 atomic 으로 promotion. 사람이 release
   타이밍을 직접 트리거(autoPromotion=false). v2 전략의 Release Train.
 
-  서비스 종류별 promotion key:
-  - JVM 백엔드(이미지 기반):   helm.images key=image.tag, value=imageFrom(...)
-  - GWT 프론트엔드(git tag 기반, name 에 "-ui" 접미사):
-      helm.images key=freight.commit, value=commitFrom(...).ID
+  서비스 종류별 promotion key (values.yaml 의 services[].kind 로 분기):
+  - kind: backend  (JVM 이미지 기반):   helm.images key=image.tag, value=imageFrom(...)
+  - kind: frontend (GWT git tag 기반):  helm.images key=freight.commit, value=commitFrom(...).ID
 */ -}}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -34,7 +33,7 @@ spec:
     spec:
       steps:
         {{- range $service := .Values.services }}
-        {{- if hasSuffix "-ui" $service.name }}
+        {{- if eq $service.kind "frontend" }}
         - uses: argocd-update
           as: sync-{{ $service.name }}
           config:

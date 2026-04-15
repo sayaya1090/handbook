@@ -46,7 +46,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 ### 값 스키마 (`values.yaml`)
 - **`stages`**: `dev | staging | prod` 각각에 `database`(PG IP), `host`(FQDN), `color`, `backup.schedule`(cron; 빈 문자열이면 백업 비활성), `bucket.maxSize`(S3 PVC 크기)
-- **`services`**: `[{name, color, stages: [...]}]` — 어떤 서비스를 어떤 스테이지에 배포할지 매트릭스. `color` 는 Kargo UI 에서 Warehouse 카드 구분용(ApplicationSet 이 각 서비스 Application 의 helm parameter `color` 로 주입 → 서브차트 `templates/warehouse.yaml` 이 `kargo.akuity.io/color` 애노테이션에 적용).
+- **`services`**: `[{name, kind, color, stages: [...]}]` — 어떤 서비스를 어떤 스테이지에 배포할지 매트릭스. `kind` 는 `backend`(Spring Boot JVM 이미지 기반 promotion) 또는 `frontend`(GWT 정적 자산 git-tag 기반 promotion) 로 release-staging / release-prod bundle 템플릿에서 promotion 패턴을 분기한다. `color` 는 Kargo UI 에서 Warehouse 카드 구분용(ApplicationSet 이 각 서비스 Application 의 helm parameter `color` 로 주입 → 서브차트 `templates/warehouse.yaml` 이 `kargo.akuity.io/color` 애노테이션에 적용).
 
 ### 루트 템플릿
 | 파일 | 역할 |
@@ -101,8 +101,8 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 **서비스 종류별 promotion key 처리**:
 - **JVM 백엔드** (image 기반): `compose-output` 으로 imageFrom 결과 캡처 → `argocd-update.helm.images[key=image.tag, value=tag@digest]` 로 Application 갱신
-- **GWT 프론트엔드** (shell-ui, login-ui, workspace-ui — name 에 `-ui` 접미사, git tag 기반): `argocd-update.helm.images[key=freight.commit, value=${{ commitFrom(...).ID }}]` 직접 주입 (compose-output 불필요)
-- 두 패턴이 release-staging/release-prod 의 promotionTemplate 안에 `hasSuffix "-ui"` 분기로 공존
+- **GWT 프론트엔드** (`services[].kind == "frontend"` — app, shell-ui, login-ui, workspace-ui, …): `argocd-update.helm.images[key=freight.commit, value=${{ commitFrom(...).ID }}]` 직접 주입 (compose-output 불필요)
+- 두 패턴이 release-staging/release-prod 의 promotionTemplate 안에 `eq $service.kind "frontend"` 분기로 공존
 
 **기존 (v1) 잔재**:
 - 서비스 subchart 의 `templates/stage.yaml` 은 `if eq .Values.stage.name "dev"` 가드로 dev 만 렌더. staging/prod 인스턴스가 helm parameter 로 들어와도 빈 manifest 를 만들어 Kargo CR 충돌 방지

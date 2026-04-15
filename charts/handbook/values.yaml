@@ -27,28 +27,38 @@ stages:
 
 # 서비스 목록 및 스테이지 설정
 # color: Kargo UI 에서 Warehouse 카드를 구분하기 위한 서비스별 색상
+# kind : backend (기본, Spring Boot JVM 이미지 기반 promotion)
+#        frontend (GWT 정적 자산 git-tag 기반 promotion — app / *-ui)
 services:
   - name: gateway
+    kind: backend
     color: cyan
     stages: [dev, staging, prod]
   - name: event-broadcaster
+    kind: backend
     color: orange
     stages: [dev, staging, prod]
   - name: login
+    kind: backend
     color: purple
     stages: [dev, staging, prod]
   - name: persist-workspace
+    kind: backend
     color: yellow
     stages: [dev, staging, prod]
   - name: app
+    kind: frontend
     color: blue
     stages: [dev, staging, prod]
   - name: shell-ui
+    kind: frontend
     color: pink
     stages: [dev, staging, prod]
   - name: login-ui
+    kind: frontend
     color: magenta
     stages: [dev, staging, prod]
   - name: workspace-ui
+    kind: frontend
     color: teal
     stages: [dev, staging, prod]
