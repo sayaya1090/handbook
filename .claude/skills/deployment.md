@@ -46,7 +46,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 ### 값 스키마 (`values.yaml`)
 - **`stages`**: `dev | staging | prod` 각각에 `database`(PG IP), `host`(FQDN), `color`, `backup.schedule`(cron; 빈 문자열이면 백업 비활성), `bucket.maxSize`(S3 PVC 크기)
-- **`services`**: `[{name, stages: [...]}]` — 어떤 서비스를 어떤 스테이지에 배포할지 매트릭스. 현재 `gateway` 는 3 스테이지, `event-broadcaster` 는 dev/prod 만.
+- **`services`**: `[{name, color, stages: [...]}]` — 어떤 서비스를 어떤 스테이지에 배포할지 매트릭스. `color` 는 Kargo UI 에서 Warehouse 카드 구분용(ApplicationSet 이 각 서비스 Application 의 helm parameter `color` 로 주입 → 서브차트 `templates/warehouse.yaml` 이 `kargo.akuity.io/color` 애노테이션에 적용).
 
 ### 루트 템플릿
 | 파일 | 역할 |
@@ -65,7 +65,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `templates/deployment.yaml` | Deployment. **공통 환경변수**: `TZ=Asia/Seoul`, `JWT_SECRET` (secret `handbook-jwt`). `SPRING_CONFIG_ADDITIONAL_LOCATION` 을 절대 사용하지 않는다 — 머지 우선순위가 모호해진다. 서비스별 추가 env 는 placeholder(`${KAFKA_BROKERS}` 등)를 채우는 값만. **볼륨 마운트**: 서비스 ConfigMap 을 `/app/resources/application.yml` 에 subPath 마운트(jar classpath 파일 덮어쓰기). 공통 fragment ConfigMap(observability / handbook-authentication / handbook-kafka 등)은 `/app/resources/<name>.yaml` 에 subPath 마운트하여 `classpath:<name>.yaml` 로 import 되게 한다. **Reloader**: 마운트한 모든 ConfigMap 이름을 `configmap.reloader.stakater.com/reload` 에 나열. **프로브**: `/actuator/health/{liveness,readiness}` |
 | `templates/service.yaml` | ClusterIP Service (포트 8080) |
 | `templates/stage.yaml` | **Kargo `Stage`** — 서비스 × 스테이지 promotion 파이프라인 |
-| `templates/warehouse.yaml` | **Kargo `Warehouse`** — dev 스테이지의 첫 서비스에만 생성, ImageStream 을 1분 간격으로 감시해 새 빌드 Freight 생성 |
+| `templates/warehouse.yaml` | **Kargo `Warehouse`** — dev 스테이지의 첫 서비스에만 생성, ImageStream 을 1분 간격으로 감시해 새 빌드 Freight 생성. `kargo.akuity.io/color` 애노테이션을 `.Values.color` 에서 받아 Kargo UI 에서 서비스별로 구분 |
 
 ### 외부 진입점 (Ingress)
 - **Kubernetes Gateway API** + OpenShift Route 로 `handbook.apps.sayaya.cloud` (dev) 호스트 노출. 사용자 nginx LB(192.168.1.9, L4 stream) 가 cluster nodes :443 으로 forward → OpenShift Router → `handbook-istio` Service → Istio Gateway

@@ -26,24 +26,17 @@ stages:
       maxSize: 50G
 
 # 서비스 목록 및 스테이지 설정
+# color: Kargo UI 에서 Warehouse 카드를 구분하기 위한 서비스별 색상
 services:
   - name: gateway
-    stages:
-      - dev
-      - staging
-      - prod
+    color: cyan
+    stages: [dev, staging, prod]
   - name: event-broadcaster
-    stages:
-      - dev
-      - staging
-      - prod
+    color: orange
+    stages: [dev, staging, prod]
   - name: login
-    stages:
-      - dev
-      - staging
-      - prod
+    color: purple
+    stages: [dev, staging, prod]
   - name: shell-ui
-    stages:
-      - dev
-      - staging
-      - prod
+    color: pink
+    stages: [dev, staging, prod]

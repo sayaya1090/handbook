@@ -82,6 +82,8 @@ spec:
           value: {{ $stageName }}
         - name: stage.color
           value: {{ (index $.Values.stages $stageName).color }}
+        - name: color
+          value: {{ $service.color }}
         - name: host
           value: {{ (index $.Values.stages $stageName).host }}
         {{- if gt $index 0 }}

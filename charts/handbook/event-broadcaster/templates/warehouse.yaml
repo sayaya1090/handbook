@@ -5,6 +5,8 @@ kind: Warehouse
 metadata:
   name: event-broadcaster
   namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.color }}
 spec:
   freightCreationPolicy: Automatic
   interval: 1m0s
