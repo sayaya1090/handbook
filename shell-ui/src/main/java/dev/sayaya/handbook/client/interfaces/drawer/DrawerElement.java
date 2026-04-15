@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.domain.DrawerState;
+import dev.sayaya.handbook.client.interfaces.ShellStylesheet;
 import dev.sayaya.handbook.client.usecase.DrawerMode;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -47,8 +48,11 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private double touchStartX;
     private boolean trackingSwipe;
 
-    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, RailFooter railFooter) {
+    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, RailFooter railFooter, ShellStylesheet shellStylesheet) {
         this.mode = mode;
+        // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
+        // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
+        assert shellStylesheet != null;
         scrim = div().css("drawer-scrim").element();
         scrim.addEventListener("click", e -> mode.toggleOverlay());
 
