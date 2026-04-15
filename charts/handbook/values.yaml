@@ -36,6 +36,11 @@ services:
     stages:
       - dev
       - prod
+  - name: login
+    stages:
+      - dev
+      - staging
+      - prod
   - name: shell-ui
     stages:
       - dev

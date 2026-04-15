@@ -1,0 +1,8 @@
+image:
+  name:
+  tag:
+stage:
+  name: ""
+  color: ""
+  prev: ""
+host: ""

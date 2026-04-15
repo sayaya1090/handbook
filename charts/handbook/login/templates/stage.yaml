@@ -1,0 +1,65 @@
+{{- if .Values.stage.name }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: login-{{ .Values.stage.name }}
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.stage.color }}
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: login
+      sources:
+        {{- if .Values.stage.prev }}
+        direct: false
+        stages:
+          - login-{{ .Values.stage.prev }}
+        {{- else }}
+        direct: true
+        {{- end }}
+  promotionTemplate:
+    spec:
+      steps:
+        {{- if eq .Values.stage.name "dev" }}
+        - uses: compose-output
+          as: login-image
+          config:
+            img: {{ printf `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/login") }}` }}
+        - uses: argocd-update
+          as: sync
+          config:
+            apps:
+              - name: handbook-login-{{ .Values.stage.name }}
+                sources:
+                  - helm:
+                      images:
+                        - key: image.tag
+                          value: {{ printf `${{ outputs['login-image'].img.tag }}@${{ outputs['login-image'].img.digest }}` }}
+                    repoURL: https://github.com/sayaya1090/handbook.git
+        {{- else }}
+        - uses: http
+          as: add-tag
+          config:
+              url: https://api.github.com/repos/sayaya1090/handbook/dispatches
+              method: POST
+              headers:
+                - name: Authorization
+                  value: token {{`${{ secrets.github.token }}`}}
+                - name: Accept
+                  value: application/vnd.github.v3+json
+              body: |
+                {{`${{ quote({
+                  "event_type": "release",
+                  "client_payload": {
+                    "ctx": ctx,
+                    "service": "login",
+                    "image": imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/login"),
+                    "commit": commitFrom("https://github.com/sayaya1090/handbook.git")
+                  }
+                }) }}`}}
+              successExpression: response.status == 204
+        {{- end }}
+{{- end }}
