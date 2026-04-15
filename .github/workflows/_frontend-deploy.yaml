@@ -63,6 +63,7 @@ jobs:
       # Kargo Warehouse 가 git tag 패턴 `<submodule>-*` 로 watch → Stage promotion 이
       # release asset 을 다운로드해서 vars.bucket 에 sync.
       - name: Publish prerelease
+        if: success()  # 빌드 성공할 때만 release tag 생성 (실패 시 tag 남지 않음)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
