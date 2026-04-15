@@ -52,51 +52,70 @@ spec:
           labels:
             istio.io/dataplane-mode: ambient
             istio-discovery: enabled
-{{- range $service := .Values.services }}
-{{- range $index, $stageName := $service.stages }}
 ---
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: handbook-{{ $service.name }}-{{ $stageName }}
+  name: handbook-services
   namespace: openshift-gitops
-  labels:
-    app.kubernetes.io/name: '{{ $service.name }}'
-    app.kubernetes.io/instance: {{ $service.name }}-{{ $stageName }}
-    handbook.sayaya.dev/service: '{{ $service.name }}'
-    handbook.sayaya.dev/stage: '{{ $stageName }}'
-  annotations:
-    kargo.akuity.io/authorized-stage: handbook:{{ $service.name }}-{{ $stageName }}
 spec:
-  project: handbook
-  destination:
-    namespace: handbook-{{ $stageName }}
-    server: https://kubernetes.default.svc
-  source:
-    path: charts/handbook/{{ $service.name }}
-    repoURL: https://github.com/sayaya1090/handbook.git
-    targetRevision: HEAD
-    helm:
-      parameters:
-        - name: stage.name
-          value: {{ $stageName }}
-        - name: stage.color
-          value: {{ (index $.Values.stages $stageName).color }}
-        - name: color
-          value: {{ $service.color }}
-        - name: host
-          value: {{ (index $.Values.stages $stageName).host }}
-        {{- if gt $index 0 }}
-        - name: stage.prev
-          value: {{ index $service.stages (sub $index 1) }}
-        {{- end }}
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-    managedNamespaceMetadata:
+  # Kargo 의 argocd-update 가 자식 Application 의 spec.source.helm.parameters 에
+  # freight.commit / image.tag / bucket 등을 주입한다. ApplicationSet 컨트롤러가
+  # 기본적으로 template 에서 이 필드를 다시 렌더해 Kargo 의 변경을 덮어쓰면
+  # OutOfSync 플래핑이 발생하므로, 해당 jsonPointer 를 무시 목록에 올려서
+  # 자식 Application 차원의 파라미터 변경을 그대로 두게 한다.
+  ignoreApplicationDifferences:
+    - jsonPointers:
+        - /spec/source/helm/parameters
+  generators:
+    - list:
+        elements:
+{{- range $service := .Values.services }}
+{{- range $index, $stageName := $service.stages }}
+          - service: {{ $service.name | quote }}
+            serviceColor: {{ $service.color | quote }}
+            stageName: {{ $stageName | quote }}
+            stageColor: {{ (index $.Values.stages $stageName).color | quote }}
+            host: {{ (index $.Values.stages $stageName).host | quote }}
+            stagePrev: {{ if gt $index 0 }}{{ index $service.stages (sub $index 1) | quote }}{{ else }}""{{ end }}
+{{- end }}
+{{- end }}
+  template:
+    metadata:
+      name: 'handbook-{{`{{ service }}`}}-{{`{{ stageName }}`}}'
       labels:
-        istio.io/dataplane-mode: ambient
-        istio-discovery: enabled
-{{- end }}
-{{- end }}
+        app.kubernetes.io/name: '{{`{{ service }}`}}'
+        app.kubernetes.io/instance: '{{`{{ service }}`}}-{{`{{ stageName }}`}}'
+        handbook.sayaya.dev/service: '{{`{{ service }}`}}'
+        handbook.sayaya.dev/stage: '{{`{{ stageName }}`}}'
+      annotations:
+        kargo.akuity.io/authorized-stage: 'handbook:{{`{{ service }}`}}-{{`{{ stageName }}`}}'
+    spec:
+      project: handbook
+      destination:
+        namespace: 'handbook-{{`{{ stageName }}`}}'
+        server: https://kubernetes.default.svc
+      source:
+        path: 'charts/handbook/{{`{{ service }}`}}'
+        repoURL: https://github.com/sayaya1090/handbook.git
+        targetRevision: HEAD
+        helm:
+          parameters:
+            - name: stage.name
+              value: '{{`{{ stageName }}`}}'
+            - name: stage.color
+              value: '{{`{{ stageColor }}`}}'
+            - name: stage.prev
+              value: '{{`{{ stagePrev }}`}}'
+            - name: color
+              value: '{{`{{ serviceColor }}`}}'
+            - name: host
+              value: '{{`{{ host }}`}}'
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        managedNamespaceMetadata:
+          labels:
+            istio.io/dataplane-mode: ambient
+            istio-discovery: enabled
 
