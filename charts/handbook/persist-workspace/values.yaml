@@ -7,3 +7,10 @@ stage:
   name: ""
   color: ""
   prev: ""
+
+jvmBackend:
+  fragments:
+    - observability
+    - authentication
+    - postgresql
+    - kafka

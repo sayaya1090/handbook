@@ -9,3 +9,8 @@ stage:
   color: ""
   prev: ""
 
+jvmBackend:
+  deploymentName: service-gateway
+  fragments:
+    - observability
+    - authentication

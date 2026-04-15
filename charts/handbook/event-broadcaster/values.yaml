@@ -7,3 +7,9 @@ stage:
   name: ""
   color: ""
   prev: ""
+
+jvmBackend:
+  fragments:
+    - observability
+    - authentication
+    - kafka

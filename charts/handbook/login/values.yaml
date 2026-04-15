@@ -8,3 +8,24 @@ stage:
   color: ""
   prev: ""
 host: ""
+
+jvmBackend:
+  fragments:
+    - observability
+    - authentication
+    - postgresql
+  extraEnv:
+    - name: GOOGLE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: handbook-oauth-google
+          key: client-id
+    - name: GOOGLE_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: handbook-oauth-google
+          key: client-secret
+    - name: LOGIN_REDIRECT_URI
+      value: "https://{{ .Values.host }}/"
+    - name: LOGOUT_REDIRECT_URI
+      value: "https://{{ .Values.host }}/"

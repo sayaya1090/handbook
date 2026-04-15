@@ -1,0 +1,216 @@
+{{- /*
+  handbook.jvm-backend.deployment — Spring Boot JVM 백엔드(gateway, login,
+  event-broadcaster, persist-workspace, …)의 Deployment 공통 템플릿.
+
+  서비스 차이는 values.yaml 의 jvmBackend 섹션으로 흡수:
+    jvmBackend:
+      deploymentName: ""         # (옵션) Deployment metadata.name 오버라이드. 기본 .Chart.Name
+      fragments: []              # [observability, authentication, postgresql, kafka] 중 필요한 것
+      extraEnv: []               # 서비스별 추가 env 리스트 (raw YAML)
+
+  template 의 자동 동작
+    - TZ=Asia/Seoul, JWT_SECRET(handbook-jwt) 환경변수 항상 주입
+    - fragments 에 "postgresql" 포함 시 → DB_HOST/PORT/NAME/USERNAME/PASSWORD 를 CNPG
+      `postgresql-app` secret 에서 자동 주입
+    - fragments 에 "kafka" 포함 시 → KAFKA_BROKERS=handbook-kafka-bootstrap:9092 환경변수 자동 주입
+    - fragments 각 항목마다 volume / volumeMount / configmap.reloader 리스트 자동 생성
+    - 서비스 ConfigMap(.Chart.Name) 은 항상 /app/resources/application.yml 로 subPath 마운트
+    - probe / resources / strategy 는 운영 확정 기본값 하드코딩 (추후 필요 시 overridable 로 전환)
+
+  각 서브차트의 templates/deployment.yaml 은 include 한 줄이면 충분:
+      {{ include "handbook.jvm-backend.deployment" . }}
+*/ -}}
+
+{{- define "handbook.jvm-backend.fragment-configmap" -}}
+{{- /*
+  fragment 이름 → ConfigMap 이름 매핑.
+    observability   → observability
+    authentication  → handbook-authentication
+    postgresql      → handbook-postgresql
+    kafka           → handbook-kafka
+*/ -}}
+{{- $name := . -}}
+{{- if eq $name "observability" }}observability
+{{- else if eq $name "authentication" }}handbook-authentication
+{{- else if eq $name "postgresql" }}handbook-postgresql
+{{- else if eq $name "kafka" }}handbook-kafka
+{{- else }}{{ $name }}{{- end -}}
+{{- end }}
+
+{{- define "handbook.jvm-backend.fragment-filename" -}}
+{{- /* fragment 이름 → classpath 파일명 (<name>.yaml) */ -}}
+{{- if eq . "authentication" }}authentication.yaml
+{{- else }}{{ . }}.yaml{{- end -}}
+{{- end }}
+
+{{- define "handbook.jvm-backend.deployment" -}}
+{{- $chart := .Chart.Name -}}
+{{- $deploymentName := default $chart .Values.jvmBackend.deploymentName -}}
+{{- $fragments := default (list) .Values.jvmBackend.fragments -}}
+{{- $reloadList := prepend (prepend (list) $chart) "" -}}
+{{- $reloadList = list $chart -}}
+{{- range $fragments -}}
+{{- $reloadList = append $reloadList (include "handbook.jvm-backend.fragment-configmap" .) -}}
+{{- end -}}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    app.openshift.io/vcs-uri: 'https://github.com/sayaya1090/handbook/tree/main/{{ $chart }}'
+    configmap.reloader.stakater.com/reload: {{ join "," $reloadList | quote }}
+  name: {{ $deploymentName }}
+  namespace: {{ .Release.Namespace }}
+  finalizers:
+    - foregroundDeletion
+  labels:
+    app: {{ $chart }}
+    app.kubernetes.io/component: handbook
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/name: handbook
+    app.kubernetes.io/part-of: handbook
+    app.openshift.io/runtime: spring-boot
+    app.openshift.io/runtime-namespace: {{ .Release.Namespace }}
+    app.openshift.io/runtime-version: latest
+spec:
+  selector:
+    matchLabels:
+      app: {{ $chart }}
+  template:
+    metadata:
+      labels:
+        app: {{ $chart }}
+        version: 0.0.1
+        deployment: {{ $chart }}
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8080'
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: {{ $chart }}
+            defaultMode: 420
+        {{- range $fragments }}
+        - name: {{ . }}-config
+          configMap:
+            name: {{ include "handbook.jvm-backend.fragment-configmap" . }}
+            defaultMode: 420
+        {{- end }}
+      containers:
+        - name: {{ $chart }}
+          image: {{ .Values.image.name | default (printf "image-registry.openshift-image-registry.svc:5000/handbook/%s" $chart) }}:{{ .Values.image.tag | default "latest" }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          env:
+            - name: TZ
+              value: Asia/Seoul
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: handbook-jwt
+                  key: jwt-secret
+            {{- if has "postgresql" $fragments }}
+            # CNPG 가 자동 생성한 postgresql-app Secret 에서 모든 r2dbc 연결정보 주입
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: dbname
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: password
+            {{- end }}
+            {{- if has "kafka" $fragments }}
+            - name: KAFKA_BROKERS
+              value: "handbook-kafka-bootstrap:9092"
+            {{- end }}
+            {{- /*
+              extraEnv 항목은 tpl 로 처리해서 `{{ .Values.host }}` 같은 템플릿 식을
+              서비스별 values.yaml 안에서 그대로 사용할 수 있게 한다.
+            */ -}}
+            {{- with .Values.jvmBackend.extraEnv }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            # jar 의 application.yml 을 파일 단위로 덮어쓴다 (머지가 아닌 완전 대체).
+            - name: config
+              mountPath: /app/resources/application.yml
+              subPath: application.yml
+            {{- range $fragments }}
+            - name: {{ . }}-config
+              mountPath: /app/resources/{{ include "handbook.jvm-backend.fragment-filename" . }}
+              subPath: {{ include "handbook.jvm-backend.fragment-filename" . }}
+            {{- end }}
+          # 부팅 완료까지 최대 150초 (30 × 5s) 허용. 그 전에는 liveness/readiness 가 평가되지 않는다.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 0
+  progressDeadlineSeconds: 600
+  paused: false
+{{- end }}

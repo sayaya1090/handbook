@@ -5,3 +5,7 @@ kubeVersion: '>= 1.20.0-0'
 name: event-broadcaster
 version: 0.1.0
 description: Event broadcaster service for handbook application
+dependencies:
+  - name: handbook-lib
+    version: 0.1.0
+    repository: file://../../handbook-lib
