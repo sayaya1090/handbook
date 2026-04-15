@@ -57,12 +57,13 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `templates/job.yaml`, `rbac.yaml` | 초기화 Job · RBAC |
 
 ### 서비스 서브차트 (`gateway/`, `event-broadcaster/`, `login/`, `persist-workspace/`)
-동일 패턴. 신규 JVM 백엔드 추가 시 이 구조를 복사한다. 운영 설정에 DB/Kafka 가 필요하면 `configmap.yaml` 의 `spring.config.import` 에 해당 fragment classpath 를 추가하고 `deployment.yaml` 에 fragment ConfigMap volume + mount + `configmap.reloader.stakater.com/reload` 명단에도 추가한다.
+동일 패턴. 신규 JVM 백엔드 추가 시 이 구조를 복사한다. Deployment 는 `handbook-lib` 라이브러리 차트의 named template `handbook.jvm-backend.deployment` 로 통합되어 있어 서브차트 `templates/deployment.yaml` 은 한 줄 include (`{{ include "handbook.jvm-backend.deployment" . }}`) 로 끝난다. 운영 설정에 DB/Kafka 가 필요하면 `configmap.yaml` 의 `spring.config.import` 에 해당 fragment classpath 를 추가하고 `values.yaml` 의 `jvmBackend.fragments` 리스트에도 이름(postgresql / kafka) 을 추가한다.
 
 | 파일 | 역할 |
 |------|------|
+| `Chart.yaml` | handbook-lib (type: library) 를 `file://../../handbook-lib` 로 dependency 등록. `helm dependency build` 가 Chart.lock + charts/handbook-lib-*.tgz 생성 |
 | `templates/configmap.yaml` | **jar 의 `application.yml` 을 파일 단위로 대체하는 운영 설정**. Deployment 가 이 ConfigMap 의 `application.yml` 키를 `/app/resources/application.yml` 에 subPath 로 마운트하여 jar 의 동명 파일을 덮어쓴다. **머지(SPRING_CONFIG_ADDITIONAL_LOCATION)는 사용하지 않는다** — 운영 환경에서 필요한 모든 설정(application.name, routes, cloud.stream bindings, kafka producer, server.port, cors 등)을 jar 와 중복되더라도 이 파일 안에 다 넣는다. jar 의 application.yml 은 로컬 IDE 실행용 default 로만 사용. 공통 단편(observability, postgresql, kafka, authentication)은 `spring.config.import: [classpath:observability.yaml, ...]` 로 fragment ConfigMap 에서 가져온다 |
-| `templates/deployment.yaml` | Deployment. **공통 환경변수**: `TZ=Asia/Seoul`, `JWT_SECRET` (secret `handbook-jwt`). `SPRING_CONFIG_ADDITIONAL_LOCATION` 을 절대 사용하지 않는다 — 머지 우선순위가 모호해진다. 서비스별 추가 env 는 placeholder(`${KAFKA_BROKERS}` 등)를 채우는 값만. **볼륨 마운트**: 서비스 ConfigMap 을 `/app/resources/application.yml` 에 subPath 마운트(jar classpath 파일 덮어쓰기). 공통 fragment ConfigMap(observability / handbook-authentication / handbook-kafka 등)은 `/app/resources/<name>.yaml` 에 subPath 마운트하여 `classpath:<name>.yaml` 로 import 되게 한다. **Reloader**: 마운트한 모든 ConfigMap 이름을 `configmap.reloader.stakater.com/reload` 에 나열. **프로브**: `/actuator/health/{liveness,readiness}` |
+| `templates/deployment.yaml` | **한 줄 include** — `handbook-lib` 의 `handbook.jvm-backend.deployment` named template 호출. 서비스별 차이는 `values.yaml` 의 `jvmBackend` 섹션으로 흡수: `deploymentName` (기본 `.Chart.Name`, gateway 만 `service-gateway`), `fragments: [observability, authentication, postgresql, kafka]` 필요한 것만, `extraEnv` (tpl 지원 → `https://{{ .Values.host }}/` 같은 표현식 사용 가능). 템플릿이 fragment 이름에서 ConfigMap 이름·mount path·`configmap.reloader.stakater.com/reload` 명단을 자동 생성하고, `postgresql` fragment 있으면 CNPG `postgresql-app` secret 에서 DB_HOST/PORT/NAME/USERNAME/PASSWORD 자동 주입, `kafka` fragment 있으면 `KAFKA_BROKERS` 자동 주입 |
 | `templates/service.yaml` | ClusterIP Service (포트 8080) |
 | `templates/stage.yaml` | **Kargo `Stage`** — 서비스 × 스테이지 promotion 파이프라인 |
 | `templates/warehouse.yaml` | **Kargo `Warehouse`** — dev 스테이지의 첫 서비스에만 생성, ImageStream 을 1분 간격으로 감시해 새 빌드 Freight 생성. `kargo.akuity.io/color` 애노테이션을 `.Values.color` 에서 받아 Kargo UI 에서 서비스별로 구분 |
@@ -114,7 +115,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 - **dev Stage** (서비스 subchart `templates/stage.yaml`): JVM 백엔드와 마찬가지로 `<svc>-dev` Stage 가 자기 Warehouse 만 구독, autoPromotion=true. helm parameter `freight.commit` 으로 chart 의 sync-job 에 commit SHA 주입
 - **staging/prod Stage**: 서비스 subchart 가 만들지 않고 **release-staging/release-prod 번들** Stage 가 multi-Warehouse 구독으로 묶어서 처리 (위 Release Train 섹션 참조)
 - ⚠️ **Kargo `argocd-update` step 의 `helm` 블록은 스키마상 `parameters` 를 허용하지 않고 `images` 배열만 받는다** — 이름은 image 용이지만 `key` 에 임의 helm parameter path 를 쓸 수 있어 `freight.commit` / `bucket` 같은 값 주입에 재활용한다. 표현식으로 commit SHA 를 얻을 때는 `${{ commitFrom("...").ID }}` — Kargo 표현식 엔진이 Go struct 필드명(대문자 포함)을 그대로 노출하므로 `.id`/`.tag` 는 `has no field` 에러를 낸다
-- **Sync Job (chart 내장)**: ArgoCD reconcile 시 `templates/sync-job.yaml` 이 새 freight commit 마다 새 Job 을 만든다 (`argocd.argoproj.io/hook: Sync` + `hook-delete-policy: BeforeHookCreation`). Job 컨테이너(`amazon/aws-cli`)가 GitHub release asset 을 **unauthenticated** (public repo) 로 `curl -fsSL "https://github.com/.../releases/download/<tag>/<asset>"` 로 받아 `aws s3 sync s3://${bucket}/static/` 수행 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
+- **Sync Job (chart 내장, 라이브러리 템플릿)**: 각 프론트엔드 서브차트의 `templates/sync-job.yaml` 은 `{{ include "handbook.frontend-sync-job" . }}` 한 줄이다. 실제 Job 정의는 `handbook-lib` 라이브러리 차트의 `_frontend-sync-job.yaml` named template 이 소유하며, tag prefix / job 이름 / label 은 `.Chart.Name` 에서 자동 유도. ArgoCD reconcile 시 새 freight commit 마다 새 Job 을 만든다 (`argocd.argoproj.io/hook: Sync` + `hook-delete-policy: BeforeHookCreation`). Job 컨테이너(`amazon/aws-cli`)가 GitHub release asset 을 **unauthenticated** (public repo) 로 `curl -fsSL "https://github.com/.../releases/download/<tag>/<asset>"` 로 받아 `aws s3 sync s3://${bucket}/static/` 수행 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
 - 백엔드 `argocd-update` 패턴과 100% 동일 — Kargo 가 Application 갱신, ArgoCD 가 reconcile, K8s 가 실행
 
 즉, dev 는 자동 전진, staging/prod 는 수동 (또는 승인) promotion. 승격 단위는 Freight — JVM 은 image digest, 정적 자산은 git tag.
@@ -144,25 +145,59 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `github-secret` | `github-actions-runner` | `github_app_*` | Actions Runner GitHub App 인증 | `charts/handbook-operator/github-actions-runner-set/README.md` |
 | S3/백업 자격증명 | 각 서비스 네임스페이스 | 차트별 | bucket, PG 백업 | infrastructure 차트가 참조 |
 
+## 공통 라이브러리 차트 (`charts/handbook-lib/`)
+
+`type: library` Helm 차트로, 서비스 서브차트들이 공통으로 쓰는 named template 을 보관한다. 각 서브차트 `Chart.yaml` 이 `file://../../handbook-lib` 로 dependency 등록하고 `helm dependency build` 로 `Chart.lock` + `charts/handbook-lib-*.tgz` 를 생성한다 (lock/tgz 모두 git 에 커밋되어 ArgoCD 가 그대로 사용).
+
+| named template | 소비 차트 | 역할 |
+|----------------|-----------|------|
+| `handbook.jvm-backend.deployment` | gateway, event-broadcaster, login, persist-workspace | Spring Boot JVM Deployment 공통 템플릿. `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 서비스 차이 흡수 |
+| `handbook.frontend-sync-job` | app, shell-ui, login-ui, workspace-ui | 정적 자산 ArgoCD Sync Hook Job. tag prefix / job 이름 / label 은 `.Chart.Name` 에서 자동 유도 |
+
+서브차트 `templates/deployment.yaml` 또는 `templates/sync-job.yaml` 은 한 줄 include 로 끝나고, 실제 manifest 는 모두 라이브러리가 소유. 추가 공통 패턴이 생기면 `handbook-lib/templates/_*.yaml` 에 named template 으로 추가.
+
+## GitHub Actions — reusable workflow
+
+`.github/workflows/_jvm-deploy.yaml` 과 `_frontend-deploy.yaml` 두 개의 reusable workflow (workflow_call) 가 실제 빌드/배포 로직을 소유한다. 각 모듈별 `<module>-deploy.yaml` 은 `paths` 트리거와 `uses:` + `submodule:` 입력만 남긴 ~12줄의 얇은 래퍼:
+
+```yaml
+name: 게이트웨이 모듈 배포
+on:
+  push:
+    paths:
+      - gateway/**
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: gateway
+    secrets: inherit
+```
+
+JDK 버전 / BASE_IMAGE / 러너 라벨 변경은 `_jvm-deploy.yaml` 또는 `_frontend-deploy.yaml` 한 곳만 수정하면 전체 모듈에 반영. `secrets: inherit` 로 `_GITHUB_TOKEN` / `GITHUB_TOKEN` 이 reusable 쪽에 자동 전달.
+
 ## 새 정적 자산 모듈을 추가할 때 (GWT 프론트엔드)
-1. `charts/handbook/<module>/` 디렉토리 생성. shell-ui 템플릿(`Chart.yaml`, `values.yaml`, `templates/{warehouse,stage,sync-job}.yaml`)을 복사. Deployment/Service/configmap 은 없다.
-2. Warehouse `allowTags` 패턴(`^<module>-`), Stage 의 `argocd-update` 가 가리키는 Application 이름, Job 이름 prefix 를 새 모듈 이름으로 치환.
-3. `.github/workflows/<module>-deploy.yaml`: `:<module>:build` → 정적 자산 unpack/sed/tar → `gh release create <module>-<short-sha> --prerelease`.
-4. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, stages: [dev, staging, prod]}` 추가. ApplicationSet 이 자동으로 Application 을 만든다.
-5. **promote 워크플로는 필요 없다** — Kargo 가 `argocd-update` 로 chart 의 helm parameter(`freight.tag`, `bucket`)를 갱신하면 chart 안 `sync-job.yaml` 이 ArgoCD Sync Hook 으로 매 freight 마다 새 Job 으로 실행되어 release 다운로드 + S3 sync 를 수행한다.
-6. **정적 자산 모듈은 ConfigMap fragment / 서비스 ConfigMap 패턴이 적용되지 않는다** — Spring Boot 가 아니므로 `application.yml` 자체가 없음.
+1. `charts/handbook/<module>/` 디렉토리 생성. `Chart.yaml` 에 `handbook-lib` dependency 등록. `values.yaml` 과 `templates/{warehouse,stage,http-route}.yaml` 만 작성. `templates/sync-job.yaml` 은 `{{ include "handbook.frontend-sync-job" . }}` 한 줄로 끝.
+2. Warehouse `allowTags` 패턴(`^<module>-`), Stage 의 `argocd-update` 가 가리키는 Application 이름 등을 새 모듈 이름으로 치환.
+3. `helm dependency build` 로 `Chart.lock` + `charts/handbook-lib-*.tgz` 생성 후 커밋.
+4. `.github/workflows/<module>-deploy.yaml` 은 `_frontend-deploy.yaml` 을 `uses:` 하는 12줄 래퍼로 작성.
+5. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, kind: frontend, color, stages: [dev, staging, prod]}` 추가. ApplicationSet 이 자동으로 Application 을 만든다.
+6. **promote 워크플로는 필요 없다** — Kargo 가 `argocd-update` 로 chart 의 helm parameter(`freight.commit`, `bucket`)를 갱신하면 sync-job 이 ArgoCD Sync Hook 으로 매 freight 마다 새 Job 으로 실행되어 release 다운로드 + S3 sync 를 수행한다.
+7. **정적 자산 모듈은 ConfigMap fragment / 서비스 ConfigMap 패턴이 적용되지 않는다** — Spring Boot 가 아니므로 `application.yml` 자체가 없음.
 
 ## 새 JVM 서비스를 추가할 때
-1. `charts/handbook/<service>/` 디렉토리 생성. gateway 또는 event-broadcaster 템플릿을 복사 → `configmap`, `deployment`, `service`, `stage`, `warehouse`, `Chart.yaml`, `values.yaml` 수정.
-2. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, stages:[...]}` 추가. ApplicationSet 이 자동으로 Application 을 생성한다.
-3. **ConfigMap 의 `application.yml` 키에 운영 설정을 다 적는다**. jar 의 `src/main/resources/application.yml` 에 있는 값(application.name, routes, cloud.stream bindings, kafka producer, server.port, cors 등)을 그대로 옮겨 적는다. **머지가 아닌 파일 단위 overwrite** 이므로 jar 와 중복돼도 OK. 공통 단편은 `spring.config.import: [classpath:observability.yaml, classpath:authentication.yaml, classpath:kafka.yaml, classpath:postgresql.yaml]` 로 필요한 것만 가져온다.
-4. `deployment.yaml`:
-   - **env 는 placeholder 채우는 값만**. `JWT_SECRET` (Secret), `KAFKA_BROKERS` 등. **`SPRING_CONFIG_ADDITIONAL_LOCATION` 절대 금지** — 머지 우선순위가 모호해진다.
-   - 서비스 ConfigMap 을 `/app/resources/application.yml` 에 subPath 마운트 (jar 의 동명 파일을 file-level overwrite).
-   - 사용하는 fragment ConfigMap(observability + 필요한 것만)을 각각 `/app/resources/<name>.yaml` 에 subPath 마운트.
-5. reloader 애노테이션 `configmap.reloader.stakater.com/reload` 에 마운트한 모든 ConfigMap 이름을 나열 (`<service>,observability,handbook-authentication,handbook-kafka` 식).
-6. 로컬 IDE 에서 jar 를 직접 실행할 때는 jar 의 `application.yml` 이 default 로 로드된다 — 별도 profile 활성화 불필요.
-7. 새 서비스의 gradle 모듈이 다른 서비스 모듈을 `implementation(project(":x"))` 로 참조하지 않는지 확인. 참조 시 그쪽의 `@Configuration` 이 딸려 올라와 Bean 충돌이 난다 (CLAUDE.md 디버깅 표 참조).
+1. `charts/handbook/<service>/` 디렉토리 생성. `Chart.yaml` 에 `handbook-lib` dependency 등록. gateway/login 템플릿을 참고해 `templates/{configmap,service,stage,warehouse}.yaml` 과 `values.yaml` 만 작성. `templates/deployment.yaml` 은 `{{ include "handbook.jvm-backend.deployment" . }}` 한 줄로 끝.
+2. `values.yaml` 의 `jvmBackend` 섹션을 채운다:
+   - `deploymentName`: metadata.name 오버라이드 (기본 `.Chart.Name`)
+   - `fragments`: 필요한 fragment 이름 리스트 — `observability`, `authentication`, `postgresql`, `kafka` 중 선택
+   - `extraEnv`: 서비스별 추가 env (tpl 평가되므로 `https://{{ .Values.host }}/` 같은 표현식 사용 가능)
+3. **ConfigMap 의 `application.yml` 키에 운영 설정을 다 적는다**. jar 의 `src/main/resources/application.yml` 에 있는 값(application.name, routes, cloud.stream bindings, kafka producer, server.port, cors 등)을 그대로 옮겨 적는다. **머지가 아닌 파일 단위 overwrite** 이므로 jar 와 중복돼도 OK. 공통 단편은 `spring.config.import: [classpath:observability.yaml, classpath:authentication.yaml, ...]` 로 fragments 리스트와 일치하게 가져온다.
+4. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, kind: backend, color, stages:[...]}` 추가.
+5. `helm dependency build` 로 Chart.lock/tgz 생성 후 커밋.
+6. `.github/workflows/<service>-deploy.yaml` 은 `_jvm-deploy.yaml` 을 `uses:` 하는 12줄 래퍼로 작성.
+7. 로컬 IDE 에서 jar 를 직접 실행할 때는 jar 의 `application.yml` 이 default 로 로드된다 — 별도 profile 활성화 불필요.
+8. 새 서비스의 gradle 모듈이 다른 서비스 모듈을 `implementation(project(":x"))` 로 참조하지 않는지 확인. 참조 시 그쪽의 `@Configuration` 이 딸려 올라와 Bean 충돌이 난다 (CLAUDE.md 디버깅 표 참조).
 
 ## 운영 명령 치트시트
 ```bash

@@ -144,9 +144,10 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 - **Auth**: OAuth2 (Google), JWT RS256, JJWT 0.13
 - **Test**: Kotest 6.1.3, MockK, Testcontainers, Playwright 1.52
 
-## 헬름차트 구성 (`charts/handbook/`)
+## 헬름차트 구성 (`charts/handbook/`, `charts/handbook-lib/`)
 
-- **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독
+- **handbook-lib** (type: library) — 서비스 서브차트가 공유하는 named template 컬렉션. `handbook.jvm-backend.deployment` 는 JVM 백엔드 4개 차트의 Deployment 공통 구현, `handbook.frontend-sync-job` 은 프론트엔드 4개 차트의 ArgoCD Sync Hook Job 공통 구현. 각 서브차트가 `file://../../handbook-lib` dependency 로 참조, `helm dependency build` 가 Chart.lock + charts/handbook-lib-*.tgz 를 생성해 커밋
+- **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독. `templates/deployment.yaml` 은 `handbook.jvm-backend.deployment` 한 줄 include 이고 서비스별 차이는 `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 흡수
 - **app** — SPA 루트 번들 차트 (kind: frontend). `app.html`, `manifest.json`, `service-worker.js`, 공용 `js/*.js`·`css/*.css`, app GWT 모듈 컴파일 출력(`/app/**`) 을 포함. HTTPRoute 가 `/` 와 `/app.html` 엔트리포인트 및 `/js/**`·`/css/**`·`/app/**`·`/manifest.json`·`/service-worker.js` 를 S3 `handbook-<stage>/static/` 으로 rewrite 하는 유일한 HTML 진입 차트
 - **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 전용 정적 자산 deploy 파이프라인 (kind: frontend, Warehouse + Stage + sync-job 만, Deployment 없음, HTTPRoute 도 없음). 각 모듈의 GWT 컴파일 출력만 동일한 S3 버킷의 `/static/js/<module>/**` 아래로 sync 하고, 브라우저 접근 경로는 app 차트의 `/js/` PathPrefix HTTPRoute 가 공통 처리
 - **infrastructure** — 공용 인프라
@@ -211,7 +212,7 @@ JVM 백엔드와 동일한 Release Train 흐름을 따르되, deploy 액션은 A
 1. **Build** (`<module>-deploy.yaml`): `:<module>:build` → 정적 자산 추출 → tar → `gh release create <module>-<sha> --prerelease`. GHA 는 빌드 + publish 까지만, deploy 액션 0번
 2. **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` 로 새 prerelease 감지 → Freight. (Lexical 은 sha 기반 tag 에 대해 사전순 정렬이라 "최신" 을 보장 못 하므로 publish 시 이전 release 를 정리하는 것이 전제)
 3. **Stage**: `<module>-dev` 만 서비스 subchart 가 만들고, staging/prod 는 release-staging/release-prod 번들 Stage 가 처리. promotion 시 `argocd-update.helm.images[freight.commit, bucket]` 으로 chart 의 sync-job 에 commit SHA + 환경별 bucket 주입
-4. **Sync Job** (`templates/sync-job.yaml`): ArgoCD reconcile 시 매 freight commit 마다 새 Job 으로 인스턴스화 (`argocd.argoproj.io/hook: Sync` + `BeforeHookCreation` 정리). Job 컨테이너(`amazon/aws-cli`)가 **unauthenticated** `curl` 로 GitHub release asset 다운로드(public repo) → `aws s3 sync s3://${bucket}/static/` 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
+4. **Sync Job**: 각 서브차트의 `templates/sync-job.yaml` 은 `handbook-lib` 라이브러리 차트의 `handbook.frontend-sync-job` named template 을 한 줄로 include. ArgoCD reconcile 시 매 freight commit 마다 새 Job 으로 인스턴스화 (`argocd.argoproj.io/hook: Sync` + `BeforeHookCreation` 정리). Job 컨테이너(`amazon/aws-cli`)가 **unauthenticated** `curl` 로 GitHub release asset 다운로드(public repo) → `aws s3 sync s3://${bucket}/static/` 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
 
 ⚠️ **Kargo argocd-update 표현식 함정**: `helm` 블록은 `parameters` 를 허용하지 않고 `images` 배열만 받는다. key 에 임의 helm path 지정 가능. commit SHA 는 `${{ commitFrom("...").ID }}` (Go struct 필드명 대문자) — `.id`/`.tag` 는 `has no field` 에러.
 
