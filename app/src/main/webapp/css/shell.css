@@ -24,7 +24,6 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
 }
 .drawer .header .workspace {
     min-width: 0px;
@@ -109,6 +108,27 @@
     --md-list-item-label-text-color: var(--md-sys-color-primary);
     --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
 }
+/* ── Rail footer 슬롯 ── */
+/* RailFooter 가 MenuRail 의 마지막 자식으로 삽입된다. margin-top: auto 로 아래로 밀어내고,
+   자식 버튼(테마/로그아웃/햄버거 등) 은 각자의 `order` CSS 값으로 정렬된다. */
+.rail .rail-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0;
+    gap: 4px;
+}
+.rail[hide] .rail-footer,
+.rail[bottom-nav] .rail-footer {
+    display: none;
+}
+.rail[bottom-nav] ~ .rail-footer {
+    /* bottom-nav 레일이 수평이면 footer 도 수평으로 (레일 안에 있지 않은 케이스 대비) */
+    flex-direction: row;
+}
+
 .rail .item md-item {
     border-radius: inherit;
     flex: 1;

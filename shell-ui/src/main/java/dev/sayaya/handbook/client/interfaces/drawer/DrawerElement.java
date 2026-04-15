@@ -30,6 +30,8 @@ import static org.jboss.elemento.Elements.nav;
  *   <li>{@link MenuRailElement} — 메뉴 레일</li>
  *   <li>{@link ToolRailElement} — 도구 레일</li>
  *   <li>{@link WorkspaceSelectElement} — 워크스페이스 셀렉터</li>
+ *   <li>{@link ThemeToggle} — 테마 토글 버튼 (RailFooter 에 order=10 으로 등록)</li>
+ *   <li>{@link RailFooter} — MenuRail 하단 슬롯 (조립 우선순위 기반 버튼 배치)</li>
  * </ul></p>
  *
  * <p><b>주의:</b> 스와이프 제스처는 왼쪽 가장자리 30px 이내에서 시작하고 60px 이상 이동 시 트리거된다.</p>
@@ -45,17 +47,25 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private double touchStartX;
     private boolean trackingSwipe;
 
-    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle) {
+    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, RailFooter railFooter) {
         this.mode = mode;
         scrim = div().css("drawer-scrim").element();
         scrim.addEventListener("click", e -> mode.toggleOverlay());
 
+        // 헤더에는 워크스페이스 셀렉터만 남는다. 테마 토글과 햄버거 토글은 RailFooter 로 이관되어
+        // 조립 우선순위(order CSS) 기반으로 Rail 하단에 세로 스택된다.
+        //   order=10  → 테마 토글
+        //   order=100 → 햄버거 토글 (항상 최하단)
+        //   order=20  → 향후 로그아웃 (login-ui 모듈이 CustomEvent 로 등록)
+        railFooter.register(themeToggle.element(), 10);
+        railFooter.register(btnToggle.element(), 100);
+        // RailFooter 는 MenuRail flex-column 의 마지막 자식으로 추가되어 margin-top: auto 로 하단 고정.
+        navMenu.element().appendChild(railFooter.element());
+
         _this.css("drawer")
                 .add(div().css("header", "drawer-header")
-                        .add(workspace.css("workspace"))
-                        .add(themeToggle.style("margin: 4px;"))
-                        .add(btnToggle.style("margin: 8px;"))
-                ).add(div().style("display: flex; height: 100dvh;")
+                        .add(workspace.css("workspace")))
+                .add(div().style("display: flex; flex: 1; min-height: 0;")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);
         initSwipeGesture();
