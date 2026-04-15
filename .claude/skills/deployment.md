@@ -110,7 +110,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 **(B) GWT 프론트엔드 정적 자산 — GitHub Release + ArgoCD Hook Job 기반** (shell-ui, login-ui, workspace-ui, …)
 - **Build**: GHA(`<module>-deploy.yaml`) 가 `:<module>:build` → WAR 에서 정적 자산 추출 → tar 묶음 → `gh release create <module>-<sha> --prerelease` 로 GitHub prerelease + asset 업로드. GHA 는 빌드 + publish 까지만, deploy 액션 0번
-- **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` → 새 prerelease tag 마다 Freight 발행. **`NewestTag` 는 Kargo 의 유효한 enum 이 아니어서** 설정 시 기본 `NewestFromBranch` 로 fallback 되고 tag 가 무시되는 함정이 있으니 `Lexical` 을 쓴다. ⚠️ **Lexical 은 문자열 사전순 정렬이라 sha 기반 tag(`shell-ui-<7자 sha>`) 에선 "알파벳 상 가장 큰 것" = 반드시 최신이 아님**. 워크플로가 publish 시 이전 release/tag 를 정리하거나, 정렬 가능한 prefix(타임스탬프 등)를 tag 에 붙이는 형태로 운영해야 한다
+- **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `allowTags: ^<module>-` + `strictSemvers: false` → 새 prerelease tag 마다 Freight 발행. **필터 필드 이름은 `allowTags` 다 — `includeTags` 는 CRD 스키마가 unknown fields 를 허용해 오탈자가 조용히 무시되고, 모듈을 구분 못 해 다른 모듈 tag 까지 긁어오게 된다.** **`NewestTag` 는 Kargo 의 유효한 enum 이 아니어서** 설정 시 기본 `NewestFromBranch` 로 fallback 되고 tag 가 무시되는 함정이 있으니 `Lexical` 을 쓴다. ⚠️ **Lexical 은 문자열 사전순 정렬이라 sha 기반 tag(`shell-ui-<7자 sha>`) 에선 "알파벳 상 가장 큰 것" = 반드시 최신이 아님**. 워크플로가 publish 시 이전 release/tag 를 정리하거나, 정렬 가능한 prefix(타임스탬프 등)를 tag 에 붙이는 형태로 운영해야 한다
 - **dev Stage** (서비스 subchart `templates/stage.yaml`): JVM 백엔드와 마찬가지로 `<svc>-dev` Stage 가 자기 Warehouse 만 구독, autoPromotion=true. helm parameter `freight.commit` 으로 chart 의 sync-job 에 commit SHA 주입
 - **staging/prod Stage**: 서비스 subchart 가 만들지 않고 **release-staging/release-prod 번들** Stage 가 multi-Warehouse 구독으로 묶어서 처리 (위 Release Train 섹션 참조)
 - ⚠️ **Kargo `argocd-update` step 의 `helm` 블록은 스키마상 `parameters` 를 허용하지 않고 `images` 배열만 받는다** — 이름은 image 용이지만 `key` 에 임의 helm parameter path 를 쓸 수 있어 `freight.commit` / `bucket` 같은 값 주입에 재활용한다. 표현식으로 commit SHA 를 얻을 때는 `${{ commitFrom("...").ID }}` — Kargo 표현식 엔진이 Go struct 필드명(대문자 포함)을 그대로 노출하므로 `.id`/`.tag` 는 `has no field` 에러를 낸다
@@ -146,7 +146,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 ## 새 정적 자산 모듈을 추가할 때 (GWT 프론트엔드)
 1. `charts/handbook/<module>/` 디렉토리 생성. shell-ui 템플릿(`Chart.yaml`, `values.yaml`, `templates/{warehouse,stage,sync-job}.yaml`)을 복사. Deployment/Service/configmap 은 없다.
-2. Warehouse `includeTags` 패턴(`^<module>-`), Stage 의 `argocd-update` 가 가리키는 Application 이름, Job 이름 prefix 를 새 모듈 이름으로 치환.
+2. Warehouse `allowTags` 패턴(`^<module>-`), Stage 의 `argocd-update` 가 가리키는 Application 이름, Job 이름 prefix 를 새 모듈 이름으로 치환.
 3. `.github/workflows/<module>-deploy.yaml`: `:<module>:build` → 정적 자산 unpack/sed/tar → `gh release create <module>-<short-sha> --prerelease`.
 4. `charts/handbook/values.yaml` 의 `services:` 배열에 `{name, stages: [dev, staging, prod]}` 추가. ApplicationSet 이 자동으로 Application 을 만든다.
 5. **promote 워크플로는 필요 없다** — Kargo 가 `argocd-update` 로 chart 의 helm parameter(`freight.tag`, `bucket`)를 갱신하면 chart 안 `sync-job.yaml` 이 ArgoCD Sync Hook 으로 매 freight 마다 새 Job 으로 실행되어 release 다운로드 + S3 sync 를 수행한다.

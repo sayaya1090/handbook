@@ -16,7 +16,7 @@ spec:
     - git:
         repoURL: https://github.com/sayaya1090/handbook.git
         commitSelectionStrategy: Lexical
-        includeTags: ^shell-ui-
+        allowTags: ^shell-ui-
         strictSemvers: false
         discoveryLimit: 5
 {{- end }}

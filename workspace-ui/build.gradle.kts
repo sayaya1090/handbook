@@ -20,7 +20,6 @@ gwt {
     gwtVersion = "2.12.2"
     modules = listOf("dev.sayaya.handbook.Workspace")
     sourceLevel = "auto"
-    war = file("src/main/webapp")
     devMode {
         modules = listOf("dev.sayaya.handbook.WorkspaceTest")
         war = file("src/test/webapp")
