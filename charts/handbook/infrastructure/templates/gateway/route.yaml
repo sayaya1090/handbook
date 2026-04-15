@@ -1,0 +1,25 @@
+{{- if .Values.host }}
+---
+# Istio Gateway CR 이 자동 생성한 ClusterIP Service (handbook-istio) 를
+# OpenShift Router 로 외부 노출한다. TLS edge termination 으로 HTTPS 제공.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: handbook
+  namespace: handbook-{{ .Values.stage }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+spec:
+  host: {{ .Values.host | quote }}
+  to:
+    kind: Service
+    name: handbook-istio
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+{{- end }}

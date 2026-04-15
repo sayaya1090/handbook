@@ -1,0 +1,21 @@
+{{- if .Values.host }}
+---
+# Gateway API HTTPRoute 가 cross-namespace backend 를 참조하면 Istio gateway
+# controller 가 ReferenceGrant 를 올바로 인식 못 하는 경우가 있어, 같은 네임스페이스
+# 에 ExternalName 프록시를 두고 HTTPRoute backendRef 가 이 Service 를 가리키게 한다.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ceph-rgw
+  namespace: handbook-{{ .Values.stage }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+spec:
+  type: ExternalName
+  externalName: rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc.cluster.local
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+{{- end }}

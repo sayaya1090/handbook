@@ -12,6 +12,7 @@ spec:
             bucket: {{ $stageConfig.bucket.maxSize | default "10G" | quote }}
             ip: {{ $stageConfig.database | quote }}
             schedule: {{ $stageConfig.backup.schedule | quote }}
+            host: {{ $stageConfig.host | quote }}
 {{- end }}
   template:
     metadata:
@@ -40,6 +41,10 @@ spec:
               value: "{{`{{ ip }}`}}"
             - name: database.backup.schedule
               value: "{{`{{ schedule }}`}}"
+            - name: host
+              value: "{{`{{ host }}`}}"
+            - name: stage
+              value: "{{`{{ stage }}`}}"
       syncPolicy:
         syncOptions:
           - CreateNamespace=true
@@ -77,6 +82,8 @@ spec:
           value: {{ $stageName }}
         - name: stage.color
           value: {{ (index $.Values.stages $stageName).color }}
+        - name: host
+          value: {{ (index $.Values.stages $stageName).host }}
         {{- if gt $index 0 }}
         - name: stage.prev
           value: {{ index $service.stages (sub $index 1) }}

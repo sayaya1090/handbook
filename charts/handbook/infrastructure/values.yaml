@@ -1,3 +1,5 @@
+stage: ''            # dev/staging/prod — Gateway 리소스 이름/라벨에 사용
+host: ''             # 외부 호스트명 (handbook-dev.apps.sayaya.cloud 등)
 database:
   ip: ''
   persistence:

@@ -1,0 +1,24 @@
+{{- if .Values.host }}
+---
+# Istio 가 `istio` GatewayClass 의 controller 로 이 Gateway CR 을 감지하고
+# `handbook-istio` 이름의 Deployment + Service(ClusterIP) 를 자동 프로비저닝한다.
+# 외부 진입점은 route.yaml 이 OpenShift Router 를 통해 이 Service 에 포워딩.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: handbook
+  namespace: handbook-{{ .Values.stage }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: {{ .Values.host | quote }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+{{- end }}

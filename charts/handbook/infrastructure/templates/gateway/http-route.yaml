@@ -1,0 +1,28 @@
+{{- if .Values.host }}
+---
+# catch-all: 정적 자산 모듈별 HTTPRoute 가 처리하지 않는 모든 요청을
+# Spring Cloud Gateway(service-gateway) 로 포워딩. backend API 는 당분간
+# Spring Cloud Gateway 가 담당 (/menus 집계, JWT 검증 등).
+# priority 를 낮춰 다른 더 구체적인 HTTPRoute 가 매칭되면 그쪽이 우선.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gateway
+  namespace: handbook-{{ .Values.stage }}
+  labels:
+    app.kubernetes.io/instance: handbook
+    app.kubernetes.io/part-of: handbook
+spec:
+  parentRefs:
+    - name: handbook
+  hostnames:
+    - {{ .Values.host | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: service-gateway
+          port: 8080
+{{- end }}
