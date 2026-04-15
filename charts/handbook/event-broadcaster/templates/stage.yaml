@@ -1,4 +1,5 @@
-{{- if .Values.stage.name }}
+{{- /* dev 만 서비스별 Stage 를 만들고 staging/prod 는 release-staging/release-prod 번들이 담당 */ -}}
+{{- if and .Values.stage.name (eq .Values.stage.name "dev") }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage

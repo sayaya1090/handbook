@@ -35,6 +35,7 @@ services:
   - name: event-broadcaster
     stages:
       - dev
+      - staging
       - prod
   - name: login
     stages:

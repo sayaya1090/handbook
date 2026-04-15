@@ -4,7 +4,14 @@ metadata:
   name: {{ .Release.Namespace }}
 spec:
   promotionPolicies:
+    # 서비스별 dev Stage — Warehouse 에 새 Freight 가 발행되면 자동 승격
     {{- range $service := .Values.services }}
     - autoPromotionEnabled: true
-      stage: {{ $service.name }}-{{ index $service.stages 0 }}
+      stage: {{ $service.name }}-dev
     {{- end }}
+    # 번들 release-staging — 사람이 릴리즈 시점 결정 후 수동 승격
+    - autoPromotionEnabled: false
+      stage: release-staging
+    # 번들 release-prod — release-staging 통과 후 사람이 prod 출시 결정
+    - autoPromotionEnabled: false
+      stage: release-prod
