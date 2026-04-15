@@ -41,16 +41,11 @@ jobs:
           retention-days: 7
       - name: Pack static assets
         run: |
-          # app 모듈은 war 플러그인이 없어서 webapp 디렉토리와 GWT 컴파일 출력을
-          # 직접 모아 tar 로 묶는다.
-          #   app/src/main/webapp/**        — app.html, manifest.json, service-worker.js,
-          #                                   js/{rxjs,fontawesome,sayaya-ui,theme,...}.js,
-          #                                   css/{global,shell,ui-components,agent,fontawesome}.css,
-          #                                   js/language.{ko,en}.json (mergeI18nProd 출력)
-          #   app/build/gwt/war/**          — app/app.nocache.js 등 GWT 컴파일 출력
+          # war 플러그인이 src/main/webapp(app.html, manifest.json, service-worker.js,
+          # 공용 js/*.js, css/*.css) + GWT 컴파일 출력(app/*.nocache.js 등) 을
+          # 하나의 WAR 로 묶는다. META-INF/WEB-INF 는 정적 호스팅에 불필요하므로 제외.
           mkdir -p dist/static
-          cp -r app/src/main/webapp/. dist/static/
-          cp -r app/build/gwt/war/. dist/static/
+          unzip -o $SUBMODULE/build/libs/*.war -x "META-INF/*" "WEB-INF/*" -d dist/static
           tar -czf app.tar.gz -C dist/static .
           echo "tarball contents:" && tar -tzf app.tar.gz | head -30
       # Kargo Warehouse 가 git tag 패턴 `app-*` 로 watch → Stage promotion 이

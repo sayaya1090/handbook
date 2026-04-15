@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    war
     id("dev.sayaya.gwt")
 }
 dependencies {
@@ -53,6 +54,14 @@ val mergeI18nProd by tasks.registering {
     }
 }
 tasks {
+    war {
+        // GWT 컴파일 출력(build/gwt/war/app) 을 app/ 하위로 포함해
+        // src/main/webapp/app.html 이 참조하는 `app/app.nocache.js` 경로와 일치시킨다.
+        dependsOn("gwtCompile")
+        from("build/gwt/war")
+        archiveFileName.set("app.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
     gwt {
         gwtVersion = "2.13.0"
         sourceLevel = "auto"
