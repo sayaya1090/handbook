@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     war
     id("dev.sayaya.gwt")
+    id("com.adarshr.test-logger")
 }
 dependencies {
     implementation(project(":activity"))
