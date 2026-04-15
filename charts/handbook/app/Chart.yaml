@@ -1,0 +1,7 @@
+annotations:
+  charts.openshift.io/name: app
+apiVersion: v2
+kubeVersion: '>= 1.20.0-0'
+name: app
+version: 0.1.0
+description: App (aggregated SPA shell) static asset deploy pipeline for handbook

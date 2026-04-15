@@ -1,9 +1,11 @@
 {{- if and .Values.stage.name .Values.host }}
 ---
 # 셸 UI 정적 자산 전용 HTTPRoute.
-# /shell.html 과 /js/shell/** 을 Ceph RGW(S3) bucket=handbook-<stage>/static/<key> 로 rewrite.
-# catch-all HTTPRoute(gateway) 보다 구체적인 매칭이 우선하는 Gateway API 의 매칭 우선순위에 의해
-# 이 HTTPRoute 가 먼저 매칭되고 나머지 경로는 Spring Cloud Gateway 로 넘어간다.
+# /js/shell/** 을 Ceph RGW(S3) bucket=handbook-<stage>/static/js/shell/ 로 rewrite.
+# 엔트리 HTML 은 app 차트의 /app.html (= /) 하나로 통일됐으므로 별도의 /shell.html
+# 은 더 이상 노출하지 않는다. catch-all HTTPRoute(gateway) 보다 구체적인 매칭이
+# 우선하는 Gateway API 매칭 우선순위에 의해 이 HTTPRoute 가 먼저 매칭되고 나머지
+# 경로는 Spring Cloud Gateway 로 넘어간다.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -18,50 +20,18 @@ spec:
   hostnames:
     - {{ .Values.host | quote }}
   rules:
-    # /js/** → S3 bucket/static/js/**  (공용 정적 리소스: rxjs, fontawesome, sayaya-ui 등)
-    # /js/login/**, /js/workspace/** 등 모듈별 더 구체적인 PathPrefix 는 각 모듈 HTTPRoute 가
-    # 더 긴 매칭으로 선행(Gateway API 는 longer prefix 가 승)하므로 간섭 없음.
+    # /js/shell/** → S3 bucket/static/js/shell/**
+    # 공용 /js/** 와 /css/** 는 app 차트의 HTTPRoute 가 담당 (longer prefix 가 승리).
     - matches:
         - path:
             type: PathPrefix
-            value: /js/
+            value: /js/shell/
       filters:
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/js/
-      backendRefs:
-        - name: ceph-rgw
-          port: 80
-    # /css/** → S3 bucket/static/css/**  (global.css, shell.css, fontawesome.min.css …)
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /css/
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/css/
-      backendRefs:
-        - name: ceph-rgw
-          port: 80
-    # /shell.html 및 / (루트) → S3 bucket/static/shell.html  (Exact + ReplaceFullPath)
-    - matches:
-        - path:
-            type: Exact
-            value: /shell.html
-        - path:
-            type: Exact
-            value: /
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplaceFullPath
-              replaceFullPath: /handbook-{{ .Values.stage.name }}/static/shell.html
+              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/js/shell/
       backendRefs:
         - name: ceph-rgw
           port: 80

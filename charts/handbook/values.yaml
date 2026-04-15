@@ -40,6 +40,9 @@ services:
   - name: persist-workspace
     color: yellow
     stages: [dev, staging, prod]
+  - name: app
+    color: blue
+    stages: [dev, staging, prod]
   - name: shell-ui
     color: pink
     stages: [dev, staging, prod]

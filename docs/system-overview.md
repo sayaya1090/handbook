@@ -149,7 +149,8 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 - **gateway** — API Gateway 배포
 - **event-broadcaster** — Kafka→SSE 브로드캐스트 배포
 - **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포. image 기반 Kargo Warehouse 구독
-- **shell-ui** / **login-ui** / **workspace-ui** — GWT 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). GHA 가 prerelease 로 빌드 산출물을 publish, Kargo Stage 가 환경별 S3 버킷으로 promotion. shell-ui 만 `/shell.html` · `/` 엔트리포인트를 HTTPRoute 로 노출하고, 나머지 `*-ui` 는 `/js/<module>/**` 만 매칭(쉘이 동적 로드)
+- **app** — SPA 루트 번들 (app.html, manifest, service-worker, 공용 js/css, app GWT 모듈 출력). 루트 `/` 및 `/app.html` 엔트리포인트 · `/js/**` · `/css/**` 공용 catch-all HTTPRoute 를 담당. shell/login/workspace 서브 모듈이 공유하는 라이브러리(rxjs, fontawesome, sayaya-ui, global.css, shell.css …)가 여기에 포함된다
+- **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 정적 자산 deploy 파이프라인 (Warehouse + Stage 만, Deployment 없음). 각각 자기 모듈이 컴파일된 `/js/<module>/**` (및 shell-ui 는 `/shell.html`) 만 HTTPRoute 로 노출. Gateway API longer-prefix 매칭 규칙에 따라 `/js/shell/` 등 모듈별 규칙이 app 의 `/js/` catch 보다 먼저 매칭된다
 - **infrastructure** — 공용 인프라
   - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
@@ -189,8 +190,9 @@ dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard 
 [event-broadcaster-dev]  ┤
 [login-dev]              ┤   release-staging              release-prod
 [persist-workspace-dev]  ┼─→ (모든 서비스 dev 통과     →  (release-staging
-[shell-ui-dev]           ┤    Freight 를 한 번에            통과 번들을 그대로
-[login-ui-dev]           ┤    atomic 배포, 수동 trigger)    전진, 수동 trigger)
+[app-dev]                ┤    Freight 를 한 번에            통과 번들을 그대로
+[shell-ui-dev]           ┤    atomic 배포, 수동 trigger)    전진, 수동 trigger)
+[login-ui-dev]           ┤
 [workspace-ui-dev]       ┘
    (auto promote)
 ```
