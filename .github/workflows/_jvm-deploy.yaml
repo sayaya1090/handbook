@@ -6,23 +6,23 @@ on:
         description: 빌드/배포 대상 gradle subproject 이름 (예 — gateway, login)
         type: string
         required: true
-      base-image:
+      baseImage:
         description: jib base image 태그
         type: string
         required: false
         default: eclipse-temurin:25-jre-ubi10-minimal
-      runs-on:
+      runsOn:
         description: self-hosted 러너 라벨
         type: string
         required: false
         default: handbook-operator
 jobs:
   test-and-deploy:
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ${{ inputs.runsOn }}
     env:
       GITHUB_USERNAME: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
-      BASE_IMAGE: ${{ inputs.base-image }}
+      BASE_IMAGE: ${{ inputs.baseImage }}
       SUBMODULE: ${{ inputs.submodule }}
     steps:
       - name: Checkout

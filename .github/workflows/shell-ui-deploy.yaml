@@ -4,6 +4,8 @@ on:
     paths:
       - shell-ui/**
   workflow_dispatch:
+permissions:
+  contents: write  # reusable 이 gh release create 로 prerelease 를 만든다
 jobs:
   build:
     uses: ./.github/workflows/_frontend-deploy.yaml
