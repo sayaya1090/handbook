@@ -71,10 +71,11 @@
 
 /* ── 모바일 (< 768px) ── */
 @media (max-width: 768px) {
-    /* AgentInputElement: 하단 고정, safe-area-inset + 가상 키보드 지원 */
+    /* AgentInputElement: 모바일에서는 상단 고정 — 하단 메뉴바와 겹침 방지 */
     .agent-input-container {
-        padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+        bottom: auto;
+        top: 0;
+        padding: 8px 12px;
     }
     .agent-input-wrapper {
         max-width: 100%;
