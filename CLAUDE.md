@@ -104,5 +104,9 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | jib `MainClassInferenceException: Multiple valid main classes` | Kotlin `companion object` + `@JvmStatic fun main` → `Application`과 `Application$Companion` 둘 다 main 후보 | top-level `fun main { runApplication<Application>(*args) }` 패턴으로 변경 |
 | CI `gradle: command not found` | `gradle/actions/setup-gradle@v5`는 gradle CLI를 PATH에 깔지 않음 | 워크플로에서 `./gradlew` 사용 (wrapper 호출) |
 | 배포 후 routes/kafka 가 localhost 로 fallback 됨 | ConfigMap 의 `application.yml` 에 운영 설정이 빠져 있음. (구 모델에서 jar 의 application.yml 이 default 로 로드된다고 가정한 경우) | ConfigMap 의 `application.yml` 키에 jar 의 운영 설정을 모두 적는다. `/app/resources/application.yml` 에 subPath 마운트되어 jar 의 동명 파일을 file 단위로 overwrite. 머지 아님 — `SPRING_CONFIG_ADDITIONAL_LOCATION` 사용 금지 |
+| GWT 빌드 결과가 48KB (dead code) | jar 에 Dagger 생성 소스 누락 → GWT 가 jar 소스를 읽다가 DaggerComponent 를 못 찾아 tree-shake | jar 태스크의 `from(sourceSets.main.get().allSource)` 제거. GWT 가 빌드 디렉토리의 소스+클래스를 직접 참조하도록 |
+| Istio ambient 에서 외부 요청 500 | 서비스 port(80) ≠ HTTPRoute backendRef port(8080) | 서비스 port=targetPort=8080, name=http-xxx, appProtocol=http 로 통일 |
+| Kargo warehouse 가 새 이미지 감지 못 함 | `strictSemvers: true` + jib `latest` 태그만 push | `strictSemvers: false` + jib 에 commit SHA 태그 추가 (`-Djib.to.tags=$SHORT_SHA`) |
+| `aws s3 sync` 가 같은 크기 파일 스킵 | Gradle 재현가능 빌드의 mtime 고정 + 동일 사이즈 | `aws s3 cp --recursive` 로 무조건 업로드. helm vendored tgz 갱신 필요 |
 
 상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.
