@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.domain;
 
-import dev.sayaya.handbook.domain.AttentionStyle;
+import dev.sayaya.handbook.usecase.AttentionStyle;
 
 /**
  * 오버레이 렌더링 요청 값 객체.

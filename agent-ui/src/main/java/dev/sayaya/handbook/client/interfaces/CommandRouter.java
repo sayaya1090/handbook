@@ -4,7 +4,7 @@ import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.domain.*;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.client.usecase.AgentSession;
-import dev.sayaya.handbook.domain.AttentionStyle;
+import dev.sayaya.handbook.usecase.AttentionStyle;
 import dev.sayaya.rx.Observable;
 import elemental2.core.JsArray;
 import jsinterop.base.Any;

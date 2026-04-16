@@ -14,6 +14,11 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         components = DaggerComponent.create();
+        // 핸들러 초기화 (구독 등록)
+        components.notifyHandler();
+        components.attentionHandler();
+        components.highlightHandler();
+        components.progressHandler();
         Observer<Render> renderer = components.renderer();
         ContentElement content = components.content();
         renderer.next(frame -> {
