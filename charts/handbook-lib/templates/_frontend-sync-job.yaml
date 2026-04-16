@@ -83,23 +83,17 @@ spec:
               echo "Downloading $ASSET_URL"
               curl -fsSL -o "/tmp/$RELEASE_ASSET" "$ASSET_URL"
               mkdir -p /tmp/static
-              # extractall 은 tar 안의 원본 mtime 을 복원한다. Gradle war task 가
-              # 재현가능 빌드로 mtime 을 고정하면, tarball 파일의 mtime 이 S3 에
-              # 이미 올라가있는 객체보다 과거가 되어 `aws s3 sync` 가 내용이 바뀐
-              # app.nocache.js / index.html 같은 파일을 skip 한다. 결과적으로
-              # 새 permutation cache.js 만 올라가고 부트스트랩은 옛날 해시를
-              # 가리켜 사이트가 옛 버전으로 고정되는 사고가 난다.
-              # → 추출 직후 모든 파일 mtime 을 현재 시각으로 밀어넣는다.
               python3 -c "
-              import tarfile, os, time
+              import tarfile
               tarfile.open('/tmp/$RELEASE_ASSET').extractall('/tmp/static')
-              now = time.time()
-              for root, _, files in os.walk('/tmp/static'):
-                  for f in files:
-                      os.utime(os.path.join(root, f), (now, now))
               "
               echo "Syncing to s3://$BUCKET/static via $S3_ENDPOINT"
-              aws s3 sync --endpoint-url "$S3_ENDPOINT" /tmp/static "s3://$BUCKET/static" \
-                --acl public-read --no-verify-ssl
+              # aws s3 sync 는 size+mtime 비교를 하는데, 컨테이너 환경에서 os.utime
+              # 리셋이 s3 sync 의 mtime 비교에 반영되지 않아 동일 사이즈의
+              # app.nocache.js 같은 파일을 스킵하는 문제가 있었다.
+              # cp --recursive 는 무조건 업로드하므로 mtime 의존성이 없다.
+              # tarball 이 수백 KiB 이하라 성능 부담도 없다.
+              aws s3 cp --endpoint-url "$S3_ENDPOINT" /tmp/static "s3://$BUCKET/static" \
+                --recursive --acl public-read --no-verify-ssl
 {{- end }}
 {{- end }}
