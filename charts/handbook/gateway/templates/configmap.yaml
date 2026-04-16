@@ -109,7 +109,7 @@ data:
         assistant: http://service-assistant:8080
     # gateway MenuService 가 /menu 를 집계할 대상 서비스 목록
     services:
-      - name: login
-      - name: search-type
-      - name: search-document
-      - name: persist-workspace
+      - name: service-login
+      - name: service-search-type
+      - name: service-search-document
+      - name: service-persist-workspace
