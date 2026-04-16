@@ -37,6 +37,20 @@ spec:
       backendRefs:
         - name: ceph-rgw
           port: 80
+    # /wav/** → S3 bucket/static/wav/**  (사운드 파일 — login beep/start 등)
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /wav/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /handbook-{{ .Values.stage.name }}/static/wav/
+      backendRefs:
+        - name: ceph-rgw
+          port: 80
     # /css/** → S3 bucket/static/css/**  (global / shell / ui-components / agent / fontawesome)
     - matches:
         - path:
