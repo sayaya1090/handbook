@@ -111,6 +111,17 @@ sequenceDiagram
 
 ---
 
+## UC-LUI4: 커맨드 핸들러 처리
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | ContentElement (내부 트리거), Shell (외부 커맨드) |
+| **선행조건** | 로그인 화면 표시 완료 (LoginCommandRouter가 `handbook-login-command` 이벤트 구독 중) |
+| **정상 흐름** | 1. ContentElement 또는 외부에서 `LoginCommandRouter.dispatch(detail)`로 CustomEvent를 발행한다.<br>2. `LoginCommandRouter`가 `type` 필드를 읽어 해당 BehaviorSubject에 커맨드를 라우팅한다.<br>3-a. `notify` → `LoginNotifyHandler`가 level에 따라 콘솔에 메시지 출력.<br>3-b. `attention` → `LoginAttentionHandler`가 안내 메시지 출력.<br>3-c. `highlight` → `LoginHighlightHandler`가 target 요소에 강조 클래스 토글.<br>3-d. `progress` → `LoginProgressHandler`가 OAuth 버튼 비활성화 + 진행 메시지 출력. |
+| **결과** | 커맨드 타입에 따라 콘솔 출력, 요소 강조, 버튼 상태 변경이 수행된다. |
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
@@ -118,3 +129,4 @@ sequenceDiagram
 | UC-LUI1 (로그인 화면) | 로그인 화면 로딩 | Application, DaggerComponent, ContentElement, ConsoleElement, LineElement, Log, AuthenticationProviderButtonFactory, AuthenticationProviderButton | LoginTest |
 | UC-LUI2 (로그인 실행) | OAuth2 로그인 | AuthenticationProviderButton, OAuthApi | LoginTest |
 | UC-LUI3 (로그아웃) | 로그아웃 | LogoutApplication, OAuthApi, FetchApi | LogTest |
+| UC-LUI4 (커맨드 핸들러) | — | LoginCommandRouter, LoginCommandDispatcher, LoginNotifyHandler, LoginAttentionHandler, LoginHighlightHandler, LoginProgressHandler | LoginTest |

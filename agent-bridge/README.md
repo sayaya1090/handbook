@@ -56,6 +56,25 @@ WindowStateProviderBridge.register(typeStateProvider);
 WindowSearchProviderBridge.register(query -> searchProvider.search(query));
 ```
 
+## 도메인 타입 (domain 패키지)
+
+백엔드 agent-protocol의 Jackson 커맨드 타입에 대응하는 `@JsType(isNative=true)` GWT 호환 버전.
+JSON.parse() 결과를 `Js.cast()`로 변환하여 사용한다. agent-ui, login-ui 등 GWT 모듈이 공통 참조.
+
+| 클래스 | 설명 |
+|--------|------|
+| `NavigateCommand` | 메뉴/도구/URL 이동 |
+| `NotifyCommand` | 알림 메시지 (level, message) |
+| `AttentionCommand` | 주의 환기 (message, style) |
+| `HighlightCommand` | 요소 강조 (target CSS 셀렉터) |
+| `ProgressCommand` | 진행 상태 (description) |
+| `MutateCommand` | 편집 mutation |
+| `PreviewCommand` | 미리보기 |
+| `ScrollCommand` | 스크롤 |
+| `AwaitConfirmCommand` | 확인 대기 |
+| `CompleteCommand` | 완료 |
+| `AttentionStyle` | attention 스타일 열거형 |
+
 ## 프로젝트 구조
 
 ```
@@ -63,6 +82,18 @@ agent-bridge/
 ├── build.gradle.kts
 └── src/main/java/dev/sayaya/handbook/
     ├── AgentBridge.gwt.xml
+    ├── domain/
+    │   ├── NavigateCommand.java        # @JsType(isNative=true) 프로토콜 VO
+    │   ├── NotifyCommand.java
+    │   ├── AttentionCommand.java
+    │   ├── AttentionStyle.java
+    │   ├── HighlightCommand.java
+    │   ├── ProgressCommand.java
+    │   ├── MutateCommand.java
+    │   ├── PreviewCommand.java
+    │   ├── ScrollCommand.java
+    │   ├── AwaitConfirmCommand.java
+    │   └── CompleteCommand.java
     └── usecase/
         ├── MutationReceiver.java          # 인터페이스
         ├── StateProvider.java             # 인터페이스
