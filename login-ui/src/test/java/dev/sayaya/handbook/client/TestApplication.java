@@ -9,6 +9,10 @@ public class TestApplication implements EntryPoint {
     public void onModuleLoad() {
         console.log("LoginTest module loaded");
         Component components = DaggerComponent.create();
+        components.notifyHandler();
+        components.attentionHandler();
+        components.highlightHandler();
+        components.progressHandler();
         var content = components.content();
         elemental2.dom.DomGlobal.document.body.appendChild(content.element());
     }
