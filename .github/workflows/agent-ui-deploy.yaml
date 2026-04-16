@@ -2,10 +2,15 @@ name: 에이전트 UI 모듈 빌드
 on:
   push:
     paths:
-      - agent-ui/**
+      - agent-ui/src/main/**
+      - agent-ui/build.gradle.kts
+      - activity/src/main/**
+      - agent-bridge/src/main/**
+      - agent-protocol/src/main/**
+      - ui-components/src/main/**
   workflow_dispatch:
 permissions:
-  contents: write  # reusable 이 gh release create 로 prerelease 를 만든다
+  contents: write
 jobs:
   build:
     uses: ./.github/workflows/_frontend-deploy.yaml

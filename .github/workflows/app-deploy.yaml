@@ -1,14 +1,55 @@
-name: App 모듈 빌드
+name: App 정적 자산 배포
 on:
   push:
     paths:
-      - app/**
+      - app/src/main/webapp/css/**
+      - app/src/main/webapp/app.html
+      - app/src/main/webapp/manifest.json
+      - app/src/main/webapp/service-worker.js
+      - '*/src/main/i18n/**'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
   build:
-    uses: ./.github/workflows/_frontend-deploy.yaml
-    with:
-      submodule: app
-    secrets: inherit
+    runs-on: handbook-operator
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Merge i18n & package
+        run: ./gradlew :app:war
+      - name: Pack static assets
+        run: |
+          mkdir -p dist/static
+          unzip -o app/build/libs/app.war -x "META-INF/*" "WEB-INF/*" -d dist/static
+          tar -czf app.tar.gz -C dist/static .
+          echo "tarball contents:" && tar -tzf app.tar.gz
+      - name: Publish prerelease
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="app-${GITHUB_SHA::7}"
+          gh release list --limit 100 --json tagName --jq ".[] | select(.tagName | startswith(\"app-\")) | .tagName" \
+            | while read OLD_TAG; do
+                [ -z "$OLD_TAG" ] && continue
+                [ "$OLD_TAG" = "$TAG" ] && continue
+                echo "Deleting stale prerelease: $OLD_TAG"
+                gh release delete "$OLD_TAG" --cleanup-tag --yes 2>/dev/null || true
+              done
+          gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "app ${GITHUB_SHA::7}" \
+            --notes "app static assets for commit ${GITHUB_SHA}" \
+            app.tar.gz
