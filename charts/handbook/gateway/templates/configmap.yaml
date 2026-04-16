@@ -33,7 +33,7 @@ data:
             - id: login
               uri: ${gateway.routes.login}
               predicates:
-                - Path=/auth/**,/user
+                - Path=/auth/**,/oauth2/**,/user
             # 실시간 이벤트 (SSE) — search-document보다 먼저 매칭해야 한다
             - id: event-broadcaster
               uri: ${gateway.routes.event-broadcaster}
