@@ -75,14 +75,19 @@ public class UserApi implements UserRepository {
     private Promise<User> handleResponse(Response response) {
         return switch (response.status) {
             case 200 -> Promise.resolve(response).then(this::parse);
-            case 401 -> Promise.resolve((User) null);
+            case 401, 500 -> {
+                // 미인증 또는 서버 에러 — 로그인 페이지로 리다이렉트.
+                // 에러 다이얼로그를 띄우면 전체 화면을 덮어 사용자가 아무것도 클릭할 수 없다.
+                DomGlobal.window.location.assign("/auth/login");
+                yield Promise.resolve((User) null);
+            }
             case 204 -> Promise.reject("Empty result");
             default  -> Promise.reject("HTTP Error: " + response.status + " - " + response.statusText);
         };
     }
     private <V> V handleException(Object throwable) {
         progress.next(Progress.hide());
-        ErrorNotifier.notify("UserApi request failed: " + throwable);
+        DomGlobal.window.location.assign("/auth/login");
         throw new RuntimeException("User request failed: " + throwable);
     }
 }
