@@ -22,7 +22,6 @@ data:
       config:
         import:
           - classpath:observability.yaml
-          - classpath:authentication.yaml
       cloud:
         gateway:
           discovery:
