@@ -15,11 +15,6 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 tasks {
-    jar {
-        enabled = true
-        from(sourceSets.main.get().allSource)
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
     war {
         // GWT 컴파일 출력(build/gwt/war/{login,logout}) 을 js/ 하위로 포함해
         // src/main/webapp/login.html, logout.html 이 참조하는 경로와 일치시킨다.
@@ -34,7 +29,7 @@ tasks {
         sourceLevel = "auto"
         modules = listOf("dev.sayaya.handbook.Login", "dev.sayaya.handbook.Logout")
         devMode {
-            modules = listOf("dev.sayaya.handbook.LoginTest")
+            modules = listOf("dev.sayaya.handbook.LoginTest", "dev.sayaya.handbook.Login", "dev.sayaya.handbook.Logout")
             war = file("src/test/webapp")
         }
         generateJsInteropExports = true

@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
 import dev.sayaya.handbook.client.domain.Log;
+import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
 
 import javax.inject.Inject;
@@ -11,13 +12,12 @@ import static org.jboss.elemento.Elements.div;
 @Singleton
 public class ConsoleElement {
     private static final int MAX_LINES = 50;
+    @Delegate
     private final HTMLContainerBuilder<elemental2.dom.HTMLDivElement> element;
-    private final Log log;
     private boolean alignCenter = false;
     private LineElement last;
 
     @Inject ConsoleElement(Log log) {
-        this.log = log;
         element = div().css("console");
         log.subscribe(this::println);
     }
@@ -37,10 +37,6 @@ public class ConsoleElement {
 
     public void close() {
         if (last != null) last.close();
-    }
-
-    public elemental2.dom.HTMLElement element() {
-        return element.element();
     }
 
     private void removeExcessLinesIfNeeded() {
