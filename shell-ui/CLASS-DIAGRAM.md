@@ -386,9 +386,27 @@ classDiagram
         +render(): BehaviorSubject~Render~$
         +progress(): BehaviorSubject~Progress~$
     }
+    class WindowProgressBridge {
+        <<agent-bridge>>
+        +register(NextFn)$
+        +next(Object)$
+    }
+    class WindowUriBridge {
+        <<agent-bridge>>
+        +register(NextFn)$
+        +next(String)$
+    }
+    class WindowLabelBridge {
+        <<agent-bridge>>
+        +publish(Labels)$
+        +subscribe(NextFn)$
+    }
 
     Application --> Component : DaggerComponent.create()
     Component --> ShellInitializer
+    ShellInitializer --> WindowProgressBridge : register(progress)
+    ShellInitializer --> WindowUriBridge : register(uri)
+    ShellInitializer --> WindowLabelBridge : publish(labels)
 ```
 
 ## 디자인 패턴

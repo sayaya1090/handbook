@@ -65,7 +65,7 @@ client/
 │
 ├── HostSharedModule                     # Dagger 모듈: URI 상태 (BehaviorSubject + Observable)
 ├── Component                            # Dagger 컴포넌트 (ApiModule + HostSharedModule)
-└── Application                          # GWT EntryPoint (매니저 초기화 + DOM 구성)
+└── Application                          # GWT EntryPoint (Shell.gwt.xml, 매니저 초기화 + DOM 구성 + 브릿지 게시)
 ```
 
 ## 상태 관리 흐름
@@ -272,9 +272,14 @@ shell-ui의 테스트 웹앱 리소스(JS/CSS)는 다른 GWT UI 모듈의 테스
 `shell-ui/src/test/webapp/js`, `shell-ui/src/test/webapp/css`를 각 GWT UI 모듈의
 `src/test/webapp/`에 자동 복사한다. `gwtDev`/`gwtCompile` 태스크 실행 시 자동으로 선행 실행된다.
 
+## 브릿지 게시
+
+shell-ui는 독립 GWT 모듈로 컴파일되며, agent-ui 등 다른 GWT 모듈과 `window` 객체를 통해 통신한다. `ShellInitializer.initialize()` 마지막 단계에서 `WindowProgressBridge`, `WindowUriBridge`, `WindowLabelBridge` (agent-bridge 모듈)를 등록하고, `handbook-shell-ready` CustomEvent를 dispatch한다. 다른 모듈은 이 이벤트를 수신한 뒤 브릿지를 통해 shell의 Progress/URI/Label 상태에 접근할 수 있다.
+
 ## 의존성
 
 - **activity** — Menu, Tool, ToolFunction 도메인 클래스
+- **agent-bridge** — 모듈 간 window 브릿지 (WindowProgressBridge, WindowUriBridge, WindowLabelBridge)
 - **sayaya-ui** — Material Design 3 UI 컴포넌트
 - **sayaya-rx** — RxJava GWT 래퍼 (BehaviorSubject, Observable)
 - **Elemento** — GWT DOM 빌더

@@ -3,6 +3,11 @@ plugins {
     war
     id("com.adarshr.test-logger")
 }
+sourceSets {
+    test {
+        java.setSrcDirs(emptyList<String>())   // Java 소스는 GWT devMode 전용 — 일반 test에서 컴파일 제외
+    }
+}
 dependencies {
     testImplementation(libs.bundles.test.web)
     testImplementation(project(":test-utils"))

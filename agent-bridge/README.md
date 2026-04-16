@@ -5,9 +5,9 @@
 
 ## 배경
 
-agent-ui는 `app` 모듈에서 shell-ui와 함께 컴파일되고, type-ui/workspace-ui는 `ModuleScriptManager`에 의해
-별도 GWT 모듈로 동적 로딩된다. 서로 다른 JavaScript 컨텍스트에서 실행되므로 Java 레벨의 인터페이스만으로는
-런타임 연결이 불가능하다. 이 모듈이 `window` 객체를 통한 브릿지를 제공한다.
+shell-ui와 agent-ui는 각각 독립된 GWT 컴파일 결과물(nocache.js)을 가지며, type-ui/workspace-ui도
+`ModuleScriptManager`에 의해 별도 GWT 모듈로 동적 로딩된다. 서로 다른 JavaScript 컨텍스트에서 실행되므로
+Java 레벨의 인터페이스만으로는 런타임 연결이 불가능하다. 이 모듈이 `window` 객체를 통한 브릿지를 제공한다.
 
 ## 인터페이스
 
@@ -24,6 +24,9 @@ agent-ui는 `app` 모듈에서 shell-ui와 함께 컴파일되고, type-ui/works
 | `WindowMutationBridge` | `CustomEvent('handbook-mutate')` | agent-ui: `publish(changes)` | type-ui/workspace-ui: `receiver()` |
 | `WindowStateProviderBridge` | `window.__handbook_stateProvider` | type-ui: `register(provider)` | agent-ui: `snapshot()` |
 | `WindowSearchProviderBridge` | `window.__handbook_searchProvider` | type-ui: `register(callback)` | agent-ui: `search(query)` |
+| `WindowProgressBridge` | `window.__handbook_progress` | shell-ui: `register(observer)` | agent-ui: `next(progress)` |
+| `WindowUriBridge` | `window.__handbook_uri` | shell-ui: `register(observer)` | agent-ui: `next(uri)` |
+| `WindowLabelBridge` | `window.__handbook_labels` | shell-ui: `publish(labels)` | agent-ui: `subscribe(callback)` |
 
 ## 사용법
 
@@ -66,7 +69,10 @@ agent-bridge/
         ├── SearchProvider.java            # 인터페이스
         ├── WindowMutationBridge.java      # CustomEvent 기반 브릿지
         ├── WindowStateProviderBridge.java # window 속성 기반 브릿지
-        └── WindowSearchProviderBridge.java # window 속성 기반 브릿지
+        ├── WindowSearchProviderBridge.java # window 속성 기반 브릿지
+        ├── WindowProgressBridge.java     # shell→agent Progress 브릿지
+        ├── WindowUriBridge.java          # shell→agent URI 브릿지
+        └── WindowLabelBridge.java        # shell→agent Labels 브릿지
 ```
 
 ## 의존성

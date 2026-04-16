@@ -304,6 +304,15 @@ sequenceDiagram
 | **특이사항** | (1) 모바일에서는 MenuRail 과 ToolRail 이 동시에 보이지 않는다 — 한 번에 한 컨텍스트. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만 가지며 모바일 여부는 상태 머신과 직교. (3) 도구가 1개인 메뉴를 탭하면 드릴인 없이 바로 해당 도구로 이동하고 MenuRail 은 유지된다. |
 | **터치 지원** | 화면 왼쪽 가장자리에서 오른쪽으로 스와이프하면 `DrawerMode.toggleOverlay()` 로 OVERLAY drawer 를 열 수 있다 (워크스페이스 셀렉터 등 secondary UI 진입). |
 
+## UC-S20: 브릿지 게시 (모듈 간 통신 초기화)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (자동) |
+| **선행조건** | shell-ui 초기화 완료 (UC-S1 이후) |
+| **정상 흐름** | 1. `ShellInitializer.publishBridges()`가 `WindowProgressBridge.register()`, `WindowUriBridge.register()`, `WindowLabelBridge.publish()`를 호출하여 shell의 Progress/URI/Label 상태를 window 객체에 등록한다.<br>2. `handbook-shell-ready` CustomEvent를 dispatch한다.<br>3. agent-ui 등 독립 GWT 모듈이 이 이벤트를 수신하고 브릿지를 통해 shell 상태에 접근한다. |
+| **특이사항** | shell-ui와 agent-ui는 각각 독립된 GWT 컴파일 결과물(nocache.js)을 갖는다. Java 레벨 인터페이스 공유가 불가능하므로 agent-bridge 모듈이 제공하는 window 브릿지를 사용한다. |
+
 ## UC-S15: 사용자 설정 — 언어/테마 퍼시스턴스
 
 | 항목 | 내용 |
@@ -362,3 +371,4 @@ sequenceDiagram
 | UC-S17 (세션관리) | — | Frame+API | SessionManager, FetchApi, ToastContainer, LabelProvider | ❌ 테스트 미작성 (SessionManager 구현 완료) |
 | UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
+| UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, WindowProgressBridge, WindowUriBridge, WindowLabelBridge | ❌ 테스트 미작성 (구현 완료) |
