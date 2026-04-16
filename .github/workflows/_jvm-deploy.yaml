@@ -41,6 +41,12 @@ jobs:
       - name: Deploy
         run: |
           IMAGE="default-route-openshift-image-registry.apps.sayaya.cloud/handbook/$SUBMODULE"
-          echo "Deploying with IMAGE=$IMAGE"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "Deploying with IMAGE=$IMAGE tags=latest,$SHORT_SHA"
           oc registry login
-          ./gradlew $SUBMODULE:jib -Djib.from.image=$BASE_IMAGE -Djib.to.image=$IMAGE:latest -Djib.allowInsecureRegistries=true -Djib.console=plain
+          ./gradlew $SUBMODULE:jib \
+            -Djib.from.image=$BASE_IMAGE \
+            -Djib.to.image=$IMAGE:latest \
+            -Djib.to.tags=$SHORT_SHA \
+            -Djib.allowInsecureRegistries=true \
+            -Djib.console=plain
