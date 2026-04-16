@@ -1,9 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
-import dev.sayaya.handbook.client.domain.LoginAttention;
-import dev.sayaya.handbook.client.domain.LoginHighlight;
-import dev.sayaya.handbook.client.domain.LoginNotify;
-import dev.sayaya.handbook.client.domain.LoginProgress;
+import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.client.usecase.LoginCommandDispatcher;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -26,10 +23,10 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 @Singleton
 public class LoginCommandRouter implements LoginCommandDispatcher {
     public static final String EVENT_NAME = "handbook-login-command";
-    private final BehaviorSubject<LoginNotify> notifySubject = behavior(null);
-    private final BehaviorSubject<LoginAttention> attentionSubject = behavior(null);
-    private final BehaviorSubject<LoginHighlight> highlightSubject = behavior(null);
-    private final BehaviorSubject<LoginProgress> progressSubject = behavior(null);
+    private final BehaviorSubject<NotifyCommand> notifySubject = behavior(null);
+    private final BehaviorSubject<AttentionCommand> attentionSubject = behavior(null);
+    private final BehaviorSubject<HighlightCommand> highlightSubject = behavior(null);
+    private final BehaviorSubject<ProgressCommand> progressSubject = behavior(null);
 
     @Inject LoginCommandRouter() {
         DomGlobal.window.addEventListener(EVENT_NAME, evt -> {
@@ -51,10 +48,10 @@ public class LoginCommandRouter implements LoginCommandDispatcher {
         }
     }
 
-    @Override public Observable<LoginNotify> notifications() { return notifySubject.asObservable(); }
-    @Override public Observable<LoginAttention> attentions() { return attentionSubject.asObservable(); }
-    @Override public Observable<LoginHighlight> highlights() { return highlightSubject.asObservable(); }
-    @Override public Observable<LoginProgress> progressUpdates() { return progressSubject.asObservable(); }
+    @Override public Observable<NotifyCommand> notifications() { return notifySubject.asObservable(); }
+    @Override public Observable<AttentionCommand> attentions() { return attentionSubject.asObservable(); }
+    @Override public Observable<HighlightCommand> highlights() { return highlightSubject.asObservable(); }
+    @Override public Observable<ProgressCommand> progressUpdates() { return progressSubject.asObservable(); }
 
     @SuppressWarnings("unchecked")
     public static void dispatch(JsPropertyMap<Object> detail) {

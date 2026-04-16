@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
+import dev.sayaya.handbook.domain.*;
+
 import dev.sayaya.handbook.client.domain.Log;
 import dev.sayaya.handbook.client.usecase.LoginCommandDispatcher;
 import elemental2.dom.DomGlobal;
@@ -22,7 +24,6 @@ public class LoginProgressHandler {
                 ((elemental2.dom.HTMLElement) btns.item(i)).setAttribute("disabled", "true");
             }
             var msg = cmd.description();
-            if (msg == null) msg = cmd.message();
             log.next("");
             log.next("> " + (msg != null ? msg : DEFAULT_MESSAGE));
             console.close();

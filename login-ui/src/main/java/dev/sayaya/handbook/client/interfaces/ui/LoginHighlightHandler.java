@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
+import dev.sayaya.handbook.domain.*;
+
 import dev.sayaya.handbook.client.usecase.LoginCommandDispatcher;
 import elemental2.dom.DomGlobal;
 

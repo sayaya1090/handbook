@@ -1,9 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.LoginAttention;
-import dev.sayaya.handbook.client.domain.LoginHighlight;
-import dev.sayaya.handbook.client.domain.LoginNotify;
-import dev.sayaya.handbook.client.domain.LoginProgress;
+import dev.sayaya.handbook.domain.*;
 import dev.sayaya.rx.Observable;
 
 /**
@@ -13,8 +10,8 @@ import dev.sayaya.rx.Observable;
  * 도메인 타입은 백엔드 agent-protocol 의 @JsType(isNative=true) 대응 버전.</p>
  */
 public interface LoginCommandDispatcher {
-    Observable<LoginNotify> notifications();
-    Observable<LoginAttention> attentions();
-    Observable<LoginHighlight> highlights();
-    Observable<LoginProgress> progressUpdates();
+    Observable<NotifyCommand> notifications();
+    Observable<AttentionCommand> attentions();
+    Observable<HighlightCommand> highlights();
+    Observable<ProgressCommand> progressUpdates();
 }
