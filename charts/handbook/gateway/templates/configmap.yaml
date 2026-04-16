@@ -23,10 +23,7 @@ data:
         import:
           - classpath:observability.yaml
       cloud:
-        gateway:
-          discovery:
-            locator:
-              enabled: true
+        gateway.server.webflux:
           routes:
             # 인증
             - id: login

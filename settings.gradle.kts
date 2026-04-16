@@ -47,7 +47,7 @@ dependencyResolutionManagement {
             bundle("kotlin-webflux", listOf("spring-webflux", "kotlin-reactor", "kotlin-coroutines-reactor", "kotlin-jackson", "spring-actuator", "prometheus"))
 
             // Spring Cloud
-            library("spring-gateway", "org.springframework.cloud", "spring-cloud-starter-gateway").withoutVersion()
+            library("spring-gateway", "org.springframework.cloud", "spring-cloud-starter-gateway-server-webflux").withoutVersion()
             library("spring-discovery", "org.springframework.cloud", "spring-cloud-starter-zookeeper-discovery").withoutVersion()
             library("spring-cloud-bom", "org.springframework.cloud", "spring-cloud-dependencies").versionRef("spring-cloud")
             library("spring-log4j2", "org.springframework.boot", "spring-boot-starter-log4j2").withoutVersion()
