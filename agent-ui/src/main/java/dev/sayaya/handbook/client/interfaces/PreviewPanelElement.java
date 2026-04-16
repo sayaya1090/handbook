@@ -23,9 +23,9 @@ public class PreviewPanelElement implements IsElement<HTMLDivElement> {
 
     @Inject
     PreviewPanelElement(AgentCommandDispatcher dispatcher) {
-        dispatcher.previewRequests().subscribe(changes -> {
-            if (changes == null) { panel.hide(); return; }
-            panel.show(changes);
+        dispatcher.previewRequests().subscribe(cmd -> {
+            if (cmd == null) { panel.hide(); return; }
+            panel.show(cmd.changes());
         });
     }
 

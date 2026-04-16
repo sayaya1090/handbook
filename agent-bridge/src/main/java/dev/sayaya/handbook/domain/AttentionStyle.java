@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.usecase;
+package dev.sayaya.handbook.domain;
 
 /**
  * attention 커맨드의 시각적 표현 스타일.

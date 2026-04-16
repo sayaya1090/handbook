@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces;
 
-import dev.sayaya.handbook.client.domain.NavigateInfo;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
+import dev.sayaya.handbook.domain.NavigateCommand;
 import dev.sayaya.rx.Observer;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -30,18 +30,18 @@ public class NavigateHandler implements IsElement<HTMLDivElement> {
         root = div().css("agent-navigate-indicator").element();
         root.style.set("display", "none");
 
-        dispatcher.navigations().subscribe(nav -> {
-            if (nav == null) return;
-            if (nav.url() != null) uri.next(nav.url());
-            showIndicator(nav);
+        dispatcher.navigations().subscribe(cmd -> {
+            if (cmd == null) return;
+            if (cmd.url() != null) uri.next(cmd.url());
+            showIndicator(cmd);
         });
     }
 
-    private void showIndicator(NavigateInfo nav) {
+    private void showIndicator(NavigateCommand cmd) {
         StringBuilder text = new StringBuilder("\u27A4 ");
-        if (nav.menu() != null) text.append(nav.menu());
-        if (nav.tool() != null) text.append(" > ").append(nav.tool());
-        if (nav.url() != null) text.append("  (").append(nav.url()).append(")");
+        if (cmd.menu() != null) text.append(cmd.menu());
+        if (cmd.tool() != null) text.append(" > ").append(cmd.tool());
+        if (cmd.url() != null) text.append("  (").append(cmd.url()).append(")");
 
         root.textContent = text.toString();
         root.style.set("display", "flex");

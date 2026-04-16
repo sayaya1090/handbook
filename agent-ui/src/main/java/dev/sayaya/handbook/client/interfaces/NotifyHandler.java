@@ -24,12 +24,12 @@ public class NotifyHandler implements IsElement<HTMLDivElement> {
 
     @Inject
     NotifyHandler(AgentCommandDispatcher dispatcher) {
-        dispatcher.notifications().subscribe(info -> {
-            if (info == null) return;
+        dispatcher.notifications().subscribe(cmd -> {
+            if (cmd == null) return;
             ToastLevel level;
-            try { level = ToastLevel.valueOf(info.level().toUpperCase()); }
+            try { level = ToastLevel.valueOf(cmd.level().toUpperCase()); }
             catch (Exception e) { level = ToastLevel.INFO; }
-            toast.show(level, info.message());
+            toast.show(level, cmd.message());
         });
     }
 

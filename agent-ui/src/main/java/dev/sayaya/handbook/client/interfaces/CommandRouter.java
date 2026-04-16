@@ -4,7 +4,7 @@ import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.domain.*;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.client.usecase.AgentSession;
-import dev.sayaya.handbook.usecase.AttentionStyle;
+import dev.sayaya.handbook.domain.*;
 import dev.sayaya.rx.Observable;
 import elemental2.core.JsArray;
 import jsinterop.base.Any;
@@ -19,7 +19,11 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 /**
  * SSE로 수신된 JSON 커맨드를 파싱하여 타입별 BehaviorSubject에 발행하는 라우터.
  *
- * <p><b>책임:</b> JSON.parse()로 커맨드 타입을 판별하고, navigate/highlight/attention/scroll/preview/mutate/notify/progress/await_confirm/complete를 각각의 Subject에 발행한다.</p>
+ * <p><b>책임:</b> JSON.parse()로 커맨드 타입을 판별하고, agent-bridge 프로토콜 타입으로 캐스트한 뒤
+ * navigate/highlight/attention/scroll/preview/mutate/notify/progress/await_confirm/complete를
+ * 각각의 Subject에 발행한다. 단순 커맨드는 프로토콜 타입을 직접 발행하고,
+ * 파생 로직이 필요한 커맨드(attention→OverlayRequest, progress→ProgressInfo, complete→CompleteInfo)는
+ * agent-ui 도메인 타입으로 변환하여 발행한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link AgentSession} — await_confirm/complete 시 세션 상태 전이</li>
  *   <li>{@link dev.sayaya.rx.subject.BehaviorSubject} — 커맨드별 반응형 스트림</li>
@@ -31,15 +35,15 @@ public class CommandRouter implements AgentCommandDispatcher {
     private final AgentSession session;
 
     private final dev.sayaya.rx.subject.BehaviorSubject<OverlayRequest> overlaySubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<ConfirmRequest> confirmSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<AwaitConfirmCommand> confirmSubject = behavior(null);
     private final dev.sayaya.rx.subject.BehaviorSubject<ProgressInfo> progressSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<String[]> previewSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<dev.sayaya.handbook.client.domain.CompleteInfo> completeSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<String> highlightSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<String> scrollSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<NavigateInfo> navigateSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<String[]> mutateSubject = behavior(null);
-    private final dev.sayaya.rx.subject.BehaviorSubject<NotifyInfo> notifySubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<PreviewCommand> previewSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<CompleteInfo> completeSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<HighlightCommand> highlightSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<ScrollCommand> scrollSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<NavigateCommand> navigateSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<MutateCommand> mutateSubject = behavior(null);
+    private final dev.sayaya.rx.subject.BehaviorSubject<NotifyCommand> notifySubject = behavior(null);
     private final dev.sayaya.rx.subject.BehaviorSubject<SearchVisualizationRequest> searchSubject = behavior(null);
 
     @Inject
@@ -57,6 +61,8 @@ public class CommandRouter implements AgentCommandDispatcher {
 
     /**
      * JSON 문자열을 파싱하여 커맨드 타입에 따라 적절한 핸들러를 호출한다.
+     * 단순 커맨드는 Js.cast()로 프로토콜 타입에 직접 캐스트하고,
+     * 파생 로직이 필요한 커맨드는 JsPropertyMap에서 필드를 추출하여 도메인 타입으로 변환한다.
      */
     private void routeCommand(String json) {
         Object parsed = elemental2.core.Global.JSON.parse(json);
@@ -68,92 +74,85 @@ public class CommandRouter implements AgentCommandDispatcher {
 
         switch (type) {
             case "navigate":
-                onNavigate(getString(cmd, "menu"), getString(cmd, "tool"), getString(cmd, "url"));
+                navigateSubject.next(Js.cast(parsed));
                 break;
             case "highlight":
-                onHighlight(getString(cmd, "target"));
+                highlightSubject.next(Js.cast(parsed));
                 break;
             case "attention":
-                onAttention(getString(cmd, "target"),
-                        getStringOrDefault(cmd, "style", "PULSE"),
-                        getStringOrDefault(cmd, "message", ""),
-                        getStringOrDefault(cmd, "position", "bottom"),
-                        isTruthy(cmd.get("dismissable")));
+                onAttention(Js.cast(parsed));
                 break;
             case "scroll":
-                onScroll(getString(cmd, "target"));
+                scrollSubject.next(Js.cast(parsed));
                 break;
             case "preview":
-                previewSubject.next(toStringArrayFromAny(cmd.get("changes")));
+                previewSubject.next(Js.cast(parsed));
                 break;
             case "mutate":
-                mutateSubject.next(toStringArrayFromAny(cmd.get("changes")));
+                mutateSubject.next(Js.cast(parsed));
                 break;
             case "notify":
-                onNotify(getStringOrDefault(cmd, "level", "info"),
-                        getStringOrDefault(cmd, "message", ""));
+                notifySubject.next(Js.cast(parsed));
                 break;
             case "progress":
-                onProgress(getDouble(cmd, "currentGroup"), getDouble(cmd, "totalGroups"),
-                        (int) getDouble(cmd, "parallel"), (int) getDouble(cmd, "stepCount"));
+                onProgress(cmd);
                 break;
             case "await_confirm":
-                onAwaitConfirm(getStringOrDefault(cmd, "description", ""),
-                        toStringArrayFromAny(cmd.get("options")));
+                onAwaitConfirm(Js.cast(parsed));
                 break;
-            case "complete": {
-                Object artifact = cmd.get("artifact");
-                String artifactJson = artifact != null ? elemental2.core.Global.JSON.stringify(artifact) : null;
-                onComplete(getStringOrDefault(cmd, "summary", ""),
-                        getStringOrDefault(cmd, "executionId", ""), artifactJson);
+            case "complete":
+                onComplete(cmd);
                 break;
-            }
             case "search":
-                onSearch(getString(cmd, "navigateTo"),
-                        getStringOrDefault(cmd, "query", ""),
-                        toStringArrayFromAny(cmd.get("targets")),
-                        getStringOrDefault(cmd, "summary", ""));
+                onSearch(cmd);
                 break;
             default:
                 break;
         }
     }
 
-    private void onNavigate(String menu, String tool, String url) {
-        navigateSubject.next(new NavigateInfo(menu, tool, url));
-    }
-    private void onHighlight(String target) {
-        highlightSubject.next(target);
-    }
-    private void onAttention(String target, String style, String message, String position, boolean dismissable) {
+    private void onAttention(AttentionCommand cmd) {
+        String styleStr = cmd.style() != null ? cmd.style() : "PULSE";
         AttentionStyle attentionStyle;
         try {
-            attentionStyle = AttentionStyle.valueOf(style);
+            attentionStyle = AttentionStyle.valueOf(styleStr);
         } catch (IllegalArgumentException e) {
             attentionStyle = AttentionStyle.PULSE;
         }
-        overlaySubject.next(new OverlayRequest(target, attentionStyle, message, position, dismissable));
+        String message = cmd.message() != null ? cmd.message() : "";
+        String position = cmd.position() != null ? cmd.position() : "bottom";
+        overlaySubject.next(new OverlayRequest(cmd.target(), attentionStyle, message, position, cmd.dismissable()));
     }
-    private void onScroll(String target) {
-        scrollSubject.next(target);
-    }
-    private void onNotify(String level, String message) {
-        notifySubject.next(new NotifyInfo(level, message));
-    }
-    private void onSearch(String navigateTo, String query, String[] targets, String summary) {
-        searchSubject.next(new SearchVisualizationRequest(navigateTo, query, targets, summary));
-    }
-    private void onProgress(double currentGroup, double totalGroups, int parallel, int stepCount) {
+
+    private void onProgress(JsPropertyMap<?> cmd) {
+        double currentGroup = getDouble(cmd, "currentGroup");
+        double totalGroups = getDouble(cmd, "totalGroups");
+        int parallel = (int) getDouble(cmd, "parallel");
+        int stepCount = (int) getDouble(cmd, "stepCount");
         progressSubject.next(new ProgressInfo(null, currentGroup, totalGroups, parallel, stepCount));
     }
-    private void onAwaitConfirm(String description, String[] options) {
+
+    private void onAwaitConfirm(AwaitConfirmCommand cmd) {
         session.stateObserver().next(AgentSessionState.AWAITING_CONFIRM);
-        confirmSubject.next(new ConfirmRequest(description, options));
+        confirmSubject.next(cmd);
     }
-    private void onComplete(String summary, String executionId, String artifactJson) {
+
+    private void onComplete(JsPropertyMap<?> cmd) {
         session.stateObserver().next(AgentSessionState.COMPLETED);
+        String summary = getStringOrDefault(cmd, "summary", "");
+        String executionId = getStringOrDefault(cmd, "executionId", "");
+        Object artifact = cmd.get("artifact");
+        String artifactJson = artifact != null ? elemental2.core.Global.JSON.stringify(artifact) : null;
         CompleteInfo info = parseCompleteInfo(summary, executionId, artifactJson);
         completeSubject.next(info);
+    }
+
+    private void onSearch(JsPropertyMap<?> cmd) {
+        String navigateTo = getString(cmd, "navigateTo");
+        String query = getStringOrDefault(cmd, "query", "");
+        String[] targets = toStringArrayFromAny(cmd.get("targets"));
+        String summaryStr = getStringOrDefault(cmd, "summary", "");
+        searchSubject.next(new SearchVisualizationRequest(navigateTo, query, targets, summaryStr));
     }
 
     private static CompleteInfo parseCompleteInfo(String summary, String executionId, String artifactJson) {
@@ -214,11 +213,6 @@ public class CommandRouter implements AgentCommandDispatcher {
         return val != null ? val.asDouble() : 0;
     }
 
-    /** JS truthy 검사를 수행한다. */
-    private static boolean isTruthy(Object val) {
-        return val != null && Js.isTruthy(val);
-    }
-
     /** JS 배열(또는 null)을 String[]로 변환한다. */
     private static String[] toStringArrayFromAny(Object jsVal) {
         if (jsVal == null) return new String[0];
@@ -231,14 +225,14 @@ public class CommandRouter implements AgentCommandDispatcher {
     }
 
     @Override public Observable<OverlayRequest> overlayRequests() { return overlaySubject; }
-    @Override public Observable<ConfirmRequest> confirmRequests() { return confirmSubject; }
+    @Override public Observable<AwaitConfirmCommand> confirmRequests() { return confirmSubject; }
     @Override public Observable<ProgressInfo> progressUpdates() { return progressSubject; }
-    @Override public Observable<String[]> previewRequests() { return previewSubject; }
+    @Override public Observable<PreviewCommand> previewRequests() { return previewSubject; }
     @Override public Observable<CompleteInfo> completions() { return completeSubject; }
-    @Override public Observable<String> highlights() { return highlightSubject; }
-    @Override public Observable<String> scrollTargets() { return scrollSubject; }
-    @Override public Observable<NavigateInfo> navigations() { return navigateSubject; }
-    @Override public Observable<String[]> mutations() { return mutateSubject; }
-    @Override public Observable<NotifyInfo> notifications() { return notifySubject; }
+    @Override public Observable<HighlightCommand> highlights() { return highlightSubject; }
+    @Override public Observable<ScrollCommand> scrollTargets() { return scrollSubject; }
+    @Override public Observable<NavigateCommand> navigations() { return navigateSubject; }
+    @Override public Observable<MutateCommand> mutations() { return mutateSubject; }
+    @Override public Observable<NotifyCommand> notifications() { return notifySubject; }
     @Override public Observable<SearchVisualizationRequest> searchVisualizations() { return searchSubject; }
 }

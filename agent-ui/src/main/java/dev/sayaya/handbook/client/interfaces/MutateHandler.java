@@ -29,8 +29,9 @@ public class MutateHandler implements IsElement<HTMLDivElement> {
         root = div().css("agent-mutate-log").element();
         root.style.set("display", "none");
 
-        dispatcher.mutations().subscribe(changes -> {
-            if (changes == null) return;
+        dispatcher.mutations().subscribe(cmd -> {
+            if (cmd == null) return;
+            String[] changes = cmd.changes();
 
             // 편집 모듈로 mutation 전달 (CustomEvent 기반)
             WindowMutationBridge.publish(changes);

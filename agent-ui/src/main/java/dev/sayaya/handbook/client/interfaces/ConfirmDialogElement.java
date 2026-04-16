@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.client.components.ConfirmDialog;
-import dev.sayaya.handbook.client.domain.ConfirmRequest;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
+import dev.sayaya.handbook.domain.AwaitConfirmCommand;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 
@@ -37,9 +37,9 @@ public class ConfirmDialogElement implements IsElement<HTMLDivElement> {
         this.callback = callback;
     }
 
-    private void handle(ConfirmRequest request) {
-        if (request == null) return;
-        dialog.show(request.description(), request.options(), option -> {
+    private void handle(AwaitConfirmCommand cmd) {
+        if (cmd == null) return;
+        dialog.show(cmd.description(), cmd.options(), option -> {
             if (callback != null) callback.onResponse(option);
         });
     }

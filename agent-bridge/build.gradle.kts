@@ -4,6 +4,7 @@ plugins {
 }
 dependencies {
     implementation(libs.bundles.sayaya.web)
+    annotationProcessor(libs.lombok)
     testImplementation(libs.bundles.test.web)
 }
 

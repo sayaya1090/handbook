@@ -11,7 +11,7 @@ import javax.inject.Singleton;
  * <p><b>책임:</b> AgentCommandDispatcher의 scrollTargets를 구독하고, ScrollEffect로 CSS 선택자 대상 요소에 부드러운 스크롤 + 도착 강조를 적용한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link AgentCommandDispatcher} — 스크롤 대상 스트림 구독</li>
- *   <li>{@link ScrollEffect} — DOM 요소 스크롤 + 강조 효과</li>
+ *   <li>{@link dev.sayaya.handbook.client.components.ScrollEffect} — DOM 요소 스크롤 + 강조 효과</li>
  * </ul></p>
  */
 @Singleton
@@ -20,8 +20,8 @@ public class ScrollHandler {
 
     @Inject
     ScrollHandler(AgentCommandDispatcher dispatcher) {
-        dispatcher.scrollTargets().subscribe(target -> {
-            if (target != null) effect.scrollTo(target);
+        dispatcher.scrollTargets().subscribe(cmd -> {
+            if (cmd != null) effect.scrollTo(cmd.target());
         });
     }
 }
