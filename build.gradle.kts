@@ -77,6 +77,9 @@ subprojects {
             from("${rootProject.projectDir}/shell-ui/src/test/webapp/js")
             into("${project.projectDir}/src/test/webapp/js")
             exclude("language.*.json")
+            if (project.name != "shell-ui") {
+                dependsOn(":shell-ui:mergeI18n")
+            }
         }
         // 다른 GWT UI 모듈은 shell-ui/src/test/webapp/css 에서 복사 (global/fontawesome 포함).
         // shell-ui 자체는 아래에서 main/webapp/css → test/webapp/css 로 shell.css 만 먼저 동기화.

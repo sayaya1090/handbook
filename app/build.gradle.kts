@@ -3,14 +3,16 @@ plugins {
     war
     id("com.adarshr.test-logger")
 }
-sourceSets {
-    test {
-        java.setSrcDirs(emptyList<String>())   // Java 소스는 GWT devMode 전용 — 일반 test에서 컴파일 제외
-    }
-}
 dependencies {
     testImplementation(libs.bundles.test.web)
     testImplementation(project(":test-utils"))
+}
+sourceSets {
+    test {
+        // GWT 테스트용 Java 소스는 사전 컴파일된 JS 로 src/test/webapp/apptest/ 에 커밋됨.
+        // GWT devMode 재컴파일이 필요하면 gwt 플러그인을 일시 활성화하고 수동 실행.
+        java.setSrcDirs(emptyList<String>())
+    }
 }
 val mergeI18nProd by tasks.registering {
     val i18nDirs = rootProject.subprojects.map { it.file("src/main/i18n") }
@@ -51,8 +53,6 @@ val mergeI18nProd by tasks.registering {
 }
 tasks {
     war {
-        // shell-ui, agent-ui 의 GWT 컴파일 출력을 각각 shell/, agent/ 하위에 포함.
-        // app.html 이 참조하는 shell/shell.nocache.js, agent/agent.nocache.js 경로와 일치.
         dependsOn(":shell-ui:gwtCompile", ":agent-ui:gwtCompile", mergeI18nProd)
         from("${rootProject.projectDir}/shell-ui/build/gwt/war")
         from("${rootProject.projectDir}/agent-ui/build/gwt/war")
