@@ -1,18 +1,5 @@
 plugins {
-    kotlin("jvm")
     war
-    id("com.adarshr.test-logger")
-}
-dependencies {
-    testImplementation(libs.bundles.test.web)
-    testImplementation(project(":test-utils"))
-}
-sourceSets {
-    test {
-        // GWT 테스트용 Java 소스는 사전 컴파일된 JS 로 src/test/webapp/apptest/ 에 커밋됨.
-        // GWT devMode 재컴파일이 필요하면 gwt 플러그인을 일시 활성화하고 수동 실행.
-        java.setSrcDirs(emptyList<String>())
-    }
 }
 val mergeI18nProd by tasks.registering {
     val i18nDirs = rootProject.subprojects.map { it.file("src/main/i18n") }
@@ -53,11 +40,9 @@ val mergeI18nProd by tasks.registering {
 }
 tasks {
     war {
-        dependsOn(":shell-ui:gwtCompile", ":agent-ui:gwtCompile", mergeI18nProd)
-        from("${rootProject.projectDir}/shell-ui/build/gwt/war")
-        from("${rootProject.projectDir}/agent-ui/build/gwt/war")
+        // HTML + CSS + vendor JS + i18n 만 패키징.
+        // shell-ui / agent-ui 의 GWT 출력은 각 모듈이 독립 배포 (S3 별도 sync).
+        dependsOn(mergeI18nProd)
         archiveFileName.set("app.war")
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-    test { useJUnitPlatform() }
 }
