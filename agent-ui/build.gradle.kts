@@ -22,6 +22,12 @@ tasks {
         from(sourceSets.main.get().allSource)
         duplicatesStrategy = DuplicatesStrategy.WARN
     }
+    war {
+        dependsOn("gwtCompile")
+        from("build/gwt/war")
+        archiveFileName.set("agent-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
     gwt {
         gwtVersion = "2.13.0"
         sourceLevel = "auto"
