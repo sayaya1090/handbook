@@ -19,9 +19,7 @@ dependencies {
 
 tasks {
     jar {
-        enabled = true
-        from(sourceSets.main.get().allSource)
-        duplicatesStrategy = DuplicatesStrategy.WARN
+        enabled = false
     }
     war {
         // GWT 컴파일 출력(build/gwt/war/shell) 을 WAR 루트에 포함.
