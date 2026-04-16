@@ -108,5 +108,6 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | Istio ambient 에서 외부 요청 500 | 서비스 port(80) ≠ HTTPRoute backendRef port(8080) | 서비스 port=targetPort=8080, name=http-xxx, appProtocol=http 로 통일 |
 | Kargo warehouse 가 새 이미지 감지 못 함 | `strictSemvers: true` + jib `latest` 태그만 push | `strictSemvers: false` + jib 에 commit SHA 태그 추가 (`-Djib.to.tags=$SHORT_SHA`) |
 | `aws s3 sync` 가 같은 크기 파일 스킵 | Gradle 재현가능 빌드의 mtime 고정 + 동일 사이즈 | `aws s3 cp --recursive` 로 무조건 업로드. helm vendored tgz 갱신 필요 |
+| Gateway 라우트 0개 로딩 | 1) `spring.cloud.gateway.routes` (구 경로) 사용 — Spring Cloud Gateway 5.0부터 `spring.cloud.gateway.server.webflux.routes` 로 변경됨. 2) servlet classpath 오염 — activity 의존에서 `gwt-servlet-jakarta` 미제외 시 reactive auto-config 실패 | 프로퍼티 경로를 `spring.cloud.gateway.server.webflux.routes` 로 변경. activity 의존에 `exclude(group = "org.gwtproject", module = "gwt-servlet-jakarta")` 추가 |
 
 상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.

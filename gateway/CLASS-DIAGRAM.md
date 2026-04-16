@@ -44,7 +44,7 @@ classDiagram
 
     class GatewayConfig {
         <<@Configuration>>
-        +objectMapper(): ObjectMapper
+        +objectMapper(): JsonMapper
         +webClientBuilder(objectMapper): WebClient.Builder
         +menuSuppliers(webClientBuilder, serviceList): List~MenuSupplier~
         +menuService(suppliers): MenuService

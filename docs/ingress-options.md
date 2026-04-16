@@ -38,7 +38,7 @@ spec:
 - ✅ 리소스 1개, OpenShift 고유 idiom, 팀 친숙도 높음
 - ✅ 백엔드 API 라우팅을 이미 gateway 가 담당하므로 통합적
 - ❌ OpenShift Route 자체는 **URL rewrite 를 지원 안 한다**. `/` → `/handbook-dev/static/` 같은 prefix 변경 불가
-- ⚠️ 따라서 gateway(Spring Cloud) 의 `spring.cloud.gateway.routes[*]` 에 `static` 엔트리를 S3 로 프록시하도록 추가해야 한다 (gateway 차트 ConfigMap 수정)
+- ⚠️ 따라서 gateway(Spring Cloud) 의 `spring.cloud.gateway.server.webflux.routes[*]` 에 `static` 엔트리를 S3 로 프록시하도록 추가해야 한다 (gateway 차트 ConfigMap 수정)
 
 ### 추가 작업
 - `charts/handbook/gateway/templates/configmap.yaml` 의 `gateway.routes` 에 `static: http://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc/handbook-<env>` 추가

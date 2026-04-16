@@ -60,49 +60,66 @@ flowchart LR
 
 ## 라우트 설정
 
-API Gateway 라우트는 `application.yml`에 Spring Cloud Gateway 설정으로 정의된다.
+API Gateway 라우트는 `application.yml`에 Spring Cloud Gateway Server WebFlux 설정으로 정의된다.
 각 백엔드 서비스에 대해 경로 패턴과 HTTP 메서드를 기반으로 라우팅한다.
+
+> **주의:** Spring Cloud Gateway 5.0부터 프로퍼티 경로가 `spring.cloud.gateway.server.webflux.routes`로 변경되었다. 구 경로(`spring.cloud.gateway.routes`)를 사용하면 라우트가 0개로 로딩된다.
 
 ```yaml
 spring:
   cloud:
-    gateway:
+    gateway.server.webflux:
       routes:
         - id: login
-          uri: ${LOGIN_URI:http://localhost:8081}
+          uri: ${gateway.routes.login:http://localhost:8081}
           predicates:
-            - Path=/auth/**,/user
+            - Path=/auth/**,/oauth2/**,/login/**,/user
+        - id: event-broadcaster
+          uri: ${gateway.routes.event-broadcaster:http://localhost:8088}
+          predicates:
+            - Path=/workspace/*/messages
+            - Method=GET
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: eventBroadcasterCB
+                fallbackUri: forward:/fallback/empty
         - id: search-type
-          uri: ${SEARCH_TYPE_URI:http://localhost:8082}
+          uri: ${gateway.routes.search-type:http://localhost:8082}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=GET
         - id: persist-type
-          uri: ${PERSIST_TYPE_URI:http://localhost:8083}
+          uri: ${gateway.routes.persist-type:http://localhost:8083}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=PUT,DELETE
         - id: search-document
-          uri: ${SEARCH_DOCUMENT_URI:http://localhost:8084}
+          uri: ${gateway.routes.search-document:http://localhost:8084}
           predicates:
-            - Path=/workspace/*/documents/**,/workspace/*/*/*
+            - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
             - Method=GET
         - id: persist-document
-          uri: ${PERSIST_DOCUMENT_URI:http://localhost:8085}
+          uri: ${gateway.routes.persist-document:http://localhost:8085}
           predicates:
             - Path=/workspace/*/documents/**
             - Method=PUT,DELETE
         - id: persist-workspace
-          uri: ${PERSIST_WORKSPACE_URI:http://localhost:8086}
+          uri: ${gateway.routes.persist-workspace:http://localhost:8086}
           predicates:
             - Path=/workspace,/workspace/**
             - Method=POST,PUT,DELETE
         - id: assistant
-          uri: ${ASSISTANT_URI:http://localhost:8087}
+          uri: ${gateway.routes.assistant:http://localhost:8087}
           predicates:
             - Path=/assistant/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: assistantCB
+                fallbackUri: forward:/fallback/empty
         - id: static
-          uri: ${STATIC_URI:http://localhost:8080}
+          uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
             - Path=/js/**,/css/**,/icons/**
 ```
@@ -111,8 +128,10 @@ spring:
 
 ```yaml
 services:
-  - name: search-type
-  - name: search-document
+  - name: service-login:8080
+  - name: service-search-type:8080
+  - name: service-search-document:8080
+  - name: service-persist-workspace:8080
 ```
 
 ## 인프라 기능
@@ -120,7 +139,7 @@ services:
 | 기능 | 구현 | 설명 |
 |------|------|------|
 | CORS | `GatewayConfig.corsWebFilter()` | 허용 도메인/메서드/헤더 명시, `cors.allowed-origins` 프로퍼티로 설정 |
-| CSP | `AuthenticationAutoConfig` | `Content-Security-Policy` 헤더 자동 적용 (authentication 모듈) |
+| CSP | 각 백엔드 서비스 (authentication 모듈) | `Content-Security-Policy` 헤더 자동 적용 (gateway는 순수 프록시로 인증 미포함) |
 | Rate Limiting | `RateLimitFilter` | `/auth/**` 경로 IP당 20회/분 제한 (인메모리 슬라이딩 윈도우) |
 | Correlation ID | `CorrelationIdFilter` | X-Correlation-Id UUID 생성/전파 + MDC 로깅 |
 | Circuit Breaker | `application.yml` + `FallbackController` | assistant, event-broadcaster 장애 시 빈 응답 반환 |
@@ -129,11 +148,13 @@ services:
 
 ## 의존성
 
-- authentication (JWT 검증)
-- Spring Cloud Gateway
+- activity (Menu 도메인, gwt-servlet-jakarta 제외)
+- Spring Cloud Gateway Server WebFlux (`spring-cloud-starter-gateway-server-webflux`)
 - Spring Cloud CircuitBreaker (Resilience4j)
 - SpringDoc OpenAPI (WebFlux)
 - Log4j2
+
+> **참고:** gateway는 순수 프록시(pure proxy)로서 authentication 모듈에 의존하지 않는다. JWT 검증·CSP 등 보안 처리는 각 백엔드 서비스가 authentication 모듈을 통해 자체 수행한다. activity 의존 시 `gwt-servlet-jakarta`를 exclude하여 servlet classpath 오염을 방지한다 (오염 시 reactive auto-config가 실패하여 라우트가 0개로 로딩됨).
 
 ## 테스트
 

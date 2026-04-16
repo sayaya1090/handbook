@@ -390,6 +390,8 @@ flowchart LR
 | Method | Path                                        | 설명                          |
 |--------|---------------------------------------------|-------------------------------|
 | GET    | `/auth/refresh`                             | JWT 토큰 갱신                  |
+| GET    | `/oauth2/authorization/{provider}`          | OAuth2 로그인 시작 (리다이렉트)  |
+| GET    | `/login/oauth2/code/{provider}`             | OAuth2 콜백 (인가 코드 수신)     |
 | GET    | `/menus`                                    | 메뉴 목록 조회 (서비스 집계)     |
 | GET    | `/user`                                     | 현재 사용자 정보 조회            |
 | POST   | `/workspace`                                | 워크스페이스 생성               |

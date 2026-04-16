@@ -19,7 +19,7 @@ graph TB
     end
 
     subgraph "API Gateway"
-        Gateway["gateway<br/>라우팅 · 인증 · 부하분산"]
+        Gateway["gateway<br/>라우팅 · 부하분산"]
     end
 
     subgraph "Backend Services"
@@ -86,7 +86,7 @@ graph TB
     Gateway --> EventBroadcaster
 
     %% 백엔드 라이브러리 의존성
-    Gateway --> Auth
+    Gateway --> Activity
     Login --> Auth
     Login --> Workspace
     Login --> PostgreSQL
@@ -115,7 +115,7 @@ graph TB
     Event --> Schema
 ```
 
-> **모든 프론트엔드 요청은 Gateway를 경유한다.** 실선(→)은 컴파일 의존, 점선(-..->)은 런타임 HTTP 호출을 나타낸다. Gateway가 인증 검증, 서비스 라우팅, 부하분산을 일원화하여 백엔드 서비스는 비즈니스 로직에만 집중한다. 각 백엔드 서비스는 독립 배포·스케일링이 가능하며, Assistant처럼 LLM 호출로 지연이 큰 서비스도 별도 인스턴스로 수평 확장할 수 있다.
+> **모든 프론트엔드 요청은 Gateway를 경유한다.** 실선(→)은 컴파일 의존, 점선(-..->)은 런타임 HTTP 호출을 나타낸다. Gateway가 서비스 라우팅과 부하분산을 일원화하여 백엔드 서비스는 비즈니스 로직에만 집중한다. 인증 검증은 각 백엔드 서비스가 authentication 모듈을 통해 자체 수행한다. 각 백엔드 서비스는 독립 배포·스케일링이 가능하며, Assistant처럼 LLM 호출로 지연이 큰 서비스도 별도 인스턴스로 수평 확장할 수 있다.
 
 ## 모바일 지원 전략
 
@@ -282,7 +282,7 @@ workspace, schema, document → (독립, 상호 의존 없음)
 
 ### 5. Gateway 모듈
 
-**역할:** API Gateway. 여러 백엔드 서비스로부터 메뉴를 병렬 수집한다.
+**역할:** API Gateway. 경로 패턴·HTTP 메서드 기반으로 8개 백엔드 서비스에 라우팅하고, 메뉴를 병렬 수집한다. OAuth2 콜백(`/oauth2/**`, `/login/**`)도 login 서비스로 프록시한다.
 
 **설계 결정:**
 
@@ -298,9 +298,9 @@ workspace, schema, document → (독립, 상호 의존 없음)
 | CorrelationIdFilter (HIGHEST_PRECEDENCE) | X-Correlation-Id UUID 생성/전파 + MDC 로깅 (7.4 관측성) |
 | CircuitBreaker + FallbackController | assistant, event-broadcaster 장애 시 빈 응답 반환 (7.3 회복성) |
 
-**의존성:** activity (Menu 도메인), Spring WebFlux, Spring Cloud CircuitBreaker
+**의존성:** activity (Menu 도메인, gwt-servlet-jakarta 제외), Spring Cloud Gateway Server WebFlux, Spring Cloud CircuitBreaker
 
----
+> **참고:** Gateway는 순수 프록시로서 authentication 모듈에 의존하지 않는다. 인증 검증은 각 백엔드 서비스가 자체 수행한다.
 
 ---
 
@@ -865,7 +865,7 @@ client/
 **에이전트는 "세 번째 협업자"** — 에이전트의 커맨드는 다른 도메인 이벤트(DOCUMENT_CREATED, TYPE_CREATED 등)와 동일한 Kafka 채널("handbook-events")을 통해 AGENT_COMMAND 타입으로 발행된다. event-broadcaster가 이를 워크스페이스별 SSE(`/workspace/{id}/messages`)로 브로드캐스트하므로, 에이전트 전용 SSE 엔드포인트가 불필요하다. 워크스페이스의 모든 멤버가 에이전트의 작업 과정을 실시간으로 관찰할 수 있다.
 
 Assistant는 실제 데이터 변경을 직접 수행하지 않는다. `mutate` 단계에서 **Gateway를 경유하여 기존 REST API를 호출**한다. 이로써:
-- 인증/인가가 Gateway에서 일원화된다
+- 인증/인가가 각 백엔드 서비스에서 일관되게 적용된다
 - Assistant가 별도 DB 접근 없이 순수 오케스트레이션에 집중한다
 - LLM 호출 지연이 큰 Assistant를 독립적으로 수평 확장할 수 있다
 - Assistant를 교체하거나 여러 버전을 병렬 운영할 수 있다 (A/B 테스트)
@@ -937,7 +937,7 @@ sequenceDiagram
 
 | 결정 | 이유 |
 |------|------|
-| Gateway 경유로 기존 API 호출 | 인증/인가 일원화 + 별도 데이터 경로 없이 일관성 보장 |
+| Gateway 경유로 기존 API 호출 | 라우팅 일원화 + 별도 데이터 경로 없이 일관성 보장. 인증/인가는 각 백엔드 서비스가 수행 |
 | Assistant 자체는 DB 접근 없음 | 순수 오케스트레이션 — LLM 호출 + 커맨드 생성에 집중 |
 | 독립 서비스로 배포 | LLM 지연이 큰 워크로드를 별도 스케일링, 다른 서비스에 영향 없음 |
 | Kafka 이벤트로 커맨드 브로드캐스트 | 워크스페이스 이벤트 채널을 공유하여 에이전트를 "세 번째 협업자"로 통합. 별도 SSE 엔드포인트 불필요 |
@@ -945,7 +945,7 @@ sequenceDiagram
 | Sinks.One 기반 응답 대기 | AWAIT_CONFIRM 시 커맨드 스트림을 일시정지하고, POST /assistant/respond로 사용자 응답이 도착하면 재개 또는 취소 |
 | attention 커맨드를 범용 메커니즘으로 | 에이전트 외에 온보딩, 경고, 협업 공유에도 동일 프로토콜 사용 |
 | 대화형 워크스페이스 설계 | 비개발자가 자연어로 시스템 구조를 설명하면 타입 구조 제안 |
-| 워크스페이스 권한 그대로 적용 | Gateway가 인증 검증 — 자연어 요청이라도 권한 밖 작업 거부 |
+| 워크스페이스 권한 그대로 적용 | 각 백엔드 서비스가 인증 검증 — 자연어 요청이라도 권한 밖 작업 거부 |
 
 **에이전트 UX 원칙:** 기술적으로는 Kafka 이벤트이지만, 프론트엔드에서 각 커맨드를 시각적으로 실행하여 **"동료가 내 화면을 대신 조작해주는 느낌"**을 제공한다:
 - `navigate` → 화면 전환 애니메이션 (페이드아웃 인디케이터, 모듈 로딩)

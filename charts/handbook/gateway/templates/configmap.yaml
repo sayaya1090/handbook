@@ -91,7 +91,7 @@ data:
     cors:
       allowed-origins: "https://{{ .Values.host | default "handbook.sayaya.cloud" }}"
     # management / logging / metrics 는 observability fragment 에서 import 됨
-    # 백엔드 라우팅 대상. spring.cloud.gateway.routes[*].uri 가 ${gateway.routes.<id>} 로 참조.
+    # 백엔드 라우팅 대상. spring.cloud.gateway.server.webflux.routes[*].uri 가 ${gateway.routes.<id>} 로 참조.
     # 새 서비스 추가 시 이 키만 갱신하면 reloader 가 핫 리로드.
     gateway:
       routes:
