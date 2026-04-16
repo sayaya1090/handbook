@@ -62,3 +62,7 @@ services:
     kind: frontend
     color: teal
     stages: [dev, staging, prod]
+  - name: agent-ui
+    kind: frontend
+    color: lime
+    stages: [dev, staging, prod]
