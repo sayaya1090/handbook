@@ -4,6 +4,9 @@
     display: flex; justify-content: center; align-items: center;
     padding: 16px 24px 24px; z-index: 9998;
     pointer-events: none;
+    transition-property: background-color, color, border-color, box-shadow, fill, stroke;
+    transition-duration: 600ms;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 .agent-input-wrapper {
     display: flex; align-items: center; gap: 8px;
@@ -11,7 +14,10 @@
     background: var(--md-sys-color-surface-container-low, white); border-radius: 28px;
     padding: 6px 6px 6px 24px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-    pointer-events: auto; transition: box-shadow 0.2s;
+    pointer-events: auto;
+    transition-property: background-color, color, border-color, box-shadow, fill, stroke;
+    transition-duration: 600ms;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 .agent-input-wrapper:focus-within { box-shadow: 0 6px 32px color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent), 0 0 0 2px var(--md-sys-color-primary); }
 .agent-input-field {
@@ -21,12 +27,20 @@
 }
 .agent-input-field::placeholder { color: var(--md-sys-color-outline, #999); }
 .agent-input-field:disabled { color: var(--md-sys-color-on-surface-variant, #888); }
+.agent-input-field {
+    transition-property: background-color, color;
+    transition-duration: 600ms;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
 .agent-input-send, .agent-input-abort {
     display: flex; align-items: center; justify-content: center;
     padding: 10px 20px; border-radius: 22px;
     font-size: 14px; font-weight: 600;
     cursor: pointer; user-select: none;
-    transition: background 0.15s, transform 0.1s; white-space: nowrap;
+    transition-property: background-color, color, box-shadow, transform;
+    transition-duration: 600ms, 600ms, 600ms, 0.1s;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+    white-space: nowrap;
 }
 .agent-input-send { background: var(--md-sys-color-primary, #2196F3); color: var(--md-sys-color-on-primary, white); }
 .agent-input-send:hover { filter: brightness(0.9); }
