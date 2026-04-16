@@ -1,7 +1,7 @@
 # Agent-UI 모듈
 
 에이전트(AI 비서) 프론트엔드 UI (GWT). 워크스페이스 SSE(`/workspace/{id}/messages`)에서 AGENT_COMMAND 이벤트를 필터링하여 커맨드를 수신하고, 커맨드 타입별 핸들러가
-화면에 시각적 피드백을 제공한다. Shell이 `app` 모듈에서 함께 컴파일하여 실행한다.
+화면에 시각적 피드백을 제공한다. shell-ui 와 독립된 GWT 모듈로 컴파일되며, app.html 이 `agent/agent.nocache.js` 를 별도 `<script>` 로 로드한다. shell-ui 와의 통신은 agent-bridge 모듈의 window 브릿지(`WindowProgressBridge`, `WindowUriBridge`, `WindowLabelBridge`)를 통해 이루어진다.
 
 ## 아키텍처
 

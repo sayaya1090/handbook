@@ -1,59 +1,36 @@
 # App 모듈
 
-Shell-UI와 Agent-UI를 하나의 GWT 애플리케이션으로 조합하는 Composition Root.
-비즈니스 로직 없이 Dagger Component 정의와 EntryPoint만 포함한다.
+정적 자산 호스트. HTML, CSS, vendor JS, i18n 만 포함한다. GWT 컴파일 없음. Java 코드 없음 (`plugins { war }` 만 적용).
+
+shell-ui 와 agent-ui 는 각각 독립 GWT 모듈로 컴파일·S3 배포되며, `app.html` 이 `shell/shell.nocache.js` + `agent/agent.nocache.js` 를 별도 `<script>` 로 로드한다. 모듈 간 통신은 agent-bridge 의 window 브릿지(`WindowProgressBridge`, `WindowUriBridge`, `WindowLabelBridge`)를 통해 이루어진다.
 
 ## 구조
 
 ```
-client/
-├── Component        Dagger 컴포넌트 (Shell + Agent 모듈 조합)
-└── Application      GWT EntryPoint — 각 Initializer.initialize() 호출
+src/main/webapp/
+├── app.html               # 엔트리 HTML — shell·agent nocache.js 로드
+├── css/                    # 전역 스타일시트
+├── js/                     # vendor JS + 머지된 i18n (language.{locale}.json)
+├── manifest.json           # PWA 매니페스트
+└── service-worker.js       # 정적 리소스 캐싱
 ```
 
-## 조합 패턴
+## 빌드
 
-```java
-Component component = DaggerComponent.create();
-component.shell().initialize();   // Shell이 자기 DOM 배치
-component.agent().initialize();   // Agent가 자기 DOM 배치
+```bash
+# i18n 머지 + WAR 패키징
+./gradlew :app:war
 ```
 
-각 모듈의 Initializer가 `body()`에 자기 요소를 직접 배치한다.
-App은 내부 구조를 알 필요 없다.
+## CI/배포
 
-## 공유 상태
-
-Shell-UI와 Agent-UI는 서로 직접 의존하지 않는다.
-`HostSharedModule`의 `BehaviorSubject`를 통해 연결된다:
-
-| 공유 상태 | 용도 |
-|-----------|------|
-| `Observable<Progress>` | API 로딩 + 에이전트 진행률 → 프로그레스 바 |
-| `Observable<String> uri` | NavigateHandler → Shell 라우팅 |
-| `Observable<Render>` | 도구 선택 → 프레임 렌더링 |
-
-## 새 feature 모듈 추가 시
-
-1. `Component.java`에 해당 모듈의 Dagger Module 추가
-2. `Component` 인터페이스에 `XxxInitializer` 노출
-3. `Application.java`에서 `component.xxx().initialize()` 호출
+`app-deploy.yaml` 워크플로가 HTML/CSS/i18n 변경 시 트리거된다. GWT 모듈(`_frontend-deploy.yaml`)과는 별도 파이프라인이다.
 
 ## PWA 지원
 
 - `manifest.json`: PWA 매니페스트 (아이콘, 테마 등)
 - `service-worker.js`: 정적 리소스 캐싱 (manifest.json 등)
 - `app.html`에서 서비스 워커 자동 등록
-
-## 실행
-
-```bash
-# DevMode
-./gradlew :app:gwtDev
-
-# 컴파일
-./gradlew :app:compileGwt
-```
 
 ## 개발 환경
 

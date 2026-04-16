@@ -54,7 +54,7 @@ Handbook은 **운영 중 스키마 변경과 이력 관리를 지원하면서 �
 | **document-ui** | 스프레드시트 기반 문서 편집기 (GWT, Handsontable) |
 | **dashboard-ui** | 워크스페이스 대시보드 UI (GWT) — 통계, 품질 현황, 에이전트 활동 |
 | **e2e** | Playwright 기반 E2E 통합 테스트 |
-| **app** | 조합 루트 — Shell-UI, Agent-UI 등 프론트엔드 모듈을 하나의 GWT 애플리케이션으로 조합 |
+| **app** | 정적 자산 호스트 — HTML, CSS, vendor JS, i18n 만 포함. GWT 컴파일 없음. shell-ui·agent-ui 는 각각 독립 GWT 모듈로 컴파일·배포(S3)되며, app.html 이 두 nocache.js 를 별도 `<script>` 로 로드 |
 
 ## 2. 도메인 모델
 
@@ -1385,6 +1385,7 @@ seq  type           payload
 
 - Kubernetes 환경에 배포한다.
 - Helm Chart를 통해 인프라를 관리한다.
+- 프론트엔드 GWT 모듈(shell-ui, agent-ui)은 각각 독립적으로 S3에 배포하며, 모듈별 전용 CI 워크플로와 Kargo warehouse/stage를 갖는다. app 모듈(HTML/CSS/i18n)은 별도 CI 워크플로로 배포한다.
 
 ## 6. 추가 구현 요구사항
 

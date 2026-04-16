@@ -562,26 +562,30 @@ client/
 
 ### 12. App 모듈
 
-**역할:** 조합 루트(Composition Root). Shell-UI, Agent-UI 등 프론트엔드 모듈을 하나의 GWT 애플리케이션으로 조합한다. 비즈니스 로직 없이 Dagger Component 정의와 EntryPoint만 포함한다.
+**역할:** 정적 자산 호스트. HTML, CSS, vendor JS, i18n 만 포함한다. GWT 컴파일은 하지 않으며 Java 코드가 없다(`plugins { war }` 만 적용). shell-ui 와 agent-ui 는 각각 독립 GWT 모듈로 컴파일·S3 배포되며, `app.html` 이 `shell/shell.nocache.js` + `agent/agent.nocache.js` 를 별도 `<script>` 로 로드한다.
 
-**계층 구조:**
+**구성:**
 
 ```
-client/
-├── Component        Dagger 컴포넌트 (Shell + Agent 모듈 조합)
-└── Application      GWT EntryPoint — 각 Initializer.initialize() 호출
+src/main/webapp/
+├── app.html               # 엔트리 HTML — shell·agent nocache.js 로드
+├── css/                    # 전역 스타일시트
+├── js/                     # vendor JS + 머지된 i18n (language.{locale}.json)
+├── manifest.json           # PWA 매니페스트
+└── service-worker.js       # 정적 리소스 캐싱
 ```
+
+**CI/배포:** `app-deploy.yaml` 워크플로 (HTML/CSS/i18n 변경 시 트리거). `_frontend-deploy.yaml` 과 별도.
 
 **설계 결정:**
 
 | 결정 | 이유 |
 |------|------|
-| 조합 전용 모듈 분리 | Shell-UI와 Agent-UI 간 직접 의존 제거. 각 모듈은 라이브러리로 독립 |
-| Initializer 퍼사드 패턴 | App은 각 모듈의 initialize() 한 줄씩만 호출. 내부 구조를 알 필요 없음 |
-| HostSharedModule 공유 | BehaviorSubject를 통해 모듈 간 공유 상태(Progress, URI) 연결 |
-| 새 feature 모듈 추가 용이 | login-ui 등 추가 시 App의 Component + Application만 수정 |
+| GWT 컴파일 제거, 정적 자산 전용 | shell-ui·agent-ui 가 독립 모듈로 분리되어 app 이 조합할 대상이 없음 |
+| 모듈별 독립 S3 배포 | 각 GWT 모듈이 자체 CI·Kargo warehouse/stage 를 가져 독립 릴리스 가능 |
+| window 브릿지 통신 | Java 레벨 인터페이스 공유 불가 → agent-bridge 모듈의 window 브릿지로 대체 |
 
-**의존성:** activity, shell-ui, agent-ui, sayaya-ui, sayaya-rx, Elemento, Dagger
+**의존성:** 없음 (빌드 시 i18n 머지만 수행)
 
 ---
 
