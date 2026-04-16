@@ -18,14 +18,11 @@ dependencies {
 }
 
 tasks {
-    jar {
-        enabled = false
-    }
     war {
         // GWT 컴파일 출력(build/gwt/war/shell) 을 WAR 루트에 포함.
         // app.html 이 참조하는 shell/shell.nocache.js 경로와 일치.
         dependsOn("gwtCompile")
-        from("build/gwt/war")
+        from("build/gwt/war") { into("js") }
         archiveFileName.set("shell-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
