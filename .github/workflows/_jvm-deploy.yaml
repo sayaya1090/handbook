@@ -47,5 +47,6 @@ jobs:
           ./gradlew $SUBMODULE:jib \
             -Djib.from.image=$BASE_IMAGE \
             -Djib.to.image=$IMAGE:$SHORT_SHA \
+            -Djib.container.creationTime=USE_CURRENT_TIMESTAMP \
             -Djib.allowInsecureRegistries=true \
             -Djib.console=plain
