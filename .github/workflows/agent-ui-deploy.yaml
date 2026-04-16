@@ -1,11 +1,8 @@
-name: App 모듈 빌드
+name: 에이전트 UI 모듈 빌드
 on:
   push:
     paths:
-      - app/**
-      - shell-ui/**
       - agent-ui/**
-      - agent-bridge/**
   workflow_dispatch:
 permissions:
   contents: write  # reusable 이 gh release create 로 prerelease 를 만든다
@@ -13,5 +10,5 @@ jobs:
   build:
     uses: ./.github/workflows/_frontend-deploy.yaml
     with:
-      submodule: app
+      submodule: agent-ui
     secrets: inherit

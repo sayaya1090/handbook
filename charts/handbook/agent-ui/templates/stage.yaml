@@ -1,0 +1,42 @@
+{{- if and .Values.stage.name (eq .Values.stage.name "dev") }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: agent-ui-{{ .Values.stage.name }}
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.stage.color }}
+spec:
+  vars:
+    - name: bucket
+      value: handbook-{{ .Values.stage.name }}
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: agent-ui
+      sources:
+        {{- if .Values.stage.prev }}
+        direct: false
+        stages:
+          - agent-ui-{{ .Values.stage.prev }}
+        {{- else }}
+        direct: true
+        {{- end }}
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: argocd-update
+          as: sync
+          config:
+            apps:
+              - name: handbook-agent-ui-{{ .Values.stage.name }}
+                sources:
+                  - repoURL: https://github.com/sayaya1090/handbook.git
+                    helm:
+                      images:
+                        - key: freight.commit
+                          value: {{ printf `${{ commitFrom("https://github.com/sayaya1090/handbook.git").ID }}` }}
+                        - key: bucket
+                          value: {{ printf `${{ vars.bucket }}` }}
+{{- end }}

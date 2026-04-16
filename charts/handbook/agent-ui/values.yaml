@@ -1,0 +1,19 @@
+color: ""
+
+stage:
+  name: ""
+  color: ""
+  prev: ""
+
+host: ""
+
+freight:
+  commit: ""
+
+bucket: ""
+
+release:
+  repo: sayaya1090/handbook
+  asset: agent-ui.tar.gz
+s3:
+  endpoint: https://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc/
