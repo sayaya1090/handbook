@@ -127,6 +127,11 @@
         display: flex;
         align-items: flex-end;
         justify-content: center;
+        /* 비어 있을 때 클릭 통과 — 다이얼로그가 없으면 전체 화면을 덮어도 투명 */
+        pointer-events: none;
+    }
+    .ui-confirm-wrapper > * {
+        pointer-events: auto;
     }
     .ui-confirm-dialog,
     .agent-confirm-dialog {
