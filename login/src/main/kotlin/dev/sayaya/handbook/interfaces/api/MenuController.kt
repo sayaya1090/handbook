@@ -24,7 +24,7 @@ class MenuController {
             .order("Z")
             .icon("fa-right-to-bracket")
             .iconType("sharp")
-            .script("js/login.nocache.js")
+            .script("js/login/login.nocache.js")
             .bottom(true)
             .build()
 
@@ -33,7 +33,7 @@ class MenuController {
             .order("Z")
             .icon("fa-right-from-bracket")
             .iconType("sharp")
-            .script("js/logout.nocache.js")
+            .script("js/logout/logout.nocache.js")
             .bottom(true)
             .build()
     }
