@@ -221,19 +221,20 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
-        // UC-S13 (모바일) + UC-S15 (ThemeToggle): bottom-nav 모드에서도 테마 토글이 숨겨지지 않는다.
-        // 실제 상태 기계(DrawerMode.OVERLAY 전환) 와 무관하게 CSS 규칙만 검증 — 레일에 [bottom-nav]
-        // 속성을 직접 부착해 계산 스타일을 확인한다. 앞선 URL 클릭들로 남은 [hide] 등 다른 상태
-        // 속성은 일시 제거해 격리시킨 뒤 원복한다.
-        Then("bottom-nav 속성이 부착된 레일에서도 테마 토글의 display 가 none 이 아니다") {
+        // UC-S13 (모바일) + UC-S15 (ThemeToggle): mobile 모드에서도 테마 토글이 숨겨지지 않는다.
+        // 실제 상태 기계(DrawerMode.OVERLAY 전환) 와 무관하게 CSS 규칙만 검증 — 레일에 [mobile]
+        // 속성을 직접 부착해 계산 스타일을 확인한다. 앞선 URL 클릭들로 남은 상태 속성은 일시
+        // 제거해 격리시킨 뒤 원복한다.
+        Then("mobile 속성이 부착된 레일에서도 테마 토글의 display 가 none 이 아니다") {
             val priorAttrs = page.evaluate(
                 """
                 (() => {
                     const r = document.querySelector('.rail:first-child');
-                    const prior = ['expand','collapse','hide','bottom-nav']
+                    const prior = ['expand','collapse','hide','mobile']
                         .filter(a => r.hasAttribute(a));
                     prior.forEach(a => r.removeAttribute(a));
-                    r.setAttribute('bottom-nav', 'true');
+                    r.setAttribute('mobile', 'true');
+                    r.setAttribute('expand', 'true');
                     return JSON.stringify(prior);
                 })()
                 """.trimIndent()
@@ -245,7 +246,8 @@ internal class DrawerTest: GwtTestSpec({
                 """
                 (() => {
                     const r = document.querySelector('.rail:first-child');
-                    r.removeAttribute('bottom-nav');
+                    r.removeAttribute('mobile');
+                    r.removeAttribute('expand');
                     JSON.parse('$priorAttrs').forEach(a => r.setAttribute(a, 'true'));
                 })()
                 """.trimIndent()
@@ -254,25 +256,37 @@ internal class DrawerTest: GwtTestSpec({
         }
 
         // UC-S13: 모바일 뷰포트로 실시간 전환 — ViewportObserver 가 matchMedia 리스너로 감지
-        // 해서 MenuRailMode/ToolRailMode 가 BOTTOM_NAV / HORIZONTAL_CHIPS 로 전이해야 한다.
-        When("뷰포트를 모바일(375x800) 로 변경하면") {
+        // 해서 양쪽 rail 에 [mobile] 속성이 부여되고 MenuRailMode/ToolRailMode 가 드릴인 패턴으로
+        // 전이한다. 이 블록 앞의 테스트들이 메뉴를 선택해둔 상태(url2 = Menu 2, 도구 2개) 이므로
+        // 리사이즈 시 ToolRail 이 드릴인(EXPAND) 하단 바를 차지하고 MenuRail 은 HIDE 된다.
+        When("뷰포트를 모바일(375x800) 로 변경하면 (이전 테스트에서 도구 2개 메뉴 선택된 상태)") {
             page.setViewportSize(375, 800)
             Thread.sleep(400)
             Then("matchMedia(max-width:768px) 가 true 이다") {
                 val matches = page.evaluate("window.matchMedia('(max-width: 768px)').matches").toString()
                 matches shouldBe "true"
             }
-            Then("첫 번째 rail 에 bottom-nav attribute 가 부착된다") {
-                val attr = page.evaluate(
-                    "document.querySelector('.rail:first-child').getAttribute('bottom-nav')"
+            Then("두 rail 모두 [mobile] 속성이 부착된다 — 레이아웃과 가시성이 직교") {
+                val menuMobile = page.evaluate(
+                    "document.querySelector('.rail:first-child').hasAttribute('mobile')"
                 ).toString()
-                attr shouldNotBe "null"
+                val toolMobile = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].hasAttribute('mobile')"
+                ).toString()
+                menuMobile shouldBe "true"
+                toolMobile shouldBe "true"
             }
-            Then("테마 토글이 bottom-nav 레일 안에서 보인다 (display != none)") {
-                val display = page.evaluate(
-                    "getComputedStyle(document.querySelector('.rail:first-child .item.rail-bottom')).display"
+            Then("드릴인 상태: 두 번째 rail(ToolRail) 이 EXPAND — [expand] 속성 부착") {
+                val hasExpand = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].hasAttribute('expand')"
                 ).toString()
-                display shouldNotBe "none"
+                hasExpand shouldBe "true"
+            }
+            Then("드릴인 상태: 첫 번째 rail(MenuRail) 은 HIDE — [hide] 속성 부착") {
+                val hasHide = page.evaluate(
+                    "document.querySelector('.rail:first-child').hasAttribute('hide')"
+                ).toString()
+                hasHide shouldBe "true"
             }
             // 원복: 이후 테스트들이 desktop 뷰포트에서 돌아가도록 복원
             page.setViewportSize(1280, 720)
@@ -291,6 +305,199 @@ internal class DrawerTest: GwtTestSpec({
                 "getComputedStyle(document.querySelector('.rail:first-child .item.bottom-menu')).order"
             ).toString()
             themeOrder.toInt() shouldBeLessThanOrEqual bottomOrder.toInt() - 1
+        }
+    }
+
+    // UC-S13 (초기 로드): 페이지가 처음부터 모바일 뷰포트에서 로드되는 경우. 실사용 모바일
+    // 브라우저는 desktop 에서 전환되는 게 아니라 로드 시점부터 mobile. ViewportObserver 의
+    // 초기 BehaviorSubject 값이 [mobile] 속성을 즉시 부여하고, MenuRailMode/ToolRailMode 가
+    // EXPAND/HIDE 로 수렴해야 한다. [mobile] 과 [expand/hide] 는 직교 속성.
+    Given("처음부터 모바일 뷰포트(375x800) 로 페이지를 로드하면") {
+        page.setViewportSize(375, 800)
+        page.navigate("file://${java.io.File("src/test/webapp/drawer.html").absolutePath}")
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+        Thread.sleep(500)
+
+        Then("matchMedia(max-width:768px) 가 true 이다") {
+            val matches = page.evaluate("window.matchMedia('(max-width: 768px)').matches").toString()
+            matches shouldBe "true"
+        }
+        Then("두 rail 모두 [mobile] 속성이 부착된다") {
+            val menuMobile = page.evaluate(
+                "document.querySelector('.rail:first-child').hasAttribute('mobile')"
+            ).toString()
+            val toolMobile = page.evaluate(
+                "document.querySelectorAll('.rail')[1].hasAttribute('mobile')"
+            ).toString()
+            menuMobile shouldBe "true"
+            toolMobile shouldBe "true"
+        }
+        Then("첫 번째 rail(MenuRail) 이 [expand] 가시성으로 하단 바를 차지한다") {
+            val hasExpand = page.evaluate(
+                "document.querySelector('.rail:first-child').hasAttribute('expand')"
+            ).toString()
+            hasExpand shouldBe "true"
+        }
+        Then("모바일 [expand] 에서도 .item .collapse (아이콘 버튼) 이 visible 이어야 한다") {
+            // Regression guard: 데스크톱 .rail[expand] .item .collapse { visibility: hidden } 규칙이
+            // 모바일 [mobile][expand] 에도 매칭되면 하단 바의 아이콘이 모두 사라져 빈 버튼만 남는다.
+            // 모바일 전용 override (.rail[mobile][expand] .item .collapse { visibility: visible }) 가
+            // 필요하다.
+            val vis = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child .item .collapse')).visibility"
+            ).toString()
+            vis shouldBe "visible"
+        }
+        Then("모바일 [expand] 에서 .item .collapse 의 가시 크기가 0 보다 크다 (아이콘 렌더 보장)") {
+            // visibility:visible 뿐 아니라 실제 박스 크기도 확인 — 아이콘 fa-light 가 렌더되어야 한다.
+            val box = page.evaluate(
+                """
+                (() => {
+                    const el = document.querySelector('.rail:first-child .item .collapse');
+                    const r = el.getBoundingClientRect();
+                    return r.width + 'x' + r.height;
+                })()
+                """.trimIndent()
+            ).toString()
+            val parts = box.split("x").map { it.toDouble() }
+            (parts[0] > 0.0) shouldBe true
+            (parts[1] > 0.0) shouldBe true
+        }
+        Then("MenuRail 이 화면 하단에 고정된다 (computed position: fixed, bottom: 0)") {
+            val position = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child')).position"
+            ).toString()
+            val bottom = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child')).bottom"
+            ).toString()
+            position shouldBe "fixed"
+            bottom shouldBe "0px"
+        }
+        Then("MenuRail 이 viewport 전체 폭(375px) 을 차지한다 — drawer containing block 에 갇히지 않아야 한다") {
+            // Regression guard: .drawer 에 backdrop-filter 가 있으면 CSS 스펙상 fixed 자손의
+            // containing block 이 되어 자식 .rail[mobile] 의 width:100% 가 drawer 의 폭
+            // (fit-content → 0) 기준으로 계산되어 0px 로 찌그러진다. backdrop-filter 는 desktop
+            // 전용 @media 로만 부여한다 (shell.css).
+            val width = page.evaluate(
+                "document.querySelector('.rail:first-child').getBoundingClientRect().width"
+            ).toString().toDouble()
+            width shouldBe 375.0
+        }
+        Then("메뉴 아이템 클릭이 hit-test 로 수신된다 (elementFromPoint 가 .item 내부 요소)") {
+            // 하단 네비 영역 중앙에서 elementFromPoint 를 호출해 실제 hit target 이
+            // .rail[mobile] 내부의 .item 계열이어야 클릭이 동작한다. scrim 이나 drawer
+            // 가 덮고 있으면 이 검사가 실패한다.
+            val hit = page.evaluate(
+                """
+                (() => {
+                    const rail = document.querySelector('.rail:first-child[mobile]');
+                    if (!rail) return 'no-mobile';
+                    const r = rail.getBoundingClientRect();
+                    const cx = r.left + r.width / 2;
+                    const cy = r.top + r.height / 2;
+                    const el = document.elementFromPoint(cx, cy);
+                    if (!el) return 'null';
+                    return el.closest('.item') ? 'item' : (el.tagName + '.' + (el.className || ''));
+                })()
+                """.trimIndent()
+            ).toString()
+            hit shouldBe "item"
+        }
+        Then("두 번째 rail(ToolRail) 은 초기엔 도구 없음 → [hide] 속성 (단 [mobile] 은 유지)") {
+            // 메뉴 미선택 상태이므로 도구 목록이 비어있고 ToolRail 은 숨겨져야 한다.
+            // [mobile] 은 레이아웃(position:fixed bottom) 을 상시 유지하므로 flash 가 없다.
+            val attrs = page.evaluate(
+                """
+                (() => {
+                    const r = document.querySelectorAll('.rail')[1];
+                    return JSON.stringify({
+                        hide: r.hasAttribute('hide'),
+                        mobile: r.hasAttribute('mobile'),
+                        expand: r.hasAttribute('expand'),
+                        collapse: r.hasAttribute('collapse')
+                    });
+                })()
+                """.trimIndent()
+            ).toString()
+            attrs.contains("\"hide\":true") shouldBe true
+            attrs.contains("\"mobile\":true") shouldBe true
+            attrs.contains("\"expand\":true") shouldBe false
+        }
+
+        // UC-S13: 모바일 드릴인 — 도구가 2개 이상인 메뉴 탭 → ToolRail 이 하단 바 자리를 차지
+        When("도구 2개 메뉴(Menu 2, url=menu2-tool1)로 네비게이트하면") {
+            page.click("#url2")
+            Thread.sleep(500)
+            Then("MenuRail 은 HIDE 된다 — [hide] 속성 부착, [mobile] 유지") {
+                val hasHide = page.evaluate(
+                    "document.querySelector('.rail:first-child').hasAttribute('hide')"
+                ).toString()
+                val hasMobile = page.evaluate(
+                    "document.querySelector('.rail:first-child').hasAttribute('mobile')"
+                ).toString()
+                hasHide shouldBe "true"
+                hasMobile shouldBe "true"
+            }
+            Then("ToolRail 이 드릴인 (EXPAND) 상태 — 두 번째 rail 에 [expand] 속성") {
+                val hasExpand = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].hasAttribute('expand')"
+                ).toString()
+                hasExpand shouldBe "true"
+            }
+            Then("ToolRail 이 viewport 전체 폭(375px)을 차지한다") {
+                val width = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].getBoundingClientRect().width"
+                ).toString().toDouble()
+                width shouldBe 375.0
+            }
+            Then("ToolRail 의 첫 자식이 CloseToolRailButton(← 아이콘) 이다") {
+                val firstId = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].firstElementChild && document.querySelectorAll('.rail')[1].firstElementChild.id"
+                ).toString()
+                firstId shouldBe "close-tool-rail"
+            }
+            Then("드릴인 ToolRail 의 아이템 .collapse 아이콘이 visible 이어야 한다") {
+                // 드릴인 중에도 하단 바 아이콘이 사라지지 않아야 한다. CloseToolRailButton 과
+                // 도구 아이템들이 모두 .collapse 슬롯으로 렌더되므로 .collapse 의 가시성을 체크.
+                val vis = page.evaluate(
+                    "getComputedStyle(document.querySelectorAll('.rail')[1].querySelector('.item .collapse')).visibility"
+                ).toString()
+                vis shouldBe "visible"
+            }
+            Then("한 번에 한 rail 만 [expand] — MenuRail 과 ToolRail 이 상호 배타적") {
+                val expandedCount = page.evaluate(
+                    "document.querySelectorAll('.rail[mobile][expand]').length"
+                ).toString()
+                expandedCount shouldBe "1"
+            }
+        }
+
+        // UC-S13: 모바일 드릴백 — CloseToolRailButton 클릭 → MenuRail 복귀
+        When("← 버튼(CloseToolRailButton) 을 탭하면") {
+            page.click("#close-tool-rail")
+            Thread.sleep(500)
+            Then("MenuRail 이 다시 EXPAND 로 복귀한다 — 첫 번째 rail 에 [expand] 속성") {
+                val hasExpand = page.evaluate(
+                    "document.querySelector('.rail:first-child').hasAttribute('expand')"
+                ).toString()
+                hasExpand shouldBe "true"
+            }
+            Then("ToolRail 은 다시 HIDE 된다 — [hide] 속성, [mobile] 은 유지") {
+                val hasHide = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].hasAttribute('hide')"
+                ).toString()
+                val hasMobile = page.evaluate(
+                    "document.querySelectorAll('.rail')[1].hasAttribute('mobile')"
+                ).toString()
+                hasHide shouldBe "true"
+                hasMobile shouldBe "true"
+            }
+            Then("MenuRail 이 다시 viewport 전체 폭(375px)을 차지한다") {
+                val width = page.evaluate(
+                    "document.querySelector('.rail:first-child').getBoundingClientRect().width"
+                ).toString().toDouble()
+                width shouldBe 375.0
+            }
         }
     }
 })

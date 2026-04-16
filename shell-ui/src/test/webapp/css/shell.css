@@ -24,7 +24,12 @@ body,
     background-color: color-mix(in srgb, var(--md-sys-color-surface-container-high) 60%, transparent);
     border-top-right-radius: 0rem;
     border-bottom-right-radius: 0rem;
-    backdrop-filter: blur(5px);
+    /* backdrop-filter 는 desktop 전용 — @media (min-width: 769px) 에서 부여한다.
+       CSS 스펙상 non-none backdrop-filter 는 해당 element 를 position:fixed 자손의
+       containing block 으로 만든다. 모바일에서 자식 .rail[bottom-nav] 의 width:100% 가
+       viewport 가 아닌 drawer (width: fit-content = 0) 기준으로 계산되어 하단 네비가
+       0px 로 찌그러지는 버그가 있었다. 모바일 drawer 는 HIDE/OVERLAY 로만 쓰이므로
+       backdrop blur 가 필요하지 않다. */
     display: flex;
     width: fit-content;
     height: 100dvh;
@@ -322,8 +327,13 @@ body,
     to   { transform: translateX(0); }
 }
 
-/* ── Bottom navigation bar ── */
-.rail[bottom-nav] {
+/* ── Mobile bottom-navigation bar ── */
+/* .rail[mobile] 은 뷰포트가 모바일일 때 ViewportObserver 가 부여하는 속성이다.
+   visibility 상태 (expand/collapse/hide) 와 직교하며, 부여되는 즉시 rail 레이아웃을
+   하단 고정 바 형태로 바꾼다 — 이 고정 포지션은 visibility 와 무관하게 상시 유지되므로
+   drill-in 시 좌측 컬럼 → 하단 바로 "이동"하는 flash 가 사라진다. 대신 [expand] 유무가
+   translateY/opacity 로 표현되어 아래에서 위로 slide (MD3 emphasized-decelerate) 된다. */
+.rail[mobile] {
     position: fixed;
     bottom: 0; left: 0; right: 0;
     width: 100%;
@@ -338,8 +348,24 @@ body,
     border-top: 1px solid var(--md-sys-color-outline-variant);
     padding: 0;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* base .rail 의 width 트랜지션을 무효화하고 대신 transform/opacity 트랜지션을 쓴다. */
+    transition: transform var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1)),
+                opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.05,.7,.1,1));
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
 }
-.rail[bottom-nav] .item {
+/* 모바일에서 hide 상태는 width:0 대신 slide-down + opacity 0 으로 처리. [mobile] 의 fixed
+   포지션은 유지되어 flash 가 없다. display:none 대신 pointer-events:none 으로 접근성
+   제거 + 애니메이션 재생 가능. */
+.rail[mobile][hide] {
+    width: 100%;
+    padding-top: 0 !important;
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+.rail[mobile] .item {
     flex: 1;
     min-width: 64px;
     max-width: 96px;
@@ -348,54 +374,45 @@ body,
     justify-content: center;
     padding: 4px 0;
 }
-.rail[bottom-nav] .item .collapse {
+.rail[mobile] .item .collapse {
     margin: 4px auto;
 }
-.rail[bottom-nav] .item .expand {
+.rail[mobile] .item .expand {
     display: none;
 }
-.rail[bottom-nav] .item[selected] .collapse {
+.rail[mobile] .item[selected] .collapse {
     padding: 4px 16px;
 }
-
-/* ── Horizontal chips (tool rail on mobile) ──
-   pointer-events: 컨테이너 빈 여백은 통과시키고 .item 에서만 포인터를 받는다.
-   그렇지 않으면 chips 바 위에 떠 있는 AgentInput 같은 상위 z-index 요소 영역이
-   시각적으로는 비어 있어도 터치가 chips 컨테이너에 가로채여 입력 포커스를 잃는다. */
-.rail[horizontal-chips] {
-    position: fixed;
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-    left: 0; right: 0;
+/* 모바일에서는 expand/collapse 자체를 width 가 아닌 visibility 로만 다룬다 — 상시 fixed
+   하단 바 레이아웃. base .rail 의 width:0 규칙도 mobile 에서는 무시. */
+.rail[mobile][expand],
+.rail[mobile][collapse] {
     width: 100%;
-    height: auto;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    z-index: 999;
-    background: var(--md-sys-color-surface-container-low);
-    border-top: 1px solid var(--md-sys-color-outline-variant);
-    padding: 4px 8px;
-    gap: 8px;
-    pointer-events: none;
-}
-.rail[horizontal-chips] .item {
-    flex: 0 0 auto;
-    flex-direction: row;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     align-items: center;
-    padding: 6px 12px;
-    border-radius: var(--md-sys-shape-corner-small, 8px);
-    background: var(--md-sys-color-surface-container);
-    pointer-events: auto;
 }
-.rail[horizontal-chips] .item .expand {
+/* desktop 전용 좌측 구분선 — 모바일 하단 바에서는 불필요하며, 1px border 가 100% 폭에
+   더해져 viewport(375px) 를 초과하므로 제거한다. */
+.rail[mobile][expand]:not(:first-of-type) {
+    border-left: none;
+}
+/* 데스크톱 [expand] 모드에선 md-item (`.expand` slot) 을 쓰므로 `.collapse` 를 숨기지만,
+   모바일 하단 바에선 반대로 `.collapse` 아이콘 버튼이 유일한 시각 표현이다. 데스크톱
+   규칙을 되돌려 `.collapse` 를 노출시키고 `.expand` 를 숨긴다. */
+.rail[mobile][expand] .item .collapse {
+    position: static;
+    visibility: visible;
+}
+.rail[mobile][expand] .item .expand {
     display: none;
 }
-.rail[horizontal-chips] .item .collapse {
-    margin: 0 4px 0 0;
-}
-.rail[horizontal-chips] .item[selected] .collapse {
-    padding: 4px 12px;
+
+/* ── Desktop only: drawer backdrop blur ── */
+@media (min-width: 769px) {
+    .drawer {
+        backdrop-filter: blur(5px);
+    }
 }
 
 /* ── Mobile responsive ── */

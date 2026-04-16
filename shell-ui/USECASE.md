@@ -246,44 +246,63 @@ sequenceDiagram
 | **정상 흐름** | 1. `MenuApi`/`UserApi`가 API 호출 시 `Observer<Progress>`에 `Progress.indeterminate()`를 발행한다.<br>2. `ProgressElement`가 구독하여 프로그레스 바를 표시한다.<br>3. 응답 수신 시 `Progress.hide()`를 발행하여 숨긴다.<br>4. 에이전트의 `ProgressHandler`도 동일한 `Observer<Progress>`를 사용하여 진행률 표시. |
 | **특이사항** | API 로딩과 에이전트 진행률이 단일 프로그레스 바를 공유한다. |
 
-## 모바일 Drawer 전환 시퀀스
+## 모바일 Drawer 전환 시퀀스 (드릴인 패턴)
+
+모바일에서는 하단 바 한 줄을 컨텍스트에 따라 스왑한다: 평소에는 `MenuRail` 을 하단
+네비게이션으로 보여주고, 도구가 2개 이상인 메뉴를 탭하면 같은 자리에서 `ToolRail`
+(← 아이콘 포함) 로 교체된다. 돌아가기는 `CloseToolRailButton` 이 `MenuSelected` 를
+초기화해 도구 목록을 비워서 다시 `MenuRail` 이 올라오게 한다.
 
 ```mermaid
 sequenceDiagram
     actor User as 사용자 (모바일)
     participant VP as ViewportObserver
+    participant MS as MenuSelected
+    participant TL as ToolList
     participant DM as DrawerMode
     participant MRM as MenuRailMode
     participant TRM as ToolRailMode
-    participant Drawer as DrawerElement
     participant MR as MenuRailElement
     participant TR as ToolRailElement
+    participant Close as CloseToolRailButton
 
-    Note over VP: 뷰포트 < 768px 감지
-    VP->>DM: next(OVERLAY)
-    DM-->>Drawer: 오버레이 모드 (배경 딤 + position: fixed)
-    DM-->>MRM: BOTTOM_NAV 전환
-    MRM-->>MR: 하단 네비게이션 바 렌더링
-    DM-->>TRM: HORIZONTAL_CHIPS 전환
-    TRM-->>TR: 수평 칩 바 렌더링
+    Note over VP: 뷰포트 < 768px 감지 (또는 초기 로드)
+    VP->>DM: next(HIDE)
+    VP->>MR: setAttribute(mobile) — 레이아웃 고정
+    VP->>TR: setAttribute(mobile) — 레이아웃 고정
+    VP->>MRM: mobile=true → EXPAND (tools ≤ 1)
+    VP->>TRM: mobile=true → HIDE (tools ≤ 1)
+    MRM-->>MR: expand() → [mobile][expand] 하단 바에 메뉴 렌더
 
-    User->>MR: 메뉴 탭
-    MR->>DM: next(HIDE)
-    DM-->>Drawer: 자동 닫힘
+    User->>MR: 도구가 여러 개인 메뉴 탭
+    MR->>MS: next(menu)
+    MS->>TL: 도구 목록 갱신 (size > 1)
+    TL-->>MRM: tools>1 → HIDE
+    TL-->>TRM: tools>1 → EXPAND
+    MRM-->>MR: hide() → [mobile][hide] (translateY 100%, opacity 0)
+    TRM-->>TR: expand() → [mobile][expand] (translateY 0, opacity 1)
+    Note over TR: 첫 아이템으로 CloseToolRailButton(←) 포함
 
-    User->>Drawer: 왼쪽 가장자리 스와이프 →
-    Drawer->>DM: next(OVERLAY)
-    DM-->>Drawer: 오버레이 열림
+    User->>Close: ← 탭
+    Close->>MS: next(null)
+    MS->>TL: 도구 목록 clear
+    TL-->>MRM: tools≤1 → EXPAND
+    TL-->>TRM: tools≤1 → HIDE
+    MRM-->>MR: expand() → [mobile][expand] 복귀
 ```
 
-## UC-S13: 모바일 반응형 레이아웃
+## UC-S13: 모바일 반응형 레이아웃 (단일 하단 바 드릴인)
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 (모바일/태블릿 디바이스) |
 | **선행조건** | 뷰포트 너비 < 768px |
-| **정상 흐름** | 1. `ViewportObserver`가 뷰포트 변경을 감지하여 `DrawerMode`에 `OVERLAY`를 발행한다.<br>2. `MenuRailMode`가 `BOTTOM_NAV`로 전환되어 하단 네비게이션 바를 렌더링한다.<br>3. `ToolRailMode`가 `HORIZONTAL_CHIPS`로 전환되어 수평 칩 바를 렌더링한다.<br>4. 메뉴 선택 시 Drawer가 자동으로 닫힌다.<br>5. Frame 영역이 전체 뷰포트를 차지한다. |
-| **터치 지원** | 화면 왼쪽 가장자리에서 오른쪽으로 스와이프하여 Drawer를 열 수 있다. |
+| **레이아웃 모델** | 뷰포트(모바일/데스크톱) 와 가시성(expand/collapse/hide) 을 두 축으로 분리. `ViewportObserver` 는 양쪽 rail 에 `[mobile]` 속성을 상시 부여해 `position: fixed; bottom: 0; width: 100%` 레이아웃을 고정시키고, 상태 머신(`MenuRailMode`/`ToolRailMode`) 은 `EXPAND/COLLAPSE/HIDE` 가시성만 다룬다. |
+| **정상 흐름 (MenuRail)** | 1. `ViewportObserver` 가 `mobile=true` 를 발행하면 두 rail 에 `[mobile]` 속성이 붙는다.<br>2. `MenuRailMode` 는 `toolList.size ≤ 1` 일 때 `EXPAND` 로 고정되어 하단 바에 메뉴를 보인다 (`[mobile][expand]`).<br>3. `ToolRailMode` 는 같은 조건에서 `HIDE` 로 유지된다 (`[mobile][hide]` — slide-down).<br>4. `DrawerMode` 는 `HIDE` 로 유지된다 (사이드 drawer 는 숨김). |
+| **드릴인 흐름 (ToolRail)** | 1. 사용자가 도구가 2개 이상인 메뉴를 탭해 `MenuSelected` 가 갱신되면 `ToolList` 가 채워진다.<br>2. `MenuRailMode` 는 `tools > 1 && mobile` 일 때 `HIDE` 로 전환된다 → MenuRail slide-down.<br>3. `ToolRailMode` 는 같은 조건에서 `EXPAND` 로 전환되어 `ToolRail` 이 하단 바 자리를 차지한다 → slide-up (MD3 emphasized-decelerate, 300ms).<br>4. `[mobile]` 속성은 계속 유지되므로 fixed 포지션이 동일해 drill-in 시 "좌측 컬럼 → 하단 바" 이동 flash 가 없다.<br>5. `ToolRail` 의 첫 아이템으로 `CloseToolRailButton` (← 아이콘) 이 표시된다. |
+| **드릴백 흐름** | 1. 사용자가 `CloseToolRailButton` 을 탭하면 `MenuSelected.next(null)` 이 호출된다.<br>2. `ToolList` 가 비어 `ToolRailMode → HIDE`, `MenuRailMode → EXPAND` 로 복귀한다.<br>3. 사용자는 다시 메뉴를 고를 수 있다. |
+| **특이사항** | (1) 모바일에서는 MenuRail 과 ToolRail 이 동시에 보이지 않는다 — 한 번에 한 컨텍스트. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만 가지며 모바일 여부는 상태 머신과 직교. (3) 도구가 1개인 메뉴를 탭하면 드릴인 없이 바로 해당 도구로 이동하고 MenuRail 은 유지된다. |
+| **터치 지원** | 화면 왼쪽 가장자리에서 오른쪽으로 스와이프하면 `DrawerMode.toggleOverlay()` 로 OVERLAY drawer 를 열 수 있다 (워크스페이스 셀렉터 등 secondary UI 진입). |
 
 ## UC-S15: 사용자 설정 — 언어/테마 퍼시스턴스
 
@@ -294,7 +313,7 @@ sequenceDiagram
 | **정상 흐름** | 1. 사용자가 설정 패널(Drawer 내 또는 별도 모달)을 연다.<br>2. 언어(ko/en)를 변경하면 localStorage에 저장되고 `LabelProvider`가 즉시 갱신된다.<br>3. **MenuRail 의 ThemeToggle 버튼** (sun/moon 아이콘) 을 클릭하면 `<html>` 의 `color-theme` 속성이 light↔dark 로 토글되고 localStorage 에 저장된다. 동시에 `<html>` 에 `theme-changing` 클래스가 500ms 동안 부착되어, 그 구간에만 sun/moon morph 애니메이션이 재생된다. |
 | **요구사항** | 6.8 사용자 설정 |
 | **상태** | 부분 구현 (UserPreferences, ThemeToggle 구현 완료. 언어 설정 패널 UI 미완) |
-| **레이아웃** | `ThemeToggle` 은 `NavigationRailItemElement` 를 상속하여 일반 메뉴와 동일한 `.item > .collapse + md-item` 구조를 갖는다. MenuRail 의 마지막 자식으로 append 되며 `.rail-bottom` 클래스(+ `margin-top: auto`, `order: 1`) 로 하단에 고정. `bottom=true` 메뉴는 `.bottom-menu` 클래스(`order: 2`) 가 붙어 ThemeToggle 의 **아래쪽** 에 배치된다 — 즉 시각 순서는 일반 메뉴(0) → ThemeToggle(1) → bottom 메뉴(2). 모바일 `[bottom-nav]` 에서는 row 방향이라 `margin-top: auto` 가 의미 없어지지만 `order: 1` 만으로 horizontal navbar 의 일반 메뉴와 bottom 메뉴 사이에 자연스럽게 배치되어 그대로 노출된다. |
+| **레이아웃** | `ThemeToggle` 은 `NavigationRailItemElement` 를 상속하여 일반 메뉴와 동일한 `.item > .collapse + md-item` 구조를 갖는다. MenuRail 의 마지막 자식으로 append 되며 `.rail-bottom` 클래스(+ `margin-top: auto`, `order: 1`) 로 하단에 고정. `bottom=true` 메뉴는 `.bottom-menu` 클래스(`order: 2`) 가 붙어 ThemeToggle 의 **아래쪽** 에 배치된다 — 즉 시각 순서는 일반 메뉴(0) → ThemeToggle(1) → bottom 메뉴(2). 모바일 `[mobile]` 에서는 row 방향이라 `margin-top: auto` 가 의미 없어지지만 `order: 1` 만으로 horizontal navbar 의 일반 메뉴와 bottom 메뉴 사이에 자연스럽게 배치되어 그대로 노출된다. |
 | **i18n** | Headline 텍스트는 `LabelProvider` 를 구독하여 `darkMode` 상태에 따라 `theme.switch_to_dark` / `theme.switch_to_light` 키를 동적으로 바꿔 표시한다. expand 모드에서만 보이며 collapse 모드에서는 아이콘만 노출. |
 | **애니메이션** | (1) 색 전환 — 전역 CSS 트랜지션으로 background/color/fill/stroke 가 점진 변화. (2) 아이콘 morph — sun/moon path 를 SVG 안에 동시 렌더. `:root.theme-changing[color-theme='...']` 조합 셀렉터로 rise/set keyframes 를 200ms 적용, 200ms stagger 로 교체. `.theme-changing` 는 클릭 시에만 500ms 부착되므로 드로어 expand/collapse 전환에는 재생되지 않는다. |
 
@@ -336,7 +355,7 @@ sequenceDiagram
 | UC-S10 (i18n) | i18n (다국어) | Frame+API | BrowserLanguageDetector, FetchLanguagePackRepository, LabelProvider | DrawerTest: 메뉴 아이템에 텍스트 라벨 존재 확인 |
 | UC-S11 (프레임전환) | — (단순) | Frame+API | FrameUpdater, FrameFactory, FrameElement, ContentElement | FrameTest: 컨테이너 존재, 초기 프레임 0개, 렌더러1 → 프레임 1개 + 텍스트 "Hello, World!!", 렌더러2 → 교체 + "2nd Renderer rendered", 재전환 → 프레임 1개 유지 |
 | UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ProgressTest: 컨테이너/라벨 존재, 초기 opacity=0, indeterminate → opacity=1 + 라벨 숨김, 30% → "처리 중" + "3/10", 70% → "거의 완료" + "7/10", 100% → "완료" + "10/10", hide → opacity=0, 재표시 검증 |
-| UC-S13 (모바일) | 모바일 Drawer 전환 | Drawer UI | ViewportObserver, DrawerMode(OVERLAY), MenuRailMode(BOTTOM_NAV), ToolRailMode(HORIZONTAL_CHIPS), DrawerElement | DrawerModeTest: OVERLAY→BOTTOM_NAV, OVERLAY→HORIZONTAL_CHIPS 상태 전이 검증 |
+| UC-S13 (모바일) | 모바일 드릴인/드릴백 | Drawer UI | ViewportObserver(isMobile → `[mobile]` 속성), MenuRailMode/ToolRailMode(EXPAND/HIDE 드릴인 스왑), CloseToolRailButton, MenuRailElement, ToolRailElement | DrawerModeTest: 드릴인/드릴백 상태 전이 + 상호 배타성 검증 / DrawerTest: 초기 모바일 로드, [mobile] 속성 부여, 드릴인(MenuRail HIDE, ToolRail EXPAND), 드릴백(원복) 검증 |
 | UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspace/{id}/messages, 이벤트 타입별 UI 갱신 | UrlBasedMenuResolverTest: SSE 이벤트 기반 메뉴 갱신 검증 |
 | UC-S15 (언어/테마) | — | Drawer UI | UserPreferences (activity), ThemeToggle (NavigationRailItemElement 상속, `.rail-bottom` 하단 고정, i18n headline, theme-changing 500ms 애니메이션 트리거), BrowserLanguageDetector, LabelProvider | DrawerTest: `.rail .rail-bottom.item` 존재, `.collapse` SVG 와 `md-item` start slot SVG 동시 렌더, 초기 color-theme light/dark, 클릭 시 토글 + theme-changing 클래스 일시 부착, expand 시 `.collapse` 숨김 / `md-item` 표시, bottom-menu 가 rail-bottom 아래 순서 |
 | UC-S16 (설정패널) | — | Drawer UI | ThemeToggle (DrawerElement 내 통합), UserPreferences | ❌ 테스트 미작성 (ThemeToggle 구현 완료, 설정 패널 UI 미완) |

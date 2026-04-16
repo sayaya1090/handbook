@@ -16,19 +16,17 @@ class StateEnumTest : StringSpec({
         DrawerState.valueOf("OVERLAY") shouldBe DrawerState.OVERLAY
     }
 
-    "MenuRailState는 4개의 상태를 가진다" {
-        MenuRailState.values().size shouldBe 4
+    "MenuRailState는 3개의 가시성 상태만 가진다 (모바일 여부는 [mobile] 속성이 담당)" {
+        MenuRailState.values().size shouldBe 3
         MenuRailState.valueOf("COLLAPSE") shouldBe MenuRailState.COLLAPSE
         MenuRailState.valueOf("EXPAND") shouldBe MenuRailState.EXPAND
         MenuRailState.valueOf("HIDE") shouldBe MenuRailState.HIDE
-        MenuRailState.valueOf("BOTTOM_NAV") shouldBe MenuRailState.BOTTOM_NAV
     }
 
-    "ToolRailState는 4개의 상태를 가진다" {
-        ToolRailState.values().size shouldBe 4
+    "ToolRailState는 3개의 가시성 상태만 가진다 (모바일 여부는 [mobile] 속성이 담당)" {
+        ToolRailState.values().size shouldBe 3
         ToolRailState.valueOf("COLLAPSE") shouldBe ToolRailState.COLLAPSE
         ToolRailState.valueOf("EXPAND") shouldBe ToolRailState.EXPAND
         ToolRailState.valueOf("HIDE") shouldBe ToolRailState.HIDE
-        ToolRailState.valueOf("HORIZONTAL_CHIPS") shouldBe ToolRailState.HORIZONTAL_CHIPS
     }
 })

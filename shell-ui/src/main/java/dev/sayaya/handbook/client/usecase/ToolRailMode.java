@@ -14,9 +14,12 @@ import static dev.sayaya.handbook.client.domain.ToolRailState.*;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
- * Tool Rail 상태를 관리한다.
- * 드로어 상태와 도구 개수에 따라 Expand/Collapse/Hide를 결정한다.
- * 모바일에서는 DrawerState 와 무관하게 도구가 2개 이상이면 HORIZONTAL_CHIPS, 아니면 HIDE.
+ * Tool Rail 의 가시성 상태를 관리한다.
+ * <p>
+ * 모바일/데스크톱 레이아웃 차이는 {@code .rail[mobile]} CSS 속성이 담당하므로 이 상태
+ * 머신은 EXPAND/COLLAPSE/HIDE 만 사용한다.
+ * <p>
+ * 모바일 드릴인: 도구가 2개 이상이면 EXPAND 상태로 하단 바를 차지한다.
  */
 @Singleton
 public class ToolRailMode {
@@ -32,13 +35,13 @@ public class ToolRailMode {
     }
     private void update(DrawerState drawerState, MenuRailState menuState, boolean hasMultipleChildren) {
         if (mobile) {
-            next(hasMultipleChildren ? HORIZONTAL_CHIPS : HIDE);
+            next(hasMultipleChildren ? EXPAND : HIDE);
             return;
         }
         switch (drawerState) {
             case HIDE -> next(HIDE);
             case EXPAND -> next(hasMultipleChildren ? EXPAND : HIDE);
-            case OVERLAY -> next(hasMultipleChildren ? HORIZONTAL_CHIPS : HIDE);
+            case OVERLAY -> next(hasMultipleChildren ? EXPAND : HIDE);
             case COLLAPSE -> {
                 if(menuState == MenuRailState.COLLAPSE) next(HIDE);
                 else next(hasMultipleChildren ? COLLAPSE : HIDE);

@@ -126,9 +126,10 @@ stateDiagram-v2
     COLLAPSE --> EXPAND : Drawer=EXPAND
     COLLAPSE --> HIDE : Drawer=HIDE\nDrawer=COLLAPSE & 도구 > 1개
     note right of [*]
-      모바일(isMobile=true)이면
-      DrawerState와 무관하게
-      항상 BOTTOM_NAV로 고정
+      모바일(isMobile=true) 드릴인:
+      도구 ≤ 1개 → EXPAND (하단 바)
+      도구 > 1개 → HIDE (ToolRail 이 하단 바 차지)
+      * 모바일 레이아웃은 CSS [mobile] 속성이 담당, 상태 머신과 직교
     end note
 ```
 
@@ -144,9 +145,11 @@ stateDiagram-v2
     COLLAPSE --> EXPAND : Drawer=EXPAND
     COLLAPSE --> HIDE : Drawer=HIDE\n도구 ≤ 1개\nMenuRail=COLLAPSE
     note right of [*]
-      모바일이면 DrawerState 무관:
-      도구>1 → HORIZONTAL_CHIPS
+      모바일 드릴인:
+      도구>1 → EXPAND (MenuRail 대신 하단 바 차지, 첫 아이템 = ← CloseToolRailButton)
       도구≤1 → HIDE
+      ← 버튼 클릭 시 MenuSelected.next(null) → MenuRail 이 EXPAND 복귀
+      * 하단 바 레이아웃은 CSS [mobile] 속성이 담당, visibility 와 직교
     end note
 ```
 
@@ -184,7 +187,7 @@ stateDiagram-v2
 | FetchApi 인터페이스 | 테스트 시 API 호출 모킹 가능 |
 | UserApi 10분 주기 갱신 | 세션 유지 + 토큰 자동 갱신 |
 | ThemeToggle 이 NavigationRailItemElement 를 상속 | 일반 메뉴 아이템과 동일한 .item > (.collapse + .expand) 구조를 가져 시각/스페이싱이 자동으로 일치한다. expand 모드에선 md-item 의 headline 라벨이, collapse 모드에선 .collapse 아이콘 버튼만 노출 |
-| theme/menu 위치를 CSS order 로 통제 | 일반 메뉴(0) → ThemeToggle(.rail-bottom, order:1) → bottom 메뉴(.bottom-menu, order:2) 순으로 정렬. ThemeToggle 한 곳에만 `margin-top: auto` 가 있어 free space 분배 충돌이 없고, MenuRailElement 가 동적으로 첫 bottom 메뉴를 찾아 margin 을 부여하던 로직을 제거. 모바일(.rail[bottom-nav]) 에서는 row 방향이라 margin-top auto 가 push 효과를 잃지만 order:1 만으로 일반 메뉴와 bottom 메뉴 사이에 자연스럽게 배치되어 horizontal navbar 에도 그대로 노출된다 (모바일의 유일한 테마 전환 진입점) |
+| theme/menu 위치를 CSS order 로 통제 | 일반 메뉴(0) → ThemeToggle(.rail-bottom, order:1) → bottom 메뉴(.bottom-menu, order:2) 순으로 정렬. ThemeToggle 한 곳에만 `margin-top: auto` 가 있어 free space 분배 충돌이 없고, MenuRailElement 가 동적으로 첫 bottom 메뉴를 찾아 margin 을 부여하던 로직을 제거. 모바일(.rail[mobile]) 에서는 row 방향이라 margin-top auto 가 push 효과를 잃지만 order:1 만으로 일반 메뉴와 bottom 메뉴 사이에 자연스럽게 배치되어 horizontal navbar 에도 그대로 노출된다 (모바일의 유일한 테마 전환 진입점) |
 | 테마 색 트랜지션 600ms cubic-bezier | 부드럽지만 빠르게 점진 전환. shell.css 의 :root/body/.drawer/.frame/.rail 트랜지션 블록이 background-color/color/border-color/fill/stroke 를 한 번에 보간 |
 | Sun/Moon SVG morph 는 :root.theme-changing 클래스 500ms 부착으로 트리거 | 토글 순간에만 클래스가 부착되어 keyframe(theme-icon-rise/set) 이 재생. 500ms 후 자동 제거되어 drawer expand/collapse 같은 다른 DOM 변화(예: md-item 의 start svg 가 display:none → visible 로 바뀌는 시점) 에서는 animation-name 매칭이 안 돼 의도치 않은 재생을 차단 |
 | ThemeToggle 헤드라인이 darkMode 에 따라 i18n 키 동적 변경 | 현재 light → "Switch to Dark" (theme.switch_to_dark), 현재 dark → "Switch to Light" (theme.switch_to_light). LabelProvider 구독으로 locale 변경 시에도 자동 갱신 |
@@ -233,15 +236,34 @@ tasks.jar {
 ./gradlew :shell-ui:test
 ```
 
-## 모바일 지원
+## 모바일 지원 (드릴인 하단 바 패턴)
 
-- **Navigation Drawer**: 모바일(뷰포트 < 768px)에서 오버레이 모드로 전환. 메뉴 선택 시 자동으로 닫힌다.
-- **Menu Rail**: 모바일에서 하단 네비게이션 바로 전환하여 주요 메뉴에 빠르게 접근할 수 있다.
-- **Tool Rail**: 좁은 화면에서 수평 스크롤 가능한 칩 바로 변경된다.
-- **Frame**: 콘텐츠 영역이 전체 뷰포트를 차지하도록 패딩/마진 조정.
+모바일(뷰포트 < 768px)에서는 하단 네비게이션 바 한 줄을 컨텍스트에 따라 스왑한다.
+
+### 직교 상태 모델
+
+레이아웃(모바일/데스크톱)과 가시성(expand/collapse/hide)을 두 축으로 분리한다:
+
+- **`[mobile]` 속성** — `ViewportObserver` 가 `MenuRailElement`/`ToolRailElement` 에 상시 부여. CSS 가 이 속성을 보고 `position: fixed; bottom: 0; width: 100%; flex-direction: row` 로 하단 바 레이아웃을 유지한다. 가시성과 무관하게 한 번 붙으면 유지되므로 drill-in 시 레이아웃이 "좌측 컬럼 → 하단 바" 로 이동하는 flash 가 없다.
+- **`[expand]/[collapse]/[hide]` 속성** — `MenuRailMode`/`ToolRailMode` 가 상태 머신에 따라 토글. 모바일에서는 `transform: translateY`/`opacity` 로 슬라이드 업/다운 애니메이션을 표현 (MD3 emphasized-decelerate, 300ms).
+
+결과적으로 `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가시성 상태만 가지며, 뷰포트 분기는 CSS 한 곳으로 모여 상태 머신과 테스트가 단순해진다.
+
+### 동작
+
+- **초기 상태**: MenuRail 이 `[mobile][expand]` 로 하단 바 자리를 차지하고 메뉴 아이콘을 표시. ToolRail 은 `[mobile][hide]` 로 하단 바 아래에 잠복.
+- **드릴인**: 도구가 2개 이상인 메뉴를 탭하면 MenuRail → `[mobile][hide]`, ToolRail → `[mobile][expand]` 로 전이. ToolRail 의 첫 아이템은 `CloseToolRailButton` (← 아이콘).
+- **드릴백**: ← 버튼을 탭하면 `MenuSelected.next(null)` 로 도구 목록이 비워지고 `ToolRailMode` 가 HIDE, `MenuRailMode` 가 EXPAND 로 자연 수렴.
+- **도구 1개 메뉴**: 드릴인 없이 바로 해당 도구로 이동하고 MenuRail 유지.
+- **Navigation Drawer (secondary)**: 왼쪽 가장자리 스와이프로 여는 오버레이. 워크스페이스 셀렉터 등 부가 UI 진입점. 메뉴 선택 시 자동 닫힘.
+- **Frame**: 콘텐츠 영역 `bottom: calc(56px + safe-area-inset-bottom)` 으로 하단 바 높이만큼 확보.
 - **프로그레스 바**: 상단 고정 위치 유지.
 - **터치 지원**: Drawer 스와이프 열기/닫기.
 - **최소 뷰포트**: 360px.
+
+> **주의**: `.drawer` 에 `backdrop-filter` 를 부여하면 CSS 스펙상 fixed 자손의 containing block 이 되어
+> 자식 `.rail[mobile]` 의 `width: 100%` 가 drawer (fit-content = 0) 기준으로 계산되어 0px 로
+> 찌그러진다. `backdrop-filter` 는 `@media (min-width: 769px)` 에서만 적용한다.
 
 ## 공통 테스트 리소스
 

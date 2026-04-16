@@ -1,7 +1,9 @@
 package dev.sayaya.handbook.client.domain;
 
+/**
+ * Menu rail 의 가시성 상태. 뷰포트(모바일/데스크톱) 와 직교하며,
+ * 모바일 여부는 {@code .rail[mobile]} 속성으로 별도 표현된다.
+ */
 public enum MenuRailState {
-    COLLAPSE, EXPAND, HIDE,
-    /** 모바일: 하단 네비게이션 바. 주요 메뉴 최대 5개 아이콘 표시. */
-    BOTTOM_NAV
+    COLLAPSE, EXPAND, HIDE
 }

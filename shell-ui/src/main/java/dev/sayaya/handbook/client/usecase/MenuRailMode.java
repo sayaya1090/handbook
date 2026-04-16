@@ -13,10 +13,13 @@ import static dev.sayaya.handbook.client.domain.MenuRailState.*;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
- * Menu Rail 상태를 관리한다.
- * 드로어가 접혔을 때 하위 도구가 있으면 Menu Rail을 숨기고 Tool Rail만 표시한다.
- * 모바일에서는 DrawerState 와 무관하게 항상 BOTTOM_NAV 로 고정되어 하단 네비게이션 바로 상주한다.
- * 오버레이 drawer 는 secondary UI 이며, primary nav 진입점은 언제나 bottom-nav.
+ * Menu Rail 의 가시성 상태를 관리한다.
+ * <p>
+ * 모바일/데스크톱 레이아웃 차이는 이 상태 머신이 아니라 {@code .rail[mobile]} CSS 속성이
+ * 담당한다. 여기서는 {@link MenuRailState} 세 값(EXPAND/COLLAPSE/HIDE) 만 사용한다.
+ * <p>
+ * 모바일 드릴인 로직: 도구가 2개 이상일 때 MenuRail 은 HIDE 되어 ToolRail 에게 하단 바
+ * 자리를 양보한다. 도구가 1개 이하이면 MenuRail 이 EXPAND 상태로 하단 바를 차지한다.
  */
 @Singleton
 public class MenuRailMode {
@@ -28,17 +31,19 @@ public class MenuRailMode {
             update(drawerMode.getValue(), toolList.getValue().size() <= 1);
         });
         drawerMode.subscribe(drawerState -> update(drawerState, toolList.getValue().size() <= 1));
+        toolList.subscribe(tools -> update(drawerMode.getValue(), tools.size() <= 1));
     }
     private void update(DrawerState drawerState, boolean hasNoChildren) {
         if (mobile) {
-            next(BOTTOM_NAV);
+            // 드릴인: 도구가 여러 개면 ToolRail 이 하단 바를 차지하도록 MenuRail 을 HIDE.
+            next(hasNoChildren ? EXPAND : HIDE);
             return;
         }
         switch (drawerState) {
             case EXPAND -> next(EXPAND);
             case HIDE -> next(HIDE);
             case COLLAPSE -> next(hasNoChildren ? COLLAPSE : HIDE);
-            case OVERLAY -> next(BOTTOM_NAV);
+            case OVERLAY -> next(EXPAND);
         }
     }
 }
