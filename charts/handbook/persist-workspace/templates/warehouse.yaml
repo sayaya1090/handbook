@@ -16,5 +16,5 @@ spec:
         imageSelectionStrategy: NewestBuild
         insecureSkipTLSVerify: true
         repoURL: image-registry.openshift-image-registry.svc:5000/handbook/persist-workspace
-        strictSemvers: true
+        strictSemvers: false
 {{- end }}
