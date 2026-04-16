@@ -2,10 +2,7 @@ name: App 정적 자산 배포
 on:
   push:
     paths:
-      - app/src/main/webapp/css/**
-      - app/src/main/webapp/app.html
-      - app/src/main/webapp/manifest.json
-      - app/src/main/webapp/service-worker.js
+      - app/src/main/webapp/**
       - '*/src/main/i18n/**'
   workflow_dispatch:
 permissions:
