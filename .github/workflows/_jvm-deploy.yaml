@@ -44,9 +44,11 @@ jobs:
           SHORT_SHA="${GITHUB_SHA::7}"
           echo "Deploying with IMAGE=$IMAGE tag=$SHORT_SHA"
           oc registry login
+          BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           ./gradlew $SUBMODULE:jib \
             -Djib.from.image=$BASE_IMAGE \
             -Djib.to.image=$IMAGE:$SHORT_SHA \
-            -Djib.container.creationTime=USE_CURRENT_TIMESTAMP \
+            -Djib.container.creationTime=$BUILD_TIME \
+            -Djib.container.labels=org.opencontainers.image.created=$BUILD_TIME \
             -Djib.allowInsecureRegistries=true \
             -Djib.console=plain
