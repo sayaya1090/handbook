@@ -25,6 +25,7 @@ public class ToolRailItemElement extends NavigationRailItemElement {
         labelProvider.subscribe(labels -> {
             headline.element().innerHTML = labels.getOrDefault(tool.title(), tool.title() != null ? tool.title() : "");
         });
+        if (tool.title() != null) element().dataset.set("toolTitle", tool.title());
         initEventHandlers(tool, selected);
         selected.subscribe(select -> select(tool.equals(select)));
     }
