@@ -51,7 +51,7 @@ public class ContentElement {
 
     private void initialize() {
         console.alignCenter(true);
-        console.element().style.setProperty("width", "35rem");
+        console.element().style.setProperty("width", "min(35rem, calc(100vw - 2rem))");
         console.element().style.setProperty("height", "0");
         console.element().style.setProperty("margin", "auto");
         element.add(console.element());
@@ -89,6 +89,7 @@ public class ContentElement {
             });
             buttons[i].onClick(evt -> {
                 cancelAttentionTimer();
+                console.element().style.setProperty("height", "22rem");
                 LoginCommandRouter.dispatch(JsPropertyMap.of("type", "progress"));
             });
         }

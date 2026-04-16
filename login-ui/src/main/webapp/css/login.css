@@ -39,17 +39,22 @@
 /* ── Mobile ── */
 @media (max-width: 768px) {
     .login-content {
-        padding: 16px;
+        padding: 12px;
+        min-height: 100dvh;
     }
     .console {
-        font-size: 0.7rem;
+        width: min(35rem, calc(100vw - 2rem)) !important;
+        font-size: 0.55rem;
+        padding: 0.5rem;
     }
     .line {
-        font-size: 0.7rem;
-        line-height: 1rem;
-        min-height: 1rem;
+        font-size: 0.55rem;
+        line-height: 0.8rem;
+        min-height: 0.8rem;
+        border-right-width: 0.3em;
     }
-    .oauth-buttons {
-        max-width: 100%;
+    .btn-oauth {
+        width: 100%;
+        --_label-text-size: 0.8rem;
     }
 }
