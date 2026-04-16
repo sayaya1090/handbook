@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    war
     id("dev.sayaya.gwt")
 }
 dependencies {

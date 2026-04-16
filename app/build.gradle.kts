@@ -1,21 +1,11 @@
 plugins {
     kotlin("jvm")
     war
-    id("dev.sayaya.gwt")
     id("com.adarshr.test-logger")
 }
 dependencies {
-    implementation(project(":activity"))
-    implementation(project(":ui-components"))
-    implementation(project(":shell-ui"))
-    implementation(project(":agent-ui"))
-    implementation(libs.bundles.sayaya.web)
-    annotationProcessor(libs.lombok)
-    annotationProcessor(libs.dagger.compiler)
     testImplementation(libs.bundles.test.web)
     testImplementation(project(":test-utils"))
-    testAnnotationProcessor(libs.lombok)
-    testAnnotationProcessor(libs.dagger.compiler)
 }
 val mergeI18nProd by tasks.registering {
     val i18nDirs = rootProject.subprojects.map { it.file("src/main/i18n") }
@@ -56,26 +46,13 @@ val mergeI18nProd by tasks.registering {
 }
 tasks {
     war {
-        // GWT 컴파일 출력(build/gwt/war/app) 을 app/ 하위로 포함해
-        // src/main/webapp/app.html 이 참조하는 `app/app.nocache.js` 경로와 일치시킨다.
-        dependsOn("gwtCompile")
-        from("build/gwt/war")
+        // shell-ui, agent-ui 의 GWT 컴파일 출력을 각각 shell/, agent/ 하위에 포함.
+        // app.html 이 참조하는 shell/shell.nocache.js, agent/agent.nocache.js 경로와 일치.
+        dependsOn(":shell-ui:gwtCompile", ":agent-ui:gwtCompile", mergeI18nProd)
+        from("${rootProject.projectDir}/shell-ui/build/gwt/war")
+        from("${rootProject.projectDir}/agent-ui/build/gwt/war")
         archiveFileName.set("app.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.App")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.App", "dev.sayaya.handbook.AppTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler { strict = true }
-    }
-    matching { it.name.startsWith("gwtCompile") }.configureEach {
-        dependsOn(mergeI18nProd)
     }
     test { useJUnitPlatform() }
 }

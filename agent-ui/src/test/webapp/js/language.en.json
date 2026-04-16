@@ -31,6 +31,8 @@
     "document_editor": "Document Editor",
     "documents": "Documents",
     "settings": "Settings",
+    "theme.switch_to_dark": "Switch to Dark",
+    "theme.switch_to_light": "Switch to Light",
     "type.add": "Add Type",
     "type.attr.apply": "Apply",
     "type.attr.close": "Close",
