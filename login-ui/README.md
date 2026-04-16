@@ -15,18 +15,39 @@
 
 | 컴포넌트 | 역할 |
 |---------|------|
-| `ContentElement` | 메인 컨테이너, 터미널 인터페이스 초기화 |
-| `ConsoleElement` | 터미널 디스플레이 (라인 버퍼, ASCII 아트) |
-| `LineElement` | 타이핑 효과가 적용된 개별 콘솔 라인 |
-| `AuthenticationProviderButton` | OAuth2 프로바이더 버튼 (예: Google) |
+| `ContentElement` | 메인 컨테이너. 웰컴 ASCII 아트 출력 → 높이 트랜지션(0→20rem) → OAuth 버튼 표시. 중앙 정렬 레이아웃 |
+| `ConsoleElement` | 터미널 디스플레이. `@Delegate HTMLContainerBuilder`, 라인 버퍼(최대 50줄), 중앙 정렬 토글, 커서 깜빡임 제어 |
+| `LineElement` | 타이핑 효과가 적용된 개별 콘솔 라인. `border-right` 기반 블링킹 커서 |
+| `AuthenticationProviderButton` | sayaya-ui `TextButton` 기반 OAuth2 버튼. `@Delegate TextButtonElementBuilder`. FontAwesome brands 아이콘 표시 |
+
+## 인터랙션
+
+- **자동 포커스**: 버튼 렌더링 후 첫 번째 버튼에 `select()` → focus + MD3 focus-ring 강제 표시
+- **키보드 내비게이션**: ArrowUp/ArrowDown으로 버튼 간 이동
+- **사운드 효과**: 포커스 시 `beep.mp3`, 클릭 시 `start.mp3` 재생
+- **클릭 딜레이**: `start.mp3` 재생 후 300ms 대기 → OAuth 리다이렉트 실행
+
+## 정적 에셋
+
+| 파일 | 용도 |
+|------|------|
+| `css/console.css` | 터미널 콘솔 + 블링킹 커서 스타일 |
+| `css/login.css` | 로그인 페이지 레이아웃 + OAuth 버튼 + 모바일 대응 |
+| `css/brands.min.css` | FontAwesome brands 아이콘 |
+| `js/brands.min.js` | FontAwesome brands 스크립트 |
+| `wav/beep.mp3` | 버튼 포커스 사운드 |
+| `wav/start.mp3` | 버튼 클릭(로그인 시작) 사운드 |
 
 ## 로그인 흐름
 
 1. Shell이 `login.nocache.js`를 로딩
-2. `ConsoleElement`가 ASCII 아트 애니메이션 표시
-3. OAuth2 프로바이더 버튼 렌더링
-4. 사용자 클릭 → `window.location.href = "/oauth2/authorization/{provider}"`
-5. Login 백엔드가 인증 처리 후 JWT 쿠키 설정
+2. CSS(console.css, login.css, brands.min.css) + JS(brands.min.js) 로딩
+3. `ConsoleElement`가 ASCII 아트 환영 메시지 출력 (높이 0, 중앙 정렬)
+4. 100ms 후 콘솔 높이 20rem으로 트랜지션 확장
+5. 100ms 후 "SELECT YOUR AUTHENTICATION PROVIDER:" 프롬프트 출력, 커서 깜빡임 중단
+6. OAuth2 프로바이더 버튼 렌더링, 첫 버튼 자동 포커스 + beep 사운드
+7. 사용자 클릭 → start 사운드 → 300ms 후 `window.location.href = "oauth2/authorization/{provider}"`
+8. Login 백엔드가 인증 처리 후 JWT 쿠키 설정
 
 ## 로그아웃 흐름
 

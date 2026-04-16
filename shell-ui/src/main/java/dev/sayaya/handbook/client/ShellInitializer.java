@@ -10,9 +10,11 @@ import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
 import dev.sayaya.handbook.domain.Progress;
+import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.WindowLabelBridge;
 import dev.sayaya.handbook.usecase.WindowProgressBridge;
+import dev.sayaya.handbook.usecase.WindowRenderBridge;
 import dev.sayaya.handbook.usecase.WindowUriBridge;
 import dev.sayaya.rx.Observer;
 import elemental2.dom.CustomEvent;
@@ -57,6 +59,7 @@ public class ShellInitializer {
     private final WorkspaceEventListener workspaceEventListener;
     private final SessionManager sessionManager;
     private final Observer<Progress> progressObserver;
+    private final Observer<Render> renderObserver;
     private final Observer<String> uriObserver;
     private final LabelProvider labelProvider;
 
@@ -71,6 +74,7 @@ public class ShellInitializer {
             WorkspaceEventListener workspaceEventListener,
             SessionManager sessionManager,
             Observer<Progress> progressObserver,
+            Observer<Render> renderObserver,
             Observer<String> uriObserver,
             LabelProvider labelProvider
     ) {
@@ -84,6 +88,7 @@ public class ShellInitializer {
         this.workspaceEventListener = workspaceEventListener;
         this.sessionManager = sessionManager;
         this.progressObserver = progressObserver;
+        this.renderObserver = renderObserver;
         this.uriObserver = uriObserver;
         this.labelProvider = labelProvider;
     }
@@ -103,6 +108,7 @@ public class ShellInitializer {
 
     private void publishBridges() {
         WindowProgressBridge.register(value -> progressObserver.next(jsToProgress(value)));
+        WindowRenderBridge.register(value -> { Render r = jsinterop.base.Js.cast(value); renderObserver.next(r); });
         WindowUriBridge.register(uriObserver::next);
         labelProvider.subscribe(labels -> WindowLabelBridge.publish(labels));
         DomGlobal.window.dispatchEvent(new CustomEvent<>("handbook-shell-ready"));

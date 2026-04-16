@@ -33,6 +33,8 @@ sequenceDiagram
     Content->>Factory: button("google")
     Factory->>Btn: AuthenticationProviderButton 생성
     Btn-->>Content: Google 로그인 버튼 표시
+    Content->>Content: setupKeyboardNavigation() (ArrowUp/Down)
+    Content->>Btn: select() — 자동 포커스 + focus-ring + beep 사운드
 ```
 
 ## OAuth2 로그인 시퀀스
@@ -45,6 +47,8 @@ sequenceDiagram
     participant Login as Login 서버
 
     User->>Btn: Google 버튼 클릭
+    Btn->>Btn: start.mp3 재생
+    Note over Btn: 300ms 대기
     Btn->>Browser: window.location.href = "oauth2/authorization/google"
     Browser->>Login: GET /oauth2/authorization/google
     Note over Login: OAuth2 인증 흐름 (Login 모듈 참조)
@@ -84,8 +88,8 @@ sequenceDiagram
 |------|------|
 | **액터** | 미인증 사용자 |
 | **선행조건** | Shell이 login-ui 모듈을 로딩 (미인증 상태에서 SIGN_IN 메뉴 선택) |
-| **정상 흐름** | 1. Shell이 `login/login.nocache.js`를 동적 로딩한다.<br>2. `Application.onModuleLoad()`가 `DaggerComponent`를 생성한다.<br>3. CSS (console.css, login.css, brands.min.css)와 brands.min.js 스크립트를 프레임에 추가한다.<br>4. `ContentElement`가 터미널 스타일 콘솔을 생성한다.<br>5. ASCII 아트 환영 메시지("Handbook Project v1.0.0")가 출력된다.<br>6. 100ms 후 콘솔이 확장되고 "SELECT YOUR AUTHENTICATION PROVIDER:" 프롬프트가 출력된다.<br>7. `AuthenticationProviderButtonFactory`가 Google 로그인 버튼을 생성하여 표시한다. |
-| **결과** | 터미널 스타일 로그인 화면에 OAuth2 프로바이더 버튼이 표시된다. |
+| **정상 흐름** | 1. Shell이 `login/login.nocache.js`를 동적 로딩한다.<br>2. `Application.onModuleLoad()`가 `DaggerComponent`를 생성한다.<br>3. CSS (console.css, login.css, brands.min.css)와 brands.min.js 스크립트를 프레임에 추가한다.<br>4. `ContentElement`가 터미널 스타일 콘솔(높이 0, 중앙 정렬)을 생성한다.<br>5. ASCII 아트 환영 메시지("Handbook Project v1.0.0")가 출력된다.<br>6. 100ms 후 콘솔 높이가 20rem으로 트랜지션 확장된다.<br>7. 100ms 후 "SELECT YOUR AUTHENTICATION PROVIDER:" 프롬프트가 출력되고 커서 깜빡임이 중단된다.<br>8. `AuthenticationProviderButtonFactory`가 Google 로그인 버튼(FontAwesome brands 아이콘 포함)을 생성하여 표시한다.<br>9. ArrowUp/Down 키보드 내비게이션이 설정된다.<br>10. 첫 번째 버튼에 자동 포커스 + MD3 focus-ring 표시 + beep 사운드 재생. |
+| **결과** | 터미널 스타일 로그인 화면에 OAuth2 프로바이더 버튼이 표시되고, 첫 버튼이 포커스된 상태이다. |
 
 ## UC-LUI2: OAuth2 로그인 실행
 
@@ -93,7 +97,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 미인증 사용자 |
 | **선행조건** | 로그인 화면 표시 완료 |
-| **정상 흐름** | 1. 사용자가 프로바이더 버튼(예: Google)을 클릭한다.<br>2. `AuthenticationProviderButton`이 `window.location.href`를 `oauth2/authorization/{provider}`로 변경한다.<br>3. 브라우저가 OAuth2 인가 흐름을 시작한다 (Login 서버로 리다이렉트).<br>4. 인증 성공 시 JWT 쿠키가 설정되고 메인 페이지로 리다이렉트된다. |
+| **정상 흐름** | 1. 사용자가 프로바이더 버튼(예: Google)을 클릭한다 (또는 ArrowUp/Down으로 이동 후 Enter).<br>2. `start.mp3` 사운드가 재생된다.<br>3. 300ms 대기 후 `AuthenticationProviderButton`이 `window.location.href`를 `oauth2/authorization/{provider}`로 변경한다.<br>4. 브라우저가 OAuth2 인가 흐름을 시작한다 (Login 서버로 리다이렉트).<br>5. 인증 성공 시 JWT 쿠키가 설정되고 메인 페이지로 리다이렉트된다. |
 | **결과** | 사용자 인증 완료, JWT 쿠키 설정, 메인 페이지 이동 |
 
 ## UC-LUI3: 로그아웃 실행

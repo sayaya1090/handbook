@@ -6,6 +6,7 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
+    implementation(project(":agent-bridge"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
