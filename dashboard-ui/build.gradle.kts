@@ -15,11 +15,6 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 tasks {
-    jar {
-        enabled = true
-        from(sourceSets.main.get().allSource)
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
     gwt {
         gwtVersion = "2.13.0"
         sourceLevel = "auto"
