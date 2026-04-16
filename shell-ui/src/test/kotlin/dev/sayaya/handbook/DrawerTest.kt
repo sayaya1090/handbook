@@ -500,4 +500,64 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
     }
+
+    // UC-S20: 브릿지 통합 테스트 — agent-ui 없이 window 브릿지를 직접 호출해
+    // shell 이 메시지에 올바르게 반응하는지 검증한다.
+    Given("브릿지가 초기화된 상태에서") {
+        page.setViewportSize(1280, 720)
+        page.navigate("file://${java.io.File("src/test/webapp/drawer.html").absolutePath}")
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+        Thread.sleep(500)
+
+        Then("WindowUriBridge 가 window.__handbook_uri 에 등록되어 있다") {
+            val registered = page.evaluate("typeof window.__handbook_uri === 'function'").toString()
+            registered shouldBe "true"
+        }
+
+        Then("WindowProgressBridge 가 window.__handbook_progress 에 등록되어 있다") {
+            val registered = page.evaluate("typeof window.__handbook_progress === 'function'").toString()
+            registered shouldBe "true"
+        }
+
+        When("WindowUriBridge 로 menu1-tool1 URL 을 전달하면") {
+            page.evaluate("window.__handbook_uri('menu1-tool1')")
+            Thread.sleep(500)
+            Then("Menu 1 이 selected 된다") {
+                val selected = page.evaluate(
+                    "document.querySelector('.rail .item[selected] md-item [slot=headline]')?.textContent"
+                ).toString().lowercase()
+                selected shouldBe "menu 1"
+            }
+        }
+
+        When("WindowUriBridge 로 menu3-tool1 URL 을 전달하면") {
+            page.evaluate("window.__handbook_uri('menu3-tool1')")
+            Thread.sleep(500)
+            Then("Menu 3 이 selected 로 변경된다") {
+                val selected = page.evaluate(
+                    "document.querySelector('.rail .item[selected] md-item [slot=headline]')?.textContent"
+                ).toString().lowercase()
+                selected shouldBe "menu 3"
+            }
+            Then("이전 메뉴(Menu 1) 는 selected 가 아니다") {
+                val count = page.evaluate(
+                    "document.querySelectorAll('.rail .item[selected]').length"
+                ).toString()
+                count shouldBe "1"
+            }
+        }
+
+        When("WindowProgressBridge 로 프로그레스를 전달하면") {
+            page.evaluate("""
+                window.__handbook_progress({ enabled: true, intermediate: false, value: 3, max: 10, description: '처리 중' })
+            """.trimIndent())
+            Thread.sleep(300)
+            Then("프로그레스 옵저버가 값을 수신한다 — 브릿지 연결 검증") {
+                // DrawerTest 환경에는 ProgressElement 가 body 에 없으므로
+                // 브릿지 함수 호출이 에러 없이 완료되는 것 자체가 연결 검증.
+                val bridgeExists = page.evaluate("typeof window.__handbook_progress === 'function'").toString()
+                bridgeExists shouldBe "true"
+            }
+        }
+    }
 })

@@ -9,8 +9,10 @@ import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Menu;
+import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
@@ -83,5 +85,14 @@ public class DrawerMock {
     }
     @Provides @Singleton LanguagePackRepository provideLanguagePackRepository() {
         return lang -> BehaviorSubject.behavior(Labels.empty());
+    }
+    @Provides @Singleton BehaviorSubject<Progress> provideProgress() {
+        return BehaviorSubject.behavior(Progress.hide());
+    }
+    @Provides @Singleton Observer<Progress> provideProgressObserver(BehaviorSubject<Progress> p) {
+        return p;
+    }
+    @Provides @Singleton Observable<Progress> provideProgressObservable(BehaviorSubject<Progress> p) {
+        return p.asObservable();
     }
 }

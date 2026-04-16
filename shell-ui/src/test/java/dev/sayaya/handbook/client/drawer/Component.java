@@ -5,6 +5,8 @@ import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.ModuleScriptManager;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
+import dev.sayaya.handbook.domain.Progress;
+import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
@@ -18,4 +20,5 @@ public interface Component {
     UrlBasedMenuResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
     BehaviorSubject<String> uri();
+    Observer<Progress> progressObserver();
 }
