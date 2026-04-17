@@ -62,6 +62,30 @@ Kafka `AGENT_COMMAND` 이벤트로 발행되어 SSE 로 전달된다.
 - `description` — 사용자에게 보여줄 사유 (감사 로그에도 기록)
 - `executionId` — 다중 실행 식별 (`ExecutionContext` 매핑)
 
+## Canonical Selector (shell-ui DOM 앵커)
+
+agent 가 `target.selector` 로 참조할 때 쓰는 표준 CSS 선택자. LLM 프롬프트와 외부
+MCP 클라이언트 모두 이 표를 기준으로 selector 를 생성해야 한다. shell-ui 내부 구조가
+바뀌면 여기와 함께 갱신한다.
+
+| 대상 | Canonical selector | 설명 |
+|------|--------------------|------|
+| 데스크톱 MenuRail 아이템 | `.rail:first-child .item` (+ `[data-menu-title="<title>"]`) | `MenuRailItemElement`. `.ui-highlight` 감지로 `TooltipCard` 동반 표시 |
+| 데스크톱 ToolRail 아이템 | `.rail:nth-of-type(2) .item` | `ToolRailItemElement` |
+| 모바일 상단 탭 | `.menu-tabs md-primary-tab.menu-tab` (+ `[data-menu-title]`) | `MobileTabsElement`. overflow 분리 시 일부만 노출 |
+| 모바일 overflow 메뉴 항목 | `.menu-tabs md-menu md-menu-item.menu-tab-menu-item` (+ `[data-menu-title]`) | overflow 팝업 내. 팝업 닫힘 상태에서는 타겟팅 전 `.menu-tabs-overflow-btn` 클릭 필요 |
+| 모바일 overflow 버튼 | `.menu-tabs-overflow-btn` | 조건부 표시 (`[hidden]`) |
+| AppBar 햄버거 | `#menu-toggle-button` (`.shell-app-bar-leading` 내부) | `MenuToggleButton` |
+| AppBar 워크스페이스 셀렉터 | `.shell-app-bar-center .workspace` | 이전 `.drawer-header .workspace` 에서 이동 (2026-04) |
+| AppBar 테마 토글 | `.shell-app-bar-trailing .item.rail-bottom` | `ThemeToggle`. 이전 `.rail .item.rail-bottom` 에서 이동 (2026-04) |
+| AppBar 세션 액션 (Sign In/Out 등) | `.shell-app-bar-trailing .shell-app-bar-action` (+ `[data-menu-title]`) | `appBarSlot="trailing"` Menu 가 승격됨 (`menus.md` 참조) |
+| Drawer overlay (모바일 햄버거) | `nav.drawer[overlay]` | 사용자 햄버거 열기 전까지는 `[hide]` |
+
+**규칙**
+- `[data-menu-title="<Menu.title()>"]` 속성으로 특정 엔트리 지정 권장. `title()` 은 i18n key 원본값 (번역 전 문자열).
+- **Highlight 동반 tooltip 강조** 는 현재 `MenuRailItemElement` 만 구현. `.menu-tab` / `.shell-app-bar-action` 타겟팅 시 MD3 built-in 시각만 반응하므로 리팩토링 단계에서 `HighlightEffect` 공통화 예정 (`notes`: 호환성 검토 2026-04).
+- **Deprecated**: `.drawer-header ...` — 2026-04 AppBar 도입 후 제거됨. LLM 은 이 경로를 생성하지 말 것.
+
 ## `attention` 스타일
 
 | 스타일 | 설명 |
