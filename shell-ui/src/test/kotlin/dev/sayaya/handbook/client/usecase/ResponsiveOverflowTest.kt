@@ -50,4 +50,47 @@ class ResponsiveOverflowTest : BehaviorSpec({
             r.scrollable shouldBe false
         }
     }
+    given("경계값 — 1px 초과 (overflow 트리거 즉시 진입)") {
+        val r = ResponsiveOverflow.compute(300.0, 200.0, 101.0, 48.0)
+        then("전체는 넘치지만 상단 200 + reserve 48 = 248 < 300 → overflow 만 활성, 스크롤 없음") {
+            r.showOverflow shouldBe true
+            r.scrollable shouldBe false
+        }
+    }
+    given("경계값 — top + reserve 가 container 와 정확히 일치") {
+        val r = ResponsiveOverflow.compute(248.0, 200.0, 100.0, 48.0)
+        then("2단계 조건(top + reserve <= container) 이 <= 로 포함이라 평면이 아닌 overflow 로 수렴 (경계 포함)") {
+            // top+bottom=300 > 248 이라 1단계 실패, top+reserve=248 <= 248 이라 2단계 성공.
+            r.showOverflow shouldBe true
+            r.scrollable shouldBe false
+        }
+    }
+    given("경계값 — top 이 container 보다 1px 초과") {
+        val r = ResponsiveOverflow.compute(247.0, 200.0, 100.0, 48.0)
+        then("2단계 실패 (top + reserve = 248 > 247) → 3단계 scrollable 진입") {
+            r.showOverflow shouldBe true
+            r.scrollable shouldBe true
+        }
+    }
+    given("극단값 — container 가 모든 입력보다 훨씬 작음") {
+        val r = ResponsiveOverflow.compute(10.0, 200.0, 100.0, 48.0)
+        then("전체 overflow + scrollable") {
+            r.showOverflow shouldBe true
+            r.scrollable shouldBe true
+        }
+    }
+    given("극단값 — container 가 0") {
+        val r = ResponsiveOverflow.compute(0.0, 200.0, 100.0, 48.0)
+        then("계산기는 crash 없이 overflow + scrollable 반환 (실제 컨테이너 레이아웃 전 상태 가정)") {
+            r.showOverflow shouldBe true
+            r.scrollable shouldBe true
+        }
+    }
+    given("극단값 — 모든 입력 0") {
+        val r = ResponsiveOverflow.compute(0.0, 0.0, 0.0, 0.0)
+        then("아무것도 표시할 게 없으므로 overflow/scroll 모두 false") {
+            r.showOverflow shouldBe false
+            r.scrollable shouldBe false
+        }
+    }
 })

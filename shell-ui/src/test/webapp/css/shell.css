@@ -435,6 +435,10 @@ body,
 body:has(nav.drawer[open]) {
     --shell-drawer-width: 16rem;
 }
+/* [hide]/[overlay] 규칙은 [open] 뒤에 정의해야 한다 — Drawer 상태 머신 상 OVERLAY 는
+   내부적으로 open 속성도 함께 부여(DrawerElement.state) 하므로 [open][overlay] 조합이
+   발생한다. 이 경우 "overlay 는 AppBar 전체가로 + rail 위에 스크림 오버레이" semantic
+   을 따라야 해 drawer-width=0 이 이겨야 한다. specificity 동일 시 선언 순서로 override. */
 body:has(nav.drawer[hide]),
 body:has(nav.drawer[overlay]) {
     --shell-drawer-width: 0px;
@@ -457,11 +461,15 @@ body:has(nav.drawer[overlay]) {
     padding-top: env(safe-area-inset-top, 0px);
     height: calc(var(--shell-app-bar-height) + env(safe-area-inset-top, 0px));
     z-index: 950;
-    /* MD3 Small Top App Bar — 기본(scroll=0) 은 Surface + elevation 0 + border 없음
-       으로 body 와 같은 톤을 취한다. scroll > 0 일 때 `[scrolled]` 가 붙어 Surface
-       container + elevation 2 + 경계선으로 전환 (spec: m3.material.io/components/top-app-bar/specs). */
-    background: var(--md-sys-color-surface);
-    border-bottom: 1px solid transparent;
+    /* MD3 Small Top App Bar 변형 — Frame/Drawer 가 viewport 전역에 깔리는 translucent
+       shell 구조와 일관되게 기본(scroll=0) 은 glass(반투명 + blur) 로 상단 콘텐츠가
+       비쳐 보이게 한다. body 와 같은 Surface 톤이어도 blur 효과로 AppBar 경계가
+       시각적으로 구분됨. scroll > 0 에서 `[scrolled]` 가 붙으면 Surface container +
+       elevation 2 로 고체화되어 스크롤된 콘텐츠 겹침 가독성 해치는 것을 방지. */
+    background: color-mix(in srgb, var(--md-sys-color-surface) 60%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent);
     box-shadow: none;
     display: flex;
     flex-direction: row;

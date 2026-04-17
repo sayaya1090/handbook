@@ -72,8 +72,14 @@
 .agent-mutate-fadeout { animation: ui-toast-out 0.5s ease forwards; }
 
 /* ── Progress bar ── */
+/* AppBar(shell-ui) 바로 아래에 붙는다. `--shell-app-bar-height` 는 shell.css 가 정의한
+   공용 토큰 — safe-area-inset-top 도 AppBar 가 흡수하므로 여기서 동일 표현을 따라간다.
+   z-index 는 AppBar(950) 보다 높게 유지하되 top 을 AppBar 아래로 내려 AppBar elevation
+   가림 없음. */
 .progress-container {
-    position: fixed; top: 0; left: 0; right: 0;
+    position: fixed;
+    top: calc(var(--shell-app-bar-height, 56px) + env(safe-area-inset-top, 0px));
+    left: 0; right: 0;
     z-index: 10002; display: flex; flex-direction: column;
     transition: opacity 0.3s ease;
 }

@@ -6,7 +6,6 @@ import dev.sayaya.handbook.client.usecase.DrawerMode;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
-import elemental2.dom.TouchEvent;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
@@ -20,44 +19,29 @@ import static org.jboss.elemento.Elements.nav;
 /**
  * 좌측 Drawer 네비게이션 컨테이너.
  *
- * <p><b>책임:</b> DrawerMode의 상태(EXPAND/COLLAPSE/HIDE/OVERLAY)에 따라 Drawer를 전환한다.
- * 모바일(OVERLAY)에서는 position: fixed 오버레이 + 배경 스크림을 표시하며,
- * 화면 왼쪽 가장자리 스와이프로 열기/닫기를 지원한다.</p>
+ * <p><b>책임:</b> {@link DrawerMode} 상태(EXPAND/COLLAPSE/HIDE/OVERLAY) 에 따라 Drawer 의
+ * {@code [open]/[hide]/[overlay]} 속성을 토글하고, 하단 MenuRail / ToolRail 을 자식으로 담는다.
+ * OVERLAY 모드에서는 배경 스크림을 노출하며, 스크림 클릭으로 overlay 를 닫는다.</p>
  *
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link DrawerMode} — Drawer 상태 구독</li>
- *   <li>{@link MenuToggleButton} — 햄버거 토글 버튼</li>
- *   <li>{@link MenuRailElement} — 메뉴 레일</li>
- *   <li>{@link ToolRailElement} — 도구 레일</li>
- *   <li>{@link WorkspaceSelectElement} — 워크스페이스 셀렉터</li>
- *   <li>{@link ThemeToggle} — 라이트/다크 테마 토글 (MenuRail 하단에 margin-top:auto 로 고정)</li>
+ *   <li>{@link MenuRailElement} / {@link ToolRailElement} — rail 자식</li>
+ *   <li>{@link ShellStylesheet} — 생성자 주입으로 shell.css 로드 강제</li>
  * </ul></p>
  *
- * <p><b>레이아웃:</b>
- * <ul>
- *   <li>header — 워크스페이스 셀렉터 + 햄버거 토글 가로 일렬 (justify-content: space-between)</li>
- *   <li>본문 — MenuRail + ToolRail 가로 배치</li>
- *   <li>ThemeToggle 은 MenuRail 의 마지막 자식으로 직접 추가되어 Menu 도메인의 {@code bottom=true}
- *       와 동일한 {@code margin-top: auto} 패턴으로 rail 하단에 고정. rail 의 width 트랜지션과
- *       자동으로 동기화되어 expand/collapse 전환 시 같이 움직인다.</li>
- * </ul></p>
- *
- * <p><b>주의:</b> 스와이프 제스처는 왼쪽 가장자리 30px 이내에서 시작하고 60px 이상 이동 시 트리거된다.</p>
+ * <p><b>비고 (2026-04):</b> 이전에 있던 엣지 스와이프 제스처(왼쪽 가장자리에서 오른쪽으로
+ * 스와이프하여 OVERLAY 로 열기) 는 모바일에서 MenuRail 이 {@code display:none} 으로 숨어
+ * 있고 MobileTabs 가 네비게이션을 대체하면서 OVERLAY 진입 동기가 소실되었다. swipe 관련
+ * 필드·리스너·상수는 전부 제거되었고, OVERLAY 상태 자체는 상태 머신({@link DrawerState})
+ * 에는 보존되어 있어 향후 명시적 Drawer 트리거(햄버거 재도입 등) 시 복원 가능하다.</p>
  */
 @Singleton
 public class DrawerElement implements IsElement<HTMLElement> {
-    private static final int SWIPE_EDGE_THRESHOLD = 30;
-    private static final int SWIPE_MIN_DISTANCE = 60;
-
     @Delegate private final HTMLContainerBuilder<HTMLElement> _this = nav();
-    private final DrawerMode mode;
     private final HTMLDivElement scrim;
-    private double touchStartX;
-    private boolean trackingSwipe;
 
     @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, ToolRailElement navTools, ShellStylesheet shellStylesheet) {
-        this.mode = mode;
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
         assert shellStylesheet != null;
@@ -71,7 +55,6 @@ public class DrawerElement implements IsElement<HTMLElement> {
                 .add(div().css("body")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);
-        initSwipeGesture();
     }
 
     private void state(DrawerState state) {
@@ -115,35 +98,5 @@ public class DrawerElement implements IsElement<HTMLElement> {
         if (scrim.parentElement != null) {
             scrim.parentElement.removeChild(scrim);
         }
-    }
-
-    private void initSwipeGesture() {
-        DomGlobal.document.addEventListener("touchstart", e -> {
-            TouchEvent te = (TouchEvent) e;
-            if (te.touches.length > 0) {
-                double x = te.touches.item(0).clientX;
-                if (x < SWIPE_EDGE_THRESHOLD && mode.isMobile()) {
-                    touchStartX = x;
-                    trackingSwipe = true;
-                } else if (mode.getValue() == DrawerState.OVERLAY) {
-                    touchStartX = x;
-                    trackingSwipe = true;
-                }
-            }
-        });
-        DomGlobal.document.addEventListener("touchend", e -> {
-            if (!trackingSwipe) return;
-            trackingSwipe = false;
-            TouchEvent te = (TouchEvent) e;
-            if (te.changedTouches.length > 0) {
-                double endX = te.changedTouches.item(0).clientX;
-                double delta = endX - touchStartX;
-                if (delta > SWIPE_MIN_DISTANCE && mode.getValue() != DrawerState.OVERLAY) {
-                    mode.toggleOverlay();
-                } else if (delta < -SWIPE_MIN_DISTANCE && mode.getValue() == DrawerState.OVERLAY) {
-                    mode.toggleOverlay();
-                }
-            }
-        });
     }
 }
