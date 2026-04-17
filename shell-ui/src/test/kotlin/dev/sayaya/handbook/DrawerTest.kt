@@ -601,4 +601,106 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
     }
+
+    // Task #27 — 신규 컴포넌트 단위 검증 (P2.3)
+    //   MenuTabRenderer / OverflowMenuController / HighlightEffect.observe 는 GWT 런타임
+    //   필요한 DOM/MutationObserver 를 쓰므로 JVM pure 단위 테스트 불가. Playwright 페이지
+    //   위에서 실제 렌더 결과를 직접 검증한다.
+    Given("데스크톱 뷰포트로 페이지 재로드") {
+        page.setViewportSize(1280, 720)
+        page.navigate("file://${java.io.File("src/test/webapp/drawer.html").absolutePath}")
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+        Thread.sleep(500)
+
+        // ── HighlightEffect.observe ──────────────────────────────────────
+        Then("HighlightEffect.observe: .ui-highlight class 부여 시 MenuRailItem 의 TooltipCard 가 즉시 표시된다") {
+            // 첫 일반 메뉴 아이템의 tooltip portal 을 참조해 초기 display:none 을 확인 후
+            // ui-highlight 추가로 portal display 전환되는지 검증.
+            val before = page.evaluate("""
+                (() => {
+                    const item = document.querySelector('.menu-rail .item:not(.bottom-menu):not(.rail-bottom)');
+                    item.classList.add('ui-highlight');
+                    return 'ok';
+                })()
+            """.trimIndent()).toString()
+            before shouldBe "ok"
+            Thread.sleep(80)
+            val visibleCount = page.evaluate("""
+                Array.from(document.querySelectorAll('.ui-tooltip-portal'))
+                    .filter(p => getComputedStyle(p).display !== 'none').length
+            """.trimIndent()).toString().toInt()
+            visibleCount shouldBeGreaterThan 0
+            // 원복
+            page.evaluate("""
+                (() => {
+                    const item = document.querySelector('.menu-rail .item.ui-highlight');
+                    if (item) item.classList.remove('ui-highlight');
+                })()
+            """.trimIndent())
+        }
+
+        Then("HighlightEffect.observe: class 외 속성 변경은 tooltip 트리거하지 않는다") {
+            val visibleBefore = page.evaluate("""
+                Array.from(document.querySelectorAll('.ui-tooltip-portal'))
+                    .filter(p => getComputedStyle(p).display !== 'none').length
+            """.trimIndent()).toString().toInt()
+            page.evaluate("""
+                document.querySelector('.menu-rail .item').setAttribute('data-probe', 'x')
+            """.trimIndent())
+            Thread.sleep(80)
+            val visibleAfter = page.evaluate("""
+                Array.from(document.querySelectorAll('.ui-tooltip-portal'))
+                    .filter(p => getComputedStyle(p).display !== 'none').length
+            """.trimIndent()).toString().toInt()
+            visibleAfter shouldBe visibleBefore
+        }
+
+        // ── MenuTabRenderer (모바일 viewport 에서 렌더된 탭 구조 검증) ─────────
+        When("모바일 viewport 로 전환하여 MobileTabs 렌더를 유도") {
+            page.setViewportSize(375, 800)
+            Thread.sleep(400)
+
+            Then("renderTab: md-primary-tab 자식으로 slot=icon + slot=active-icon 아이콘 2개가 있다") {
+                val iconSlotCount = page.evaluate(
+                    "document.querySelectorAll('.menu-tabs md-primary-tab [slot=icon]').length"
+                ).toString().toInt()
+                val activeSlotCount = page.evaluate(
+                    "document.querySelectorAll('.menu-tabs md-primary-tab [slot=active-icon]').length"
+                ).toString().toInt()
+                val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
+                iconSlotCount shouldBe tabCount
+                activeSlotCount shouldBe tabCount
+            }
+            Then("renderTab: md-primary-tab 에 data-menu-title 속성이 세팅된다 (agent selector 용)") {
+                val withDataset = page.evaluate(
+                    "Array.from(document.querySelectorAll('.menu-tabs md-primary-tab')).filter(t => t.dataset.menuTitle).length"
+                ).toString().toInt()
+                val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
+                withDataset shouldBe tabCount
+            }
+            Then("renderTab: .menu-tab-label 텍스트가 각 탭 내부에 존재") {
+                val labels = page.evaluate(
+                    "Array.from(document.querySelectorAll('.menu-tabs md-primary-tab .menu-tab-label')).filter(l => l.textContent.length > 0).length"
+                ).toString().toInt()
+                labels shouldBeGreaterThan 0
+            }
+
+            // ── OverflowMenuController ───────────────────────────────────
+            Then("OverflowMenuController: overflow 버튼의 aria-label=\"More\" 설정") {
+                val ariaLabel = page.evaluate(
+                    "document.querySelector('.menu-tabs-overflow-btn').getAttribute('aria-label')"
+                ).toString()
+                ariaLabel shouldBe "More"
+            }
+            Then("OverflowMenuController: md-menu 의 anchor 가 overflow 버튼 id 를 가리킨다") {
+                val anchor = page.evaluate(
+                    "document.querySelector('.menu-tabs md-menu').getAttribute('anchor')"
+                ).toString()
+                anchor shouldBe "menu-tabs-overflow-btn"
+            }
+            // 원복
+            page.setViewportSize(1280, 720)
+            Thread.sleep(200)
+        }
+    }
 })
