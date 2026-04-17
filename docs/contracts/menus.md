@@ -8,6 +8,8 @@
   - `interfaces/api/MenuController.kt`
 - **search-type** — 타입 메뉴
 - **search-document** — 문서 메뉴
+- **search-workspace** — 워크스페이스 메뉴 (Drawer 하단 고정, `bottom=true`)
+  - `interfaces/api/MenuController.kt`
 - **(신규) landing-menu** — 앱 내부 랜딩 엔트리 (구현 위치 미정 — 별도 모듈 또는 gateway 로컬)
 
 ## 소비자 (Consumers)
@@ -76,6 +78,7 @@ Accept: application/vnd.sayaya.handbook.v1+json
 | landing-menu (신규) | 앱 내부 "소개" | 항상 공급 (로그인 동일) | 이름/URL 미정 |
 | search-type | 타입 목록 | 인증 필요 | 워크스페이스 컨텍스트 필요 |
 | search-document | 문서 목록 | 인증 필요 | 워크스페이스 컨텍스트 필요 |
+| search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | Drawer 하단 고정 (order=S, bottom=true) |
 
 ## shell-ui `UrlBasedMenuResolver` 동작
 

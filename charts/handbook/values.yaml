@@ -46,6 +46,10 @@ services:
     kind: backend
     color: yellow
     stages: [dev, staging, prod]
+  - name: search-workspace
+    kind: backend
+    color: gold
+    stages: [dev, staging, prod]
   - name: app
     kind: frontend
     color: blue

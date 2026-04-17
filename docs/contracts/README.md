@@ -37,7 +37,7 @@
 auth           .      .      .        OWNER      .     O      .        .     .
 schema         .      O      .        O          O     .      O        .     .
 document       .      O      .        O          O     .      O        .     .
-workspace      .      O      .        O          O     .      O        .     .
+workspace      O      O      .        O          O     .      O        .     .
 assistant      .      O      OWNER    O          O     OWNER  .        .     .
 landing        O      .      .        .          O     O      .        .     O
 events         .      OWNER  .        .          .     .      .        OWNER .

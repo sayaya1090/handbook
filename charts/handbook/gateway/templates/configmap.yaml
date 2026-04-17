@@ -65,6 +65,12 @@ data:
               predicates:
                 - Path=/workspace/*/documents/**
                 - Method=PUT,DELETE
+            # 워크스페이스 조회 (read-only, AI 에이전트 디스커버리 타겟)
+            - id: search-workspace
+              uri: ${gateway.routes.search-workspace}
+              predicates:
+                - Path=/workspaces,/workspaces/**
+                - Method=GET
             # 워크스페이스
             - id: persist-workspace
               uri: ${gateway.routes.persist-workspace}
@@ -102,10 +108,11 @@ data:
         search-document: http://service-search-document:8080
         persist-document: http://service-persist-document:8080
         persist-workspace: http://service-persist-workspace:8080
+        search-workspace: http://service-search-workspace:8080
         assistant: http://service-assistant:8080
     # gateway MenuService 가 /menu 를 집계할 대상 서비스 목록
     services:
       - name: service-login:8080
       - name: service-search-type:8080
       - name: service-search-document:8080
-      - name: service-persist-workspace:8080
+      - name: service-search-workspace:8080

@@ -30,6 +30,31 @@
 - **모든 클래스에 역할/책임/의존관계/주의점 포함 Javadoc(KDoc) 작성.**
 - 신규 클래스 생성 시 필수. 기존 클래스 수정 시 없으면 추가.
 
+### 신규 모듈 운영테스트 (필수)
+**처음 구축하는 모듈(신규 Spring Boot 서비스 또는 GWT UI 모듈)은 단위·통합 테스트 통과 후 실제 dev 클러스터(`handbook-dev`)에 배포해 gateway 경유 엔드포인트가 정상 응답하는지 확인한 뒤 커밋**한다.
+
+절차:
+1. `./gradlew :<module>:test` 로컬 통과
+2. jib 로 이미지 빌드 & push (`./gradlew :<module>:jib -Djib.to.image=...`)
+3. helm chart 혹은 ArgoCD sync 로 `handbook-dev` 네임스페이스 배포
+4. `oc get pod -n handbook-dev -l app=<module>` Ready 확인
+5. gateway 경유 호출 검증 — 예: `curl https://<dev-host>/menus` 응답에 해당 모듈 엔트리 포함
+6. 성공 로그(엔드포인트 + 응답) 커밋 메시지 본문에 남김
+
+dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo promotion 경로로만 전파.
+
+### 에이전트 연동 체크리스트 (필수)
+**모든 신규 모듈 / 기존 모듈의 공개 API 변경 시 아래를 요구사항·문서·구현에서 반드시 확인**한다. 상세 템플릿은 `.claude/skills/doc-structure.md` 의 "에이전트 연동 섹션" 참조.
+
+1. **내부 assistant 연동** — 이 모듈을 assistant 가 어떻게 호출/사용하는가 (직접 REST, 또는 `AGENT_COMMAND` navigate/mutate 타겟)
+2. **외부 AI Tool Use** — 어떤 엔드포인트를 `/openapi.json` 에 노출할지 / 차단할지 결정 (`docs/contracts/api.md`)
+3. **OpenAPI 어노테이션** — 노출되는 엔드포인트에 springdoc `@Operation(summary, description, example)` 기입 (AI function calling 품질)
+4. **감사 경로** — `caller_type=EXTERNAL_AGENT/MCP_CLIENT` 호출 시 `AuditEntry` 발행 지점 확인 (`docs/contracts/audit.md`)
+5. **Agent Command 타겟** — navigate/highlight/mutate 커맨드가 이 모듈 화면/필드를 가리킬 수 있도록 selector·URL 패턴 명시
+
+→ 모듈 `README.md` + `USECASE.md` 에 **"에이전트 연동"** 섹션 필수.
+→ `docs-keeper` 가 주기 감사에서 섹션 누락을 플래그한다.
+
 ### 클래스 크기 경계
 - 경고 기준: 메서드 10개 이상, 의존성 7개 이상, 200줄 이상
 - SRP 위반 징후 시 핸들러 분리, 전략 패턴, 헬퍼 추출 제안
@@ -126,7 +151,7 @@ Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 | 인증·권한·JWT·RBAC·PAT | `auth-expert` | `login/`, `login-ui/`, `authentication/`, `docs/contracts/permissions.md` |
 | 타입·속성·검증·레이아웃 | `schema-expert` | `schema/`, `type-ui/`, `persist-type/`, `search-type/` |
 | 문서·이력·편집·임포트 | `document-expert` | `document/`, `document-ui/`, `persist-document/`, `search-document/` |
-| 워크스페이스·그룹·프레즌스 | `workspace-expert` | `workspace/`, `workspace-ui/`, `persist-workspace/` |
+| 워크스페이스·그룹·프레즌스 | `workspace-expert` | `workspace/`, `workspace-ui/`, `persist-workspace/`, `search-workspace/` |
 | 내부 AI·커맨드·감사 | `assistant-expert` | `assistant/`, `agent-protocol/`, `agent-ui/`, `docs/contracts/agent-commands.md` |
 | SEO 랜딩·외부 AI·MCP | `landing-expert` | `landing-content/`, `landing-ui/`, §3.22, §3.23 |
 | Shell·UI 공용·디자인·모바일·대시보드 | `ui-platform-expert` | `shell-ui/`, `ui-components/`, `app/`, `dashboard-ui/`, `docs/design.md` |

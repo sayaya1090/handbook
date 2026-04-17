@@ -90,6 +90,7 @@ CLAUDE.md 규칙: "모든 유스케이스에는 시퀀스 다이어그램과 대
 | 고아 UC | 매트릭스에서 참조되지 않는 UC |
 | 깨진 링크 | 존재하지 않는 섹션·파일 참조 |
 | 모듈 문서 누락 | 신규 모듈 4종 세트 |
+| **에이전트 연동 섹션 누락** | `README.md`/`USECASE.md` 에 "에이전트 연동" 섹션 존재 여부. 면제 모듈은 `에이전트 연동: 없음 (내부 전용)` 한 줄 확인 (`.claude/skills/doc-structure.md` 표준) |
 | API 표 vs 엔드포인트 | `@*Mapping` 과 `docs/contracts/api.md` 동기화 |
 | 계약 공급자/소비자 vs 실제 import | 인벤토리 정합성 |
 | MEMORY.md vs 실제 memory 파일 | 인덱스의 링크 실존 |

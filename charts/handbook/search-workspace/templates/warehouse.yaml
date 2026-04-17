@@ -1,0 +1,22 @@
+{{- if not .Values.stage.prev }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: search-workspace
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.color }}
+spec:
+  freightCreationPolicy: Automatic
+  interval: 1m0s
+  subscriptions:
+    - image:
+        discoveryLimit: 2
+        imageSelectionStrategy: NewestBuild
+        insecureSkipTLSVerify: true
+        repoURL: image-registry.openshift-image-registry.svc:5000/handbook/search-workspace
+        strictSemvers: false
+        ignoreTagsRegexes:
+          - "^latest$"
+{{- end }}

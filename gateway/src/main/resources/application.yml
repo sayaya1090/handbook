@@ -46,6 +46,12 @@ spring:
           predicates:
             - Path=/workspace/*/documents/**
             - Method=PUT,DELETE
+        # 워크스페이스 조회 (read-only, AI 에이전트 디스커버리 타겟)
+        - id: search-workspace
+          uri: ${gateway.routes.search-workspace:http://localhost:8089}
+          predicates:
+            - Path=/workspaces,/workspaces/**
+            - Method=GET
         # 워크스페이스
         - id: persist-workspace
           uri: ${gateway.routes.persist-workspace:http://localhost:8086}

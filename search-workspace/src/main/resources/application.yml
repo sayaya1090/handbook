@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: search-workspace
+  # 읽기 전용 세션 — PostgreSQL 이 default_transaction_read_only=on 으로
+  # 모든 트랜잭션을 READ ONLY 로 강제. 실수로 write 메서드가 호출되어도
+  # DB 가 거부한다 (SELECT 만 허용).
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:handbook}?options=-c%20default_transaction_read_only%3Don
+    username: ${DB_USER:handbook}
+    # Production: append &sslMode=require to URL
+    password: ${DB_PASSWORD}
+    pool:
+      max-size: 10
+      initial-size: 2
+      max-idle-time: 30m
+      validation-query: SELECT 1
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+logging:
+  pattern:
+    console: "%d{ISO8601} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"

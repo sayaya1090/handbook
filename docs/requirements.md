@@ -1644,6 +1644,7 @@ AI 에이전트가 function calling / tool use 로 Handbook REST API 를 호출�
 - 별도 모듈 **`mcp-server`** 를 신설하여 Anthropic Model Context Protocol (MCP) 규격에 맞는 서버를 제공한다.
 - Handbook REST API 를 MCP `tools` 로 래핑하여 Claude Desktop, VS Code MCP 클라이언트 등에서 자연어로 Handbook 을 조작할 수 있도록 한다.
 - 노출 대상 tool (예시):
+  - `list_workspace_menu()` → `GET /menus` (search-workspace — 워크스페이스 기능 디스커버리)
   - `create_workspace(name, description)` → `POST /workspace`
   - `list_types(workspace)` → `GET /workspace/{workspace}/types`
   - `create_type(workspace, name, attributes[])` → `PUT /workspace/{workspace}/types`

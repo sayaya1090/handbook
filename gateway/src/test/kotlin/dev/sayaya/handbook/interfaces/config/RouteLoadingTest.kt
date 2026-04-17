@@ -41,7 +41,8 @@ class RouteLoadingTest(
             routeIds shouldContainAll listOf(
                 "login", "search-type", "persist-type",
                 "search-document", "persist-document",
-                "persist-workspace", "assistant", "static"
+                "search-workspace", "persist-workspace",
+                "assistant", "static"
             )
         }
 
