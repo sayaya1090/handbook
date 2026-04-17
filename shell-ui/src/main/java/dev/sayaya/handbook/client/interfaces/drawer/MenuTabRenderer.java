@@ -1,45 +1,42 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.components.HighlightEffect;
-import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.client.usecase.ToolSelected;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.ui.elements.IconElementBuilder;
 import dev.sayaya.ui.elements.TabsElementBuilder.PrimaryTabElementBuilder;
 import elemental2.dom.HTMLElement;
-import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
-import static org.jboss.elemento.Elements.span;
 
 /**
- * 단일 {@link Menu} 를 모바일 네비게이션 DOM (md-primary-tab / md-menu-item) 으로 렌더링하는
- * 팩토리.
+ * 단일 {@link Menu} / {@link Tool} 을 모바일 네비게이션 DOM (md-primary-tab / md-menu-item) 으로
+ * 렌더링하는 팩토리.
  *
- * <p><b>책임:</b> {@link MobileTabsElement} 가 소유하던 DOM 조립 로직을 분리해 단일 책임으로
- * 수용한다 (SRP). 아이콘(outline/filled) 슬롯 배치, 라벨·i18n 바인딩, click 핸들러, TooltipCard
- * + HighlightEffect 연결까지 이 클래스 안에서 완결.</p>
+ * <p><b>책임:</b> {@link MobileTabsElement} 가 어떤 엔트리 종류를 렌더할지를 도메인 용어로
+ * 선언적으로 표현한다. DOM 조립·아이콘 슬롯·라벨 i18n·click 핸들러·tooltip/highlight 연결은
+ * {@link MenuTabDecorator} 가 담당하고, 여기서는 "어떤 도메인 객체를 어떤 호스트에 어떤
+ * Subject 로 발행할지" 만 기술.</p>
  *
  * <p><b>SOLID 반영:</b>
  * <ul>
- *   <li>S: 메뉴 → DOM 렌더만 담당. 레이아웃 결정(언제 overflow 로 이동시킬지) 은 호출측
+ *   <li>S: 메뉴/도구 → DOM 렌더만 담당. 레이아웃 결정(언제 overflow 로 이동시킬지) 은 호출측
  *       {@link MobileTabsElement} 가 별도 판정.</li>
- *   <li>O: 새 렌더 변형(예: leading slot 전용 mini tab) 이 필요하면 메서드 추가만 하면 된다.</li>
- *   <li>D: 호출측은 구체적인 {@code md-primary-tab}/{@code md-menu-item} DOM 을 조립하지 않고
- *       {@link #populateMenuTab} / {@link #renderMenuItem} 추상에만 의존.</li>
+ *   <li>O: 새 렌더 변형이 필요하면 {@link MenuTabDecorator} 에 factory/fluent 메서드를 추가할 뿐
+ *       이 클래스는 도메인 조립 한 곳만 바꾼다.</li>
+ *   <li>D: 호출측은 {@link #populateMenuTab} / {@link #renderMenuItem} / {@link #populateToolTab}
+ *       추상에만 의존.</li>
  * </ul></p>
  *
  * <p><b>의존관계:</b>
  * <ul>
- *   <li>{@link MenuSelected} — click 시 선택 발행</li>
+ *   <li>{@link MenuSelected} / {@link ToolSelected} — click 시 선택 발행 (Subject 구독자들이
+ *       script 주입·active 토글 등 사이드 이펙트 처리)</li>
  *   <li>{@link LabelProvider} — i18n 라벨 구독</li>
  * </ul></p>
  */
@@ -58,96 +55,47 @@ public class MenuTabRenderer {
     }
 
     /**
-     * 주어진 sayaya-ui {@link PrimaryTabElementBuilder} 에 menu 렌더 내용을 주입한다.
+     * 주어진 sayaya-ui {@link PrimaryTabElementBuilder} 에 menu 탭 내용을 주입한다.
      * tb 는 호출 시점에 이미 parent md-tabs 에 attach 되어 있다 (sayaya-ui tab() 시맨틱).
-     * outline/filled 두 아이콘을 slot="icon" / slot="active-icon" 에 배치해 MD3 활성 전환을
-     * 웹컴포넌트가 자동 처리하게 한다. agent-command highlight 수신 시 {@link TooltipCard} 로
-     * 라벨 강조.
      *
      * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach/re-attach 용도로 보관.
      */
     public HTMLElement populateMenuTab(PrimaryTabElementBuilder tb, Menu menu) {
-        // slot=icon 은 HasIconSlot.icon() 이, slot=active-icon 은 attr() 체인으로 직접 표현.
-        // MD3 md-primary-tab 이 active 속성 토글에 따라 두 슬롯을 자동 교체 렌더 + indicator
-        // 이동 애니메이션까지 웹컴포넌트가 처리. 라벨은 .menu-tab-label span 으로 별도 감싸
-        // 둔다 — elemento tb.text() 는 textContent 덮어쓰기 구현이라 named slot 자식(md-icon)
-        // 까지 삭제되므로 직접 사용 불가. label 을 독립 span 에 두면 i18n 구독이 textContent
-        // 를 바꿔도 slot 자식들이 보존된다.
-        // 두 아이콘 대칭 통일 — HasIconSlot.icon() 은 내부적으로 add() + setAttribute("slot","icon")
-        // 의 편의 메서드일 뿐이라 .add() + .attr() 체인과 결과 동등. slot 이름이 명시적으로 보여
-        // outline/active-icon 의 의도가 직관적.
-        tb.css("menu-tab")
-                .add(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline")
-                        .attr("slot", "icon"))
-                .add(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled")
-                        .attr("slot", "active-icon"));
-        HTMLElement tab = tb.element();
-        HTMLElement label = span().css("menu-tab-label").element();
-        tab.appendChild(label);
-        if (menu.title() != null) tab.dataset.set("menuTitle", menu.title());
-        tb.on(EventType.click, evt -> selected.next(menu));
-        // agent-command highlight 수신 시 tooltip 으로 라벨 강조 (hover 는 MD3 기본 동작으로 커버).
-        final TooltipCard tooltip = TooltipCard.anchor(tab).position("bottom").enabled(false);
-        HighlightEffect.observe(tab, () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
-        labelProvider.subscribe(labels -> {
-            String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
-            label.textContent = title;
-            tooltip.content(title, null);
-        });
-        return tab;
+        return MenuTabDecorator.forPrimaryTab(tb, menu.icon())
+                .dataset("menuTitle", menu.title())
+                .i18n(menu.title(), labelProvider)
+                .onClick(() -> selected.next(menu))
+                .element();
     }
 
     /**
-     * {@code md-menu-item} 1건을 생성한다 — overflow 팝업(md-menu) 내부 엔트리 용도. click 시
+     * overflow 팝업(md-menu) 내부 엔트리용 {@code md-menu-item} 을 생성한다. click 시
      * {@link MenuSelected} 발행 후 {@code afterSelect} 콜백(일반적으로 overflow.close) 을 실행.
      */
     public HTMLElement renderMenuItem(Menu menu, Runnable afterSelect) {
-        HTMLContainerBuilder<HTMLElement> mi = htmlContainer("md-menu-item", HTMLElement.class).css("menu-tab-menu-item");
-        HTMLElement miIcon = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-light", menu.icon(), "icon-outline").element();
-        miIcon.setAttribute("slot", "start");
-        mi.add(miIcon);
-        HTMLElement headline = div().element();
-        headline.setAttribute("slot", "headline");
-        mi.add(headline);
-        if (menu.title() != null) mi.element().dataset.set("menuTitle", menu.title());
-        mi.on(EventType.click, evt -> {
-            selected.next(menu);
-            if (afterSelect != null) afterSelect.run();
-        });
-        labelProvider.subscribe(labels -> {
-            String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
-            headline.textContent = title;
-        });
-        return mi.element();
+        HTMLContainerBuilder<HTMLElement> mi = htmlContainer("md-menu-item", HTMLElement.class);
+        return MenuTabDecorator.forOverflowMenuItem(mi, menu.icon())
+                .dataset("menuTitle", menu.title())
+                .i18n(menu.title(), labelProvider)
+                .onClick(() -> {
+                    selected.next(menu);
+                    if (afterSelect != null) afterSelect.run();
+                })
+                .element();
     }
 
     /**
-     * 주어진 sayaya-ui {@link PrimaryTabElementBuilder} 에 tool 렌더 내용을 주입한다 — 모바일
-     * MobileTabs 가 도구 모드일 때 사용. tb 는 호출 시점에 이미 parent md-tabs 에 attach 된 상태.
-     * click 시 {@link ToolSelected} 발행. Menu 의 populateMenuTab 과 동일한 outline/filled 아이콘
-     * 슬롯 + 라벨 구조.
+     * 주어진 sayaya-ui {@link PrimaryTabElementBuilder} 에 tool 탭 내용을 주입한다 — MobileTabs 가
+     * 도구 모드일 때 사용. click 시 {@link ToolSelected} 발행.
      *
-     * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach 용도로 보관.
+     * @return 편의상 주입된 tab 의 native element.
      */
     public HTMLElement populateToolTab(PrimaryTabElementBuilder tb, Tool tool) {
-        tb.css("menu-tab", "tool-tab")
-                .add(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline")
-                        .attr("slot", "icon"))
-                .add(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled")
-                        .attr("slot", "active-icon"));
-        HTMLElement tab = tb.element();
-        HTMLElement label = span().css("menu-tab-label").element();
-        tab.appendChild(label);
-        if (tool.title() != null) tab.dataset.set("toolTitle", tool.title());
-        tb.on(EventType.click, evt -> toolSelected.next(tool));
-        final TooltipCard tooltip = TooltipCard.anchor(tab).position("bottom").enabled(false);
-        HighlightEffect.observe(tab, () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
-        labelProvider.subscribe(labels -> {
-            String title = labels.getOrDefault(tool.title(), tool.title() != null ? tool.title() : "");
-            label.textContent = title;
-            tooltip.content(title, null);
-        });
-        return tab;
+        return MenuTabDecorator.forPrimaryTab(tb, tool.icon())
+                .css("tool-tab")
+                .dataset("toolTitle", tool.title())
+                .i18n(tool.title(), labelProvider)
+                .onClick(() -> toolSelected.next(tool))
+                .element();
     }
 }
