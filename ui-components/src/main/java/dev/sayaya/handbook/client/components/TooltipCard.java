@@ -5,6 +5,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLStyleElement;
 import org.jboss.elemento.IsElement;
 
 import static org.jboss.elemento.Elements.div;
@@ -41,6 +42,11 @@ public class TooltipCard implements IsElement<HTMLDivElement> {
     public static final int DEFAULT_DELAY_MS = 300;
     public static final String DEFAULT_POSITION = "end";
     public static final int AUTO_HIDE_HIGHLIGHT_MS = 3000;
+    /**
+     * Anchor 와 tooltip 카드 사이 간격. 4방향 동일하게 적용해 비대칭 제거.
+     */
+    private static final int OFFSET_PX = 12;
+    private static boolean stylesInjected = false;
 
     private final HTMLDivElement root;
     private final HTMLDivElement headlineEl = div().css("ui-tooltip-headline").element();
@@ -56,6 +62,7 @@ public class TooltipCard implements IsElement<HTMLDivElement> {
 
     private TooltipCard(Element anchor) {
         this.anchor = anchor;
+        ensureStylesInjected();
         HTMLElement card = CardElementBuilder.card().elevated()
                 .css("ui-tooltip-card", "ui-position-" + position)
                 .element();
@@ -202,26 +209,73 @@ public class TooltipCard implements IsElement<HTMLDivElement> {
             case "top":
                 style.setProperty("left", (rect.left + rect.width / 2) + "px");
                 style.setProperty("top", rect.top + "px");
-                style.setProperty("transform", "translate(-50%, -100%)");
+                style.setProperty("transform", "translate(-50%, calc(-100% - " + OFFSET_PX + "px))");
                 break;
             case "bottom":
                 style.setProperty("left", (rect.left + rect.width / 2) + "px");
                 style.setProperty("top", rect.bottom + "px");
-                style.setProperty("transform", "translate(-50%, 8px)");
+                style.setProperty("transform", "translate(-50%, " + OFFSET_PX + "px)");
                 break;
             case "start":
                 style.setProperty("left", rect.left + "px");
                 style.setProperty("top", (rect.top + rect.height / 2) + "px");
-                style.setProperty("transform", "translate(-100%, -50%)");
+                style.setProperty("transform", "translate(calc(-100% - " + OFFSET_PX + "px), -50%)");
                 break;
             case "end":
             default:
                 style.setProperty("left", rect.right + "px");
                 style.setProperty("top", (rect.top + rect.height / 2) + "px");
-                style.setProperty("transform", "translate(8px, -50%)");
+                style.setProperty("transform", "translate(" + OFFSET_PX + "px, -50%)");
                 break;
         }
     }
+
+    /**
+     * Tooltip 고유 스타일을 document.head 에 한 번만 주입한다. MD3 elevated surface
+     * (CardElementBuilder.elevated) 위에 padding/typography/max-width 만 덧씌워
+     * 비어있던 {@code .ui-tooltip-card} 계열 셀렉터에 실제 규칙을 공급한다.
+     */
+    private static void ensureStylesInjected() {
+        if (stylesInjected) return;
+        stylesInjected = true;
+        HTMLStyleElement style = (HTMLStyleElement) DomGlobal.document.createElement("style");
+        style.textContent = CSS;
+        DomGlobal.document.head.appendChild(style);
+    }
+
+    private static final String CSS = """
+        .ui-tooltip-portal {
+            z-index: 9500;
+            pointer-events: none;
+        }
+        .ui-tooltip-card {
+            padding: 8px 12px;
+            min-width: 140px;
+            max-width: 280px;
+            border-radius: 12px;
+            box-sizing: border-box;
+        }
+        .ui-tooltip-headline {
+            font-family: var(--md-sys-typescale-title-small-font, 'Roboto', sans-serif);
+            font-size: var(--md-sys-typescale-title-small-size, 14px);
+            font-weight: var(--md-sys-typescale-title-small-weight, 500);
+            line-height: var(--md-sys-typescale-title-small-line-height, 20px);
+            color: var(--md-sys-color-on-surface, inherit);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ui-tooltip-supporting {
+            font-family: var(--md-sys-typescale-body-small-font, 'Roboto', sans-serif);
+            font-size: var(--md-sys-typescale-body-small-size, 12px);
+            font-weight: var(--md-sys-typescale-body-small-weight, 400);
+            line-height: var(--md-sys-typescale-body-small-line-height, 16px);
+            color: var(--md-sys-color-on-surface-variant, inherit);
+            margin-top: 4px;
+            opacity: 0.85;
+        }
+        """;
 
     @Override
     public HTMLDivElement element() { return root; }
