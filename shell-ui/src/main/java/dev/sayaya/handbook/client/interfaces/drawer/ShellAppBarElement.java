@@ -17,10 +17,12 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
@@ -78,6 +80,10 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         // SRP — AppBar 가 자기 정적 slot 을 스스로 채운다. DrawerElement 는 슬롯 지식 없음.
         leading.element().appendChild(navToggle.element());
         center.element().appendChild(workspace.css("workspace").element());
+        // 정적 엔트리에도 data-order 를 부여해 동적 메뉴와 단일 정렬 기준(order 오름차순,
+        // 우선순위 높을수록 우측) 으로 통합 정렬된다. 테마 토글은 중간 우선순위("M") —
+        // 세션 액션(SIGN_IN/OUT, order="Z") 은 항상 테마 토글의 오른쪽에 놓인다.
+        themeToggle.element().dataset.set("appBarOrder", "M");
         trailing.element().appendChild(themeToggle.element());
         list.distinctUntilChanged().subscribe(this::updateMenuActions);
         // MD3 Small Top App Bar: scroll=0 → Surface 기본 / scroll>0 → Surface-container
@@ -109,13 +115,44 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         }
         menuActions.clear();
         if (menus == null) return;
+        // 동적 메뉴를 slot 별로 생성 후 append. slot 내 정렬은 reorderSlot 이 data-app-bar-order
+        // (정적 엔트리도 포함) 오름차순 기준으로 재배치한다 — 오름차순일수록 왼쪽.
         for (Menu m : menus) {
             HTMLElement slot = slots.get(m.appBarSlot());
             if (slot == null) continue; // null 이거나 미지원 slot — 스킵.
             MenuActionEntry entry = createActionButton(m);
+            entry.element.dataset.set("appBarOrder", m.order() != null ? m.order() : "");
             menuActions.add(entry);
-            slot.insertBefore(entry.element, slot.firstChild);
+            slot.appendChild(entry.element);
         }
+        // 영향 받은 slot 만 재정렬. leading/center 에는 동적 엔트리가 거의 없으므로 저비용.
+        menus.stream()
+                .map(Menu::appBarSlot)
+                .filter(slots::containsKey)
+                .distinct()
+                .forEach(name -> reorderSlot(slots.get(name)));
+    }
+
+    /**
+     * 지정된 slot 내 모든 자식을 {@code data-app-bar-order} 속성 기준으로 오름차순 재배치한다.
+     * 속성이 없거나 빈 값인 엔트리는 빈 문자열로 취급되어 가장 왼쪽에 위치. 정적 주입 엔트리와
+     * 동적 메뉴가 단일 기준으로 섞여 정렬된다.
+     */
+    private static void reorderSlot(HTMLElement slot) {
+        List<HTMLElement> sorted = new LinkedList<>();
+        // childNodes 는 Text 포함이라 firstElementChild/nextElementSibling 으로 element 만 순회.
+        elemental2.dom.Element cur = slot.firstElementChild;
+        while (cur != null) {
+            if (cur instanceof HTMLElement) sorted.add((HTMLElement) cur);
+            cur = cur.nextElementSibling;
+        }
+        sorted = sorted.stream()
+                .sorted(Comparator.comparing(el -> {
+                    String v = el.dataset.get("appBarOrder");
+                    return v != null ? v : "";
+                }))
+                .collect(Collectors.toList());
+        for (HTMLElement el : sorted) slot.appendChild(el); // appendChild 는 기존 위치에서 이동
     }
 
     /**

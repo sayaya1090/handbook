@@ -78,6 +78,19 @@ internal class DrawerTest: GwtTestSpec({
             val trailingCount = DrawerMock.menu.count { "trailing" == it.appBarSlot() }
             actions.count() shouldBe trailingCount
         }
+        Then("trailing slot 은 data-app-bar-order 오름차순으로 정렬되어 테마(M)보다 SIGN_IN(Z)이 더 우측에 위치한다") {
+            // MD3 관용: Top App Bar trailing 은 우측일수록 primary action. 세션 액션이
+            // 테마 토글보다 우선순위가 높으므로 DOM 상 뒤(= 시각적 오른쪽)에 와야 한다.
+            val themeIdx = page.evaluate(
+                "Array.from(document.querySelector('.shell-app-bar-trailing').children).findIndex(el => el.classList.contains('rail-bottom'))"
+            ).toString().toInt()
+            val loginIdx = page.evaluate(
+                "Array.from(document.querySelector('.shell-app-bar-trailing').children).findIndex(el => el.classList.contains('shell-app-bar-action'))"
+            ).toString().toInt()
+            (themeIdx >= 0) shouldBe true
+            (loginIdx >= 0) shouldBe true
+            (loginIdx > themeIdx) shouldBe true
+        }
         Then("테마 토글 버튼 headline 에 i18n 라벨 텍스트가 존재한다") {
             // LabelProvider fallback 값(Switch to Dark/Light)이라도 비어있지 않아야 함
             val headline = page.evaluate(
