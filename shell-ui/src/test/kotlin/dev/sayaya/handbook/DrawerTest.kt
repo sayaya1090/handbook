@@ -616,7 +616,7 @@ internal class DrawerTest: GwtTestSpec({
     }
 
     // Task #27 — 신규 컴포넌트 단위 검증 (P2.3)
-    //   MenuTabRenderer / OverflowMenuController / HighlightEffect.observe 는 GWT 런타임
+    //   NavEntryFactory / MenuTabDecorator / OverflowMenuController / HighlightEffect.observe 는 GWT 런타임
     //   필요한 DOM/MutationObserver 를 쓰므로 JVM pure 단위 테스트 불가. Playwright 페이지
     //   위에서 실제 렌더 결과를 직접 검증한다.
     Given("데스크톱 뷰포트로 페이지 재로드") {
@@ -668,7 +668,7 @@ internal class DrawerTest: GwtTestSpec({
             visibleAfter shouldBe visibleBefore
         }
 
-        // ── MenuTabRenderer (모바일 viewport 에서 렌더된 탭 구조 검증) ─────────
+        // ── NavEntryFactory + MenuTabDecorator (모바일 viewport 에서 렌더된 탭 구조 검증) ─────────
         When("모바일 viewport 로 전환하여 MobileTabs 렌더를 유도") {
             page.setViewportSize(375, 800)
             Thread.sleep(400)

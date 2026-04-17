@@ -30,10 +30,9 @@ import static org.jboss.elemento.Elements.span;
  *       {@code clickBinder} 로 추상화</li>
  * </ul></p>
  *
- * <p><b>설계 배경:</b> 기존 {@link MenuTabRenderer} 의 세 메서드(populateMenuTab,
- * populateToolTab, renderMenuItem)가 동일한 조각(라벨 i18n, data-marker, click)을 복제하고
- * 호스트 종류만 달랐다. 데코레이터로 공통 구조를 묶고, 호스트별 초기 조립을 factory 에 분리해
- * 호출부는 조립 의도만 드러나게 한다.</p>
+ * <p><b>설계 배경:</b> 기존 {@link NavEntryFactory} (구 MenuTabRenderer) 의 세 메서드가 동일한
+ * 조각(라벨 i18n, data-marker, click)을 복제하고 호스트 종류만 달랐다. 데코레이터로 공통 구조를
+ * 묶고, 호스트별 초기 조립을 factory 에 분리해 호출부는 조립 의도만 드러나게 한다.</p>
  *
  * <p><b>의존관계:</b>
  * <ul>

@@ -54,7 +54,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
      */
     private final TabsElementBuilder.TabsPrimaryElementBuilder tabs = TabsElementBuilder.tabs().primary();
 
-    private final MenuTabRenderer renderer;
+    private final NavEntryFactory entries;
     private final OverflowMenuController overflow;
     /** menu mode 상단정렬 탭. */
     private final List<TabEntry> topEntries = new LinkedList<>();
@@ -69,8 +69,8 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     private Runnable pendingOnBack;
 
     @Inject
-    MobileTabsElement(MenuTabRenderer renderer, OverflowMenuController overflow) {
-        this.renderer = renderer;
+    MobileTabsElement(NavEntryFactory entries, OverflowMenuController overflow) {
+        this.entries = entries;
         this.overflow = overflow;
         tabs.element().classList.add("menu-tabs-bar");
         _this.add(tabs.element()).add(overflow);
@@ -106,7 +106,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         ensureBackButton();
         pendingOnBack = onBack;
         if (tools != null) for (Tool t : tools) {
-            HTMLElement tab = renderer.populateToolTab(tabs.tab(), t);
+            HTMLElement tab = entries.populateToolTab(tabs.tab(), t);
             toolEntries.add(new ToolEntry(t, tab));
         }
         overflow.setHidden(true); // tool 모드에선 overflow 버튼 숨김 — 도구는 스크롤만.
@@ -168,9 +168,9 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
 
     private TabEntry createEntry(Menu menu, boolean isBottom) {
         // tabs.tab() 은 new md-primary-tab 을 생성하면서 parent md-tabs 에 자동 attach.
-        // renderer.populateMenuTab 은 그 builder 에 아이콘/라벨/click/i18n 을 주입.
-        HTMLElement tab = renderer.populateMenuTab(tabs.tab(), menu);
-        HTMLElement menuItem = isBottom ? renderer.renderMenuItem(menu, overflow::close) : null;
+        // entries.populateMenuTab 은 그 builder 에 아이콘/라벨/click/i18n 을 주입.
+        HTMLElement tab = entries.populateMenuTab(tabs.tab(), menu);
+        HTMLElement menuItem = isBottom ? entries.renderMenuItem(menu, overflow::close) : null;
         return new TabEntry(menu, tab, menuItem);
     }
 
