@@ -40,11 +40,29 @@ interface Menu {
     String icon();        // FontAwesome 아이콘 클래스 (fa-xxx)
     String iconType();    // "light" | "solid"
     String script();      // GWT nocache.js 경로 (동적 로딩 대상)
-    boolean bottom();     // 하단 고정 여부
+    boolean bottom();     // 하단 고정 여부 (MenuRail/MobileTabs 내 정렬 힌트)
+    String appBarSlot();  // null | "leading" | "center" | "trailing"  ← AppBar 승격 slot
     List<String> urlRegex(); // 이 메뉴가 자동 선택될 URL 정규식 목록
     // 향후 href 필드 추가 검토 (SEO 랜딩 정적 링크용 — landing.md 참조)
 }
 ```
+
+### `appBarSlot` 규약 — AppBar 승격
+
+`appBarSlot` 은 공급자가 자신의 메뉴를 네비게이션 축(MenuRail / MobileTabs) 이 아닌
+`ShellAppBarElement` 의 AppBar slot 으로 **승격**하도록 요청하는 필드.
+
+| 값 | semantic | 렌더 위치 | 예시 |
+|----|----------|----------|------|
+| `null` (기본) | 네비게이션 (모듈 전환) | 데스크톱 MenuRail / 모바일 MobileTabs | documents, types, workspaces |
+| `"leading"` | 전역 네비 아이콘 | AppBar leading | 예약됨 (현재 미사용) |
+| `"center"` | 컨텍스트 셀렉터 / 제목 | AppBar center | 예약됨 — WorkspaceSelect 는 별도 컴포넌트로 직접 배치 |
+| `"trailing"` | 세션 / 전역 액션 | AppBar trailing (md-icon-button) | **login** (Sign In / Sign Out) |
+
+**동작 규칙**
+- `appBarSlot != null` 메뉴는 MenuRail·MobileTabs 렌더에서 제외된다 (네비게이션 축 오염 방지).
+- AppBar 승격 메뉴는 아이콘 버튼 형태로 렌더되고, 클릭 시 일반 `MenuSelected` 이벤트가 발행되어 기존 모듈 로딩 경로(`script` 실행)와 수렴한다.
+- 인증 상태 분기(예: login 은 principal null 여부에 따라 SIGN_IN/SIGN_OUT 만 emit)는 공급자 책임이며, UI 는 MenuList 에 존재하는 엔트리만 렌더한다.
 
 ## `MenuSupplier` 인터페이스
 

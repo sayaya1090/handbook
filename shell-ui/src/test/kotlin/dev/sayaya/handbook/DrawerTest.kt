@@ -61,15 +61,22 @@ internal class DrawerTest: GwtTestSpec({
             sun shouldNotBe null
             moon shouldNotBe null
         }
-        Then("bottom=true 메뉴에 .bottom-menu 클래스가 부여된다") {
-            // DrawerMock 의 Menu 3/4 가 bottom=true → MenuRailElement 가 .bottom-menu 클래스 추가
+        Then("bottom=true && appBarSlot==null 메뉴에만 .bottom-menu 클래스가 부여된다") {
+            // appBarSlot 이 지정된 메뉴는 AppBar 로 승격되어 MenuRail 에서 제외되므로
+            // .bottom-menu 카운트는 (bottom=true && appBarSlot==null) 메뉴 수와 일치.
             val bottomMenus = page.querySelectorAll(".rail:first-child .item.bottom-menu")
-            val bottomCount = DrawerMock.menu.count { it.bottom() == true }
+            val bottomCount = DrawerMock.menu.count { it.bottom() == true && it.appBarSlot() == null }
             bottomMenus.count() shouldBe bottomCount
         }
-        Then("MenuRail 의 총 .item 수는 메뉴 수와 일치한다 (theme 은 AppBar 로 이동)") {
+        Then("MenuRail 의 총 .item 수는 네비게이션 메뉴 수(appBarSlot==null)와 일치한다") {
+            // theme 은 AppBar 로 이동, appBarSlot 지정 메뉴는 AppBar trailing 으로 승격 → MenuRail 엔 미렌더.
             val items = page.querySelectorAll(".rail:first-child .item")
-            items.count() shouldBe DrawerMock.menu.size
+            items.count() shouldBe DrawerMock.menu.count { it.appBarSlot() == null }
+        }
+        Then("appBarSlot=\"trailing\" 메뉴는 AppBar trailing 의 .shell-app-bar-action 으로 렌더된다") {
+            val actions = page.querySelectorAll(".shell-app-bar-trailing .shell-app-bar-action")
+            val trailingCount = DrawerMock.menu.count { "trailing" == it.appBarSlot() }
+            actions.count() shouldBe trailingCount
         }
         Then("테마 토글 버튼 headline 에 i18n 라벨 텍스트가 존재한다") {
             // LabelProvider fallback 값(Switch to Dark/Light)이라도 비어있지 않아야 함
@@ -110,10 +117,9 @@ internal class DrawerTest: GwtTestSpec({
                 afterHeadline.isNotBlank() shouldBe true
             }
         }
-        Then("메뉴 레일에 아이템이 메뉴 수만큼 렌더링된다(theme 제외)") {
-            // theme toggle 도 .item 이므로 .rail-bottom 을 제외한 카운트가 실제 메뉴 수와 일치
+        Then("메뉴 레일에 아이템이 네비게이션 메뉴 수(appBarSlot==null)만큼 렌더링된다") {
             val items = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom)")
-            items.count() shouldBe DrawerMock.menu.size
+            items.count() shouldBe DrawerMock.menu.count { it.appBarSlot() == null }
         }
         Then("각 메뉴 레일 아이템에 아이콘 요소가 존재한다") {
             val iconCount = page.querySelectorAll(".rail .item .icon").count()
@@ -150,10 +156,10 @@ internal class DrawerTest: GwtTestSpec({
             filledDisplay shouldBe "none"
             (outlineDisplay != "none") shouldBe true
         }
-        Then("모든 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
-            // 각 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 를 렌더 → menu.size * 2
-            // .rail-bottom 은 ThemeToggle(FA 아이콘 미사용) 이므로 제외
-            val expected = DrawerMock.menu.size * 2
+        Then("모든 네비게이션 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
+            // 각 네비 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 렌더 → navCount * 2.
+            // appBarSlot 지정 메뉴와 .rail-bottom(ThemeToggle) 은 제외.
+            val expected = DrawerMock.menu.count { it.appBarSlot() == null } * 2
             val outlineCount = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom) .icon-outline").count()
             val filledCount = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom) .icon-filled").count()
             outlineCount shouldBe expected
@@ -223,10 +229,9 @@ internal class DrawerTest: GwtTestSpec({
             Then("URL 변경 후에도 드로어(nav.drawer)가 존재한다") {
                 page.querySelector("nav.drawer") shouldNotBe null
             }
-            Then("메뉴 레일 아이템 수가 유지된다") {
-                // 첫 번째 .rail(MenuRail)의 아이템만 카운트, theme toggle 제외
+            Then("메뉴 레일 아이템 수가 유지된다 (AppBar 승격 메뉴 제외)") {
                 val items = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom)")
-                items.count() shouldBe DrawerMock.menu.size
+                items.count() shouldBe DrawerMock.menu.count { it.appBarSlot() == null }
             }
         }
 
@@ -300,22 +305,23 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "false"
             }
-            Then(".menu-tabs + md-menu 합친 엔트리 수가 메뉴 수와 같다 (평면 또는 overflow 분리)") {
+            Then(".menu-tabs + md-menu 합친 엔트리 수가 네비게이션 메뉴 수(appBarSlot==null)와 같다") {
                 // 3단계 폴백으로 하단정렬이 overflow 에 들어가면 md-tabs 쪽 탭 수는 줄어든다.
-                // 전체 보존은 md-primary-tab + md-menu-item 합으로 검증.
+                // appBarSlot 지정 메뉴는 AppBar 로 승격되어 Tabs 자체에서 제외.
                 val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
                 val menuItemCount = page.querySelectorAll(".menu-tabs md-menu md-menu-item").count()
-                (tabCount + menuItemCount) shouldBe DrawerMock.menu.size
+                val navCount = DrawerMock.menu.count { it.appBarSlot() == null }
+                (tabCount + menuItemCount) shouldBe navCount
             }
-            Then("375px + 4개 탭은 viewport 초과 → overflow 버튼이 노출된다") {
+            Then("viewport 초과 시 overflow 버튼이 노출된다") {
                 val hidden = page.evaluate(
                     "document.querySelector('.menu-tabs-overflow-btn').hasAttribute('hidden')"
                 ).toString()
                 hidden shouldBe "false"
             }
-            Then("하단정렬(bottom=true) 메뉴는 md-menu 팝업으로 수렴된다") {
+            Then("하단정렬(bottom=true && appBarSlot==null) 메뉴는 md-menu 팝업으로 수렴된다") {
                 val menuItemCount = page.querySelectorAll(".menu-tabs md-menu md-menu-item").count()
-                val bottomCount = DrawerMock.menu.count { it.bottom() == true }
+                val bottomCount = DrawerMock.menu.count { it.bottom() == true && it.appBarSlot() == null }
                 menuItemCount shouldBe bottomCount
             }
             Then("overflow 버튼 클릭 시 md-menu 가 open 된다") {

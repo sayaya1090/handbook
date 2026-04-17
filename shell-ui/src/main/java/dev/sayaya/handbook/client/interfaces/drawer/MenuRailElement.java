@@ -56,7 +56,13 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     private void update(List<Menu> menu) {
         clear();
         if(menu == null) return;
-        menu.stream().sorted(MENU_COMPARATOR).map(this::createItem).forEach(this::add);
+        // appBarSlot 이 지정된 메뉴는 {@link ShellAppBarElement} 가 AppBar slot 으로 승격해
+        // 렌더하므로 MenuRail 에서는 제외한다 (세션 액션·전역 액션 성격 구분).
+        menu.stream()
+                .filter(m -> m.appBarSlot() == null)
+                .sorted(MENU_COMPARATOR)
+                .map(this::createItem)
+                .forEach(this::add);
     }
     private MenuRailItemElement createItem(Menu menu) {
         var child = factory.item(menu);

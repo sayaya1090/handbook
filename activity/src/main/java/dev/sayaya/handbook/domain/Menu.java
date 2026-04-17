@@ -34,6 +34,17 @@ public final class Menu {
     private String order;
     private Tool[] tools;
     private Boolean bottom;
+    /**
+     * AppBar slot — shell-ui 의 {@code ShellAppBarElement} 에 승격할 메뉴의 배치 위치.
+     * {@code "leading" | "center" | "trailing" | null}. null 이면 기존 Rail/Tabs 네비게이션
+     * 축으로 렌더. 비-null 이면 네비게이션에서 제외되고 AppBar 해당 slot 으로 이동.
+     *
+     * <p>용도: 세션 액션(Sign In/Out) 처럼 네비게이션이 아닌 전역 액션 성격 메뉴를 MD3
+     * Top App Bar trailing 관용 위치로 이동시킨다. 계약은 {@code docs/contracts/menus.md}
+     * 의 "AppBar slot 승격" 섹션 참조.</p>
+     */
+    @JsProperty(name = "app_bar_slot")
+    private String appBarSlot;
     @JsProperty(name = "url_regex")
     private String[] urlRegex;
 
@@ -57,7 +68,7 @@ public final class Menu {
     public MenuBuilder toBuilder() {
         return new MenuBuilder().title(this.title).supportingText(this.supportingText).iconType(this.iconType).icon(this.icon)
                 .trailingText(this.trailingText).script(this.script).order(this.order).tools(this.tools).bottom(this.bottom)
-                .urls(this.urlRegex);
+                .appBarSlot(this.appBarSlot).urls(this.urlRegex);
     }
     @Setter
     @Accessors(fluent = true)
@@ -71,6 +82,7 @@ public final class Menu {
         private String order;
         private List<Tool> tools = new LinkedList<>();
         private Boolean bottom;
+        private String appBarSlot;
         private List<String> urlRegex = new LinkedList<>();
         private MenuBuilder() {}
         public MenuBuilder tool(Tool tool) {
@@ -106,6 +118,7 @@ public final class Menu {
             menu.order = this.order;
             menu.tools = this.tools.stream().toArray(Tool[]::new);
             menu.bottom = this.bottom;
+            menu.appBarSlot = this.appBarSlot;
             menu.urlRegex = this.urlRegex.stream().toArray(String[]::new);
             return menu;
         }

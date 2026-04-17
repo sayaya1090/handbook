@@ -26,6 +26,7 @@ class MenuController {
             .iconType("solid")
             .script("js/login/login.nocache.js")
             .bottom(true)
+            .appBarSlot("trailing")
             .build()
 
         val SIGN_OUT: Menu = Menu.builder()
@@ -35,6 +36,7 @@ class MenuController {
             .iconType("solid")
             .script("js/logout/logout.nocache.js")
             .bottom(true)
+            .appBarSlot("trailing")
             .build()
     }
 

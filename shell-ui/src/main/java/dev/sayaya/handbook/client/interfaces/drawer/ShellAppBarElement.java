@@ -1,13 +1,21 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
+import dev.sayaya.handbook.client.usecase.MenuList;
+import dev.sayaya.handbook.client.usecase.MenuSelected;
+import dev.sayaya.handbook.domain.Menu;
+import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
@@ -40,10 +48,55 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
     private final HTMLContainerBuilder<HTMLDivElement> center = div().css("shell-app-bar-center");
     private final HTMLContainerBuilder<HTMLDivElement> trailing = div().css("shell-app-bar-trailing");
 
+    private final MenuSelected selected;
+    private final LabelProvider labelProvider;
+    /** MenuList 에서 appBarSlot={@code "trailing"} 으로 승격된 엔트리들. 재렌더링 시 DOM 분리. */
+    private final List<MenuActionEntry> trailingActions = new LinkedList<>();
+
     @Inject
-    ShellAppBarElement() {
+    ShellAppBarElement(MenuList list, MenuSelected selected, LabelProvider labelProvider) {
+        this.selected = selected;
+        this.labelProvider = labelProvider;
         _this.add(leading).add(center).add(trailing);
         element().setAttribute("hide", true);
+        list.distinctUntilChanged().subscribe(this::updateMenuActions);
+    }
+
+    private void updateMenuActions(List<Menu> menus) {
+        // 기존 엔트리 detach (정적 slot 에 DrawerElement 가 꽂은 element 는 건드리지 않음).
+        for (MenuActionEntry e : trailingActions) {
+            if (e.element.parentNode != null) e.element.parentNode.removeChild(e.element);
+        }
+        trailingActions.clear();
+        if (menus == null) return;
+        for (Menu m : menus) {
+            if (!"trailing".equals(m.appBarSlot())) continue;
+            MenuActionEntry entry = createActionButton(m);
+            trailingActions.add(entry);
+            trailing.element().insertBefore(entry.element, trailing.element().firstChild);
+        }
+    }
+
+    /**
+     * appBarSlot 승격 메뉴 1건을 {@code md-icon-button} 으로 렌더한다. 클릭 시 {@link MenuSelected}
+     * 에 발행 — 기존 네비게이션 경로(MenuRailItemElement)와 동일한 선택 이벤트로 수렴된다.
+     */
+    private MenuActionEntry createActionButton(Menu menu) {
+        HTMLContainerBuilder<HTMLElement> btn = htmlContainer("md-icon-button", HTMLElement.class)
+                .css("shell-app-bar-action");
+        HTMLElement icon = IconElementBuilder.icon()
+                .css("fa-sharp", "fa-solid", menu.icon()).element();
+        btn.add(icon);
+        if (menu.title() != null) {
+            btn.element().dataset.set("menuTitle", menu.title());
+            labelProvider.subscribe(labels -> {
+                String title = labels.getOrDefault(menu.title(), menu.title());
+                btn.element().setAttribute("aria-label", title);
+                btn.element().setAttribute("title", title);
+            });
+        }
+        btn.on(EventType.click, evt -> selected.next(menu));
+        return new MenuActionEntry(menu, btn.element());
     }
 
     /** leading slot — DrawerElement 가 햄버거를 여기로 이동한다. */
@@ -57,4 +110,13 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
 
     @Override
     public HTMLElement element() { return _this.element(); }
+
+    private static class MenuActionEntry {
+        final Menu menu;
+        final HTMLElement element;
+        MenuActionEntry(Menu menu, HTMLElement element) {
+            this.menu = menu;
+            this.element = element;
+        }
+    }
 }

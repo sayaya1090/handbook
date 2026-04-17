@@ -62,6 +62,17 @@ public class DrawerMock {
             .url("menu4-tool1")
             .bottom(true)
             .tool(Tool.builder().title("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
+            .build(),
+        // appBarSlot="trailing" — AppBar 로 승격되는 세션 액션 (login 의 Sign In/Out 을 mock).
+        // MenuRail / MobileTabs 렌더에서는 제외되고 ShellAppBarElement trailing 에 아이콘 버튼으로 노출.
+        Menu.builder()
+            .title("Menu 5")
+            .order("Z")
+            .icon("fa-right-to-bracket")
+            .iconType("solid")
+            .script("js/login/login.nocache.js")
+            .bottom(true)
+            .appBarSlot("trailing")
             .build()
     };
     private static final User user = new User();

@@ -113,6 +113,8 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         List<Menu> top = new ArrayList<>();
         List<Menu> bottom = new ArrayList<>();
         for (Menu m : menus) {
+            // appBarSlot 이 지정된 메뉴는 AppBar 로 승격되므로 Tabs 에서 제외.
+            if (m.appBarSlot() != null) continue;
             if (TRUE.equals(m.bottom())) bottom.add(m);
             else top.add(m);
         }
