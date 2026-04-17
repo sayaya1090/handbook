@@ -67,36 +67,23 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
 
     /** overflow 버튼 예약 폭(px). {@code ResponsiveOverflow.compute} 에 전달. */
     private static final int RESERVE_PX = 48;
-    private static final String OVERFLOW_BTN_ID = "menu-tabs-overflow-btn";
 
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("menu-tabs");
     private final HTMLContainerBuilder<HTMLElement> tabs = htmlContainer("md-tabs", HTMLElement.class).css("menu-tabs-bar");
-    private final HTMLContainerBuilder<HTMLElement> overflowBtn = htmlContainer("md-icon-button", HTMLElement.class)
-            .css("menu-tabs-overflow-btn");
-    private final HTMLContainerBuilder<HTMLElement> overflowMenu = htmlContainer("md-menu", HTMLElement.class)
-            .css("menu-tabs-overflow-menu");
 
     private final MenuSelected selected;
     private final LabelProvider labelProvider;
+    private final OverflowMenuController overflow;
     private final List<TabEntry> topEntries = new LinkedList<>();
     private final List<TabEntry> bottomEntries = new LinkedList<>();
     private boolean partitioned = false;
 
     @Inject
-    MobileTabsElement(MenuList list, MenuSelected selected, LabelProvider labelProvider, ViewportObserver viewport) {
+    MobileTabsElement(MenuList list, MenuSelected selected, LabelProvider labelProvider, ViewportObserver viewport, OverflowMenuController overflow) {
         this.selected = selected;
         this.labelProvider = labelProvider;
-
-        overflowBtn.element().id = OVERFLOW_BTN_ID;
-        overflowBtn.element().setAttribute("aria-label", "More");
-        overflowBtn.add(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-ellipsis"));
-        overflowBtn.on(EventType.click, evt -> toggleMenu());
-        overflowMenu.attr("anchor", OVERFLOW_BTN_ID).attr("positioning", "absolute");
-        // md-menu 는 close-menu 이벤트로 팝업 닫힘을 알린다 (md-menu-item 선택 or 외부 클릭).
-        overflowMenu.element().addEventListener("close-menu", e -> overflowMenu.element().removeAttribute("open"));
-
-        _this.add(tabs).add(overflowBtn).add(overflowMenu);
-        hideOverflowBtn(true);
+        this.overflow = overflow;
+        _this.add(tabs).add(overflow);
 
         element().setAttribute("hide", true);
         if (viewport.isMobileNow()) element().removeAttribute("hide");
@@ -167,7 +154,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
             if (menu.title() != null) mi.element().dataset.set("menuTitle", menu.title());
             mi.on(EventType.click, evt -> {
                 selected.next(menu);
-                overflowMenu.element().removeAttribute("open");
+                overflow.close();
             });
             menuItem = mi.element();
             // menu-item headline 도 i18n 갱신 대상
@@ -211,7 +198,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         setPartitioned(r.showOverflow);
         if (r.scrollable) tabs.element().setAttribute("scrollable", true);
         else tabs.element().removeAttribute("scrollable");
-        hideOverflowBtn(!r.showOverflow);
+        overflow.setHidden(!r.showOverflow);
     }
 
     private double sumWidth(List<TabEntry> entries) {
@@ -232,24 +219,14 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         if (on) {
             for (TabEntry e : bottomEntries) {
                 detach(e.tab);
-                if (e.menuItem != null) overflowMenu.element().appendChild(e.menuItem);
+                if (e.menuItem != null) overflow.addItem(e.menuItem);
             }
         } else {
             for (TabEntry e : bottomEntries) {
-                if (e.menuItem != null) detach(e.menuItem);
+                if (e.menuItem != null) overflow.removeItem(e.menuItem);
                 tabs.element().appendChild(e.tab);
             }
         }
-    }
-
-    private void toggleMenu() {
-        if (overflowMenu.element().hasAttribute("open")) overflowMenu.element().removeAttribute("open");
-        else overflowMenu.element().setAttribute("open", true);
-    }
-
-    private void hideOverflowBtn(boolean hide) {
-        if (hide) overflowBtn.element().setAttribute("hidden", true);
-        else overflowBtn.element().removeAttribute("hidden");
     }
 
     private void onSelected(Menu menu) {
