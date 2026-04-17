@@ -1,6 +1,10 @@
 {
   "types": "타입",
   "documents": "문서",
+  "workspaces": "워크스페이스",
+  "workspace info": "워크스페이스 정보",
+  "groups": "그룹",
+  "permissions": "권한",
   "dashboard": "대시보드",
   "settings": "설정",
   "type_definition": "타입 정의",

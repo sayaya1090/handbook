@@ -1,6 +1,10 @@
 {
   "types": "Types",
   "documents": "Documents",
+  "workspaces": "Workspaces",
+  "workspace info": "Workspace Info",
+  "groups": "Groups",
+  "permissions": "Permissions",
   "dashboard": "Dashboard",
   "settings": "Settings",
   "type_definition": "Type Definition",
