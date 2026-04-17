@@ -70,6 +70,23 @@ Accept: application/vnd.sayaya.handbook.v1+json
 - 인증 불필요 (미인증 시 공개 엔트리만 반환)
 - gateway 의 `MenuService` 가 등록된 모든 `MenuSupplier` 를 parallel Scheduler 로 병렬 호출
 
+## SLA 및 실패 모드
+
+- **응답 예산:** p95 ≤ 1500ms (`MenuService.AGGREGATE_TIMEOUT` 기본값). 개별 supplier 는 500ms 이내 응답해야 한다 (`ServiceDiscovery` WebClient 타임아웃).
+- **부분 성공 허용:** 집계 컷오프 초과 시 그 시점까지 수집된 부분 결과를 그대로 emit (`Flux.take(Duration)` 기반). 전량 드랍 금지 — shell-ui MenuRail 이 빈 상태로 빠지는 silent degradation 을 피하기 위함.
+- **개별 실패 격리:** 한 supplier 의 예외/타임아웃은 다른 supplier 결과에 영향을 주지 않는다 (`onErrorResume { Flux.empty() }` 공급자별 적용).
+- **미인증 공급자:** 인증 필요 supplier 는 `principal == null` 시 즉시 빈 `Flux` 를 반환 (블로킹 없이 종료). login / landing-menu 처럼 항상 공급하는 supplier 만 엔트리를 내보낸다.
+
+### 공급자별 SLO (예상 p50)
+
+| Supplier | 목표 | 비고 |
+|----------|------|------|
+| login | < 20ms | 인증 여부 분기만, I/O 없음 |
+| landing-menu (신규) | < 50ms | 정적 상수 (gateway 로컬 또는 별도 모듈) |
+| search-workspace | < 30ms | 정적 Menu 상수 1개 emit, DB 비접근 |
+| search-type | < 100ms | R2DBC read-only, cold start 시 pod 기동 지연 예외 |
+| search-document | < 100ms | R2DBC read-only |
+
 ## 공급자별 현황
 
 | Supplier | 엔트리 | 인증 분기 | 비고 |

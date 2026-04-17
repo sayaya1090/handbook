@@ -74,5 +74,20 @@ class MenuServiceTest : DescribeSpec({
                 .expectNext(menu1, menu2, menu3, menuNoOrder)
                 .verifyComplete()
         }
+
+        it("집계 컷오프(1.5s) 초과 시 지금까지 수집된 부분 결과를 emit 한다") {
+            every { supplier1.menu(headers) } returns Flux.just(menu1).delaySequence(Duration.ofMillis(200))
+            every { supplier2.menu(headers) } returns Flux.just(menu2).delaySequence(Duration.ofSeconds(5))
+            every { supplier3.menu(headers) } returns Flux.just(menu3).delaySequence(Duration.ofMillis(400))
+
+            val startTime = System.currentTimeMillis()
+            StepVerifier.create(menuService.menus(headers))
+                .expectNext(menu1, menu3)
+                .verifyComplete()
+            val totalTime = System.currentTimeMillis() - startTime
+
+            // 컷오프 ~1500ms 안쪽에 complete — 5s 지연 공급자를 기다리지 않음.
+            totalTime.shouldBeBetween(1300, 2000)
+        }
     }
 })

@@ -20,17 +20,20 @@ import java.time.Duration
 class MenuService(private val suppliers: List<MenuSupplier>) {
     companion object {
         /**
-         * 집계 전체 컷오프. 개별 [ServiceDiscovery] 타임아웃(500ms) 이
-         * 걸리지 않는 엣지 케이스(소켓 레벨 hanging, sort 가 upstream complete 대기)
-         * 에서도 /menus 응답이 막히지 않도록 2차 방어선.
+         * 집계 전체 컷오프. `Flux.take(Duration)` 으로 적용하여 시간 경과 시
+         * 빈 Flux 로 덮는 대신 **지금까지 수집된 부분 결과를 그대로 emit** 한다
+         * (shell-ui MenuRail 이 빈 상태로 빠지는 silent degradation 방지).
+         *
+         * 개별 supplier 는 [ServiceDiscovery] 500ms 타임아웃으로 격리되고,
+         * 이 값은 병렬 합산 + sort 단계의 최종 방어선이다.
          */
-        private val AGGREGATE_TIMEOUT: Duration = Duration.ofSeconds(1)
+        private val AGGREGATE_TIMEOUT: Duration = Duration.ofMillis(1500)
     }
 
     fun menus(headers: Map<String, List<String>>): Flux<Menu> = Flux.fromIterable(suppliers)
         .parallel().runOn(Schedulers.parallel())
         .flatMap { it.menu(headers).onErrorResume { Flux.empty() } }
-        .sequential().sort(compareBy(nullsLast()) { it.order() })
-        .timeout(AGGREGATE_TIMEOUT)
-        .onErrorResume { Flux.empty() }
+        .sequential()
+        .take(AGGREGATE_TIMEOUT)
+        .sort(compareBy(nullsLast()) { it.order() })
 }
