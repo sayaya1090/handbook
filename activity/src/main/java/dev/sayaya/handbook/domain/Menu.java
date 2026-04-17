@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,12 +24,21 @@ import java.util.*;
 @Accessors(fluent = true)
 public final class Menu {
     private String title;
+    // snake_case 필드들은 JsInterop(GWT 프론트) 용 @JsProperty 와 Jackson(Spring 서버)
+    // 용 @JsonProperty 를 **이원 병기** 한다. @JsProperty 는 Jackson 이 무시하고,
+    // @JsonProperty 는 JsInterop 이 무시하므로 서로 간섭 없이 양쪽에서 같은 wire 이름을
+    // 강제. 각 서비스의 ObjectMapper 가 SNAKE_CASE 전략을 설정했는지와 무관하게 일관된
+    // 이름이 보장된다 (regression 2026-04: login 의 기본 ObjectMapper camelCase 직렬화
+    // 때문에 Gateway 역직렬화 실패로 app_bar_slot/icon_type 필드가 null 이 되던 이슈).
     @JsProperty(name = "supporting_text")
+    @JsonProperty("supporting_text")
     private String supportingText;
     @JsProperty(name = "icon_type")
+    @JsonProperty("icon_type")
     private String iconType;
     private String icon;
     @JsProperty(name = "trailing_text")
+    @JsonProperty("trailing_text")
     private String trailingText;
     private String script;   // 임포트할 스크립트
     private String order;
@@ -44,8 +54,10 @@ public final class Menu {
      * 의 "AppBar slot 승격" 섹션 참조.</p>
      */
     @JsProperty(name = "app_bar_slot")
+    @JsonProperty("app_bar_slot")
     private String appBarSlot;
     @JsProperty(name = "url_regex")
+    @JsonProperty("url_regex")
     private String[] urlRegex;
 
     @Override @JsOverlay @JsIgnore

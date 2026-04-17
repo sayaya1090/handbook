@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +22,10 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 public final class Tool {
     private String icon;
+    // @JsProperty(GWT) + @JsonProperty(Spring) 이원 병기 — 각 서비스 ObjectMapper 가
+    // SNAKE_CASE 전략을 설정하지 않아도 wire 이름이 일관되게 snake_case 로 유지됨.
     @JsProperty(name = "icon_type")
+    @JsonProperty("icon_type")
     private String iconType;
     private String title;
     private String order;
