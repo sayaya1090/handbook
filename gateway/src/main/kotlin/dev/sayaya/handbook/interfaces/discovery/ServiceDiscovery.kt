@@ -16,7 +16,9 @@ import java.time.Duration
  * **의존관계:**
  * - [WebClient] — HTTP 통신 (서비스 이름 기반 base URL)
  *
- * **주의:** 타임아웃은 1200ms로, 응답 지연 시 빈 결과로 대체된다 (graceful degradation은 [MenuService] 참조).
+ * **주의:** 타임아웃은 500ms로, 응답 지연 시 빈 결과로 대체된다 (graceful degradation은 [MenuService] 참조).
+ * 짧은 컷오프는 한 서비스 지연이 전체 /menus 응답을 막지 않게 하기 위함 — MenuSupplier 는 graceful
+ * 하게 누락되고 다음 요청에서 재시도된다.
  *
  * @param service 서비스 이름 (Kubernetes 서비스 DNS 등)
  */
@@ -32,7 +34,7 @@ class ServiceDiscovery(
         .accept(MediaType.parseMediaType(ACCEPT_MEDIA_TYPE))
         .retrieve()
         .bodyToFlux(Menu::class.java)
-        .timeout(Duration.ofMillis(1200))
+        .timeout(Duration.ofMillis(500))
 
     companion object {
         const val MENU_URI = "/menus"
