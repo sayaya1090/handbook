@@ -67,15 +67,21 @@ public class MenuTabRenderer {
      * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach/re-attach 용도로 보관.
      */
     public HTMLElement populateMenuTab(PrimaryTabElementBuilder tb, Menu menu) {
-        // tb.icon(...) 은 sayaya-ui HasIconSlot 이 slot="icon" 을 자동 설정 + add.
-        // slot="active-icon" 은 sayaya-ui 가 별도 슬롯 API 를 노출하지 않으므로 수동 append.
-        tb.css("menu-tab").icon(
-                IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"));
+        // slot=icon 은 HasIconSlot.icon() 이, slot=active-icon 은 attr() 체인으로 직접 표현.
+        // MD3 md-primary-tab 이 active 속성 토글에 따라 두 슬롯을 자동 교체 렌더 + indicator
+        // 이동 애니메이션까지 웹컴포넌트가 처리. 라벨은 .menu-tab-label span 으로 별도 감싸
+        // 둔다 — elemento tb.text() 는 textContent 덮어쓰기 구현이라 named slot 자식(md-icon)
+        // 까지 삭제되므로 직접 사용 불가. label 을 독립 span 에 두면 i18n 구독이 textContent
+        // 를 바꿔도 slot 자식들이 보존된다.
+        // 두 아이콘 대칭 통일 — HasIconSlot.icon() 은 내부적으로 add() + setAttribute("slot","icon")
+        // 의 편의 메서드일 뿐이라 .add() + .attr() 체인과 결과 동등. slot 이름이 명시적으로 보여
+        // outline/active-icon 의 의도가 직관적.
+        tb.css("menu-tab")
+                .add(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline")
+                        .attr("slot", "icon"))
+                .add(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled")
+                        .attr("slot", "active-icon"));
         HTMLElement tab = tb.element();
-        HTMLElement iconFilled = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-solid", menu.icon(), "icon-filled").element();
-        iconFilled.setAttribute("slot", "active-icon");
-        tab.appendChild(iconFilled);
         HTMLElement label = span().css("menu-tab-label").element();
         tab.appendChild(label);
         if (menu.title() != null) tab.dataset.set("menuTitle", menu.title());
@@ -125,13 +131,12 @@ public class MenuTabRenderer {
      * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach 용도로 보관.
      */
     public HTMLElement populateToolTab(PrimaryTabElementBuilder tb, Tool tool) {
-        tb.css("menu-tab", "tool-tab").icon(
-                IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"));
+        tb.css("menu-tab", "tool-tab")
+                .add(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline")
+                        .attr("slot", "icon"))
+                .add(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled")
+                        .attr("slot", "active-icon"));
         HTMLElement tab = tb.element();
-        HTMLElement iconFilled = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-solid", tool.icon(), "icon-filled").element();
-        iconFilled.setAttribute("slot", "active-icon");
-        tab.appendChild(iconFilled);
         HTMLElement label = span().css("menu-tab-label").element();
         tab.appendChild(label);
         if (tool.title() != null) tab.dataset.set("toolTitle", tool.title());
