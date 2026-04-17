@@ -1,23 +1,32 @@
-kind: ImageStream
-apiVersion: image.openshift.io/v1
-metadata:
-  name: gateway
-spec:
-  lookupPolicy:
-    local: false
+{{- /*
+  백엔드 서비스(Spring Boot JVM 컨테이너)용 ImageStream.
+
+  배포 모델:
+    - 모든 backend 서비스의 컨테이너 이미지는 jib 이 내부 레지스트리의
+      image-registry.openshift-image-registry.svc:5000/handbook/<service> 로 push 한다.
+    - 각 서비스별 Warehouse(`<service>/templates/warehouse.yaml`) 가 동일 repoURL 을
+      구독해 freight 를 만들기 때문에, ImageStream 이 없으면 OpenShift UI / `oc describe is`
+      등에서 이미지 메타를 볼 수 없고 imagestreams/layers RBAC 도 비어 보인다.
+    - ImageStream 은 이 차트가 sync 되는 `handbook` 네임스페이스(Kargo Project
+      네임스페이스)에 생성된다. Deployment 가 돌아가는 `handbook-<stage>` 네임스페이스는
+      rbac.yaml 의 image-puller Role 로 cross-namespace 이미지 pull 을 한다.
+
+  목록은 values.services 중 kind=backend 인 항목에서 자동 유도되므로, 새 백엔드 서비스
+  추가 시 values.yaml 한 곳만 수정하면 ImageStream 도 함께 생성된다. frontend 는
+  별도 S3 sync-job 모델이므로 ImageStream 을 만들지 않는다.
+*/ -}}
+{{- range $service := .Values.services }}
+{{- if eq $service.kind "backend" }}
 ---
-kind: ImageStream
 apiVersion: image.openshift.io/v1
+kind: ImageStream
 metadata:
-  name: event-broadcaster
+  name: {{ $service.name }}
+  labels:
+    app.kubernetes.io/name: {{ $service.name }}
+    handbook.sayaya.dev/service: {{ $service.name }}
 spec:
   lookupPolicy:
     local: false
----
-kind: ImageStream
-apiVersion: image.openshift.io/v1
-metadata:
-  name: login
-spec:
-  lookupPolicy:
-    local: false
+{{- end }}
+{{- end }}
