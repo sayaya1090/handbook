@@ -56,7 +56,7 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private double touchStartX;
     private boolean trackingSwipe;
 
-    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, MobileTabsElement navTabs, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, ShellAppBarElement appBar, ShellStylesheet shellStylesheet) {
+    @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, MobileTabsElement navTabs, ToolRailElement navTools, ShellAppBarElement appBar, ShellStylesheet shellStylesheet) {
         this.mode = mode;
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
@@ -64,16 +64,9 @@ public class DrawerElement implements IsElement<HTMLElement> {
         scrim = div().css("drawer-scrim").element();
         scrim.addEventListener("click", e -> mode.toggleOverlay());
 
-        // AppBar 는 데스크톱/모바일 공통 상단 bar. 햄버거/워크스페이스/테마 토글을 항상 AppBar
-        // slot 으로 배치하여 viewport 분기 없이 일관된 전역 액션 축을 유지한다. Drawer 는
-        // AppBar 아래로 밀려서 MenuRail + ToolRail 본체만 담당한다.
+        // AppBar 는 자기 slot 을 스스로 채우는 SRP 경계를 가지며, Drawer 는 그 인스턴스를
+        // 단순히 레이아웃에 삽입한다 — AppBar 내부 DOM 구조 지식은 DrawerElement 에 없다.
         appBar.element().removeAttribute("hide");
-        appBar.leadingSlot().appendChild(btnToggle.element());
-        appBar.centerSlot().appendChild(workspace.css("workspace").element());
-        appBar.trailingSlot().appendChild(themeToggle.element());
-
-        // navTabs 는 모바일 상단 Scrollable Tabs — AppBar 바로 아래에 stack. 데스크톱에서는
-        // [hide] 속성으로 자체 숨김 (MenuRail 이 네비게이션 담당).
         _this.css("drawer")
                 .add(div().css("body")
                         .add(navMenu).add(navTools))

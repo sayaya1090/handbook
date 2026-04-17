@@ -14,8 +14,10 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
@@ -43,37 +45,53 @@ import static org.jboss.elemento.Elements.htmlContainer;
 @Singleton
 public class ShellAppBarElement implements IsElement<HTMLElement> {
 
+    /** {@link Menu#appBarSlot()} 값과 매칭되는 표준 slot 이름. O/C 원칙 — 신규 slot 추가는 맵 확장만. */
+    public static final String SLOT_LEADING = "leading";
+    public static final String SLOT_CENTER = "center";
+    public static final String SLOT_TRAILING = "trailing";
+
     @Delegate private final HTMLContainerBuilder<HTMLElement> _this = htmlContainer("header", HTMLElement.class).css("shell-app-bar");
     private final HTMLContainerBuilder<HTMLDivElement> leading = div().css("shell-app-bar-leading");
     private final HTMLContainerBuilder<HTMLDivElement> center = div().css("shell-app-bar-center");
     private final HTMLContainerBuilder<HTMLDivElement> trailing = div().css("shell-app-bar-trailing");
+    /** slot 이름 → 실제 HTMLElement 매핑. 신규 slot 확장은 이 맵에 항목 추가만 필요 (O/C). */
+    private final Map<String, HTMLElement> slots = new LinkedHashMap<>();
 
     private final MenuSelected selected;
     private final LabelProvider labelProvider;
-    /** MenuList 에서 appBarSlot={@code "trailing"} 으로 승격된 엔트리들. 재렌더링 시 DOM 분리. */
-    private final List<MenuActionEntry> trailingActions = new LinkedList<>();
+    /** MenuList 에서 appBarSlot 으로 승격된 엔트리들. 재렌더링 시 DOM 분리. */
+    private final List<MenuActionEntry> menuActions = new LinkedList<>();
 
     @Inject
-    ShellAppBarElement(MenuList list, MenuSelected selected, LabelProvider labelProvider) {
+    ShellAppBarElement(MenuList list, MenuSelected selected, LabelProvider labelProvider,
+                       MenuToggleButton navToggle, WorkspaceSelectElement workspace, ThemeToggle themeToggle) {
         this.selected = selected;
         this.labelProvider = labelProvider;
         _this.add(leading).add(center).add(trailing);
+        slots.put(SLOT_LEADING, leading.element());
+        slots.put(SLOT_CENTER, center.element());
+        slots.put(SLOT_TRAILING, trailing.element());
         element().setAttribute("hide", true);
+        // SRP — AppBar 가 자기 정적 slot 을 스스로 채운다. DrawerElement 는 슬롯 지식 없음.
+        leading.element().appendChild(navToggle.element());
+        center.element().appendChild(workspace.css("workspace").element());
+        trailing.element().appendChild(themeToggle.element());
         list.distinctUntilChanged().subscribe(this::updateMenuActions);
     }
 
     private void updateMenuActions(List<Menu> menus) {
-        // 기존 엔트리 detach (정적 slot 에 DrawerElement 가 꽂은 element 는 건드리지 않음).
-        for (MenuActionEntry e : trailingActions) {
+        // 기존 동적 엔트리 detach (정적 주입 element 는 건드리지 않음).
+        for (MenuActionEntry e : menuActions) {
             if (e.element.parentNode != null) e.element.parentNode.removeChild(e.element);
         }
-        trailingActions.clear();
+        menuActions.clear();
         if (menus == null) return;
         for (Menu m : menus) {
-            if (!"trailing".equals(m.appBarSlot())) continue;
+            HTMLElement slot = slots.get(m.appBarSlot());
+            if (slot == null) continue; // null 이거나 미지원 slot — 스킵.
             MenuActionEntry entry = createActionButton(m);
-            trailingActions.add(entry);
-            trailing.element().insertBefore(entry.element, trailing.element().firstChild);
+            menuActions.add(entry);
+            slot.insertBefore(entry.element, slot.firstChild);
         }
     }
 
