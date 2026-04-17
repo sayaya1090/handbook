@@ -85,11 +85,11 @@
 
 /* ── 모바일 (< 768px) ── */
 @media (max-width: 768px) {
-    /* AgentInputElement: 모바일에서는 상단 고정 — 하단 메뉴바와 겹침 방지 */
+    /* AgentInputElement: shell-ui MenuRail 이 상단 MobileTabsElement 로 교체됨에 따라
+       과거 "하단 MenuRail 회피용 상단 고정" 예외를 제거하고 하단 dock 으로 복귀한다.
+       Fitts 원칙상 가장 자주 쓰는 입력은 엄지 도달이 좋은 하단에 배치. */
     .agent-input-container {
-        bottom: auto;
-        top: 0;
-        padding: 8px 12px;
+        padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
     }
     .agent-input-wrapper {
         max-width: 100%;
@@ -103,7 +103,8 @@
     }
     .agent-mutate-log {
         left: 8px; right: 8px;
-        bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+        /* input dock 높이(~80px) 위로 띄워 겹침 방지. 기존 120px 는 상단 이동 가정 값. */
+        bottom: calc(88px + env(safe-area-inset-bottom, 0px));
         max-width: none; min-width: auto;
     }
     .agent-navigate-indicator {
@@ -111,11 +112,11 @@
         font-size: 14px;
     }
 
-    /* ArtifactSummaryPanel: 전체 폭, 최대 높이 60vh, 스크롤 */
+    /* ArtifactSummaryPanel: 전체 폭, 최대 높이 60vh, 스크롤. input dock 위로 배치. */
     .agent-artifact-panel {
         position: fixed;
         right: 0; left: 0;
-        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px));
         width: 100%;
         max-height: 60vh;
         border-radius: var(--md-sys-shape-corner-medium, 12px) var(--md-sys-shape-corner-medium, 12px) 0 0;
