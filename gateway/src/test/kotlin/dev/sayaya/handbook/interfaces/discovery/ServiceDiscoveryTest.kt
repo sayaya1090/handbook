@@ -4,11 +4,13 @@ import dev.sayaya.handbook.domain.Menu
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import java.time.Duration
+import java.util.concurrent.TimeoutException
 
 class ServiceDiscoveryTest : DescribeSpec({
     val mockWebClient = mockk<WebClient>()
@@ -40,9 +42,10 @@ class ServiceDiscoveryTest : DescribeSpec({
             every { mockResponseSpec.bodyToFlux(Menu::class.java) } returns
                 Flux.just(testMenu).delayElements(Duration.ofMillis(2000))
 
-            shouldThrow<IllegalStateException> {
-                discovery.menu(emptyMap()).blockFirst(Duration.ofMillis(500))
+            val ex = shouldThrow<RuntimeException> {
+                discovery.menu(emptyMap()).blockFirst(Duration.ofMillis(2000))
             }
+            ex.cause.shouldBeInstanceOf<TimeoutException>()
         }
     }
 })

@@ -18,6 +18,7 @@
 - Co-Authored-By 태그 사용 금지
 - 커밋 메시지 한국어, conventional commits (feat/fix/docs/refactor/chore/test)
 - GWT 캐시 파일(*.cache.js, *.nocache.js, *.devmode.js, compilation-mappings.txt, clear.cache.gif) 커밋 금지
+- **커밋 전 로컬 테스트 필수.** 수정한 모듈은 `./gradlew :<module>:test` (프로덕션 코드 변경 시 의존 모듈 포함) 로 그린 확인 후 커밋. CI 에서 회귀 실패를 내보내지 않는다. 테스트 없이 커밋 가능한 예외: 순수 문서(*.md) / helm values / 주석만 수정.
 
 ### I18N (다국어)
 - **UI 텍스트는 LabelProvider를 통해 다국어 처리.** 한국어 하드코딩 금지.
