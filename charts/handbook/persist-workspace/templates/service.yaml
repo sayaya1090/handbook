@@ -7,7 +7,8 @@ spec:
   selector:
     app: persist-workspace
   ports:
-    - name: http
+    - name: http-persist-workspace
       protocol: TCP
       port: 8080
       targetPort: 8080
+      appProtocol: http
