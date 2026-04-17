@@ -156,12 +156,22 @@ spec:
             {{- tpl (toYaml .) $ | nindent 12 }}
             {{- end }}
           resources:
+            {{- /*
+              resources 기본값은 cpu 2 / mem 1Gi (limits), cpu 500m / mem 512Mi (requests).
+              서비스별로 부하가 달라 오버라이드 필요 시 values.yaml 의 jvmBackend.resources
+              로 전체 블록을 교체한다 (머지 아님 — 전량 대체).
+              예: gateway 는 /menus 집계 + Netty 버퍼 때문에 mem 2Gi 로 상향 (OOM restart 예방).
+            */}}
+            {{- if .Values.jvmBackend.resources }}
+            {{- toYaml .Values.jvmBackend.resources | nindent 12 }}
+            {{- else }}
             limits:
               cpu: '2'
               memory: 1Gi
             requests:
               cpu: 500m
               memory: 512Mi
+            {{- end }}
           volumeMounts:
             # jar 의 application.yml 을 파일 단위로 덮어쓴다 (머지가 아닌 완전 대체).
             - name: config

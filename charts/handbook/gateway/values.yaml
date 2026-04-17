@@ -14,3 +14,18 @@ jvmBackend:
   fragments:
     - observability
     - authentication
+  # /menus 집계(병렬 WebClient) + Netty 버퍼로 1Gi 에서 OOM → liveness timeout → restart 루프
+  # 가 반복되어 2Gi 로 상향. 공통 템플릿 기본값(1Gi) 은 gateway 외 서비스가 유지한다.
+  resources:
+    limits:
+      cpu: '2'
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  extraEnv:
+    # Heap 상한을 컨테이너 memory limit 의 70% 로 명시 — 컨테이너 나머지 메모리는
+    # Netty direct buffer / metaspace / native stack 에 할애. OOM 발생 시 즉시 종료해서
+    # k8s 가 재시작(= 문제 가시화) 하게 한다. 기본 UseParallelGC 는 Spring Boot 4 기본값 유지.
+    - name: JAVA_TOOL_OPTIONS
+      value: "-XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError"
