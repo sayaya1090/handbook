@@ -50,9 +50,16 @@ public class SessionManager {
         this.labelProvider.subscribe(l -> this.labels = l);
     }
 
-    /** 세션 감시를 시작한다. ShellInitializer에서 호출된다. */
+    /**
+     * 세션 감시를 시작한다. ShellInitializer 에서 호출된다.
+     *
+     * <p><b>2026-04 임시 비활성:</b> JWT 쿠키 부재 시 {@code /auth/login} 으로 무한 바운스
+     * 되는 UX 이슈로 자동 체크 타이머를 설치하지 않는다. 토큰 만료 감지·갱신·리다이렉트
+     * 로직은 향후 서버 주도(401 응답 기반) 또는 명시적 Sign In 메뉴 클릭 경로로 재설계
+     * 예정. 호출 지점은 그대로 유지해 롤백 용이성 확보.</p>
+     */
     public void initialize() {
-        timerHandle = DomGlobal.setInterval(e -> checkSession(), CHECK_INTERVAL_MS);
+        GWT.log("SessionManager: auto session polling disabled (2026-04 temporary).");
     }
 
     private void checkSession() {
