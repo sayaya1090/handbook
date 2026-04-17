@@ -67,14 +67,14 @@ public class MenuTabRenderer {
      * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach/re-attach 용도로 보관.
      */
     public HTMLElement populateMenuTab(PrimaryTabElementBuilder tb, Menu menu) {
-        HTMLElement tab = tb.css("menu-tab").element();
-        HTMLElement iconOutline = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-light", menu.icon(), "icon-outline").element();
-        iconOutline.setAttribute("slot", "icon");
+        // tb.icon(...) 은 sayaya-ui HasIconSlot 이 slot="icon" 을 자동 설정 + add.
+        // slot="active-icon" 은 sayaya-ui 가 별도 슬롯 API 를 노출하지 않으므로 수동 append.
+        tb.css("menu-tab").icon(
+                IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"));
+        HTMLElement tab = tb.element();
         HTMLElement iconFilled = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-solid", menu.icon(), "icon-filled").element();
         iconFilled.setAttribute("slot", "active-icon");
-        tab.appendChild(iconOutline);
         tab.appendChild(iconFilled);
         HTMLElement label = span().css("menu-tab-label").element();
         tab.appendChild(label);
@@ -125,14 +125,12 @@ public class MenuTabRenderer {
      * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach 용도로 보관.
      */
     public HTMLElement populateToolTab(PrimaryTabElementBuilder tb, Tool tool) {
-        HTMLElement tab = tb.css("menu-tab", "tool-tab").element();
-        HTMLElement iconOutline = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-light", tool.icon(), "icon-outline").element();
-        iconOutline.setAttribute("slot", "icon");
+        tb.css("menu-tab", "tool-tab").icon(
+                IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"));
+        HTMLElement tab = tb.element();
         HTMLElement iconFilled = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-solid", tool.icon(), "icon-filled").element();
         iconFilled.setAttribute("slot", "active-icon");
-        tab.appendChild(iconOutline);
         tab.appendChild(iconFilled);
         HTMLElement label = span().css("menu-tab-label").element();
         tab.appendChild(label);
