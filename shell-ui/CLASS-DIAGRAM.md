@@ -201,14 +201,16 @@ classDiagram
         -ToolRailItemFactory factory
         -List~ToolRailItemElement~ children
         -CloseToolRailButton close
-        +ToolRailElement(ToolList, ToolRailMode, MenuHoverElementProvider, factory, close)
+        +ToolRailElement(ToolList, ToolRailMode, MenuSelectedElementProvider, factory, close)
         -update(tools: List~Tool~)
         -offset(parent: MenuRailItemElement)
     }
     class MenuRailItemElement {
         <<@AssistedInject>>
         -Menu menu
-        +MenuRailItemElement(menu, MenuSelected, MenuHover, MenuHoverElementProvider, LabelProvider)
+        -TooltipCard tooltip
+        +MenuRailItemElement(menu, MenuSelected, MenuHover, MenuSelectedElementProvider, MenuRailMode, LabelProvider)
+        -observeHighlight() : MutationObserver
     }
     class ToolRailItemElement {
         <<@AssistedInject>>
@@ -239,7 +241,7 @@ classDiagram
         -WorkspaceList workspaces
         OutlinedSelectElementBuilder
     }
-    class MenuHoverElementProvider {
+    class MenuSelectedElementProvider {
         <<@Singleton>>
         -BehaviorSubject~MenuRailItemElement~ _this
     }
@@ -256,7 +258,7 @@ classDiagram
     NavigationRailItemElement <|-- CloseToolRailButton
     MenuRailElement --> MenuRailItemFactory : creates
     ToolRailElement --> ToolRailItemFactory : creates
-    ToolRailElement --> MenuHoverElementProvider : 위치 추적
+    ToolRailElement --> MenuSelectedElementProvider : 위치 추적
     MenuRailItemFactory ..> MenuRailItemElement
     ToolRailItemFactory ..> ToolRailItemElement
 ```

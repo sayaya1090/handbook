@@ -40,6 +40,24 @@
 | Shape | `--md-sys-shape-*` | `--md-sys-shape-corner-small`, `--md-sys-shape-corner-extra-large` |
 | Motion | `--md-sys-motion-*` | `--md-sys-motion-easing-standard`, `--md-sys-motion-duration-medium2` |
 
+## Tooltip 규약
+
+모든 UI 모듈은 tooltip 표시 시 `ui-components.TooltipCard` 를 사용한다. 직접
+`title` 속성이나 커스텀 flyout 금지(예외: `OverlayContainer` 의 attention/coachmark
+계열). Tooltip 파라미터:
+
+| 항목 | 값 | 비고 |
+|------|----|------|
+| 지연 (hover intent) | 기본 **300ms** (`TooltipCard.DEFAULT_DELAY_MS`) | MD3 short duration, 마우스 스쳐감 방지 |
+| Elevation | Card elevated (level 2, `--md-sys-elevation-level2`) | `OverlayContainer.renderTooltipCard` 와 동일 |
+| Position | `start` / `end` / `top` / `bottom` — 기본 `end` | Navigation Rail 우측 |
+| Auto-hide (외부 트리거) | `AUTO_HIDE_HIGHLIGHT_MS` = 3000ms | `showImmediate(3000)` — `highlight` agent-command 동반 표시 |
+| CSS 클래스 | `ui-tooltip-card`, `ui-tooltip-portal`, `ui-position-<pos>`, `ui-tooltip-headline`, `ui-tooltip-supporting` | `app/src/main/webapp/css/ui-components.css` |
+
+Tooltip 공용 컴포넌트 추출 배경: sayaya-ui 2.4.1.3 에 Tooltip 미제공 — 프로젝트
+자체 `TooltipCard` 가 단일 출처. 후속에 sayaya-ui 가 Tooltip 을 제공하면 래핑
+교체 검토.
+
 ## 테마 전환
 
 ```html

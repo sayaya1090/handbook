@@ -117,7 +117,7 @@ internal class DrawerTest: GwtTestSpec({
             wsSelect shouldNotBe null
         }
 
-        // UC-S6: 호버 미리보기 - Tool Rail 요소 존재 확인
+        // UC-S3: Tool Rail 영역 존재 (UC-S6 폐기로 여기 이관됨 — 구 테스트는 hover 가정이었음)
         Then("Tool Rail 영역(두 번째 .rail)이 존재한다") {
             val rails = page.querySelectorAll(".rail")
             rails.count() shouldBe 2
@@ -544,6 +544,24 @@ internal class DrawerTest: GwtTestSpec({
                     "document.querySelectorAll('.rail .item[selected]').length"
                 ).toString()
                 count shouldBe "1"
+            }
+        }
+
+        // UC-S6 (2026-04-17 재정의): MenuRail 상태 기반 hover 정책
+        //   - EXPAND 상태: hover peek 유지 (탐색 UX)
+        //   - COLLAPSE / 모바일: hover → TooltipCard 라벨만, ToolRail 전환 없음
+        //   - agent-command highlight(.ui-highlight) 시 tooltip 즉시 표시
+        When("MenuRail EXPAND 상태에서 tools ≥ 2 메뉴 아이템을 hover 하면") {
+            // EXPAND 는 초기 기본 상태. 선택된 메뉴가 없으면 MenuRailMode 가 EXPAND.
+            page.evaluate(
+                "document.querySelectorAll('.rail:first-child .item.menu')[1].dispatchEvent(new MouseEvent('mouseover', {bubbles: true}))"
+            )
+            Thread.sleep(400)
+            Then("hover peek 가 ToolRail 도구 목록을 채운다 (UC-S6 EXPAND 분기)") {
+                val toolRailItemCount = page.evaluate(
+                    "document.querySelectorAll('.rail:last-child .item.tool').length"
+                ).toString().toInt()
+                toolRailItemCount shouldBeGreaterThan 0
             }
         }
 

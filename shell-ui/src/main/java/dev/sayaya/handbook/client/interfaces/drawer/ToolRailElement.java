@@ -34,7 +34,7 @@ import static org.jboss.elemento.Elements.div;
  *   <li>{@link ToolList} — 도구 목록 구독</li>
  *   <li>{@link ToolRailMode} — 레일 가시성 구독</li>
  *   <li>{@link ViewportObserver} — 모바일/데스크톱 뷰포트 구독</li>
- *   <li>{@link MenuHoverElementProvider} — 호버 위치 기반 오프셋 계산</li>
+ *   <li>{@link MenuSelectedElementProvider} — 선택 위치 기반 오프셋 계산 (UC-S6 폐기 후 click 기반)</li>
  *   <li>{@link ToolRailItemFactory} — 도구 아이템 생성</li>
  *   <li>{@link CloseToolRailButton} — drill-back 버튼</li>
  * </ul></p>
@@ -45,10 +45,10 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
     private final ToolRailItemFactory factory;
     private final List<ToolRailItemElement> children = new LinkedList<>();
     private final CloseToolRailButton close;
-    private final MenuHoverElementProvider parent;
+    private final MenuSelectedElementProvider parent;
     private final ToolRailMode mode;
     private boolean mobile;
-    @Inject ToolRailElement(ToolList list, ToolRailMode mode, MenuHoverElementProvider parent,
+    @Inject ToolRailElement(ToolList list, ToolRailMode mode, MenuSelectedElementProvider parent,
                             ToolRailItemFactory factory, CloseToolRailButton close, ViewportObserver viewport) {
         this.factory = factory;
         this.close = close;

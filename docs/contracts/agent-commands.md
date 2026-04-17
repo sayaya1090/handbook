@@ -33,13 +33,15 @@ Kafka `AGENT_COMMAND` 이벤트로 발행되어 SSE 로 전달된다.
 | Type | 설명 | 페이로드 필수 필드 |
 |------|------|-------------------|
 | `navigate` | 특정 화면으로 이동 (메뉴/도구 선택, URL 변경) | `target: {menu, tool}` |
-| `highlight` | 요소 강조 (반복 펄스) | `target.selector`, `style` |
+| `highlight` | 요소 강조 (반복 펄스). **단순 시선 유도 전용** — 라벨/메시지/오버레이가 필요하면 `attention` 사용 | `target.selector` |
 | `scroll` | 스크롤/포커스 이동 | `target.selector` |
 | `preview` | 변경 전후 diff 인라인 표시 | `changes: [{path, op, value}]` |
 | `mutate` | 실제 값 변경 (필드 입력, 행 추가/삭제) | `changes: [{path, op, value}]` |
 | `notify` | 토스트/배너 | `level: info|warning|error`, `message` |
 | `progress` | 진행률 표시 | `{currentGroup, totalGroups, parallel, stepCount}` |
-| `attention` | 코치마크/스포트라이트 안내 | `target.selector`, `style`, `message`, `position` |
+| `attention` | 코치마크/스포트라이트 안내 (설명 텍스트·오버레이·화살표·뱃지) | `target.selector`, `style`, `message`, `position` |
+
+**highlight vs attention 결정 트리:** "여기요" 정도의 단순 pulse → `highlight`. 설명 텍스트·화살표·뱃지 필요 → `attention`. shell-ui MenuRail 같은 UI 는 `.ui-highlight` class 변화를 자체 감지해 `TooltipCard` 를 COLLAPSE 상태에서 동반 표시한다 — agent-protocol 확장(과거 문서에 있던 `highlight.style` 필드)이 아니라 UI 측 책임.
 | `await_confirm` | 사용자 확인 대기 | `options: ["confirm", "cancel", "edit"]` |
 | `complete` | 작업 완료 (요약) | `summary`, `artifactId?`, `affectedResources?` |
 

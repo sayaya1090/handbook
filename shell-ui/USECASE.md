@@ -182,13 +182,17 @@ sequenceDiagram
 | **대안 흐름 (모바일)** | 뷰포트 < 768px일 때 `DrawerMode`가 OVERLAY 상태로 전환된다. EXPAND/COLLAPSE 대신 OVERLAY ↔ HIDE를 토글하며, 메뉴 선택 시 자동으로 HIDE된다. 왼쪽 가장자리 스와이프로도 열 수 있다. |
 | **SVG 애니메이션** | 햄버거 아이콘이 EXPAND↔COLLAPSE 전환 시 부드럽게 변형된다. |
 
-## UC-S6: 메뉴 호버 시 도구 미리보기
+## UC-S6: 메뉴 호버 상태 기반 UX (2026-04-17 재정의)
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 사용자 |
-| **선행조건** | Drawer가 EXPAND 상태, 도구가 2개 이상인 메뉴 |
-| **정상 흐름** | 1. 메뉴 아이템에 마우스를 올린다.<br>2. `MenuHover`가 호버된 메뉴를 발행한다.<br>3. `ToolList`가 호버 메뉴의 도구 목록으로 업데이트된다.<br>4. `MenuHoverElementProvider`가 호버된 아이템의 위치를 추적한다.<br>5. Tool Rail이 해당 메뉴 아이템 옆에 정렬되어 도구를 미리 표시한다. |
+| **액터** | 사용자 + AI 에이전트(`highlight` 커맨드) |
+| **선행조건** | 메뉴 아이템이 렌더된 상태 |
+| **분기 1 — MenuRail EXPAND 상태** | 1. 메뉴 아이템에 마우스를 올린다.<br>2. `MenuHover` 가 호버된 메뉴를 발행한다 (MenuRailMode=EXPAND 조건부).<br>3. `ToolList` 가 `merge(MenuSelected, MenuHover)` 로 도구 목록을 갱신한다.<br>4. `MenuSelectedElementProvider` 가 호버된 아이템의 위치를 갱신해 ToolRail 이 옆에 정렬된다. |
+| **분기 2 — MenuRail COLLAPSE / 모바일 상태** | 1. 메뉴 아이템에 마우스를 올린다.<br>2. `MenuHover` 발행은 차단된다 (ToolRail 자동 재전환 없음).<br>3. `TooltipCard` 가 300ms 지연 후 아이콘 오른쪽에 메뉴명 + supportingText 를 표시한다.<br>4. `mouseout` 또는 MenuRailMode 전이 시 사라진다. |
+| **분기 3 — agent-command `highlight`** | 1. assistant 가 `target` 셀렉터로 MenuRailItem 을 강조 요청.<br>2. `HighlightEffect` 가 `.ui-highlight` class 를 부여 (pulse).<br>3. MenuRailItemElement 의 `MutationObserver` 가 class 변화를 감지하여 `tooltip.showImmediate(3000ms)` 를 호출.<br>4. COLLAPSE 에선 tooltip 노출, EXPAND 에선 `tooltip.enabled=false` 라 no-op. |
+| **대안 흐름** | MenuRailMode=HIDE → 아이템 자체 부재. |
+| **이력** | 초기 UC-S6 는 상태 무관 hover 전환이었으나, CloseToolRailButton 복귀 후 hover 만으로 ToolRail 이 재전환되어 명시적 복귀 의사를 무시하는 문제가 있었음. 2026-04-17 부터 MenuRail 상태별 분기 + TooltipCard 도입으로 해결. 관련 컴포넌트: `MenuHover` (EXPAND 전용), `MenuSelectedElementProvider` (구 MenuHoverElementProvider 리네이밍), `ui-components/TooltipCard`. |
 
 ## UC-S7: 워크스페이스 전환
 
@@ -357,7 +361,7 @@ sequenceDiagram
 | UC-S3 (도구실행) | 메뉴 클릭 → 모듈 로딩 (alt) | 유스케이스, Drawer UI | ToolRailElement, ToolRailItemElement, ToolSelected, ToolExecutionManager | DrawerTest: 메뉴1 도구 ≤1, 메뉴2 도구 >1, 같은 메뉴 다른 Tool URL → 선택 아이템 유지 |
 | UC-S4 (딥링크) | 초기 로딩과 동일 경로 | 유스케이스 | UrlBasedMenuResolver, HistoryManager, MenuSelected | DrawerTest: URL hash 변경 → Drawer/레일 아이템 수 유지 |
 | UC-S5 (Drawer토글) | Drawer 토글 | 유스케이스, Drawer UI | MenuToggleButton, DrawerMode, MenuRailMode, ToolRailMode, DrawerElement, MenuRailElement, ToolRailElement | DrawerModeTest: MenuRailState/ToolRailState 상태 전이 검증 |
-| UC-S6 (호버) | — (단순) | 유스케이스, Drawer UI | MenuHover, MenuHoverElementProvider, ToolList, ToolRailElement | DrawerTest: Tool Rail 영역(.tool-rail) 존재 확인 |
+| UC-S6 (호버 상태 분기) | 상태 기반 hover 정책 | 유스케이스, Drawer UI, ui-components | MenuHover (EXPAND 전용), MenuSelectedElementProvider, ToolList, ToolRailElement, MenuRailMode, TooltipCard, MenuRailItemElement (MutationObserver) | DrawerTest: EXPAND hover 시 ToolRail peek 가 도구 목록 채움 |
 | UC-S7 (워크스페이스) | — (단순) | Drawer UI | WorkspaceSelectElement, WorkspaceList | DrawerTest: 워크스페이스 선택 요소(.workspace-select) 존재 확인 |
 | UC-S8 (토큰갱신) | 토큰 자동 갱신 | Frame+API | UserApi(periodicRefresh, REFRESH_INTERVAL) | ApiTest: 사용자 정보 로드, 사용자 ID/이름 표시, 주기적 갱신 설정 확인 |
 | UC-S9 (에이전트) | 에이전트 화면 이동 | 유스케이스 | UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, HostSharedModule(uri) | UrlBasedMenuResolverTest: 에이전트 navigate 커맨드 URL 패턴 처리 검증 |
