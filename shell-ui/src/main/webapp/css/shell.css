@@ -41,8 +41,8 @@ body,
     z-index: 1000;
     flex-direction: column;
     /* drawer 자체 레이아웃 트랜지션은 별도 — 색 트랜지션과 분리해 더 짧게 */
-    transition-property: background-color, color, border-color, box-shadow, fill, stroke,
-                         border-top-right-radius, border-bottom-right-radius;
+    transition-property: background-color, color, width, border-color, box-shadow, fill,
+                         stroke, border-top-right-radius, border-bottom-right-radius;
     transition-duration: 600ms, 600ms, 600ms, 300ms, 600ms, 600ms, 300ms, 300ms;
     transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
@@ -412,11 +412,11 @@ body,
     display: none;
 }
 
-/* ── Mobile: MenuRail 은 MobileTabsElement 로 대체 ── */
-/* MenuRail 은 데스크톱 NavigationRail 전용이 되고, 모바일에서는 상단 Scrollable Tabs
-   ({@link MobileTabsElement}) 가 그 자리를 대신한다. ToolRail 은 기존 .rail[mobile]
-   하단 바 규칙을 그대로 사용 — display:none 이 MenuRail 에만 걸리도록 한정한다. */
-.menu-rail[mobile] {
+/* ── Mobile: MenuRail · ToolRail 모두 MobileTabsElement 로 대체 ── */
+/* 모바일에서는 상단 Scrollable Tabs 하나가 두 모드(menu/tool) 를 스왑한다 —
+   2026-04 드릴인 패턴 상단 이관. 이전 .rail[mobile] 하단 바 규칙은 dead. */
+.menu-rail[mobile],
+.tool-rail[mobile] {
     display: none !important;
 }
 
@@ -549,11 +549,21 @@ body:has(nav.drawer[overlay]) {
     left: 0;
     right: 0;
     z-index: 900;
-    background: var(--md-sys-color-surface-container);
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    /* AppBar 와 동일한 glass 규약: 기본 반투명 + blur, scroll 시 body[data-scrolled] 에
+       따라 고체 surface-container 로 전환 — 두 상단 bar 가 한 덩어리처럼 시각 정합. */
+    background: color-mix(in srgb, var(--md-sys-color-surface) 60%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent);
     display: flex;
     flex-direction: row;
     align-items: center;
+    transition: background-color var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
+                border-bottom-color var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease);
+}
+body[data-scrolled] .menu-tabs {
+    background: var(--md-sys-color-surface-container);
+    border-bottom-color: var(--md-sys-color-outline-variant);
 }
 .menu-tabs[hide] {
     display: none;
@@ -584,6 +594,10 @@ body:has(nav.drawer[overlay]) {
     display: block;
 }
 .menu-tabs-overflow-btn {
+    flex-shrink: 0;
+    margin: 0 4px;
+}
+.menu-tabs-back-btn {
     flex-shrink: 0;
     margin: 0 4px;
 }

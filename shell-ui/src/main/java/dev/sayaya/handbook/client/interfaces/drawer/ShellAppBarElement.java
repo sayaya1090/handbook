@@ -86,10 +86,20 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         updateScrolled();
     }
 
-    /** 현재 window.scrollY 기준으로 {@code [scrolled]} 속성 on/off. CSS 가 scroll state 별 배경·elevation 전환. */
+    /**
+     * 현재 {@code window.scrollY} 기준으로 AppBar 의 {@code [scrolled]} 속성과 {@code body}
+     * 의 {@code [data-scrolled]} 속성을 함께 on/off. body 속성은 MobileTabs 등 다른 상단
+     * bar 가 CSS 만으로 동일 scroll state 에 반응하도록 하는 공용 앵커.
+     */
     private void updateScrolled() {
-        if (DomGlobal.window.scrollY > 0) element().setAttribute("scrolled", true);
-        else element().removeAttribute("scrolled");
+        boolean scrolled = DomGlobal.window.scrollY > 0;
+        if (scrolled) {
+            element().setAttribute("scrolled", true);
+            DomGlobal.document.body.setAttribute("data-scrolled", "true");
+        } else {
+            element().removeAttribute("scrolled");
+            DomGlobal.document.body.removeAttribute("data-scrolled");
+        }
     }
 
     private void updateMenuActions(List<Menu> menus) {

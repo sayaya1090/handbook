@@ -305,34 +305,27 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "false"
             }
-            Then(".menu-tabs + md-menu 합친 엔트리 수가 네비게이션 메뉴 수(appBarSlot==null)와 같다") {
-                // 3단계 폴백으로 하단정렬이 overflow 에 들어가면 md-tabs 쪽 탭 수는 줄어든다.
-                // appBarSlot 지정 메뉴는 AppBar 로 승격되어 Tabs 자체에서 제외.
+            // 이전 블록(desktop) 에서 #url2 가 클릭되어 Menu 2(도구 2개) 가 선택된 상태로 모바일
+            // 진입 → Presenter 가 MobileTabs 를 tool 모드로 드릴인시킨다.
+            Then("도구 2개 이상 선택 상태이므로 MobileTabs 는 tool 모드 — 상단 탭이 도구 목록으로 교체") {
                 val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
-                val menuItemCount = page.querySelectorAll(".menu-tabs md-menu md-menu-item").count()
-                val navCount = DrawerMock.menu.count { it.appBarSlot() == null }
-                (tabCount + menuItemCount) shouldBe navCount
+                // Menu 2 의 도구 수
+                val toolCount = DrawerMock.menu[1].tools().size
+                tabCount shouldBe toolCount
             }
-            Then("viewport 초과 시 overflow 버튼이 노출된다") {
+            Then("tool 모드 — leading 에 back 버튼(.menu-tabs-back-btn) 이 노출된다") {
+                val backBtn = page.querySelector(".menu-tabs .menu-tabs-back-btn")
+                backBtn shouldNotBe null
+            }
+            Then("tool 모드에서 overflow 버튼은 hidden — 도구 목록은 분할 대상 아님") {
                 val hidden = page.evaluate(
                     "document.querySelector('.menu-tabs-overflow-btn').hasAttribute('hidden')"
                 ).toString()
-                hidden shouldBe "false"
+                hidden shouldBe "true"
             }
-            Then("하단정렬(bottom=true && appBarSlot==null) 메뉴는 md-menu 팝업으로 수렴된다") {
+            Then("tool 모드에서 md-menu 팝업은 비어있다 (도구는 overflow 로 수렴되지 않음)") {
                 val menuItemCount = page.querySelectorAll(".menu-tabs md-menu md-menu-item").count()
-                val bottomCount = DrawerMock.menu.count { it.bottom() == true && it.appBarSlot() == null }
-                menuItemCount shouldBe bottomCount
-            }
-            Then("overflow 버튼 클릭 시 md-menu 가 open 된다") {
-                page.evaluate("document.querySelector('.menu-tabs-overflow-btn').click()")
-                Thread.sleep(100)
-                val open = page.evaluate(
-                    "document.querySelector('.menu-tabs md-menu').hasAttribute('open')"
-                ).toString()
-                open shouldBe "true"
-                // 원복: 다음 검증에 영향 없도록 닫기
-                page.evaluate("document.querySelector('.menu-tabs md-menu').removeAttribute('open')")
+                menuItemCount shouldBe 0
             }
             // 원복: 이후 테스트들이 desktop 뷰포트에서 돌아가도록 복원
             page.setViewportSize(1280, 720)
@@ -503,61 +496,38 @@ internal class DrawerTest: GwtTestSpec({
                 hasHide shouldBe "true"
                 hasMobile shouldBe "true"
             }
-            Then("ToolRail 이 드릴인 (EXPAND) 상태 — 두 번째 rail 에 [expand] 속성") {
-                val hasExpand = page.evaluate(
-                    "document.querySelector('.tool-rail').hasAttribute('expand')"
-                ).toString()
-                hasExpand shouldBe "true"
+            Then("MobileTabs 가 tool 모드로 전환 — 탭이 도구 목록으로 교체됨") {
+                val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
+                tabCount shouldBe DrawerMock.menu[1].tools().size
             }
-            Then("ToolRail 이 viewport 전체 폭(375px)을 차지한다") {
+            Then("tool 모드 — leading 에 back 버튼(.menu-tabs-back-btn)") {
+                val back = page.querySelector(".menu-tabs .menu-tabs-back-btn")
+                back shouldNotBe null
+            }
+            Then("tool 모드에서 overflow 버튼 hidden 유지 (도구는 overflow 대상 아님)") {
+                val hidden = page.evaluate(
+                    "document.querySelector('.menu-tabs-overflow-btn').hasAttribute('hidden')"
+                ).toString()
+                hidden shouldBe "true"
+            }
+            Then("MobileTabs 가 viewport 전체 폭(375px)을 차지") {
                 val width = page.evaluate(
-                    "document.querySelector('.tool-rail').getBoundingClientRect().width"
+                    "document.querySelector('.menu-tabs').getBoundingClientRect().width"
                 ).toString().toDouble()
                 width shouldBe 375.0
             }
-            Then("ToolRail 의 첫 자식이 CloseToolRailButton(← 아이콘) 이다") {
-                val firstId = page.evaluate(
-                    "document.querySelector('.tool-rail').firstElementChild && document.querySelector('.tool-rail').firstElementChild.id"
-                ).toString()
-                firstId shouldBe "close-tool-rail"
-            }
-            Then("드릴인 ToolRail 의 아이템 .collapse 아이콘이 visible 이어야 한다") {
-                // 드릴인 중에도 하단 바 아이콘이 사라지지 않아야 한다. CloseToolRailButton 과
-                // 도구 아이템들이 모두 .collapse 슬롯으로 렌더되므로 .collapse 의 가시성을 체크.
-                val vis = page.evaluate(
-                    "getComputedStyle(document.querySelector('.tool-rail').querySelector('.item .collapse')).visibility"
-                ).toString()
-                vis shouldBe "visible"
-            }
-            Then("한 번에 한 rail 만 [expand] — MenuRail 과 ToolRail 이 상호 배타적") {
-                val expandedCount = page.evaluate(
-                    "document.querySelectorAll('.rail[mobile][expand]').length"
-                ).toString()
-                expandedCount shouldBe "1"
-            }
         }
 
-        // UC-S13: 모바일 드릴백 — CloseToolRailButton 클릭 → MenuRail 복귀
-        When("← 버튼(CloseToolRailButton) 을 탭하면") {
-            page.click("#close-tool-rail")
+        // UC-S13: 모바일 드릴백 — MobileTabs back 버튼 클릭 → menu 모드 복귀
+        When("← 버튼(.menu-tabs-back-btn) 을 탭하면") {
+            page.evaluate("document.querySelector('.menu-tabs-back-btn').click()")
             Thread.sleep(500)
-            Then("MenuRail 이 다시 EXPAND 로 복귀한다 — 첫 번째 rail 에 [expand] 속성") {
-                val hasExpand = page.evaluate(
-                    "document.querySelector('.menu-rail').hasAttribute('expand')"
-                ).toString()
-                hasExpand shouldBe "true"
+            Then("MobileTabs 가 menu 모드로 복귀 — back 버튼 제거") {
+                val back = page.querySelector(".menu-tabs .menu-tabs-back-btn")
+                // detach 후 parentNode null 이지만 reference 는 lazy 재사용. querySelector 결과 null 이어야.
+                back shouldBe null
             }
-            Then("ToolRail 은 다시 HIDE 된다 — [hide] 속성, [mobile] 은 유지") {
-                val hasHide = page.evaluate(
-                    "document.querySelector('.tool-rail').hasAttribute('hide')"
-                ).toString()
-                val hasMobile = page.evaluate(
-                    "document.querySelector('.tool-rail').hasAttribute('mobile')"
-                ).toString()
-                hasHide shouldBe "true"
-                hasMobile shouldBe "true"
-            }
-            Then("MobileTabs 가 다시 viewport 전체 폭(375px)을 차지한다 (드릴백 후 상단 Tabs 복귀)") {
+            Then("MobileTabs 가 다시 viewport 전체 폭(375px)을 차지") {
                 val width = page.evaluate(
                     "document.querySelector('.menu-tabs').getBoundingClientRect().width"
                 ).toString().toDouble()

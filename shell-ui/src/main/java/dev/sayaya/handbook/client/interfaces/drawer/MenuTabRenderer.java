@@ -3,7 +3,9 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 import dev.sayaya.handbook.client.components.HighlightEffect;
 import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
+import dev.sayaya.handbook.client.usecase.ToolSelected;
 import dev.sayaya.handbook.domain.Menu;
+import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
@@ -44,11 +46,13 @@ import static org.jboss.elemento.Elements.span;
 public class MenuTabRenderer {
 
     private final MenuSelected selected;
+    private final ToolSelected toolSelected;
     private final LabelProvider labelProvider;
 
     @Inject
-    MenuTabRenderer(MenuSelected selected, LabelProvider labelProvider) {
+    MenuTabRenderer(MenuSelected selected, ToolSelected toolSelected, LabelProvider labelProvider) {
         this.selected = selected;
+        this.toolSelected = toolSelected;
         this.labelProvider = labelProvider;
     }
 
@@ -104,5 +108,32 @@ public class MenuTabRenderer {
             headline.textContent = title;
         });
         return mi.element();
+    }
+
+    /**
+     * 단일 {@link Tool} 을 {@code md-primary-tab} 으로 렌더 — 모바일 MobileTabs 가 도구 모드일 때 사용.
+     * click 시 {@link ToolSelected} 발행. Menu 의 renderTab 과 동일한 outline/filled 아이콘 슬롯 + 라벨 구조.
+     */
+    public HTMLElement renderToolTab(Tool tool) {
+        HTMLContainerBuilder<HTMLElement> tab = htmlContainer("md-primary-tab", HTMLElement.class).css("menu-tab", "tool-tab");
+        HTMLElement iconOutline = IconElementBuilder.icon()
+                .css("fa-sharp", "fa-light", tool.icon(), "icon-outline").element();
+        iconOutline.setAttribute("slot", "icon");
+        HTMLElement iconFilled = IconElementBuilder.icon()
+                .css("fa-sharp", "fa-solid", tool.icon(), "icon-filled").element();
+        iconFilled.setAttribute("slot", "active-icon");
+        tab.add(iconOutline).add(iconFilled);
+        HTMLElement label = span().css("menu-tab-label").element();
+        tab.add(label);
+        if (tool.title() != null) tab.element().dataset.set("toolTitle", tool.title());
+        tab.on(EventType.click, evt -> toolSelected.next(tool));
+        final TooltipCard tooltip = TooltipCard.anchor(tab.element()).position("bottom").enabled(false);
+        HighlightEffect.observe(tab.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
+        labelProvider.subscribe(labels -> {
+            String title = labels.getOrDefault(tool.title(), tool.title() != null ? tool.title() : "");
+            label.textContent = title;
+            tooltip.content(title, null);
+        });
+        return tab.element();
     }
 }
