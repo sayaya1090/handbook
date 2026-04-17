@@ -73,7 +73,7 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         slots.put(SLOT_LEADING, leading.element());
         slots.put(SLOT_CENTER, center.element());
         slots.put(SLOT_TRAILING, trailing.element());
-        element().setAttribute("hide", true);
+        // AppBar 는 데스크톱/모바일 공통 상시 표시 — 별도 초기 [hide] 속성 불필요.
         // SRP — AppBar 가 자기 정적 slot 을 스스로 채운다. DrawerElement 는 슬롯 지식 없음.
         leading.element().appendChild(navToggle.element());
         center.element().appendChild(workspace.css("workspace").element());

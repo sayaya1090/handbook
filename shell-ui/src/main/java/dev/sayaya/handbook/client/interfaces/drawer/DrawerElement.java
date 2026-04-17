@@ -56,7 +56,7 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private double touchStartX;
     private boolean trackingSwipe;
 
-    @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, MobileTabsElement navTabs, ToolRailElement navTools, ShellAppBarElement appBar, ShellStylesheet shellStylesheet) {
+    @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, ToolRailElement navTools, ShellStylesheet shellStylesheet) {
         this.mode = mode;
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
@@ -64,14 +64,12 @@ public class DrawerElement implements IsElement<HTMLElement> {
         scrim = div().css("drawer-scrim").element();
         scrim.addEventListener("click", e -> mode.toggleOverlay());
 
-        // AppBar 는 자기 slot 을 스스로 채우는 SRP 경계를 가지며, Drawer 는 그 인스턴스를
-        // 단순히 레이아웃에 삽입한다 — AppBar 내부 DOM 구조 지식은 DrawerElement 에 없다.
-        appBar.element().removeAttribute("hide");
+        // AppBar / MobileTabs 는 viewport 최상단 fixed 요소로서 body 직속에 배치된다 —
+        // {@link dev.sayaya.handbook.client.ShellInitializer} 가 Composition Root 에서
+        // 명시적 순서로 append. DrawerElement 는 rail 본체만 담당한다.
         _this.css("drawer")
                 .add(div().css("body")
-                        .add(navMenu).add(navTools))
-                .add(navTabs)
-                .add(appBar);
+                        .add(navMenu).add(navTools));
         mode.subscribe(this::state);
         initSwipeGesture();
     }

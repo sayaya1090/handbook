@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.client.drawer;
 
 import dev.sayaya.handbook.client.interfaces.drawer.DrawerElement;
+import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsElement;
+import dev.sayaya.handbook.client.interfaces.drawer.ShellAppBarElement;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.ModuleScriptManager;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
@@ -15,6 +17,8 @@ import javax.inject.Singleton;
 @dagger.Component(modules = { DrawerMock.class })
 public interface Component {
     DrawerElement drawer();
+    ShellAppBarElement shellAppBar();
+    MobileTabsElement mobileTabs();
     ModuleScriptManager script();
     HistoryManager historyManager();
     UrlBasedMenuResolver urlBasedToolResolver();

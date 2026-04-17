@@ -2,6 +2,8 @@ package dev.sayaya.handbook.client;
 
 import dev.sayaya.handbook.client.interfaces.ContentElement;
 import dev.sayaya.handbook.client.interfaces.ProgressElement;
+import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsElement;
+import dev.sayaya.handbook.client.interfaces.drawer.ShellAppBarElement;
 import dev.sayaya.handbook.client.interfaces.frame.FrameUpdater;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.ModuleScriptManager;
@@ -54,6 +56,8 @@ public class ShellInitializer {
     private final ToolBasedMenuResolver toolBasedMenuResolver;
     private final FrameUpdater frameUpdater;
     private final ModuleScriptManager scriptManager;
+    private final ShellAppBarElement appBar;
+    private final MobileTabsElement mobileTabs;
     private final ProgressElement progressElement;
     private final ContentElement contentElement;
     private final WorkspaceEventListener workspaceEventListener;
@@ -69,6 +73,8 @@ public class ShellInitializer {
             ToolBasedMenuResolver toolBasedMenuResolver,
             FrameUpdater frameUpdater,
             ModuleScriptManager scriptManager,
+            ShellAppBarElement appBar,
+            MobileTabsElement mobileTabs,
             ProgressElement progressElement,
             ContentElement contentElement,
             WorkspaceEventListener workspaceEventListener,
@@ -83,6 +89,8 @@ public class ShellInitializer {
         this.toolBasedMenuResolver = toolBasedMenuResolver;
         this.frameUpdater = frameUpdater;
         this.scriptManager = scriptManager;
+        this.appBar = appBar;
+        this.mobileTabs = mobileTabs;
         this.progressElement = progressElement;
         this.contentElement = contentElement;
         this.workspaceEventListener = workspaceEventListener;
@@ -101,6 +109,12 @@ public class ShellInitializer {
         scriptManager.initialize();
         workspaceEventListener.initialize();
         sessionManager.initialize();
+        // Composition Root — DOM 최상위 배치 순서를 한 곳에서 명시한다.
+        // AppBar(최상단 고정) → MobileTabs(AppBar 바로 아래) → Progress(상단 indicator)
+        // → Content(Drawer + 본문). Drawer 의 backdrop-filter 가 containing block 을
+        // 오염시키지 않도록 fixed 위젯은 반드시 body 직속에 놓는다.
+        body().add(appBar);
+        body().add(mobileTabs);
         body().add(progressElement);
         body().add(contentElement);
         publishBridges();

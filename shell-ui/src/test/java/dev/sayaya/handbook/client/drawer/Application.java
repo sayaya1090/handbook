@@ -16,7 +16,10 @@ public class Application implements EntryPoint {
         components.urlBasedToolResolver().initialize();
         components.toolBasedMenuResolver().initialize();
         components.script().initialize();
-        body().add(components.drawer())
+        // Composition Root — 본 테스트 셸도 프로덕션 ShellInitializer 와 동일 순서로 조립.
+        body().add(components.shellAppBar())
+            .add(components.mobileTabs())
+            .add(components.drawer())
             .add(div().id("test-controls").style("position: fixed; top: 0; right: 0; z-index: 9999;")
                 .add(button("URL 1").id("url1")
                     .on(EventType.click, evt -> components.uri().next("menu1-tool1")))
