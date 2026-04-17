@@ -23,10 +23,23 @@ internal class DrawerTest: GwtTestSpec({
         Then("메뉴 토글 버튼이 존재한다") {
             page.querySelector("#menu-toggle-button") shouldNotBe null
         }
+        Then("ShellAppBar 가 DOM 에 존재하고 데스크톱에서도 [hide] 없이 표시된다") {
+            val appBar = page.querySelector(".shell-app-bar")
+            appBar shouldNotBe null
+            val hasHide = page.evaluate(
+                "document.querySelector('.shell-app-bar').hasAttribute('hide')"
+            ).toString()
+            hasHide shouldBe "false"
+        }
         Then("메뉴 토글 버튼은 AppBar leading 안에 위치한다") {
             // AppBar 도입 후 햄버거 토글은 Drawer header 가 아닌 .shell-app-bar-leading 에 배치.
             val leadingToggle = page.querySelector(".shell-app-bar-leading #menu-toggle-button")
             leadingToggle shouldNotBe null
+        }
+        Then("WorkspaceSelectElement 는 AppBar center 안에 위치한다") {
+            // 기존 .drawer-header 에 있던 WorkspaceSelect 를 AppBar center 로 이동.
+            val workspaceInCenter = page.querySelector(".shell-app-bar-center .workspace")
+            workspaceInCenter shouldNotBe null
         }
         Then("테마 토글 버튼이 AppBar trailing 의 .item.rail-bottom 으로 존재한다") {
             // ThemeToggle 은 NavigationRailItemElement 를 상속 → .item 구조 + .rail-bottom 클래스.
