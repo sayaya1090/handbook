@@ -356,6 +356,29 @@ internal class DrawerTest: GwtTestSpec({
             ).toString()
             bottomOrder.toInt() shouldBeGreaterThan normalOrder.toInt() - 1
         }
+        // Regression guard (2026-04): ThemeToggle 이 AppBar 로 이관된 후 MenuRail 에 push 주체가 사라져
+        // bottom-menu 가 일반 메뉴 바로 뒤에 붙는 증상이 있었다. margin-top:auto 효과를 시각 위치로 검증.
+        Then("첫 bottom-menu 는 margin-top:auto 로 rail 하단으로 push 되어 일반 메뉴와 충분한 간격") {
+            // 일반 메뉴의 마지막 끝점과 첫 bottom-menu 시작점 사이의 수직 간격.
+            // push 가 제대로 작동하면 rail 높이의 상당 부분(최소 50px)이 빈다.
+            val gap = page.evaluate(
+                """
+                (() => {
+                    const rail = document.querySelector('.menu-rail');
+                    if (!rail) return 0;
+                    const normals = rail.querySelectorAll('.item:not(.bottom-menu):not(.rail-bottom)');
+                    const bottoms = rail.querySelectorAll('.item.bottom-menu');
+                    if (!normals.length || !bottoms.length) return 0;
+                    const lastNormal = normals[normals.length - 1];
+                    const firstBottom = bottoms[0];
+                    const lastNormalBottom = lastNormal.offsetTop + lastNormal.offsetHeight;
+                    const firstBottomTop = firstBottom.offsetTop;
+                    return firstBottomTop - lastNormalBottom;
+                })()
+                """.trimIndent()
+            ).toString().toDouble()
+            (gap > 50.0) shouldBe true
+        }
     }
 
     // UC-S13 (초기 로드): 페이지가 처음부터 모바일 뷰포트에서 로드되는 경우. 실사용 모바일
