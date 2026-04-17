@@ -30,7 +30,11 @@
     "document.undo": "실행 취소",
     "document_editor": "문서 편집기",
     "documents": "문서",
+    "groups": "그룹",
+    "permissions": "권한",
     "settings": "설정",
+    "theme.switch_to_dark": "다크 모드로 전환",
+    "theme.switch_to_light": "라이트 모드로 전환",
     "type.add": "타입 추가",
     "type.attr.apply": "적용",
     "type.attr.close": "닫기",
@@ -45,5 +49,7 @@
     "type.undo": "실행 취소",
     "type_canvas": "타입 캔버스",
     "type_definition": "타입 정의",
-    "types": "타입"
+    "types": "타입",
+    "workspace info": "워크스페이스 정보",
+    "workspaces": "워크스페이스"
 }
