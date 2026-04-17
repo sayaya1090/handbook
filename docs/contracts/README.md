@@ -39,9 +39,9 @@ schema         .      O      .        O          O     .      O        .     .
 document       .      O      .        O          O     .      O        .     .
 workspace      .      O      .        O          O     .      O        .     .
 assistant      .      O      OWNER    O          O     OWNER  .        .     .
-landing        O      .      .        .          O     .      .        .     O
+landing        O      .      .        .          O     O      .        .     O
 events         .      OWNER  .        .          .     .      .        OWNER .
-ui-platform    O      .      O        O          O     .      .        O     OWNER
+ui-platform    O      .      O        O          O     O      .        O     OWNER
 cluster-ops    .      .      .        .          .     .      .        .     .
 docs-keeper    W      W      W        W          W     W      W        W     W
 ```
