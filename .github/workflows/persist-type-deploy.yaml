@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - persist-type/**
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:

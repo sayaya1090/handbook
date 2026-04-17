@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - event-broadcaster/**
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:

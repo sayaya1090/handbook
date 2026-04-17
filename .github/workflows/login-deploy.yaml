@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - login/**
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:

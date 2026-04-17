@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - search-document/**
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:

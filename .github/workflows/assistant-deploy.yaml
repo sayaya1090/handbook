@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - assistant/**
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:

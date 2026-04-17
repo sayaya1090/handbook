@@ -3,6 +3,10 @@ on:
   push:
     paths:
       - gateway/**
+      # Gateway 는 /menus 에서 각 백엔드 응답을 Menu/Tool 도메인으로 역직렬화 →
+      # 재직렬화한다. activity/domain/Menu.java 등이 변하면 Gateway classpath 에
+      # 포함된 jar 도 갱신되어야 새 필드(예: appBarSlot) 가 중간에서 손실되지 않는다.
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:

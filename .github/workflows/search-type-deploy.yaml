@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - search-type/**
+      - activity/**
   workflow_dispatch:
 jobs:
   deploy:
