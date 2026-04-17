@@ -111,3 +111,66 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | Gateway 라우트 0개 로딩 | 1) `spring.cloud.gateway.routes` (구 경로) 사용 — Spring Cloud Gateway 5.0부터 `spring.cloud.gateway.server.webflux.routes` 로 변경됨. 2) servlet classpath 오염 — activity 의존에서 `gwt-servlet-jakarta` 미제외 시 reactive auto-config 실패 | 프로퍼티 경로를 `spring.cloud.gateway.server.webflux.routes` 로 변경. activity 의존에 `exclude(group = "org.gwtproject", module = "gwt-servlet-jakarta")` 추가 |
 
 상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.
+
+---
+
+## 에이전트 라우팅 (Claude 내부용)
+
+Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업무별 서브에이전트에 위임하는 규칙.
+설계 배경은 `.claude/agents/DESIGN.md` 참조.
+
+### 도메인 → 에이전트 매핑
+
+| 도메인 | 에이전트 | 주요 스코프 |
+|--------|---------|------------|
+| 인증·권한·JWT·RBAC·PAT | `auth-expert` | `login/`, `login-ui/`, `authentication/`, `docs/contracts/permissions.md` |
+| 타입·속성·검증·레이아웃 | `schema-expert` | `schema/`, `type-ui/`, `persist-type/`, `search-type/` |
+| 문서·이력·편집·임포트 | `document-expert` | `document/`, `document-ui/`, `persist-document/`, `search-document/` |
+| 워크스페이스·그룹·프레즌스 | `workspace-expert` | `workspace/`, `workspace-ui/`, `persist-workspace/` |
+| 내부 AI·커맨드·감사 | `assistant-expert` | `assistant/`, `agent-protocol/`, `agent-ui/`, `docs/contracts/agent-commands.md` |
+| SEO 랜딩·외부 AI·MCP | `landing-expert` | `landing-content/`, `landing-ui/`, §3.22, §3.23 |
+| Shell·UI 공용·디자인·모바일·대시보드 | `ui-platform-expert` | `shell-ui/`, `ui-components/`, `app/`, `dashboard-ui/`, `docs/design.md` |
+| Kafka·SSE·실시간 | `events-expert` | `event/`, `event-broadcaster/`, `docs/contracts/events.md` |
+| 배포·Istio·Kargo·런타임 | `cluster-ops` | `charts/`, `.claude/skills/deployment.md`, `oc` 실행 가능 |
+| 문서 구조·크로스체크·커버리지 | `docs-keeper` | `docs/**`, 모든 모듈 문서, 계약 매트릭스 |
+
+### 라우팅 규칙
+
+1. **도메인 깊이가 있는 요구사항/코드 조회** → 해당 도메인 에이전트 호출
+2. **크로스 도메인 영향도** → 관련 전문가 **병렬 호출** 후 응답 합성
+3. **계약 터치 (`docs/contracts/*.md` 중 하나에 해당)** → 계약 매트릭스(`docs/contracts/README.md`) 의 OWNER/소비자 전원 병렬 호출
+4. **클러스터 상태·배포 문제** → `cluster-ops`
+5. **문서 구조 변경·크로스체크·테스트 커버리지 감사** → `docs-keeper`
+6. **코드 패턴 탐색 (keyword 검색)** → 내장 `Explore`
+7. **설계 검토** → 내장 `Plan`
+
+### 계약 변경 감지 시 강제 절차
+
+인터페이스·계약(Menu / Event / Command / Permission / API / Audit / Versioning / SSE / Design Token) 이 걸린 작업:
+
+1. 해당 계약 문서(`docs/contracts/<X>.md`) 먼저 확인 — 공급자/소비자 인벤토리 파악
+2. `docs/contracts/README.md` 매트릭스에서 OWNER · O · W 식별
+3. 해당 에이전트 **병렬 호출** 하여 각자 영향도 수집
+4. 응답 합성해 사용자에게 변경 범위·위험·작업 항목 제시
+5. 승인 시 계약 문서 + 영향 받는 영역 동시 갱신
+
+### 에이전트 노트 관리
+
+각 에이전트는 `.claude/agents/<name>.notes.md` 를 자율 갱신한다.
+Claude 는:
+
+- 에이전트 응답의 `=== 노트 갱신 ===` 라인은 로그로만 수신, 개별 개입하지 않음
+- 작업 흐름 중 `notes.md` 를 직접 건드리지 않음 (에이전트 자율 영역)
+- 주기적(2주~1개월) 또는 사용자 요청 시 `docs-keeper` 에게 노트 전수 감사 의뢰
+- 반환된 "승격 후보" 검토 후 직접 수행:
+  - **작업 원칙** → 해당 에이전트 정의(`.claude/agents/<name>.md`) 프롬프트 편집
+  - **도메인 사실** → 요구사항/계약 문서로 이동
+  - **공용 패턴** → 이 파일(CLAUDE.md) 또는 `.claude/skills/` 로 승격
+- 승격 후 원본 항목은 notes 에서 제거 (단일 출처 유지)
+
+### 작업 규칙 (Claude 자신)
+
+- 사용자에게 에이전트 존재를 노출하지 않음 — 합성된 결과만 전달
+- 에이전트 정의 파일(`<name>.md`) 은 Claude 만 수정. 에이전트는 `notes.md` 만 수정
+- 작업 시작 시 필요한 도메인 판단 → 에이전트 스코프에 맞춰 위임 여부 결정
+- "단일 도메인 요청으로 보이는 것" 도 공통 계약 건드리면 병렬 호출로 확장
