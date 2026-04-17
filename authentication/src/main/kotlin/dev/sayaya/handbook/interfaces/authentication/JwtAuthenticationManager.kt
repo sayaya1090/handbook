@@ -25,7 +25,9 @@ class JwtAuthenticationManager (
     private val converter: ClaimsAuthenticationConverter
 ): ReactiveAuthenticationManager {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val parser: JwtParser = Jwts.parser().verifyWith(pem.public).build()
+    // NTP 미세 흔들림 방어용 ±60초 skew. 본질적 시간 버그(예: TZ 오용으로 +9h) 는 커버하지 않으며,
+    // 발급 측 (login TokenFactory) 이 Instant 기반 UTC 계산을 하도록 강제하는 것이 1차 방어선.
+    private val parser: JwtParser = Jwts.parser().verifyWith(pem.public).clockSkewSeconds(60).build()
     override fun authenticate(authentication: Authentication): Mono<Authentication> {
         val token = authentication.credentials as String
         return try {

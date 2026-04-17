@@ -65,8 +65,9 @@ internal class JwtAuthenticationManagerTest : DescribeSpec({
 
         context("만료된 JWT 토큰이 주어졌을 때") {
             it("ExpiredJwtException을 포함한 Mono.error를 반환하고, 변환기는 호출하지 않는다") {
+                // clockSkewSeconds(60) 설정이 있으므로 60초 이상 경과한 만료 시각을 사용한다.
                 val expiredJwt = Jwts.builder()
-                    .expiration(Date.from(Instant.now().minusSeconds(10)))
+                    .expiration(Date.from(Instant.now().minusSeconds(120)))
                     .signWith(keyPair.private)
                     .compact()
                 val token = JwtTestToken(expiredJwt)

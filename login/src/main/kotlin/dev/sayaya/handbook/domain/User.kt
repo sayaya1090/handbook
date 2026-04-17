@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain
 
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 
@@ -22,7 +23,7 @@ data class User(
     val roles: MutableList<Role> = mutableListOf(),
     val lastLoginDateTime: LocalDateTime? = null,
 ) {
-    fun toToken(nbf: LocalDateTime, exp: LocalDateTime, iss: String, iat: LocalDateTime) = Token(
+    fun toToken(nbf: Instant, exp: Instant, iss: String, iat: Instant) = Token(
         nbf = nbf,
         exp = exp,
         iss = iss,
