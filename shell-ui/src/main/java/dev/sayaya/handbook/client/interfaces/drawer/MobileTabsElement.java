@@ -1,19 +1,14 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.components.HighlightEffect;
-import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.usecase.MenuList;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.client.usecase.ResponsiveOverflow;
 import dev.sayaya.handbook.domain.Menu;
-import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ViewportObserver;
-import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
-import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
@@ -28,7 +23,6 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Comparator.comparing;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
-import static org.jboss.elemento.Elements.span;
 
 /**
  * 모바일 뷰포트 전용 상단 Scrollable Tabs 네비게이션.
@@ -71,17 +65,16 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("menu-tabs");
     private final HTMLContainerBuilder<HTMLElement> tabs = htmlContainer("md-tabs", HTMLElement.class).css("menu-tabs-bar");
 
-    private final MenuSelected selected;
-    private final LabelProvider labelProvider;
+    private final MenuTabRenderer renderer;
     private final OverflowMenuController overflow;
     private final List<TabEntry> topEntries = new LinkedList<>();
     private final List<TabEntry> bottomEntries = new LinkedList<>();
     private boolean partitioned = false;
 
     @Inject
-    MobileTabsElement(MenuList list, MenuSelected selected, LabelProvider labelProvider, ViewportObserver viewport, OverflowMenuController overflow) {
-        this.selected = selected;
-        this.labelProvider = labelProvider;
+    MobileTabsElement(MenuList list, MenuSelected selected, ViewportObserver viewport,
+                      MenuTabRenderer renderer, OverflowMenuController overflow) {
+        this.renderer = renderer;
         this.overflow = overflow;
         _this.add(tabs).add(overflow);
 
@@ -125,53 +118,9 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     }
 
     private TabEntry createEntry(Menu menu, boolean isBottom) {
-        HTMLContainerBuilder<HTMLElement> tab = htmlContainer("md-primary-tab", HTMLElement.class).css("menu-tab");
-        HTMLElement iconOutline = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-light", menu.icon(), "icon-outline").element();
-        iconOutline.setAttribute("slot", "icon");
-        HTMLElement iconFilled = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-solid", menu.icon(), "icon-filled").element();
-        iconFilled.setAttribute("slot", "active-icon");
-        tab.add(iconOutline).add(iconFilled);
-        HTMLElement label = span().css("menu-tab-label").element();
-        tab.add(label);
-        if (menu.title() != null) tab.element().dataset.set("menuTitle", menu.title());
-        tab.on(EventType.click, evt -> selected.next(menu));
-        // agent-command highlight 수신 시 tooltip 으로 라벨 강조 (hover 는 MD3 기본 동작으로 커버).
-        final TooltipCard tooltip = TooltipCard.anchor(tab.element()).position("bottom").enabled(false);
-        HighlightEffect.observe(tab.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
-
-        HTMLElement menuItem = null;
-        if (isBottom) {
-            HTMLContainerBuilder<HTMLElement> mi = htmlContainer("md-menu-item", HTMLElement.class).css("menu-tab-menu-item");
-            HTMLElement miIcon = IconElementBuilder.icon()
-                    .css("fa-sharp", "fa-light", menu.icon(), "icon-outline").element();
-            miIcon.setAttribute("slot", "start");
-            mi.add(miIcon);
-            HTMLElement miHeadline = div().element();
-            miHeadline.setAttribute("slot", "headline");
-            mi.add(miHeadline);
-            if (menu.title() != null) mi.element().dataset.set("menuTitle", menu.title());
-            mi.on(EventType.click, evt -> {
-                selected.next(menu);
-                overflow.close();
-            });
-            menuItem = mi.element();
-            // menu-item headline 도 i18n 갱신 대상
-            final HTMLElement miHeadlineRef = miHeadline;
-            labelProvider.subscribe(labels -> {
-                String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
-                miHeadlineRef.textContent = title;
-            });
-        }
-
-        labelProvider.subscribe(labels -> {
-            String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
-            label.textContent = title;
-            tooltip.content(title, null);
-        });
-
-        return new TabEntry(menu, tab.element(), menuItem);
+        HTMLElement tab = renderer.renderTab(menu);
+        HTMLElement menuItem = isBottom ? renderer.renderMenuItem(menu, overflow::close) : null;
+        return new TabEntry(menu, tab, menuItem);
     }
 
     private void clearAll() {
