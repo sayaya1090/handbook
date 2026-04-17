@@ -85,16 +85,10 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         leaveToolMode();
         mode = Mode.MENU;
         clearAll();
-        if (topMenus != null) for (Menu m : topMenus) {
-            TabEntry e = createEntry(m, false);
-            topEntries.add(e);
-            tabs.element().appendChild(e.tab);
-        }
-        if (bottomMenus != null) for (Menu m : bottomMenus) {
-            TabEntry e = createEntry(m, true);
-            bottomEntries.add(e);
-            tabs.element().appendChild(e.tab);
-        }
+        // sayaya-ui tab() 이 호출 시점에 md-tabs 에 자동 attach 하므로 별도 appendChild 불필요.
+        // overflow 분할 등에서 detach 후 복귀할 때만 직접 appendChild 사용.
+        if (topMenus != null) for (Menu m : topMenus) topEntries.add(createEntry(m, false));
+        if (bottomMenus != null) for (Menu m : bottomMenus) bottomEntries.add(createEntry(m, true));
         partitioned = false;
         elemental2.dom.DomGlobal.requestAnimationFrame(ts -> recomputeLayout());
     }
@@ -112,9 +106,8 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         ensureBackButton();
         pendingOnBack = onBack;
         if (tools != null) for (Tool t : tools) {
-            HTMLElement tab = renderer.renderToolTab(t);
+            HTMLElement tab = renderer.populateToolTab(tabs.tab(), t);
             toolEntries.add(new ToolEntry(t, tab));
-            tabs.element().appendChild(tab);
         }
         overflow.setHidden(true); // tool 모드에선 overflow 버튼 숨김 — 도구는 스크롤만.
         tabs.element().removeAttribute("scrollable");
@@ -174,7 +167,9 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     }
 
     private TabEntry createEntry(Menu menu, boolean isBottom) {
-        HTMLElement tab = renderer.renderTab(menu);
+        // tabs.tab() 은 new md-primary-tab 을 생성하면서 parent md-tabs 에 자동 attach.
+        // renderer.populateMenuTab 은 그 builder 에 아이콘/라벨/click/i18n 을 주입.
+        HTMLElement tab = renderer.populateMenuTab(tabs.tab(), menu);
         HTMLElement menuItem = isBottom ? renderer.renderMenuItem(menu, overflow::close) : null;
         return new TabEntry(menu, tab, menuItem);
     }

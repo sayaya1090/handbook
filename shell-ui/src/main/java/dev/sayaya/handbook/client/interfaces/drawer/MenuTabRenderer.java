@@ -8,6 +8,7 @@ import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconElementBuilder;
+import dev.sayaya.ui.elements.TabsElementBuilder.PrimaryTabElementBuilder;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
@@ -33,7 +34,7 @@ import static org.jboss.elemento.Elements.span;
  *       {@link MobileTabsElement} 가 별도 판정.</li>
  *   <li>O: 새 렌더 변형(예: leading slot 전용 mini tab) 이 필요하면 메서드 추가만 하면 된다.</li>
  *   <li>D: 호출측은 구체적인 {@code md-primary-tab}/{@code md-menu-item} DOM 을 조립하지 않고
- *       {@link #renderTab(Menu)} / {@link #renderMenuItem(Menu, Runnable)} 추상에만 의존.</li>
+ *       {@link #populateMenuTab} / {@link #renderMenuItem} 추상에만 의존.</li>
  * </ul></p>
  *
  * <p><b>의존관계:</b>
@@ -57,32 +58,37 @@ public class MenuTabRenderer {
     }
 
     /**
-     * {@code md-primary-tab} 1건을 생성한다. outline/filled 두 아이콘을 slot="icon" /
-     * slot="active-icon" 에 배치해 MD3 활성 전환을 웹컴포넌트가 자동 처리하게 한다.
-     * agent-command highlight 수신 시 {@link TooltipCard} 로 라벨 강조.
+     * 주어진 sayaya-ui {@link PrimaryTabElementBuilder} 에 menu 렌더 내용을 주입한다.
+     * tb 는 호출 시점에 이미 parent md-tabs 에 attach 되어 있다 (sayaya-ui tab() 시맨틱).
+     * outline/filled 두 아이콘을 slot="icon" / slot="active-icon" 에 배치해 MD3 활성 전환을
+     * 웹컴포넌트가 자동 처리하게 한다. agent-command highlight 수신 시 {@link TooltipCard} 로
+     * 라벨 강조.
+     *
+     * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach/re-attach 용도로 보관.
      */
-    public HTMLElement renderTab(Menu menu) {
-        HTMLContainerBuilder<HTMLElement> tab = htmlContainer("md-primary-tab", HTMLElement.class).css("menu-tab");
+    public HTMLElement populateMenuTab(PrimaryTabElementBuilder tb, Menu menu) {
+        HTMLElement tab = tb.css("menu-tab").element();
         HTMLElement iconOutline = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-light", menu.icon(), "icon-outline").element();
         iconOutline.setAttribute("slot", "icon");
         HTMLElement iconFilled = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-solid", menu.icon(), "icon-filled").element();
         iconFilled.setAttribute("slot", "active-icon");
-        tab.add(iconOutline).add(iconFilled);
+        tab.appendChild(iconOutline);
+        tab.appendChild(iconFilled);
         HTMLElement label = span().css("menu-tab-label").element();
-        tab.add(label);
-        if (menu.title() != null) tab.element().dataset.set("menuTitle", menu.title());
-        tab.on(EventType.click, evt -> selected.next(menu));
+        tab.appendChild(label);
+        if (menu.title() != null) tab.dataset.set("menuTitle", menu.title());
+        tb.on(EventType.click, evt -> selected.next(menu));
         // agent-command highlight 수신 시 tooltip 으로 라벨 강조 (hover 는 MD3 기본 동작으로 커버).
-        final TooltipCard tooltip = TooltipCard.anchor(tab.element()).position("bottom").enabled(false);
-        HighlightEffect.observe(tab.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
+        final TooltipCard tooltip = TooltipCard.anchor(tab).position("bottom").enabled(false);
+        HighlightEffect.observe(tab, () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
         labelProvider.subscribe(labels -> {
             String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
             label.textContent = title;
             tooltip.content(title, null);
         });
-        return tab.element();
+        return tab;
     }
 
     /**
@@ -111,29 +117,34 @@ public class MenuTabRenderer {
     }
 
     /**
-     * 단일 {@link Tool} 을 {@code md-primary-tab} 으로 렌더 — 모바일 MobileTabs 가 도구 모드일 때 사용.
-     * click 시 {@link ToolSelected} 발행. Menu 의 renderTab 과 동일한 outline/filled 아이콘 슬롯 + 라벨 구조.
+     * 주어진 sayaya-ui {@link PrimaryTabElementBuilder} 에 tool 렌더 내용을 주입한다 — 모바일
+     * MobileTabs 가 도구 모드일 때 사용. tb 는 호출 시점에 이미 parent md-tabs 에 attach 된 상태.
+     * click 시 {@link ToolSelected} 발행. Menu 의 populateMenuTab 과 동일한 outline/filled 아이콘
+     * 슬롯 + 라벨 구조.
+     *
+     * @return 편의상 주입된 tab 의 native element. MobileTabsElement 가 detach 용도로 보관.
      */
-    public HTMLElement renderToolTab(Tool tool) {
-        HTMLContainerBuilder<HTMLElement> tab = htmlContainer("md-primary-tab", HTMLElement.class).css("menu-tab", "tool-tab");
+    public HTMLElement populateToolTab(PrimaryTabElementBuilder tb, Tool tool) {
+        HTMLElement tab = tb.css("menu-tab", "tool-tab").element();
         HTMLElement iconOutline = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-light", tool.icon(), "icon-outline").element();
         iconOutline.setAttribute("slot", "icon");
         HTMLElement iconFilled = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-solid", tool.icon(), "icon-filled").element();
         iconFilled.setAttribute("slot", "active-icon");
-        tab.add(iconOutline).add(iconFilled);
+        tab.appendChild(iconOutline);
+        tab.appendChild(iconFilled);
         HTMLElement label = span().css("menu-tab-label").element();
-        tab.add(label);
-        if (tool.title() != null) tab.element().dataset.set("toolTitle", tool.title());
-        tab.on(EventType.click, evt -> toolSelected.next(tool));
-        final TooltipCard tooltip = TooltipCard.anchor(tab.element()).position("bottom").enabled(false);
-        HighlightEffect.observe(tab.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
+        tab.appendChild(label);
+        if (tool.title() != null) tab.dataset.set("toolTitle", tool.title());
+        tb.on(EventType.click, evt -> toolSelected.next(tool));
+        final TooltipCard tooltip = TooltipCard.anchor(tab).position("bottom").enabled(false);
+        HighlightEffect.observe(tab, () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
         labelProvider.subscribe(labels -> {
             String title = labels.getOrDefault(tool.title(), tool.title() != null ? tool.title() : "");
             label.textContent = title;
             tooltip.content(title, null);
         });
-        return tab.element();
+        return tab;
     }
 }
