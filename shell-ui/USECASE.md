@@ -295,18 +295,21 @@ sequenceDiagram
     MRM-->>MR: expand() → [mobile][expand] 복귀
 ```
 
-## UC-S13: 모바일 반응형 레이아웃 (단일 하단 바 드릴인)
+## UC-S13: 모바일 반응형 레이아웃 (AppBar + 상단 Tabs + 하단 드릴인)
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 (모바일/태블릿 디바이스) |
-| **선행조건** | 뷰포트 너비 < 768px |
-| **레이아웃 모델** | 뷰포트(모바일/데스크톱) 와 가시성(expand/collapse/hide) 을 두 축으로 분리. `ViewportObserver` 는 양쪽 rail 에 `[mobile]` 속성을 상시 부여해 `position: fixed; bottom: 0; width: 100%` 레이아웃을 고정시키고, 상태 머신(`MenuRailMode`/`ToolRailMode`) 은 `EXPAND/COLLAPSE/HIDE` 가시성만 다룬다. |
-| **정상 흐름 (MenuRail)** | 1. `ViewportObserver` 가 `mobile=true` 를 발행하면 두 rail 에 `[mobile]` 속성이 붙는다.<br>2. `MenuRailMode` 는 `toolList.size ≤ 1` 일 때 `EXPAND` 로 고정되어 하단 바에 메뉴를 보인다 (`[mobile][expand]`).<br>3. `ToolRailMode` 는 같은 조건에서 `HIDE` 로 유지된다 (`[mobile][hide]` — slide-down).<br>4. `DrawerMode` 는 `HIDE` 로 유지된다 (사이드 drawer 는 숨김). |
-| **드릴인 흐름 (ToolRail)** | 1. 사용자가 도구가 2개 이상인 메뉴를 탭해 `MenuSelected` 가 갱신되면 `ToolList` 가 채워진다.<br>2. `MenuRailMode` 는 `tools > 1 && mobile` 일 때 `HIDE` 로 전환된다 → MenuRail slide-down.<br>3. `ToolRailMode` 는 같은 조건에서 `EXPAND` 로 전환되어 `ToolRail` 이 하단 바 자리를 차지한다 → slide-up (MD3 emphasized-decelerate, 300ms).<br>4. `[mobile]` 속성은 계속 유지되므로 fixed 포지션이 동일해 drill-in 시 "좌측 컬럼 → 하단 바" 이동 flash 가 없다.<br>5. `ToolRail` 의 첫 아이템으로 `CloseToolRailButton` (← 아이콘) 이 표시된다. |
-| **드릴백 흐름** | 1. 사용자가 `CloseToolRailButton` 을 탭하면 `MenuSelected.next(null)` 이 호출된다.<br>2. `ToolList` 가 비어 `ToolRailMode → HIDE`, `MenuRailMode → EXPAND` 로 복귀한다.<br>3. 사용자는 다시 메뉴를 고를 수 있다. |
-| **특이사항** | (1) 모바일에서는 MenuRail 과 ToolRail 이 동시에 보이지 않는다 — 한 번에 한 컨텍스트. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만 가지며 모바일 여부는 상태 머신과 직교. (3) 도구가 1개인 메뉴를 탭하면 드릴인 없이 바로 해당 도구로 이동하고 MenuRail 은 유지된다. |
-| **터치 지원** | 화면 왼쪽 가장자리에서 오른쪽으로 스와이프하면 `DrawerMode.toggleOverlay()` 로 OVERLAY drawer 를 열 수 있다 (워크스페이스 셀렉터 등 secondary UI 진입). |
+| **선행조건** | 뷰포트 너비 ≤ 768px |
+| **레이아웃 모델** | 2026-04 재정의. 상단 AppBar + 상단 Scrollable Tabs + 하단 ToolRail(드릴인) + 하단 Agent input dock 의 4단 수직 스택. MenuRail 은 모바일에서 `display:none` 이고 네비게이션은 `MobileTabsElement` 가 대체한다. AppBar/MobileTabs 는 `body` 직속 fixed 로 배치되어 Drawer 의 backdrop-filter containing block 에 영향을 받지 않는다. |
+| **DOM 구조** | `body > header.shell-app-bar + div.menu-tabs + div.progress-container + div#content(nav.drawer > .body > .menu-rail + .tool-rail) + .agent-input-container`. 조립 순서는 Composition Root(`ShellInitializer`) 가 명시. |
+| **AppBar (데스크톱·모바일 공통)** | leading=햄버거(모바일은 CSS `display:none`) / center=WorkspaceSelect / trailing=ThemeToggle + appBarSlot="trailing" 메뉴(Sign In/Out). 모두 `ShellAppBarElement` 가 자기 slot 을 SRP 경계에서 채움. |
+| **상단 Tabs (모바일 전용)** | `MobileTabsElement` 가 `MenuList` 구독 → `appBarSlot==null` 메뉴만 렌더. 상단정렬(`bottom=false`) 은 `order` 오름차순 leading, 하단정렬(`bottom=true`) 은 `order` 내림차순 trailing. `ResponsiveOverflow` 3단계 폴백: 평면 → hidden overflow 버튼 / 공간 부족 → 하단정렬 md-menu 팝업 수렴 / 상단정렬까지 넘침 → `md-tabs[scrollable]` 가로 스크롤 + sticky trailing overflow 버튼. |
+| **하단 드릴인 (ToolRail)** | 사용자가 도구가 2개 이상인 탭을 선택하면 `ToolList` 채워져 `ToolRailMode=EXPAND` → 하단 바 자리 차지 (slide-up). `MenuRailMode=HIDE` 는 여전히 동작하나 모바일에선 MenuRail 자체가 `display:none` 이라 가시 전환 없음. 드릴백은 `CloseToolRailButton` 탭으로 `MenuSelected.next(null)` → 도구 비움 → `ToolRailMode=HIDE` 로 복귀 (MobileTabs 가 다시 유일한 상단 네비). |
+| **하단 agent dock** | `agent-ui` 의 `.agent-input-container` 가 모바일에서도 `bottom:0` dock (2026-04 복귀). Fitts 원칙상 가장 빈번한 입력은 엄지 도달 최적인 하단. ToolRail 드릴인 시 `.agent-mutate-log` / `.agent-artifact-panel` 은 input dock 높이(~80px) 위로 offset. |
+| **전환(리사이즈)** | `ViewportObserver` 의 matchMedia(768px) 전환 시 `.menu-rail[mobile] → display:none`, `.menu-tabs[hide]` 제거, `.shell-app-bar-leading` CSS `display:none` 적용. 모든 전환은 DOM 이동 없이 속성/CSS 토글만으로 처리되어 flash 없음. |
+| **특이사항** | (1) 모바일에서 Drawer overlay 햄버거는 제거 — MenuRail 이 숨겨져 있고 네비가 Tabs 로 이전되어 실질 용도 없음. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만, 모바일 여부는 `[mobile]` 속성으로 직교 표현. (3) `appBarSlot` 이 지정된 메뉴는 네비(Tabs/Rail) 에서 제외되고 AppBar slot 으로 승격 — semantic 분리(네비 vs 세션/전역 액션). |
+| **터치 지원** | (이전 edge-swipe 로 Drawer overlay 열기는 MenuRail 모바일 비활성화로 의미 소실 — 후속 작업에서 swipe 제스처 모바일 비활성화 검토.) |
 
 ## UC-S20: 브릿지 게시 (모듈 간 통신 초기화)
 

@@ -228,54 +228,67 @@ Active Item  → corner-full (pill)
 
 ## 7. 레이아웃 구조
 
+### MD3 네비게이션 이분법 (2026-04 재정의)
+
+**전역 액션 축 (AppBar)** 와 **네비게이션 축 (Rail / Tabs)** 을 직교 분리.
+
+| 축 | 책임 | 컴포넌트 | MD3 대응 |
+|----|------|----------|---------|
+| 전역 액션 | 컨텍스트(워크스페이스) + 세션/전역 액션 (테마, Sign In/Out) | `ShellAppBarElement` (leading/center/trailing 3 slot) | Top App Bar (Small) |
+| 네비게이션 | 모듈 전환 (Menu 목록) | 데스크톱: `MenuRailElement` / 모바일: `MobileTabsElement` | Navigation Rail / Scrollable Tabs |
+| 도구 | 현재 모듈 내 Tool 목록 | `ToolRailElement` | Secondary Rail |
+
+**`Menu.appBarSlot`** 필드로 특정 메뉴(예: `login` SIGN_IN/SIGN_OUT)를 네비게이션 축에서 빼고 AppBar slot 으로 승격 — 세션 액션 semantic 을 네비게이션과 혼동하지 않게 한다. 상세 규약은 `docs/contracts/menus.md#appbarslot-규약`.
+
 ### 전체 레이아웃 (데스크톱)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ Progress Bar (position: fixed, top: 0, 전체 너비)            │
+│ Shell App Bar (fixed top: 0, height: 56px)                   │
+│ [☰] [▼ Workspace]         [Theme toggle] [Sign Out]           │
+├──────────────────────────────────────────────────────────────┤
+│ Progress Bar (top: 56px, 전체 너비)                           │
 ├────────┬─────────────────────────────────────────────────────┤
 │        │                                                     │
 │ Drawer │              Frame (콘텐츠 영역)                     │
-│ 56px   │        GWT 모듈 동적 로딩 (position: fixed)          │
-│  /     │                                                     │
-│ 256px  │     ┌─────────────────────────────┐                 │
-│        │     │  Toast Container            │                 │
-│ ┌────┐ │     │  (position: fixed,          │                 │
-│ │Menu│ │     │   top: 60px, right: 20px)   │                 │
-│ │Rail│ │     └─────────────────────────────┘                 │
-│ │    │ │                                                     │
-│ │ ☰  │ │                                                     │
-│ │ 📄 │ │                                                     │
-│ │ 🔧 │ │                                                     │
-│ │ 📊 │ │                                                     │
-│ │    │ │     ┌─────────────────────────────────────┐         │
-│ ├────┤ │     │  Agent Input (하단 중앙, max-w: 720px) │         │
-│ │Tool│ │     └─────────────────────────────────────┘         │
-│ │Rail│ │                                                     │
-│ └────┘ │                                                     │
-├────────┴─────────────────────────────────────────────────────┤
-└──────────────────────────────────────────────────────────────┘
+│ 56px   │                                                     │
+│  /     │     ┌─────────────────────────────┐                 │
+│ 256px  │     │  Toast Container            │                 │
+│        │     └─────────────────────────────┘                 │
+│ Menu   │                                                     │
+│ Rail   │                                                     │
+│ +      │     ┌─────────────────────────────────────┐         │
+│ Tool   │     │  Agent Input (하단 중앙, max-w: 720) │         │
+│ Rail   │     └─────────────────────────────────────┘         │
+└────────┴─────────────────────────────────────────────────────┘
 ```
 
-### 전체 레이아웃 (모바일, < 768px)
+### 전체 레이아웃 (모바일, ≤ 768px)
 
 ```
 ┌──────────────────────────────────┐
-│ Progress Bar                     │
+│ Shell App Bar (56px)             │
+│ [▼ Workspace]       [Theme][Out] │
+├──────────────────────────────────┤
+│ ◀ Tabs (menu-tabs, scrollable)   │
+│ [Home] [Docs] [Types] [… more]   │
 ├──────────────────────────────────┤
 │                                  │
-│       Frame (콘텐츠 영역)         │
-│     left: 0, bottom: 56px       │
+│     Frame (콘텐츠 영역)           │
 │                                  │
 │  ┌────────────────────────────┐  │
-│  │ Agent Input (하단 고정)     │  │
-│  │ border-radius: 20px        │  │
+│  │ Agent Input (fixed bottom) │  │
 │  └────────────────────────────┘  │
 ├──────────────────────────────────┤
-│  ☰    📄    🔧    📊    ⚙     │
-│  Bottom Navigation (56px 높이)   │
+│   도구 2개↑ 선택 시 ToolRail 드릴인│
+│   (하단 바 slide-up)              │
 └──────────────────────────────────┘
 ```
+
+모바일 핵심 변경:
+- MenuRail 은 `.menu-rail[mobile] { display:none }` — 네비는 상단 MobileTabs 가 전담.
+- 햄버거(Drawer overlay 트리거)는 `.shell-app-bar-leading` @media (max-width:768px) `display:none` — 모바일에서 Drawer overlay 가 실질 용도 없음.
+- `MobileTabsElement` 3단계 폴백: 평면 → overflow 팝업 → 스크롤. `bottom=true` 메뉴는 overflow 로 먼저 수렴.
 
 ### 주요 영역 치수
 

@@ -42,25 +42,32 @@ client/
 │   │   ├── MenuApi                    # MenuRepository 구현 (/menus 엔드포인트)
 │   │   ├── UserApi                    # UserRepository 구현 (/user + 10분 갱신)
 │   │   └── ApiModule                  # Dagger 바인딩 (Repository → Api)
-│   └── drawer/                         # 드로어 네비게이션 UI
-│       ├── DrawerElement              # 드로어 컨테이너 (header[workspace+hamburger] + body[rails])
-│       │                              #   ThemeToggle 을 navMenu 자식으로 직접 추가
+│   └── drawer/                         # 드로어 + AppBar 네비게이션 UI
+│       ├── ShellAppBarElement         # MD3 Top App Bar — leading/center/trailing 3 slot.
+│       │                              #   leading: 햄버거, center: Workspace, trailing: Theme + appBarSlot=trailing 메뉴
+│       │                              #   AppBar 가 자기 slot 을 SRP 로 채움 (MenuToggleButton/WorkspaceSelect/ThemeToggle 주입)
+│       ├── MobileTabsElement          # 모바일 상단 Scrollable Tabs (md-tabs + ResponsiveOverflow 3단계 폴백)
+│       │                              #   상단정렬(order asc) leading + 하단정렬(order desc) trailing 병합
+│       ├── MenuTabRenderer            # md-primary-tab / md-menu-item 단일 엔트리 DOM 조립 팩토리 (SRP)
+│       ├── OverflowMenuController     # MobileTabs 의 md-icon-button(…) + md-menu 팝업 제어 (open/close/hidden)
+│       ├── DrawerElement              # 드로어 본체 (.body > .menu-rail + .tool-rail)
+│       │                              #   AppBar/MobileTabs/Drawer 는 ShellInitializer 가 body 직속 조립
 │       ├── NavigationRailElement      # 레일 공통 인터페이스 (expand/collapse/hide)
 │       ├── NavigationRailItemElement  # 레일 아이템 추상 클래스 (.item > .collapse + .expand 구조)
-│       ├── MenuRailElement            # 메뉴 레일. bottom 메뉴에 .bottom-menu 클래스만 부여
-│       │                              #   (위치는 CSS order 가 결정, 동적 margin-top:auto 계산 X)
-│       ├── MenuRailItemElement        # 개별 메뉴 아이템 (@AssistedInject)
+│       ├── MenuRailElement            # 메뉴 레일 (데스크톱 전용 — 모바일엔 display:none)
+│       │                              #   appBarSlot!=null 메뉴는 렌더에서 제외 (AppBar 로 승격)
+│       ├── MenuRailItemElement        # 개별 메뉴 아이템 (@AssistedInject, HighlightEffect.observe 로 tooltip 강조)
 │       ├── MenuRailItemFactory        # 메뉴 아이템 팩토리
-│       ├── ToolRailElement            # 도구 레일 (offset 계산, debounce)
-│       ├── ToolRailItemElement        # 개별 도구 아이템 (@AssistedInject)
+│       ├── ToolRailElement            # 도구 레일 (.tool-rail, offset 계산, debounce)
+│       ├── ToolRailItemElement        # 개별 도구 아이템 (@AssistedInject, TooltipCard hover)
 │       ├── ToolRailItemFactory        # 도구 아이템 팩토리
 │       ├── ThemeToggle                # NavigationRailItemElement 상속. 라이트/다크 테마 전환
 │       │                              #   .collapse + md-item slot=start 두 곳에 sun/moon SVG morph
 │       │                              #   headline 라벨은 i18n (theme.switch_to_dark / theme.switch_to_light)
-│       │                              #   토글 순간만 :root.theme-changing 클래스로 일출/일몰 애니메이션 트리거
-│       ├── MenuToggleButton           # SVG 햄버거 토글 (애니메이션, drawer-header 안에서 워크스페이스 셀렉터와 가로 일렬)
+│       │                              #   AppBar trailing 으로 승격 (ShellAppBarElement 가 주입받아 append)
+│       ├── MenuToggleButton           # SVG 햄버거 토글 — AppBar leading (@media (max-width:768px) display:none)
 │       ├── CloseToolRailButton        # 도구 레일 닫기 버튼
-│       ├── WorkspaceSelectElement     # 워크스페이스 셀렉트 드롭다운 (drawer-header)
+│       ├── WorkspaceSelectElement     # 워크스페이스 셀렉트 드롭다운 (AppBar center)
 │       └── MenuHoverElementProvider   # 호버 메뉴 아이템 위치 추적
 │
 ├── HostSharedModule                     # Dagger 모듈: URI 상태 (BehaviorSubject + Observable)
@@ -193,6 +200,12 @@ stateDiagram-v2
 | ThemeToggle 헤드라인이 darkMode 에 따라 i18n 키 동적 변경 | 현재 light → "Switch to Dark" (theme.switch_to_dark), 현재 dark → "Switch to Light" (theme.switch_to_light). LabelProvider 구독으로 locale 변경 시에도 자동 갱신 |
 | 선택 상태는 배경 채움이 아니라 outline→filled 아이콘 스왑 | MD3 nav rail 가이드("선택 시 filled, 미선택 시 outlined")를 따름. MenuRailItemElement/ToolRailItemElement 가 `fa-light`(`.icon-outline`) 와 `fa-solid`(`.icon-filled`) 두 아이콘을 동시 렌더하고, 셀렉터 `.rail .item[selected] .icon-outline { display:none }` / `.icon-filled { display:inline-flex }` 로 가시성을 토글. `.item[selected] .expand` 의 label 색은 `--md-sys-color-primary` 로 유지되어 배경 없이도 선택 신호가 유지된다 |
 | ShellStylesheet 가 css/shell.css 를 런타임에 head 주입 | shell-ui 모듈이 자기 스타일시트의 정본 소유자가 됨. app.html 이 shell.css 를 미리 link 할 필요 없고, 빌드/배포 차원에서 shell-ui 의 src/main/webapp 만이 정본을 가짐 |
+| AppBar/MobileTabs 는 body 직속 (Composition Root 조립) | Drawer `backdrop-filter` 가 fixed 자손의 containing block 을 오염시켜 `top:0` 이 viewport 가 아닌 drawer 기준이 되는 문제 회피. DOM 조립 순서를 `ShellInitializer` 한 곳에 집중해 예측 가능성 확보 |
+| ShellAppBar 가 자기 slot 을 SRP 로 채움 | AppBar 가 MenuToggleButton/WorkspaceSelect/ThemeToggle 을 직접 주입받아 leading/center/trailing 에 배치. DrawerElement 는 AppBar 내부 구조를 몰라도 됨 |
+| `Menu.appBarSlot` 으로 AppBar 승격 선언 | 세션 액션성 메뉴(login 등)를 네비게이션 축에서 뺀다. O/C — slot 이름 → HTMLElement 매핑을 Map 으로 관리해 "leading"/"center"/"trailing" 3종 모두 확장 대응 가능 |
+| HighlightEffect 공통화 (observe + apply) | `.ui-highlight` 감지용 MutationObserver 를 `HighlightEffect.observe` 로 캡슐화. MenuRailItem / MobileTabs 의 md-primary-tab / ShellAppBar 의 `.shell-app-bar-action` 이 동일 추상에만 의존 (Dependency Inversion) |
+| MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuController` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
+| MenuTabRenderer 팩토리 | md-primary-tab / md-menu-item 단일 엔트리 DOM 조립을 MobileTabsElement 에서 떼어내 SRP 확보. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중 |
 
 ## 테스트
 
@@ -236,34 +249,50 @@ tasks.jar {
 ./gradlew :shell-ui:test
 ```
 
-## 모바일 지원 (드릴인 하단 바 패턴)
+## 모바일 지원 (상단 AppBar + Tabs, 2026-04 재정의)
 
-모바일(뷰포트 < 768px)에서는 하단 네비게이션 바 한 줄을 컨텍스트에 따라 스왑한다.
+모바일(뷰포트 ≤ 768px)은 **상단 AppBar + 상단 Scrollable Tabs + 하단 ToolRail 드릴인 + 하단 Agent input dock** 4단 수직 스택.
 
-### 직교 상태 모델
+### MD3 네비게이션 이분법
 
-레이아웃(모바일/데스크톱)과 가시성(expand/collapse/hide)을 두 축으로 분리한다:
+| 축 | 책임 | 컴포넌트 |
+|----|------|----------|
+| 전역 액션 | WorkspaceSelect / Theme / Sign In·Out | `ShellAppBarElement` (AppBar) |
+| 네비게이션 | 모듈 전환 (MenuList) | 데스크톱 `MenuRailElement` / 모바일 `MobileTabsElement` |
+| 도구 | 현재 모듈 Tool 목록 | `ToolRailElement` (하단 드릴인) |
 
-- **`[mobile]` 속성** — `ViewportObserver` 가 `MenuRailElement`/`ToolRailElement` 에 상시 부여. CSS 가 이 속성을 보고 `position: fixed; bottom: 0; width: 100%; flex-direction: row` 로 하단 바 레이아웃을 유지한다. 가시성과 무관하게 한 번 붙으면 유지되므로 drill-in 시 레이아웃이 "좌측 컬럼 → 하단 바" 로 이동하는 flash 가 없다.
-- **`[expand]/[collapse]/[hide]` 속성** — `MenuRailMode`/`ToolRailMode` 가 상태 머신에 따라 토글. 모바일에서는 `transform: translateY`/`opacity` 로 슬라이드 업/다운 애니메이션을 표현 (MD3 emphasized-decelerate, 300ms).
-
-결과적으로 `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가시성 상태만 가지며, 뷰포트 분기는 CSS 한 곳으로 모여 상태 머신과 테스트가 단순해진다.
+`Menu.appBarSlot` 필드로 세션 액션성 메뉴(예: login)를 네비게이션 축에서 빼고 AppBar slot 으로 승격. 상세: `docs/contracts/menus.md#appbarslot-규약`.
 
 ### 동작
 
-- **초기 상태**: MenuRail 이 `[mobile][expand]` 로 하단 바 자리를 차지하고 메뉴 아이콘을 표시. ToolRail 은 `[mobile][hide]` 로 하단 바 아래에 잠복.
-- **드릴인**: 도구가 2개 이상인 메뉴를 탭하면 MenuRail → `[mobile][hide]`, ToolRail → `[mobile][expand]` 로 전이. ToolRail 의 첫 아이템은 `CloseToolRailButton` (← 아이콘).
-- **드릴백**: ← 버튼을 탭하면 `MenuSelected.next(null)` 로 도구 목록이 비워지고 `ToolRailMode` 가 HIDE, `MenuRailMode` 가 EXPAND 로 자연 수렴.
-- **도구 1개 메뉴**: 드릴인 없이 바로 해당 도구로 이동하고 MenuRail 유지.
-- **Navigation Drawer (secondary)**: 왼쪽 가장자리 스와이프로 여는 오버레이. 워크스페이스 셀렉터 등 부가 UI 진입점. 메뉴 선택 시 자동 닫힘.
-- **Frame**: 콘텐츠 영역 `bottom: calc(56px + safe-area-inset-bottom)` 으로 하단 바 높이만큼 확보.
-- **프로그레스 바**: 상단 고정 위치 유지.
-- **터치 지원**: Drawer 스와이프 열기/닫기.
+- **초기 상태**: AppBar 상시 표시(데스크톱·모바일 공통). 모바일에서 MenuRail 은 `display:none`, 대신 `.menu-tabs` 가 AppBar 바로 아래 상단 2번째 행을 차지.
+- **Tabs 배치**: 상단정렬(`bottom=false`) `order` asc + 하단정렬(`bottom=true`) `order` desc 병합. 데스크톱 Y축 "아래일수록 중요" semantic 을 모바일 X축 "왼쪽일수록 중요" 로 보존.
+- **3단계 반응형 폴백** (`ResponsiveOverflow`):
+  1. 평면 — 전체가 viewport 에 들어감, overflow 버튼 숨김.
+  2. overflow — 공간 부족 시 하단정렬을 `md-menu` 팝업으로 수렴, trailing 에 `…` 아이콘 버튼 노출.
+  3. 스크롤 — 상단정렬도 넘치면 `md-tabs[scrollable]` 가로 스크롤 + sticky trailing overflow.
+- **드릴인**: 도구 2개 이상 탭 선택 → `ToolRailMode=EXPAND` → 하단 바 slide-up. 드릴백은 `CloseToolRailButton`.
+- **Agent input dock**: `.agent-input-container` 가 모바일에서도 `bottom:0` 고정. Fitts 원칙상 가장 빈번한 입력은 엄지 도달 최적 위치.
+- **햄버거 제거**: 모바일에선 `.shell-app-bar-leading { display:none }` — MenuRail 숨김 + MobileTabs 대체로 Drawer overlay 실질 용도 없음.
+- **agent-command highlight**: `HighlightEffect.observe` 공통화로 MenuRailItem / `.menu-tab` / `.shell-app-bar-action` 모두 `.ui-highlight` 수신 시 TooltipCard 로 라벨 강조.
 - **최소 뷰포트**: 360px.
 
-> **주의**: `.drawer` 에 `backdrop-filter` 를 부여하면 CSS 스펙상 fixed 자손의 containing block 이 되어
-> 자식 `.rail[mobile]` 의 `width: 100%` 가 drawer (fit-content = 0) 기준으로 계산되어 0px 로
-> 찌그러진다. `backdrop-filter` 는 `@media (min-width: 769px)` 에서만 적용한다.
+### Composition Root
+
+`ShellInitializer.initialize()` 가 body 에 명시 순서로 조립:
+
+```
+body
+├── header.shell-app-bar          (AppBar, fixed top)
+├── div.menu-tabs                 (모바일 전용 Tabs, AppBar 바로 아래)
+├── div.progress-container
+└── div#content > nav.drawer
+                  └── div.body > div.rail.menu-rail + div.rail.tool-rail
+```
+
+AppBar / MobileTabs 는 **body 직속**이어야 한다 — Drawer 의 `backdrop-filter` 가 자손 `position:fixed` 의 containing block 을 오염시키는 CSS 스펙 이슈 회피.
+
+> 과거(2026-03 이전) 의 "단일 하단 바 드릴인" 모델은 Section 7 (docs/design.md) 에 아카이브.
 
 ## 공통 테스트 리소스
 
