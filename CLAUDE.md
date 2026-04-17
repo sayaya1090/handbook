@@ -158,6 +158,7 @@ Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 | Kafka·SSE·실시간 | `events-expert` | `event/`, `event-broadcaster/`, `docs/contracts/events.md` |
 | 배포·Istio·Kargo·런타임 | `cluster-ops` | `charts/`, `.claude/skills/deployment.md`, `oc` 실행 가능 |
 | 문서 구조·크로스체크·커버리지 | `docs-keeper` | `docs/**`, 모든 모듈 문서, 계약 매트릭스 |
+| 증상 기반 triage·라우팅 계획 | `triage` | 도메인 판별·호출 순서만 결정 (도메인 답변 금지) |
 
 ### 라우팅 규칙
 
@@ -171,6 +172,13 @@ Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 8. **증상 기반 버그 리포트** (사용자 관찰 현상 — "X 가 안 뜬다", "Y 가 깨진다") → 해당 도메인의 공급자(백엔드)·소비자(프론트) 에이전트 **양쪽 병렬 호출**. 원인이 어느 레이어인지 사전 판단 불가하므로 단일 에이전트 라우팅 금지.
 9. **운영 장애** (런타임 증상 + 도메인 로직 혼합 — 예: "배포 후 OAuth 무한 리다이렉트") → `cluster-ops` **단독 호출 금지**. `cluster-ops` + 증상에 대응하는 도메인 에이전트 **병렬 호출**. cluster-ops 는 인프라·라우팅·Istio·런타임 진단, 도메인 에이전트는 서비스 내부 로직 검증.
 10. **기존 10개 스코프에 맞지 않는 신규 모듈** → `docs-keeper` 에게 배치 제안 의뢰 (모듈 성격·관련 계약·근접 에이전트 분석) → 메인 Claude 가 판정: **기존 에이전트 스코프 확장**(선호) vs **신규 에이전트 신설**(복잡도 감당 불가 시). 결정 후 해당 에이전트 정의 파일 + CLAUDE.md 도메인 매핑 + `docs/contracts/README.md` 매트릭스 동시 갱신.
+11. **응답의 `followup` 필드 자동 중계** → 도메인 에이전트가 응답에 구조화된 `=== followup ===` YAML 블록을 포함하면 메인 Claude 는 다음 규칙으로 처리한다 (DESIGN.md §11):
+    - `priority: required` — 같은 세션에서 자동 후속 호출 (사용자 재승인 불필요)
+    - `priority: optional` — "권장 추가 조사" 로 사용자 제시
+    - **순환 방지**: 같은 에이전트가 세션 내 2회 이상 followup 대상이면 스킵 후 사용자 보고
+    - **깊이 제한**: 후속 호출 최대 2단계. B 의 followup 으로 호출된 C 의 followup 은 자동 전개 금지
+    - 에이전트 간 **직통 통신 금지** — 모든 중계는 메인 Claude 를 경유
+12. **증상 기반 + 3개 이상 도메인 후보 / 다중 도메인 요청 / 매트릭스상 호출 대상 모호** → `triage` **먼저** 호출하여 `triage plan` 수신 (DESIGN.md §12) → plan 대로 parallel/sequential batch 실행. 단일 도메인이 명백하면 triage 생략 가능 (자체 호출 비용 방지).
 
 ### 계약 변경 감지 시 강제 절차
 

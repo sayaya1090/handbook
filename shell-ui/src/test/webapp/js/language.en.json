@@ -30,6 +30,8 @@
     "document.undo": "Undo",
     "document_editor": "Document Editor",
     "documents": "Documents",
+    "groups": "Groups",
+    "permissions": "Permissions",
     "settings": "Settings",
     "theme.switch_to_dark": "Switch to Dark",
     "theme.switch_to_light": "Switch to Light",
@@ -47,5 +49,7 @@
     "type.undo": "Undo",
     "type_canvas": "Type Canvas",
     "type_definition": "Type Definition",
-    "types": "Types"
+    "types": "Types",
+    "workspace info": "Workspace Info",
+    "workspaces": "Workspaces"
 }

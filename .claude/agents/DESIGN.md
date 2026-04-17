@@ -534,3 +534,149 @@ CLAUDE.md 에 추가:
 - **notes 는 Claude 내부 운영 지식** — CLAUDE.md 메모리와 유사한 위치
 - 장기적으로 정식 문서와의 동기화는 docs-keeper 책임
 - notes 파일은 Git 에 커밋 (재현 가능성, 팀원간 공유)
+
+---
+
+## 11. 에이전트 간 통신 (브로커 모델)
+
+### 11.1 기본 원칙 — 직통 통신 금지
+
+**에이전트끼리 서로 호출하거나 대화하지 않는다.** 항상 메인 Claude 가 **브로커(중계자)** 로
+개입한다. 근거:
+
+- §2.1 에서 밝힌 "떠넘기기 차단" 효과 유지 — A 가 "이건 B 영역" 로 단정 후 B 에게 직행하면
+  합의·책임 주체가 모호해짐
+- §9 의 "서브에이전트는 one-shot 전용" 원칙 유지 — 직통 허용 시 A→B→A 재귀로 컨텍스트 폭발
+- 사용자 투명성 유지 — 모든 왕복은 메인 대화에 기록됨
+
+### 11.2 `followup` 필드 — 구조화된 중계 힌트
+
+각 도메인 에이전트는 응답에 `=== followup ===` 섹션을 통해 **"다음으로 누구에게 무엇을
+물어야 하는지"** 를 **구조화된 YAML** 로 반환한다. 메인 Claude 는 이를 파싱하여
+자동 후속 호출 여부를 판단한다.
+
+#### 11.2.1 표준 포맷
+
+```yaml
+=== followup ===
+- agent: events-expert
+  priority: required
+  reason: events.md 의 WORKSPACE_* 섹션이 현재 공백
+  question: |
+    WORKSPACE_CREATED/DELETED 를 handbook-events 로 통합할지,
+    별도 workspace-events 유지할지 결정 필요
+- agent: docs-keeper
+  priority: optional
+  reason: contracts/README.md 매트릭스 행 갱신
+  question: workspace 행 Menu=O 반영 가능한지
+```
+
+**필드 규칙**:
+
+| 필드 | 값 | 설명 |
+|------|----|------|
+| `agent` | 등록된 에이전트 이름 | CLAUDE.md 도메인 매핑 표에 존재해야 |
+| `priority` | `required` \| `optional` | required 는 메인 Claude 자동 후속 호출 대상. optional 은 사용자 판단 |
+| `reason` | 한 줄 사유 | 왜 이 에이전트가 필요한지 |
+| `question` | 실제 물어볼 질문 | 맥락·시간범위·반환 포맷 포함 (§9 맥락 전달 규칙 준수) |
+
+#### 11.2.2 메인 Claude 동작
+
+메인 Claude 는 에이전트 응답의 `followup` 블록을 읽고:
+
+1. `required` 항목은 **해당 세션 내 자동 후속 호출** — 사용자 재승인 불필요
+2. `optional` 항목은 응답 합성에 "권장 추가 조사" 로 노출, 사용자 판단에 위임
+3. 순환 호출 방지 — 같은 에이전트가 같은 세션에서 2회 이상 followup 대상으로 지정되면
+   스킵하고 사용자에게 보고
+4. followup 깊이 최대 2단계 — A 의 followup 으로 호출된 B 의 followup 을 다시 호출하진 않음.
+   필요 시 메인이 명시적으로 판단해 호출
+
+#### 11.2.3 기존 `=== 크로스 도메인 영향 ===` 과의 관계
+
+기존 "크로스 도메인 영향" 섹션은 **자유 서술** 로 "이 변경이 어느 도메인에 파급될지"
+정보 전달. followup 은 그중 **즉시 후속 호출이 필요한 항목을 구조화** 한 것.
+
+- 크로스 도메인 영향: 파급 범위 기록 (docs-keeper 감사에도 활용)
+- followup: 자동 중계 대상 (메인이 파싱)
+
+둘 다 유지하되 역할 분리.
+
+### 11.3 notes.md 기반 비동기 공유 (강화)
+
+에이전트 A 는 다른 에이전트의 `<other>.notes.md` 를 **읽을 수는 있으나 쓸 수는 없다**.
+이 규칙은 그대로 유지하여 느슨한 결합을 보존한다.
+
+- 실시간 협업 아님 — 에이전트 입장에서 타 notes 는 "과거의 다른 에이전트 경험담"
+- docs-keeper 주기 감사 때 notes 간 중복·승격 대상 식별
+- 직통 통신의 대체재가 아님 — 급한 협업은 followup 으로, 누적 경험은 notes 로
+
+---
+
+## 12. Triage 에이전트 (메타 에이전트)
+
+### 12.1 배경
+
+증상 기반 버그 리포트("X 가 안 뜬다", "Y 가 느리다") 를 받았을 때, 메인 Claude 가
+§8 규칙대로 공급자·소비자 양쪽을 병렬 호출하지만 **어느 도메인 몇 개를 어떤 순서로**
+호출할지 판단하는 비용이 있다. 이번 2026-04-17 세션에서 workspace-expert +
+ui-platform-expert + auth-expert 를 병렬 호출했는데 답변 일부가 겹치고 "이건 내 영역
+아님" 응답도 섞여 효율 저하.
+
+### 12.2 역할
+
+**증상·요구사항을 입력받아, 호출해야 할 도메인 에이전트 목록과 각자의 질문 템플릿을
+생성** 한다. **자기 자신은 도메인 답을 하지 않는다** — 오직 분류·라우팅 계획 생성.
+
+### 12.3 스코프
+
+- `CLAUDE.md` 도메인 매핑 표 + `docs/contracts/README.md` 매트릭스 읽기
+- 기존 에이전트 정의 파일(`.claude/agents/*.md`) 스코프 필드 참조
+- `docs/requirements/README.md`, `docs/usecases/README.md` 인덱스 (도메인 판별 보조)
+
+### 12.4 입력·출력
+
+**입력**: 사용자 원문 요청 + 메인 Claude 의 맥락 요약
+
+**출력** (구조화 YAML):
+
+```yaml
+=== triage plan ===
+parallel_batch_1:
+  - agent: auth-expert
+    question: "... 300단어 이내"
+  - agent: workspace-expert
+    question: "..."
+sequential_batch_2:
+  - agent: cluster-ops
+    question: "batch_1 결과를 받아 dev 배포 검증"
+    depends_on: [auth-expert, workspace-expert]
+skip:
+  - agent: ui-platform-expert
+    reason: 증상이 백엔드 한정으로 좁혀짐 (JWT 서명 실패)
+```
+
+### 12.5 사용 조건
+
+메인 Claude 는 다음 경우에 triage 를 먼저 호출한다:
+
+1. **증상 기반 버그** (§8) 의 경우 + 관련 도메인이 3개 이상 후보일 때
+2. **사용자 요청이 다중 도메인에 걸칠 때** — 예: "워크스페이스 기능 전면 점검"
+3. **계약 변경 시** — OWNER/소비자 매트릭스 + 실제 의존성 중 어느 에이전트를 불러야
+   할지 명확히 모를 때
+
+**스킵 조건**: 단일 도메인이 명백한 경우 (예: "타입 버전 쿼리 패턴" → schema-expert 즉시).
+triage 자체도 Agent 호출 비용이 있으므로 남발 금지.
+
+### 12.6 제약
+
+- **도메인 답변 금지** — 라우팅 계획만 생성
+- **followup 사용 금지** — triage 자체가 followup 을 생성하면 무한 재귀
+- **plan 실행 금지** — 계획만 반환, 호출은 메인 Claude 가 수행
+- **결정론적 출력** — 동일 입력에 동일 plan 반환 (매트릭스·스코프 기반)
+
+### 12.7 기대 효과
+
+- 병렬 호출 중복 제거 (이번 세션의 workspace-expert + ui-platform-expert + auth-expert
+  일부 중복 답변 방지)
+- 호출 순서 최적화 — 선행 결과가 후속 질문을 좁히는 경우 자동 직렬화
+- 사용자에게도 "어떤 조사 계획으로 들어가는지" 투명 공개 가능

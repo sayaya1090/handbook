@@ -40,6 +40,14 @@ tools: Read, Grep, Glob
 ```
 === 답변 ===
 === 크로스 도메인 영향 ===
+=== followup ===
+# DESIGN.md §11.2 참조. 즉시 후속 호출이 필요한 에이전트만 YAML 로.
+# 없으면 섹션 자체 생략 가능. 직통 통신 금지 — 메인 Claude 가 중계.
+#   - agent: <name>
+#     priority: required | optional
+#     reason: <한 줄 사유>
+#     question: |
+#       <맥락·시간범위·제약·반환 포맷 포함>
 === 노트 갱신 ===
 ```
 
