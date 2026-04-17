@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
+import dev.sayaya.handbook.client.components.HighlightEffect;
+import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.usecase.MenuList;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.domain.Menu;
@@ -105,12 +107,17 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         HTMLElement icon = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-solid", menu.icon()).element();
         btn.add(icon);
+        // agent-command highlight 수신 시 TooltipCard 로 라벨 강조. hover 는 md-icon-button 의
+        // 기본 aria/title 이 담당하므로 tooltip 은 highlight 전용 (enabled=false).
+        final TooltipCard tooltip = TooltipCard.anchor(btn.element()).position("bottom").enabled(false);
+        HighlightEffect.observe(btn.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
         if (menu.title() != null) {
             btn.element().dataset.set("menuTitle", menu.title());
             labelProvider.subscribe(labels -> {
                 String title = labels.getOrDefault(menu.title(), menu.title());
                 btn.element().setAttribute("aria-label", title);
                 btn.element().setAttribute("title", title);
+                tooltip.content(title, null);
             });
         }
         btn.on(EventType.click, evt -> selected.next(menu));

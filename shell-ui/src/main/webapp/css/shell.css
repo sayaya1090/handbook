@@ -456,6 +456,13 @@ body {
     flex-shrink: 0;
     gap: 4px;
 }
+/* 모바일에서는 MenuRail 이 display:none 이고 네비게이션을 상단 MobileTabs 가 대체하므로
+   Drawer overlay 를 여는 햄버거 버튼은 실질 용도가 없다. leading slot 자체를 숨긴다. */
+@media (max-width: 768px) {
+    .shell-app-bar-leading {
+        display: none;
+    }
+}
 .shell-app-bar-center {
     flex: 1;
     min-width: 0;

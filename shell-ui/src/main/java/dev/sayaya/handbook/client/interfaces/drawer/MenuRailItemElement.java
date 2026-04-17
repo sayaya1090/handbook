@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
+import dev.sayaya.handbook.client.components.HighlightEffect;
 import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.usecase.MenuHover;
@@ -11,10 +12,6 @@ import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.MutationObserver;
-import elemental2.dom.MutationObserverInit;
-import elemental2.dom.MutationRecord;
-import elemental2.core.JsArray;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
@@ -70,7 +67,9 @@ public class MenuRailItemElement extends NavigationRailItemElement {
         menuRailMode.subscribe(state -> tooltip.enabled(state == MenuRailState.COLLAPSE));
 
         initEventHandlers(menu, selected, hover, selectedElement);
-        observeHighlight();
+        // agent-command highlight 가 .ui-highlight class 를 부여하면 tooltip 즉시 표시.
+        // MutationObserver 세부는 HighlightEffect 로 캡슐화되어 있다 (Dependency Inversion).
+        HighlightEffect.observe(element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
         selected.subscribe(select -> select(menu.equals(select)));
     }
 
@@ -87,29 +86,6 @@ public class MenuRailItemElement extends NavigationRailItemElement {
             hover.next(menu);
             selectedElement.next(this);
         });
-    }
-
-    /**
-     * agent-command highlight 가 {@code .ui-highlight} class 를 부여하면 tooltip 을
-     * 즉시 표시(3초 자동 종료)해 시각 유도 + 라벨 안내를 함께 제공한다.
-     *
-     * <p>MenuRailMode 가 EXPAND 일 때는 tooltip.enabled=false 라 showImmediate 도 no-op
-     * 이 되어 중복 노출이 발생하지 않는다 (EXPAND 에서는 headline 이 이미 보임).</p>
-     */
-    private void observeHighlight() {
-        MutationObserver observer = new MutationObserver((JsArray<MutationRecord> records, MutationObserver o) -> {
-            for (int i = 0; i < records.length; i++) {
-                MutationRecord r = records.getAt(i);
-                if ("class".equals(r.attributeName) && element().classList.contains("ui-highlight")) {
-                    tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS);
-                }
-            }
-            return null;
-        });
-        MutationObserverInit init = MutationObserverInit.create();
-        init.setAttributes(true);
-        init.setAttributeFilter(JsArray.of("class"));
-        observer.observe(element(), init);
     }
 
     private void select(Menu menu, MenuSelected selected) {

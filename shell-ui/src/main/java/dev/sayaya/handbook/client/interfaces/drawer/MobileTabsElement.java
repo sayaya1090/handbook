@@ -1,5 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
+import dev.sayaya.handbook.client.components.HighlightEffect;
+import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.usecase.MenuList;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.client.usecase.ResponsiveOverflow;
@@ -148,6 +150,9 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         tab.add(label);
         if (menu.title() != null) tab.element().dataset.set("menuTitle", menu.title());
         tab.on(EventType.click, evt -> selected.next(menu));
+        // agent-command highlight 수신 시 tooltip 으로 라벨 강조 (hover 는 MD3 기본 동작으로 커버).
+        final TooltipCard tooltip = TooltipCard.anchor(tab.element()).position("bottom").enabled(false);
+        HighlightEffect.observe(tab.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
 
         HTMLElement menuItem = null;
         if (isBottom) {
@@ -176,6 +181,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         labelProvider.subscribe(labels -> {
             String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
             label.textContent = title;
+            tooltip.content(title, null);
         });
 
         return new TabEntry(menu, tab.element(), menuItem);
