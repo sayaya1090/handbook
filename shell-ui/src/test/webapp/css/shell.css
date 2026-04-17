@@ -29,9 +29,16 @@ body,
        0px 로 찌그러지는 버그가 있었다. 모바일 drawer 는 HIDE/OVERLAY 로만 쓰이므로
        backdrop blur 가 필요하지 않다. */
     display: flex;
-    width: fit-content;
-    /* AppBar(고정 상단) 높이만큼 공제해 본문이 viewport 를 넘지 않도록 한다. */
-    height: calc(100dvh - var(--shell-app-bar-height) - env(safe-area-inset-top, 0px));
+    /* Drawer 는 fixed 로 자기 영역을 viewport 왼쪽에 보유 — flex 흐름에서 분리. 이로써
+       AppBar 와 같은 상단 레이어에서 나란히(Top App Bar + Navigation Rail 정석 MD3
+       패턴). Frame 은 Drawer 뒤로 깔려 Drawer 반투명 배경 너머로 비쳐 보인다. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100dvh;
+    width: var(--shell-drawer-width);
+    z-index: 1000;
     flex-direction: column;
     /* drawer 자체 레이아웃 트랜지션은 별도 — 색 트랜지션과 분리해 더 짧게 */
     transition-property: background-color, color, border-color, box-shadow, fill, stroke,
@@ -272,9 +279,12 @@ body,
 }
 .frame {
     position: absolute;
-    left: 56px;
+    /* Frame 은 viewport 전역에 깔려 Drawer 반투명 배경 뒤로 비쳐 보이는 구조 (MD3
+       Standard Navigation Drawer + translucent surface 효과). AppBar 높이만큼 상단
+       여백만 확보한다. */
+    left: 0;
     right: 0;
-    top: 4px;
+    top: calc(var(--shell-app-bar-height) + env(safe-area-inset-top, 0px));
     bottom: 0;
     border: 0px hidden;
     transition: all 100ms ease-in-out;
@@ -417,26 +427,56 @@ body,
    받아 AppBar 아래로 밀린다. */
 :root {
     --shell-app-bar-height: 56px;
+    /* Drawer 의 현재 width 를 토큰으로 노출해 AppBar/MobileTabs/Content 등이 동적으로
+       참조. drawer state(open/collapse/hide/overlay) 와 viewport(모바일) 에 따라
+       body-level :has 셀렉터가 이 값을 재지정한다. */
+    --shell-drawer-width: 56px;
 }
-body {
-    padding-top: calc(var(--shell-app-bar-height) + env(safe-area-inset-top, 0px));
+body:has(nav.drawer[open]) {
+    --shell-drawer-width: 16rem;
+}
+body:has(nav.drawer[hide]),
+body:has(nav.drawer[overlay]) {
+    --shell-drawer-width: 0px;
+}
+@media (max-width: 768px) {
+    /* 모바일은 Drawer 가 기본 HIDE, MobileTabs 가 네비 대체 → AppBar 전체 가로. */
+    :root {
+        --shell-drawer-width: 0px;
+    }
 }
 .shell-app-bar {
     position: fixed;
     top: 0;
-    left: 0;
+    /* Drawer 오른쪽부터 시작 — MD3 Top App Bar + Navigation Rail 정석. Drawer state 변화
+       (collapse/open/hide/overlay/mobile) 에 따라 --shell-drawer-width 가 0/56/256 으로
+       바뀌며 AppBar 도 자동으로 왼쪽 경계 이동. transition 은 .drawer 의 width 와 동일. */
+    left: var(--shell-drawer-width);
     right: 0;
     padding: 0 8px;
     padding-top: env(safe-area-inset-top, 0px);
     height: calc(var(--shell-app-bar-height) + env(safe-area-inset-top, 0px));
     z-index: 950;
+    /* MD3 Small Top App Bar — 기본(scroll=0) 은 Surface + elevation 0 + border 없음
+       으로 body 와 같은 톤을 취한다. scroll > 0 일 때 `[scrolled]` 가 붙어 Surface
+       container + elevation 2 + 경계선으로 전환 (spec: m3.material.io/components/top-app-bar/specs). */
     background: var(--md-sys-color-surface);
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid transparent;
+    box-shadow: none;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 8px;
     box-sizing: border-box;
+    transition: background-color var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
+                border-bottom-color var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
+                box-shadow var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
+                left 400ms cubic-bezier(.2,0,0,1);
+}
+.shell-app-bar[scrolled] {
+    background: var(--md-sys-color-surface-container);
+    border-bottom-color: var(--md-sys-color-outline-variant);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 .shell-app-bar[hide] {
     display: none;

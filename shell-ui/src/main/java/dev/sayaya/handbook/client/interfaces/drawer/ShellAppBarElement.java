@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconElementBuilder;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
@@ -79,6 +80,16 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         center.element().appendChild(workspace.css("workspace").element());
         trailing.element().appendChild(themeToggle.element());
         list.distinctUntilChanged().subscribe(this::updateMenuActions);
+        // MD3 Small Top App Bar: scroll=0 → Surface 기본 / scroll>0 → Surface-container
+        // + elevation 으로 전환. window scroll 이벤트 동기화해 [scrolled] 속성 토글.
+        DomGlobal.window.addEventListener("scroll", e -> updateScrolled());
+        updateScrolled();
+    }
+
+    /** 현재 window.scrollY 기준으로 {@code [scrolled]} 속성 on/off. CSS 가 scroll state 별 배경·elevation 전환. */
+    private void updateScrolled() {
+        if (DomGlobal.window.scrollY > 0) element().setAttribute("scrolled", true);
+        else element().removeAttribute("scrolled");
     }
 
     private void updateMenuActions(List<Menu> menus) {
