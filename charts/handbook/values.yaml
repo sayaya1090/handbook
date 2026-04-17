@@ -50,6 +50,14 @@ services:
     kind: backend
     color: gold
     stages: [dev, staging, prod]
+  - name: persist-type
+    kind: backend
+    color: salmon
+    stages: [dev, staging, prod]
+  - name: search-type
+    kind: backend
+    color: coral
+    stages: [dev, staging, prod]
   - name: app
     kind: frontend
     color: blue
@@ -69,4 +77,8 @@ services:
   - name: agent-ui
     kind: frontend
     color: lime
+    stages: [dev, staging, prod]
+  - name: type-ui
+    kind: frontend
+    color: navy
     stages: [dev, staging, prod]

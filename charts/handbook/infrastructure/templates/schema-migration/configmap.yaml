@@ -1,0 +1,17 @@
+{{- /*
+  schema-migration ConfigMap — sql/*.sql 파일을 임베드해 Job 이 psql -f 로 순차 적용.
+  파일명 prefix(001_, 002_, ...) 로 실행 순서 결정. workspace 가 선행 생성되어야 type 의 FK 성립.
+*/ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schema-migration-sql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: schema-migration
+    app.kubernetes.io/part-of: handbook
+data:
+{{- range $path, $_ := .Files.Glob "sql/*.sql" }}
+  {{ base $path }}: |
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}

@@ -1,0 +1,36 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: search-type
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: search-type
+data:
+  # /app/resources/application.yml 에 subPath 마운트되어 jar 의 application.yml 을
+  # 파일 단위로 덮어쓴다. 머지가 아니라 완전 대체이므로 운영 환경에서 필요한 모든
+  # 설정은 jar 와 중복되더라도 이 파일에 다 적는다. (jar 의 application.yml 은
+  # 로컬 IDE 실행용 default 로만 사용)
+  application.yml: |
+    spring:
+      application:
+        name: search-type
+      main:
+        web-application-type: reactive
+      threads:
+        virtual:
+          enabled: true
+      config:
+        import:
+          - classpath:observability.yaml
+          - classpath:authentication.yaml
+          - classpath:postgresql.yaml
+      # PostgreSQL 세션을 read-only 로 강제. postgresql fragment 가 제공하는
+      # 기본 r2dbc.url 을 override 하여 options 파라미터를 추가한다.
+      r2dbc:
+        url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?options=-c%20default_transaction_read_only%3Don
+        pool:
+          max-size: 10
+          initial-size: 2
+          max-idle-time: 30m
+          validation-query: SELECT 1
+    # management / logging / metrics 는 observability fragment 에서 import 됨

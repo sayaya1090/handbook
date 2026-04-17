@@ -1,0 +1,15 @@
+image:
+  name:
+  tag:
+color: ""
+
+stage:
+  name: ""
+  color: ""
+  prev: ""
+
+jvmBackend:
+  fragments:
+    - observability
+    - authentication
+    - postgresql

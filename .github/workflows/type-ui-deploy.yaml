@@ -1,0 +1,17 @@
+name: 타입 UI 모듈 빌드
+on:
+  push:
+    paths:
+      - type-ui/**
+      - activity/**
+      - ui-components/**
+      - agent-bridge/**
+  workflow_dispatch:
+permissions:
+  contents: write  # reusable 이 gh release create 로 prerelease 를 만든다
+jobs:
+  build:
+    uses: ./.github/workflows/_frontend-deploy.yaml
+    with:
+      submodule: type-ui
+    secrets: inherit

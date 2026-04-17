@@ -1,0 +1,64 @@
+{{- /*
+  schema-migration Job — handbook DB 에 DDL 을 적용한다.
+  sync-wave=-5 로 persist-* / search-* (기본 0) 보다 선행 실행 보장.
+  ttlSecondsAfterFinished 로 완료 후 GC. backoffLimit 제한.
+  DDL 은 전부 CREATE IF NOT EXISTS 이므로 재실행 안전.
+*/ -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: schema-migration
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  labels:
+    app.kubernetes.io/name: schema-migration
+    app.kubernetes.io/part-of: handbook
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: schema-migration
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: psql
+          image: postgres:17-alpine
+          env:
+            - name: PGHOST
+              value: postgresql-rw
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-app
+                  key: password
+            - name: PGDATABASE
+              value: handbook
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              echo "[schema-migration] applying DDL in /sql (sorted)"
+              for f in $(ls /sql/*.sql | sort); do
+                echo "[schema-migration] >>> $f"
+                psql -v ON_ERROR_STOP=1 -f "$f"
+              done
+              echo "[schema-migration] done"
+          volumeMounts:
+            - name: sql
+              mountPath: /sql
+              readOnly: true
+      volumes:
+        - name: sql
+          configMap:
+            name: schema-migration-sql

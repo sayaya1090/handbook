@@ -1,0 +1,24 @@
+color: ""
+
+stage:
+  name: ""
+  color: ""
+  prev: ""
+
+# 외부 호스트명 (ApplicationSet 이 stages.<stage>.host 에서 주입). HTTPRoute 의 hostname 으로 사용.
+host: ""
+
+# Kargo argocd-update 가 promotion 시 helm parameter 로 주입한다.
+# commit = git SHA, Job 내부에서 `type-ui-<short>` 형태로 tag 를 재구성한다.
+freight:
+  commit: ""
+
+# Kargo Stage 의 vars 에서 helm parameter 로 주입.
+bucket: ""
+
+# 환경 무관 기본값. 필요하면 Kargo Stage vars 로 override 가능.
+release:
+  repo: sayaya1090/handbook
+  asset: type-ui.tar.gz
+s3:
+  endpoint: https://rook-ceph-rgw-ocs-storagecluster-cephobjectstore.openshift-storage.svc/
