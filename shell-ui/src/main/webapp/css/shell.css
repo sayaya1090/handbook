@@ -417,6 +417,10 @@ body,
 }
 
 /* ── Mobile Scrollable Tabs ── */
+/* 3단계 반응형 폴백은 {@link MobileTabsElement} + {@link ResponsiveOverflow} 가 담당한다:
+   (1) 평면 — 전체가 컨테이너 폭에 들어감, overflow 버튼 숨김
+   (2) overflow — 하단정렬(bottom=true) 을 md-menu 팝업으로 수렴, trailing 에 …버튼
+   (3) 스크롤 — 상단정렬조차 넘치면 md-tabs 에 [scrollable] 속성 + overflow-x:auto */
 .menu-tabs {
     position: fixed;
     top: 0;
@@ -426,15 +430,23 @@ body,
     z-index: 900;
     background: var(--md-sys-color-surface-container);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 .menu-tabs[hide] {
     display: none;
 }
 .menu-tabs-bar {
-    width: 100%;
+    flex: 1;
+    min-width: 0; /* flex shrink 허용 — 부모 폭을 초과하지 않게 */
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
+}
+.menu-tabs-bar[scrollable] {
+    /* 3단계 폴백 시각 힌트 — 스크롤 가능 상태에서만 엣지 페이드 처리할 여지 */
+    mask-image: linear-gradient(to right, transparent 0, black 8px, black calc(100% - 8px), transparent 100%);
 }
 .menu-tab {
     min-width: 96px;
@@ -443,6 +455,17 @@ body,
     font-family: var(--md-sys-typescale-label-medium-font, 'Roboto', sans-serif);
     font-size: var(--md-sys-typescale-label-medium-size, 12px);
     line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+}
+.menu-tabs-overflow-btn {
+    flex-shrink: 0;
+    margin: 0 4px;
+}
+.menu-tabs-overflow-btn[hidden] {
+    display: none !important;
+}
+.menu-tabs-overflow-menu {
+    /* md-menu 는 shadow DOM 으로 팝업을 렌더하므로 외부 레이아웃에 영향 없음. */
+    --md-menu-container-color: var(--md-sys-color-surface-container-high);
 }
 /* 데스크톱에서는 JS setMobile 이 [hide] 를 달아주지만 CSS 측 2차 방어. */
 @media (min-width: 769px) {

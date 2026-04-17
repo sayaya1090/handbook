@@ -297,17 +297,33 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "false"
             }
-            Then(".menu-tabs 내부에 md-primary-tab 이 메뉴 수만큼 렌더된다") {
-                val count = page.querySelectorAll(".menu-tabs md-primary-tab").count()
-                count shouldBe DrawerMock.menu.size
+            Then(".menu-tabs + md-menu 합친 엔트리 수가 메뉴 수와 같다 (평면 또는 overflow 분리)") {
+                // 3단계 폴백으로 하단정렬이 overflow 에 들어가면 md-tabs 쪽 탭 수는 줄어든다.
+                // 전체 보존은 md-primary-tab + md-menu-item 합으로 검증.
+                val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
+                val menuItemCount = page.querySelectorAll(".menu-tabs md-menu md-menu-item").count()
+                (tabCount + menuItemCount) shouldBe DrawerMock.menu.size
             }
-            Then("탭 배치 — 상단정렬(bottom=false)이 leading, 하단정렬(bottom=true)은 order 역순으로 trailing") {
-                // 상단정렬은 order asc, 하단정렬은 order desc 로 병합. DrawerMock 의 Menu 배치 확인.
-                val titles = page.evaluate(
-                    "Array.from(document.querySelectorAll('.menu-tabs md-primary-tab'))" +
-                    ".map(t => t.dataset.menuTitle || '')"
+            Then("375px + 4개 탭은 viewport 초과 → overflow 버튼이 노출된다") {
+                val hidden = page.evaluate(
+                    "document.querySelector('.menu-tabs-overflow-btn').hasAttribute('hidden')"
                 ).toString()
-                (titles.isNotEmpty()) shouldBe true
+                hidden shouldBe "false"
+            }
+            Then("하단정렬(bottom=true) 메뉴는 md-menu 팝업으로 수렴된다") {
+                val menuItemCount = page.querySelectorAll(".menu-tabs md-menu md-menu-item").count()
+                val bottomCount = DrawerMock.menu.count { it.bottom() == true }
+                menuItemCount shouldBe bottomCount
+            }
+            Then("overflow 버튼 클릭 시 md-menu 가 open 된다") {
+                page.evaluate("document.querySelector('.menu-tabs-overflow-btn').click()")
+                Thread.sleep(100)
+                val open = page.evaluate(
+                    "document.querySelector('.menu-tabs md-menu').hasAttribute('open')"
+                ).toString()
+                open shouldBe "true"
+                // 원복: 다음 검증에 영향 없도록 닫기
+                page.evaluate("document.querySelector('.menu-tabs md-menu').removeAttribute('open')")
             }
             // 원복: 이후 테스트들이 desktop 뷰포트에서 돌아가도록 복원
             page.setViewportSize(1280, 720)
