@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.usecase.ResponsiveOverflow;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.ui.elements.IconElementBuilder;
+import dev.sayaya.ui.elements.TabsElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
@@ -45,7 +46,13 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     private static final int RESERVE_PX = 48;
 
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("menu-tabs");
-    private final HTMLContainerBuilder<HTMLElement> tabs = htmlContainer("md-tabs", HTMLElement.class).css("menu-tabs-bar");
+    /**
+     * sayaya-ui {@link TabsElementBuilder} primary 빌더. 기존 직접 {@code htmlContainer("md-tabs")}
+     * 호출을 대체해 다른 sayaya-ui 컴포넌트와 빌더 패턴 일관성을 맞춘다. {@code element()} 는
+     * 내부적으로 md-tabs Material Web 커스텀 엘리먼트이므로 {@code scrollable/active} 어트리뷰트
+     * 직접 제어와 자식 {@code md-primary-tab} append 는 그대로 호환된다.
+     */
+    private final TabsElementBuilder.TabsPrimaryElementBuilder tabs = TabsElementBuilder.tabs().primary();
 
     private final MenuTabRenderer renderer;
     private final OverflowMenuController overflow;
@@ -65,7 +72,8 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     MobileTabsElement(MenuTabRenderer renderer, OverflowMenuController overflow) {
         this.renderer = renderer;
         this.overflow = overflow;
-        _this.add(tabs).add(overflow);
+        tabs.element().classList.add("menu-tabs-bar");
+        _this.add(tabs.element()).add(overflow);
         element().setAttribute("hide", true);
     }
 
