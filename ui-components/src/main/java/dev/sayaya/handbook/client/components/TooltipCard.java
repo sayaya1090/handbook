@@ -247,11 +247,14 @@ public class TooltipCard implements IsElement<HTMLDivElement> {
         .ui-tooltip-portal {
             z-index: 9500;
             pointer-events: none;
+            /* 컨텐츠 너비에 맞춰 고정폭 대신 자연 폭을 쓴다. max-content 는 내부 headline
+               (white-space: nowrap) 의 실제 텍스트 길이를 채택. 최대 상한만 남겨
+               긴 문장은 280px 에서 줄바꿈된다. */
+            width: max-content;
+            max-width: 280px;
         }
         .ui-tooltip-card {
             padding: 8px 12px;
-            min-width: 140px;
-            max-width: 280px;
             border-radius: 12px;
             box-sizing: border-box;
         }
