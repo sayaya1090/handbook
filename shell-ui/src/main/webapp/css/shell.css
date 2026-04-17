@@ -476,10 +476,13 @@ body:has(nav.drawer[overlay]) {
     align-items: center;
     gap: 8px;
     box-sizing: border-box;
+    /* left transition 은 .drawer width transition(600ms cubic-bezier(.4,0,.2,1)) 과 duration
+       ·easing 을 일치시켜 Drawer 펼침/접힘 동작과 AppBar 좌측 경계 이동이 동시에 움직이도록
+       한다. 배경/border/shadow 는 scroll state 전환용 짧은 150ms 로 별도 유지. */
     transition: background-color var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
                 border-bottom-color var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
                 box-shadow var(--md-sys-motion-duration-short2, 150ms) var(--md-sys-motion-easing-standard, ease),
-                left 400ms cubic-bezier(.2,0,0,1);
+                left 600ms cubic-bezier(.4, 0, .2, 1);
 }
 .shell-app-bar[scrolled] {
     background: var(--md-sys-color-surface-container);
