@@ -1,6 +1,8 @@
 plugins {
     kotlin("jvm")
+    id("war")
     id("dev.sayaya.gwt")
+    id("com.adarshr.test-logger")
 }
 dependencies {
     implementation(project(":activity"))
@@ -14,17 +16,31 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
-tasks {
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.Type")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.Type", "dev.sayaya.handbook.CanvasTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler { strict = true }
+gwt {
+    gwtVersion = "2.13.0"
+    sourceLevel = "auto"
+    modules = listOf("dev.sayaya.handbook.Type")
+    devMode {
+        modules = listOf("dev.sayaya.handbook.Type", "dev.sayaya.handbook.CanvasTest")
+        war = file("src/test/webapp")
     }
-    test { useJUnitPlatform() }
+    generateJsInteropExports = true
+    compiler { strict = true }
 }
+tasks.register<Copy>("copyTestResources") {
+    from("src/main/webapp")
+    into("src/test/webapp")
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+tasks.named("compileTestJava") { dependsOn("copyTestResources") }
+tasks.named("war", War::class) {
+    // GWT 컴파일 출력(build/gwt/war/type) 을 js/ 하위로 포함해
+    // shell 이 참조하는 /js/type/** 경로와 일치시킨다.
+    dependsOn("gwtCompile")
+    from("build/gwt/war") {
+        into("js")
+    }
+    archiveFileName.set("type-ui.war")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.test { useJUnitPlatform() }
