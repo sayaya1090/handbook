@@ -173,6 +173,13 @@ body,
 .rail .item.bottom-menu {
     order: 2;
 }
+/* ThemeToggle 이 AppBar 로 이동 후 .rail 에는 .rail-bottom 이 존재하지 않는다.
+   첫 bottom-menu (일반 메뉴 직후) 에 margin-top: auto 를 직접 부여해 bottom-menu
+   덩어리를 rail 하단으로 push 한다. 전체가 bottom 메뉴인 edge 케이스도 커버. */
+.rail .item:not(.bottom-menu):not(.rail-bottom) + .item.bottom-menu,
+.rail > .item.bottom-menu:first-of-type {
+    margin-top: auto;
+}
 .rail[hide] .rail-bottom {
     display: none;
 }
@@ -515,12 +522,18 @@ body {
     mask-image: linear-gradient(to right, transparent 0, black 8px, black calc(100% - 8px), transparent 100%);
 }
 .menu-tab {
-    min-width: 96px;
+    min-width: 64px;
+    max-width: 96px;
 }
 .menu-tab-label {
     font-family: var(--md-sys-typescale-label-medium-font, 'Roboto', sans-serif);
     font-size: var(--md-sys-typescale-label-medium-size, 12px);
     line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
 }
 .menu-tabs-overflow-btn {
     flex-shrink: 0;

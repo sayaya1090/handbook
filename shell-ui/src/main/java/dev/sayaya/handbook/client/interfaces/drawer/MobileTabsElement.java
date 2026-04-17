@@ -153,8 +153,6 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     private double sumWidth(List<TabEntry> entries) {
         double total = 0;
         for (TabEntry e : entries) {
-            // 분리 모드에서는 menuItem 쪽이라 tab 의 offsetWidth 가 0 일 수 있음 — 재측정 위해 tab 은
-            // 분리 전 마지막 폭을 신뢰하지 말고, offsetWidth 가 0 이면 96(min-width) 로 가정.
             double w = e.tab.offsetWidth;
             if (w <= 0) w = 96.0;
             total += w;
