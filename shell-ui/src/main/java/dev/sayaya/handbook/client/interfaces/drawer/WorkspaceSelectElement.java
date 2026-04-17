@@ -1,11 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.domain.Workspace;
-import dev.sayaya.handbook.client.usecase.MenuRailMode;
 import dev.sayaya.handbook.client.usecase.WorkspaceList;
 import dev.sayaya.ui.elements.SelectElementBuilder.OutlinedSelectElementBuilder;
-import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.IsElement;
 
@@ -15,17 +12,30 @@ import java.util.List;
 
 import static dev.sayaya.ui.elements.SelectElementBuilder.select;
 
+/**
+ * 워크스페이스 선택 드롭다운.
+ *
+ * <p><b>책임:</b> {@link WorkspaceList} 를 구독해 사용자 소유 워크스페이스 목록을 select
+ * option 으로 렌더한다. 빈 목록일 때는 자동 disabled.</p>
+ *
+ * <p><b>배치:</b> 2026-04 AppBar 도입 이후 {@link ShellAppBarElement} 의 center slot 에 상시
+ * 노출된다. 이전에는 Drawer header 에 있어 {@link dev.sayaya.handbook.client.usecase.MenuRailMode}
+ * 상태(COLLAPSE/HIDE) 에 따라 자체 opacity/width 로 숨기는 로직이 있었으나, 전역 AppBar 로
+ * 이관되면서 MenuRailMode 종속 숨김 로직은 제거됨. 워크스페이스는 언제나 변경 가능.</p>
+ */
 @Singleton
 public class WorkspaceSelectElement implements IsElement<HTMLElement> {
-    private OutlinedSelectElementBuilder _this = select().outlined().label("Workspace").required(true).menuPositioning("popover");
+    private final OutlinedSelectElementBuilder _this = select().outlined().label("Workspace").required(true).menuPositioning("popover");
     private List<Workspace> workspaces;
-    @Inject WorkspaceSelectElement(WorkspaceList workspaces, MenuRailMode menu) {
+
+    @Inject
+    WorkspaceSelectElement(WorkspaceList workspaces) {
         workspaces.subscribe(this::update);
-        menu.subscribe(this::update);
     }
+
     private void update(List<Workspace> workspaces) {
         this.workspaces = workspaces;
-        if(workspaces == null || workspaces.isEmpty()) {
+        if (workspaces == null || workspaces.isEmpty()) {
             _this.disabled(true);
             return;
         }
@@ -33,38 +43,14 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         _this.disabled(false);
         for (var workspace : workspaces) _this.option().value(workspace.id()).headline(workspace.name());
     }
-    private void update(MenuRailState menu) {
-        if(menu == MenuRailState.HIDE || menu == MenuRailState.COLLAPSE) mode(Mode.HIDE);
-        else mode(Mode.EXPAND);
-    }
-    private String css;
+
     public WorkspaceSelectElement css(String css) {
-        this.css = css;
         _this.css(css);
         return this;
     }
+
     @Override
     public HTMLElement element() {
         return _this.element();
-    }
-    private enum Mode {
-        HIDE("0rem", "0rem", 0),
-        EXPAND("1rem", "100%", 1);
-
-        private final String marginLeft;
-        private final String width;
-        private final double opacity;
-
-        Mode(String marginLeft, String width, double opacity) {
-            this.marginLeft = marginLeft;
-            this.width = width;
-            this.opacity = opacity;
-        }
-    }
-    private void mode(Mode mode) {
-        _this.element().style.marginLeft = CSSProperties.MarginLeftUnionType.of(mode.marginLeft);
-        _this.element().style.width = CSSProperties.WidthUnionType.of(mode.width);
-        _this.element().style.opacity = CSSProperties.OpacityUnionType.of(mode.opacity);
-        _this.element().style.pointerEvents = mode == Mode.HIDE ? "none" : "auto";
     }
 }
