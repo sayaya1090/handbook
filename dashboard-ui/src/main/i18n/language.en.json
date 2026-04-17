@@ -6,5 +6,6 @@
   "dashboard.activity.empty": "No agent activity",
   "dashboard.activity.count_suffix": "commands",
   "dashboard.quality.title": "Quality Status",
-  "dashboard.quality.empty": "No quality issues"
+  "dashboard.quality.empty": "No quality issues",
+  "dashboard": "Dashboard"
 }

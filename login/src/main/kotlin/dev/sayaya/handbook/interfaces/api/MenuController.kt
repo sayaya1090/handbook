@@ -19,8 +19,10 @@ import java.security.Principal
 @RestController
 class MenuController {
     companion object {
+        // title 은 표시 리터럴이 아닌 i18n 키. shell-ui 의 LabelProvider 가 language.{locale}.json
+        // 의 매핑으로 해석. docs/contracts/menus.md 의 "title i18n 키 규약" 참조.
         val SIGN_IN: Menu = Menu.builder()
-            .title("sign in")
+            .title("login.sign_in")
             .order("Z")
             .icon("fa-right-to-bracket")
             .iconType("solid")
@@ -30,7 +32,7 @@ class MenuController {
             .build()
 
         val SIGN_OUT: Menu = Menu.builder()
-            .title("sign out")
+            .title("login.sign_out")
             .order("Z")
             .icon("fa-right-from-bracket")
             .iconType("solid")

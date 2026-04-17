@@ -5,5 +5,7 @@
   "document.undo": "실행 취소",
   "document.redo": "다시 실행",
   "document.event.changed": "다른 사용자가 문서를 변경했습니다",
-  "document.pagination.empty": "결과 없음"
+  "document.pagination.empty": "결과 없음",
+  "documents": "문서",
+  "document_editor": "문서 편집기"
 }

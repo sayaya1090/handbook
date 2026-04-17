@@ -5,5 +5,7 @@
   "document.undo": "Undo",
   "document.redo": "Redo",
   "document.event.changed": "Another user has modified the document",
-  "document.pagination.empty": "No results"
+  "document.pagination.empty": "No results",
+  "documents": "Documents",
+  "document_editor": "Document Editor"
 }

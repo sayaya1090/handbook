@@ -10,5 +10,8 @@
   "type.attr.apply": "Apply",
   "type.attr.close": "Close",
   "type.attr.nullable": "Nullable",
-  "type.event.changed": "Another user has modified the type"
+  "type.event.changed": "Another user has modified the type",
+  "types": "Types",
+  "type_definition": "Type Definition",
+  "type_canvas": "Type Canvas"
 }

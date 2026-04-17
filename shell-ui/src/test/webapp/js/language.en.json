@@ -31,6 +31,8 @@
     "document_editor": "Document Editor",
     "documents": "Documents",
     "groups": "Groups",
+    "login.sign_in": "Sign In",
+    "login.sign_out": "Sign Out",
     "permissions": "Permissions",
     "settings": "Settings",
     "theme.switch_to_dark": "Switch to Dark",

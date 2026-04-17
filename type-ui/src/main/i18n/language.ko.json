@@ -10,5 +10,8 @@
   "type.attr.apply": "적용",
   "type.attr.close": "닫기",
   "type.attr.nullable": "널 허용",
-  "type.event.changed": "다른 사용자가 타입을 변경했습니다"
+  "type.event.changed": "다른 사용자가 타입을 변경했습니다",
+  "types": "타입",
+  "type_definition": "타입 정의",
+  "type_canvas": "타입 캔버스"
 }

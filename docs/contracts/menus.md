@@ -35,7 +35,7 @@
 
 ```java
 interface Menu {
-    String title();       // 표시 이름 (i18n 키 또는 직접 문자열)
+    String title();       // i18n 키 (권장) 또는 표시 리터럴 (fallback)
     String order();       // 정렬 키 (알파벳순, 뒤로 갈수록 아래)
     String icon();        // FontAwesome 아이콘 클래스 (fa-xxx)
     String iconType();    // "light" | "solid"
@@ -46,6 +46,18 @@ interface Menu {
     // 향후 href 필드 추가 검토 (SEO 랜딩 정적 링크용 — landing.md 참조)
 }
 ```
+
+### `title` i18n 키 규약
+
+- **공급자 (backend)** 는 `title` 에 표시 리터럴이 아닌 **i18n 키**를 넣는다. 형식: `<module>.<snake_case>`.
+  - 예: `login.sign_in`, `login.sign_out`, `search.types`, `search.workspaces`
+  - 키가 아니어도 동작은 한다 — shell-ui `LabelProvider` 가 매칭 실패 시 리터럴 그대로 렌더.
+- **라벨 팩 등록처** 는 **그 메뉴를 소유하는 UI 모듈**의 `src/main/i18n/language.{locale}.json` 이다.
+  - 예: `login.sign_*` → `login-ui/src/main/i18n/`
+  - 예: `search.workspaces` → `workspace-ui/src/main/i18n/` (예정) 또는 현재처럼 `shell-ui/src/main/i18n/`
+  - 빌드 타임에 `app` 의 `mergeI18nProd` 가 모든 모듈의 파일을 하나로 머지해 `app/src/main/webapp/js/language.{locale}.json` 로 출력 → shell-ui 의 LabelProvider 가 fetch.
+- **테스트 시**: 각 GWT 모듈 빌드는 `mergeI18n` 을 통해 자기 `test/webapp/js/` 에 머지본을 주입하므로 테스트에서도 동일한 머지된 라벨 팩을 본다.
+- 동일 키가 여러 모듈에 등장하면 **머지 순서 의존(마지막 승리)** 이다 — 충돌 방지를 위해 반드시 모듈 namespace 접두(`login.`, `workspace.`, `type.` …) 를 둔다.
 
 ### `appBarSlot` 규약 — AppBar 승격
 

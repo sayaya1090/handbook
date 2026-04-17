@@ -6,5 +6,6 @@
   "dashboard.activity.empty": "에이전트 활동 없음",
   "dashboard.activity.count_suffix": "건",
   "dashboard.quality.title": "품질 현황",
-  "dashboard.quality.empty": "품질 이슈 없음"
+  "dashboard.quality.empty": "품질 이슈 없음",
+  "dashboard": "대시보드"
 }
