@@ -53,6 +53,8 @@ Handbook은 **운영 중 스키마 변경과 이력 관리를 지원하면서 �
 | **workspace-ui** | 워크스페이스 생성/참여 UI (GWT) |
 | **document-ui** | 스프레드시트 기반 문서 편집기 (GWT, Handsontable) |
 | **dashboard-ui** | 워크스페이스 대시보드 UI (GWT) — 통계, 품질 현황, 에이전트 활동 |
+| **landing-content** | SEO 랜딩 / 앱 내부 랜딩이 공유하는 기능 설명 카드 컬렉션 (GWT 순수 DOM 라이브러리) |
+| **landing-ui** | SEO 랜딩 페이지 — 빌드 타임 프리렌더로 언어별 정적 HTML 생성, `/` 및 `/en/` 에 배포 (§3.22.2) |
 | **e2e** | Playwright 기반 E2E 통합 테스트 |
 | **app** | 정적 자산 호스트 — HTML, CSS, vendor JS, i18n 만 포함. GWT 컴파일 없음. shell-ui·agent-ui 는 각각 독립 GWT 모듈로 컴파일·배포(S3)되며, app.html 이 두 nocache.js 를 별도 `<script>` 로 로드 |
 
@@ -429,6 +431,13 @@ flowchart LR
 | DELETE | `/workspace/{workspace}/webhooks/{id}`      | 웹훅 삭제                               |
 | GET    | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 조회              |
 | GET    | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 조회                    |
+| GET    | `/`                                         | SEO 랜딩 (ko, §3.22.2)                   |
+| GET    | `/en/`                                      | SEO 랜딩 (en, §3.22.2)                   |
+| GET    | `/sitemap.xml`                              | 사이트맵 (§3.22.2)                       |
+| GET    | `/robots.txt`                               | 크롤러 지시 (§3.22.2)                    |
+| GET    | `/llms.txt`                                 | AI 에이전트 디스커버리 요약 (§3.23.1)     |
+| GET    | `/llms-full.txt`                            | AI 에이전트 디스커버리 상세 (§3.23.1)     |
+| GET    | `/app.html`                                 | 앱 셸 진입점 (`noindex, follow`)         |
 
 ### 3.12 API 접근성 (외부 시스템·AI 연동)
 
@@ -1351,6 +1360,312 @@ seq  type           payload
 |--------|------|------|
 | GET | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 (문서 생성, 검증 실패율, 에이전트 사용량) |
 | GET | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 |
+
+### 3.22 랜딩 페이지
+
+제품을 설명하는 공개 콘텐츠를 두 가지 표면에 노출한다. 두 표면은 **동일한 "기능 설명" 원소스**(`landing-content`)를 공유하며, 외피(히어로·CTA·SEO 메타)만 각각 다르다.
+
+| 표면 | URL | 산출 방식 | 목적 |
+|------|-----|-----------|------|
+| **SEO 랜딩** | `/` (ko), `/en/` | 빌드 타임 프리렌더된 정적 HTML | 검색엔진 인덱싱, 비로그인 방문자 첫 노출, 앱 진입 유도 |
+| **앱 내부 랜딩** | 앱 내 메뉴(이름 미정) | 런타임 GWT activity 모듈 | 앱 사용자에게 기능 요약 제공 (로그인·비로그인 모두 접근 가능) |
+
+#### 3.22.1 공통 원소스 (`landing-content`)
+
+- 순수 GWT 라이브러리 모듈로, **Handbook 의 기능을 설명하는 카드 컬렉션**만 포함한다 (운영 중 스키마 변경, 이력 관리, AI 에이전트, 실시간 협업 등).
+- 히어로, CTA, SEO 메타, 외부 앵커는 포함하지 않는다 — 이들은 각 표면(SEO 랜딩 / 앱 내부)에서 추가한다.
+- 공개 팩토리 메서드로 `HTMLElement` 를 반환하여, SEO 랜딩(`landing-ui`)과 앱 내부 activity 양쪽에서 동일 DOM 을 생성한다.
+- i18n 은 기존 `src/main/i18n/language.{locale}.json` 패턴으로 제공한다.
+
+#### 3.22.2 SEO 랜딩
+
+검색엔진 크롤러와 비로그인 첫 방문자가 보는 공개 페이지. 앱(`/app.html`) 과 완전히 분리된 정적 산출물이며, 런타임 서버 렌더링은 하지 않는다.
+
+##### 목적
+
+- **공개 진입점 제공**: 로그인 없이 접근 가능한 제품 소개 페이지.
+- **검색엔진 최적화(SEO)**: 크롤러가 사이트 구조와 핵심 콘텐츠를 인덱싱할 수 있도록 의미 있는 정적 HTML 을 제공한다. 현재 앱은 GWT SPA 로 `<body>` 가 비어 있어 크롤러가 인덱싱할 내용이 없다.
+- **앱 진입 유도**: 방문자가 CTA 클릭으로 앱으로 이동하거나, 이미 로그인한 경우 자동으로 앱으로 넘어갈 수 있게 한다.
+
+##### 콘텐츠 범위
+
+- **히어로** (SEO 랜딩 전용) — 제품 제목/부제 + CTA 앵커 (`<a href="/app.html">`, `<a href="/auth/login">`)
+- **기능 설명 카드** — `landing-content` 로부터 공통 주입
+- **푸터** — 회사/라이선스/언어 전환
+
+상세 카피와 시각 자산은 후속 반복에서 정의한다. 초기 릴리스는 최소 골격(히어로 + 공통 기능 설명 + 푸터)으로 출발한다.
+
+##### 메뉴/링크
+
+- 공개 엔트리의 **정적 링크** 집합으로 구성한다.
+- 초기 집합: `/auth/login` (로그인), `/app.html` (앱 진입).
+- `/menus` API 는 호출하지 않는다 — 프리렌더 시점에 인증 상태가 없고, 워크스페이스별 메뉴를 랜딩에 노출하지 않는다.
+- 추후 공개 섹션이 추가되면 같은 메뉴에 정적 링크로 합류한다.
+
+##### 로그인 상태 자동 리다이렉트
+
+- 랜딩 HTML 에 포함된 얇은 인라인 스크립트가 JWT 쿠키 존재 여부를 검사한다.
+- 쿠키가 있으면 `location.replace('/app.html')` 로 즉시 앱으로 이동한다.
+- 쿠키가 없으면(크롤러 및 미로그인 방문자) 랜딩을 그대로 노출한다.
+- **크롤러가 쿠키 없이 JS 를 실행해도 리다이렉트가 일어나지 않아야 한다.** Googlebot 은 JS 를 실행하지만 쿠키는 없으므로 동일한 판정을 거친다.
+- 스크립트는 `<head>` 최상단이 아닌 `defer` 스크립트로 배치한다 (Googlebot 의 "지연된 서버 리다이렉트" 오해 방지).
+
+##### 다국어 SEO
+
+- **URL 전략**: 서브디렉토리. `/` (ko 기본, `x-default`), `/en/` (영어). 서브도메인·쿼리 파라미터·쿠키 기반 언어 분기는 사용하지 않는다.
+- **hreflang**: 각 로케일 HTML 의 `<head>` 에 양방향 전체 목록을 선언한다. 자기 자신 포함.
+
+  ```html
+  <link rel="alternate" hreflang="ko" href="https://handbook.sayaya.cloud/">
+  <link rel="alternate" hreflang="en" href="https://handbook.sayaya.cloud/en/">
+  <link rel="alternate" hreflang="x-default" href="https://handbook.sayaya.cloud/">
+  ```
+- **`<html lang>`**: 각 HTML 에 정확한 로케일 코드 (`lang="ko"`, `lang="en"`).
+- **canonical**: 자기 자신으로. ko 페이지가 `/en/` 을 canonical 로 지정하지 않는다.
+- **Accept-Language 자동 리다이렉트 금지**: 브라우저 언어를 보고 302 응답을 주지 않는다 (Google 가이드라인 위반).
+- **쿠키/세션 기반 언어 분기 금지**: 같은 URL 이 요청자마다 다른 HTML 을 반환하면 크롤러가 혼동한다.
+
+##### SEO 필수 요소
+
+각 로케일 HTML 의 `<head>` 에 다음을 포함한다.
+
+| 요소 | 설명 |
+|------|------|
+| `<title>` | 로케일별 페이지 타이틀 |
+| `<meta name="description">` | 150자 이내 페이지 요약 |
+| `<meta property="og:*">` | Open Graph (title, description, image, url, type) |
+| `<meta name="twitter:*">` | Twitter Card (summary_large_image) |
+| `<link rel="canonical">` | 자기 URL |
+| `<link rel="alternate" hreflang>` | 전체 로케일 링크 |
+| `<html lang>` | 로케일 코드 |
+
+추가로 `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt` 를 같은 S3 버킷에 배포한다.
+
+- **`/sitemap.xml`**: 각 로케일 URL 을 엔트리로 포함하고, 각 엔트리에 `xhtml:link rel="alternate"` 로 다른 로케일을 명시한다.
+- **`/robots.txt`**: 크롤링 허용 + `Sitemap:` 지시어로 사이트맵 위치 제공. `/app.html` 은 **Disallow 하지 않는다** — 크롤링을 막으면 `noindex` 메타를 읽지 못해 의도치 않은 스니펫이 노출될 수 있다. 색인 차단은 `/app.html` 측의 `<meta name="robots">` 로 수행한다.
+- **`/llms.txt`**: AI 에이전트·LLM 디스커버리용 사이트 요약. 마크다운 포맷으로 "이 사이트는 무엇이며 어떤 주요 리소스가 있는지" 를 자연어로 기술. 랜딩 빌드 파이프라인이 i18n 입력에서 동일한 원천으로 생성해 SEO 랜딩 콘텐츠와 일치시킨다.
+
+  ```
+  # Handbook
+
+  > 운영 중 스키마 변경과 이력 관리를 지원하는 문서 관리 시스템
+
+  ## Key Resources
+  - [Landing (ko)](https://handbook.sayaya.cloud/)
+  - [Landing (en)](https://handbook.sayaya.cloud/en/)
+  - [OpenAPI spec](https://handbook.sayaya.cloud/openapi.json)
+
+  ## Capabilities
+  - 운영 중 스키마 변경 및 이력 관리
+  - AI 에이전트 기반 자연어 데이터 조작
+  - 실시간 협업 (SSE)
+  ```
+- **`/llms-full.txt`**: 랜딩 콘텐츠 전체를 하나의 마크다운 파일로 덤프. 오프라인 인덱싱 / 긴 컨텍스트 모델에서 참조.
+
+##### SEO 힌트 및 앱 진입 유도
+
+검색 결과(SERP)에서 랜딩이 노출되고, 사용자가 클릭한 뒤 랜딩 → 앱(`/app.html`)으로 자연스럽게 진입하도록 유도한다. 크롤러에게는 "이 사이트는 웹 앱이며, 앱 진입점은 `/app.html` 이다" 를 구조화 데이터로 명시한다.
+
+###### 1) 구조화 데이터 (JSON-LD)
+
+각 로케일 랜딩 HTML 의 `<head>` 에 Schema.org `WebApplication` 과 `WebSite` 를 JSON-LD 로 포함한다.
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Handbook",
+  "url": "https://handbook.sayaya.cloud/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "browserRequirements": "Requires JavaScript",
+  "offers": { "@type": "Offer", "price": "0" }
+}
+</script>
+```
+
+필요 시 `WebSite` + `potentialAction` (SearchAction), `SiteNavigationElement` (메뉴 구조), `HowTo` (주요 사용 흐름 요약) 를 함께 추가하여 사이트 네비게이션/검색박스 리치 결과 후보로 편입하고, AI 에이전트에게도 구조적 의미를 전달한다.
+
+###### 2) PWA 매니페스트 연결
+
+랜딩 HTML 의 `<head>` 에 `<link rel="manifest" href="/manifest.json">` 을 선언하여 설치 가능한 웹 앱임을 표시한다. 모바일 SERP 에서 "앱 열기" 라벨/설치 프롬프트 후보가 된다.
+
+###### 3) 시맨틱 CTA 링크
+
+히어로·메뉴의 앱 진입 버튼은 반드시 **실제 `<a href="/app.html">` 앵커 태그**로 작성한다. JS 전용 핸들러(`<button onclick="...">` 또는 `window.location` 만 쓰는 링크)는 크롤러가 추적하지 못한다. 앵커 텍스트에는 "앱 시작하기"·"Handbook 열기" 등 의도가 드러나는 문자열을 사용한다.
+
+###### 4) 앱 셸 색인 차단
+
+`/app.html` 은 빈 DOM 을 반환하므로 크롤러가 직접 색인하면 thin content 로 판정될 수 있다. `app.html` 의 `<head>` 에 다음을 추가한다.
+
+```html
+<meta name="robots" content="noindex, follow">
+```
+
+- `noindex`: `/app.html` 페이지 자체는 색인하지 않는다. 결과적으로 SERP 에는 랜딩만 노출된다.
+- `follow`: 페이지 내부 링크(있다면)는 따라가도 된다.
+- **`robots.txt` 에서 `/app.html` 을 Disallow 하지 않는다** — 크롤링을 막으면 메타 태그를 읽지 못한다.
+
+###### 5) 내부 링크와 앵커 텍스트
+
+랜딩 내 주요 섹션(기능 소개, 시작하기, 문의 등)은 각각 고유한 URL fragment(`/#features`, `/#pricing`) 또는 내부 페이지로 분리하고, 각 링크의 앵커 텍스트를 명확하게 구성한다. 이는 Google 의 sitelinks 생성에 영향을 준다.
+
+##### 빌드 및 배포 (빌드 타임 프리렌더)
+
+- 개발은 기존 GWT 스택으로 한다: 새 모듈 `landing-ui` 가 `landing-content` 의 공통 DOM 을 감싸고 히어로·CTA·SEO 메타 마커를 추가한다.
+- 배포 산출물은 **정적 HTML** 이며 런타임 JS 프레임워크를 포함하지 않는다. 즉 빌드 시 GWT 모듈을 실행하여 DOM 을 캡처하고, 그 결과를 최종 HTML 로 덤프한다.
+- 프리렌더 파이프라인:
+
+  ```
+  ./gradlew :landing-ui:prerender
+    → (로케일별 반복)
+        1. landing-ui GWT 컴파일 (해당 로케일의 language.{locale}.json 머지)
+        2. 경량 로컬 서버(Jetty)로 컴파일 산출물 서빙
+        3. Playwright 헤드리스로 접속 → body.rendered 마커 대기
+        4. page.content() 로 HTML 덤프
+        5. 후처리: <script src="...landing.nocache.js"> 제거,
+                 <html lang>, <link rel="canonical">, hreflang 주입,
+                 OG/Twitter/title/description 주입
+        6. build/landing/{locale}/index.html 로 저장
+    → sitemap.xml 및 robots.txt 생성
+  ```
+- **결정성(determinism)**: 같은 입력(소스 + i18n + 자산)은 같은 HTML 을 생성해야 한다. 타임스탬프, 난수, 외부 API 호출을 프리렌더 중에 포함하지 않는다.
+- **렌더 완료 시그널**: `landing-ui` 는 초기화 마지막에 `document.body.classList.add('rendered')` 를 호출한다. Playwright 는 이 클래스를 기다린 후에만 덤프한다.
+- **아이콘 치환 대기**: FontAwesome JS 가 `<i>` 를 `<svg>` 로 치환하므로, 치환 완료 이후에 덤프해야 한다 (마커에 치환 완료 신호 포함).
+- 산출물은 S3 (`ceph-rgw`) 의 `handbook-<stage>/static/landing/{locale}/index.html` 로 업로드한다. `sitemap.xml` 과 `robots.txt` 는 `handbook-<stage>/static/` 루트에 업로드한다.
+- 프론트엔드 다른 GWT 모듈(shell-ui, login-ui, workspace-ui) 과 동일한 Kargo Release Train 패턴을 따르되, sync-job 이 업로드하는 오브젝트 키와 후처리 단계가 다르다 (`handbook-lib` 에 랜딩 전용 템플릿 추가).
+
+##### Ingress 경로
+
+`app` 차트의 HTTPRoute 를 다음과 같이 구성한다 (셸/앱의 기존 규칙은 유지).
+
+| 경로 | 대상 오브젝트 |
+|------|---------------|
+| `/` (GET) | `static/landing/ko/index.html` |
+| `/en/` (GET) | `static/landing/en/index.html` |
+| `/sitemap.xml` (GET) | `static/sitemap.xml` |
+| `/robots.txt` (GET) | `static/robots.txt` |
+| `/llms.txt` (GET) | `static/llms.txt` |
+| `/llms-full.txt` (GET) | `static/llms-full.txt` |
+| `/app.html`, `/js/**`, `/css/**`, `/manifest.json`, `/service-worker.js` | 기존대로 (앱) |
+
+##### 제약 및 금지 사항
+
+- **Cloaking 금지**: 크롤러와 사람에게 동일한 URL 에 동일한 HTML 을 제공한다. User-Agent 로 응답을 분기하지 않는다.
+- **프리렌더 중 백엔드 호출 금지**: 결정적 빌드를 위해 SEO 랜딩은 `/menus`·`/auth/*` 등 API 를 호출하지 않는다. 필요한 데이터는 빌드 타임에 코드/i18n 으로 확정한다.
+- **인증 종속 콘텐츠 금지**: 워크스페이스·사용자·동적 데이터를 SEO 랜딩에 노출하지 않는다.
+- **외부 도메인 자산 최소화**: 폰트·아이콘 등 외부 리소스는 기존 `app` 모듈과 동일 출처를 재사용하거나 랜딩 번들에 포함한다.
+
+#### 3.22.3 앱 내부 랜딩
+
+앱(`/app.html`) 의 메뉴 중 하나로 제공되는 "소개" 성격의 activity. 로그인·비로그인 사용자 모두 접근할 수 있으며, 같은 `landing-content` 를 재사용해 기능 설명을 보여준다.
+
+##### 목적
+
+- 이미 앱 진입 경로에 도달한 방문자에게 제품의 핵심 기능을 간결하게 요약한다.
+- 로그인 전후로 메뉴 포지션을 유지해 "이 제품이 뭘 할 수 있는지" 를 언제든 다시 확인할 수 있게 한다.
+
+##### 콘텐츠 범위
+
+- **기능 설명 카드** — `landing-content` 로부터 공통 주입 (SEO 랜딩과 동일한 블록).
+- **상태별 CTA** (아래 "로그인/비로그인 분기" 참조).
+- **히어로·SEO 메타는 포함하지 않는다** — 이미 앱에 진입한 사용자에게는 제품 식별이 불필요하고, 메뉴·프레임이 앱 셸 chrome 으로 이미 제공된다.
+
+##### 메뉴 공급
+
+- 새 백엔드 모듈 또는 gateway 내부에서 `MenuSupplier` 를 구현하여 `/menus` 집계에 참여한다 (기존 `login` 모듈의 Sign In/Out 메뉴 공급 패턴을 그대로 따른다).
+- 메뉴 이름·URL 은 추후 결정한다 (초기 구현 시 플레이스홀더 사용).
+- 인증 여부와 무관하게 메뉴에 노출된다 — 비로그인 사용자도 `/menus` 응답에서 이 엔트리를 받는다.
+- `urlRegex()` 를 설정하여 `UrlBasedMenuResolver` 가 딥링크 진입 시 이 메뉴를 자동 선택하게 한다.
+
+##### 로그인/비로그인 분기 (CTA 만)
+
+- 본문(기능 설명 카드)은 로그인 여부와 무관하게 동일하다.
+- 하단 CTA 한 줄만 상태에 따라 달라진다.
+
+  | 상태 | CTA |
+  |------|-----|
+  | 비로그인 | "시작하기" → `/auth/login` |
+  | 로그인 | "새 워크스페이스" → 워크스페이스 생성 다이얼로그 (UC-10) 트리거 |
+
+- 상태는 런타임에 FetchApi 로 `/user` 를 조회해 판별한다. 인증 오류(401) 는 비로그인으로 간주.
+- 상태 판별 실패 시 비로그인 variant 를 기본으로 노출한다 (안전한 기본값).
+
+##### 제약 및 금지 사항
+
+- **SEO 랜딩과 콘텐츠 분기점을 동기화한다** — 공통 카드 구성이 변경되면 양쪽 표면에 즉시 반영되어야 한다 (`landing-content` 가 단일 출처).
+- **앱 내부 랜딩에는 SEO 메타·JSON-LD·hreflang 등을 넣지 않는다** — 앱 셸 내부 DOM 이라 검색엔진 색인과 무관하다.
+- **로그인/비로그인 상태별 콘텐츠 분기는 CTA 영역으로 한정한다** — 본문을 분기하면 공통 원소스 원칙이 훼손된다.
+
+### 3.23 외부 AI 에이전트 통합
+
+검색엔진과 별개로, Claude·ChatGPT 등 외부 AI 에이전트가 Handbook 을 **발견(discovery)** 하고 **조작(tool use)** 할 수 있도록 지원한다. 내부 `assistant` 모듈(§3.17) 과는 구분되는 통합 경로이며, 감사 로그에서 외부 에이전트 호출을 별도 트레이스로 구분한다.
+
+#### 3.23.1 디스커버리 (AI 가 사이트를 읽을 수 있게)
+
+AI 에이전트가 크롤링/검색 과정에서 Handbook 의 존재와 기능을 이해할 수 있도록 표준 리소스를 제공한다. SEO (§3.22.2) 와 표면을 공유하지만 대상 수요자가 다르다.
+
+| 리소스 | 경로 | 용도 |
+|--------|------|------|
+| `llms.txt` | `/llms.txt` | LLM 디스커버리용 사이트 요약 (마크다운). 핵심 리소스 링크 제공 |
+| `llms-full.txt` | `/llms-full.txt` | 랜딩 콘텐츠 전체 덤프 (긴 컨텍스트 모델용) |
+| OpenAPI 스펙 | `/openapi.json` | REST API 전체 스펙 (§3.12) |
+| JSON-LD | SEO 랜딩 `<head>` | `WebApplication`, `potentialAction`, `HowTo` (§3.22.2) |
+
+랜딩 빌드 파이프라인이 `/llms.txt` 와 `/llms-full.txt` 를 동시에 생성한다 (§3.22.2 빌드 및 배포 참조). 콘텐츠 분기를 방지하기 위해 랜딩 카드 i18n 과 동일한 원천을 사용한다.
+
+#### 3.23.2 Tool Use (AI 가 Handbook 을 조작)
+
+AI 에이전트가 function calling / tool use 로 Handbook REST API 를 호출해 실제 작업(문서 생성·타입 변경·검색 등)을 수행할 수 있도록 한다.
+
+##### 인증
+
+- §3.12 의 **API Key / Bearer Token** 인증을 재사용한다.
+- 사용자별로 Personal Access Token (PAT) 을 발급하고, PAT 에 워크스페이스·역할 제한을 바인딩한다.
+- 기존 RBAC (§3.3) 이 그대로 적용된다 — 외부 에이전트가 권한 밖의 작업을 요청하면 거부.
+- PAT 발급·회수 UI 는 shell-ui 의 사용자 설정(§6.8) 영역에 추가한다.
+
+##### OpenAPI 공개
+
+- `/openapi.json` 은 인증 없이 읽을 수 있도록 공개한다 (스펙 자체는 민감 정보 아님).
+- 각 엔드포인트에 **AI 친화적 설명** (`summary`, `description`, `examples`) 을 충분히 기입하여 function calling 품질을 높인다.
+- `operationId` 는 스네이크 케이스 동사_명사 형태 (예: `create_workspace`, `search_documents`) 로 통일.
+
+##### `/.well-known/` 디스커버리
+
+- `/.well-known/openapi.yaml` → `/openapi.json` 으로 리다이렉트 또는 미러.
+- `/.well-known/ai-plugin.json` — 레거시 ChatGPT plugin 포맷이 여전히 일부 도구에서 사용됨. 초기엔 생략 가능.
+
+##### MCP 서버 (후속 반복)
+
+> **미구현 / 후속 반복.** 초기 릴리스에는 포함하지 않는다. 아래는 예정된 설계.
+
+- 별도 모듈 **`mcp-server`** 를 신설하여 Anthropic Model Context Protocol (MCP) 규격에 맞는 서버를 제공한다.
+- Handbook REST API 를 MCP `tools` 로 래핑하여 Claude Desktop, VS Code MCP 클라이언트 등에서 자연어로 Handbook 을 조작할 수 있도록 한다.
+- 노출 대상 tool (예시):
+  - `create_workspace(name, description)` → `POST /workspace`
+  - `list_types(workspace)` → `GET /workspace/{workspace}/types`
+  - `create_type(workspace, name, attributes[])` → `PUT /workspace/{workspace}/types`
+  - `search_documents(workspace, type, query, limit, page)` → `GET /workspace/{workspace}/documents`
+  - `patch_document(workspace, type, serial, changes)` → `PATCH /workspace/{workspace}/documents`
+- MCP `resources` 로 워크스페이스의 타입 스키마·문서 샘플을 조회할 수 있게 한다.
+- MCP `prompts` 로 "새 워크스페이스 설계" 같은 재사용 가능한 프롬프트 템플릿을 제공.
+- 인증은 PAT 를 MCP 세션 초기화 시 전달하는 방식으로 간소화.
+- 배포: Spring Boot WebFlux 서비스로 구성하고 기존 JVM 백엔드 Release Train 에 합류.
+
+#### 3.23.3 감사 추적
+
+- 외부 AI 에이전트 호출은 Gateway 에서 **API Key 기반 인증 경로** 를 거치므로, 기존 감사 로그(§3.17 에이전트 감사 추적, §6.9) 에 호출자 구분 필드를 추가한다.
+- 필드: `caller_type` (user / internal_agent / external_agent / mcp_client), `caller_id` (사용자 UUID + 토큰 ID).
+- 감사 로그 조회 UI 에서 호출자 타입별 필터를 제공한다.
+
+#### 3.23.4 제약 및 금지 사항
+
+- **PAT 는 워크스페이스 범위 제한이 필수** — 전 사이트 접근 토큰은 발급하지 않는다.
+- **외부 AI 호출도 기존 Rate Limiting (§7.1) 을 적용** — 토큰 단위로 분당 한도 제한.
+- **MCP 서버는 DB 직접 접근 금지** — 내부 `assistant` 와 동일하게 Gateway API 를 경유한다 (권한 검증 일관성).
+- **`/openapi.json` 에 내부 전용 엔드포인트 노출 금지** — `/actuator/**` 등은 별도 스펙 또는 필터링.
 
 ## 5. 비기능 요구사항
 

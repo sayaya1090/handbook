@@ -1008,6 +1008,182 @@ client/
 
 ---
 
+### 23. Landing-Content 모듈
+
+**역할:** SEO 랜딩과 앱 내부 랜딩이 **공유하는 기능 설명 카드 컬렉션** 을 제공하는 순수 GWT 라이브러리. DOM 팩토리만 노출하고 EntryPoint·SEO·CTA·외부 앵커는 포함하지 않는다 — 외피는 각 소비자(landing-ui / shell activity) 에서 추가한다.
+
+**계층 구조:**
+
+```
+client/
+├── domain/          FeatureCardContent (제목·요약·아이콘 이름, i18n 바인딩)
+└── ui/              FeatureCardElement, FeatureGridElement (Elemento 기반 DOM 팩토리)
+```
+
+**제공 API:** `FeatureGridElement.build(): HTMLElement` — 현재 Handbook 의 핵심 기능(운영 중 스키마 변경, 이력 관리, AI 에이전트, 실시간 협업 등)을 카드 그리드로 렌더.
+
+**의존성:** sayaya-web (Elemento), ui-components (카드 컴포넌트 재사용). 어떤 네트워크 호출·상태 관리도 하지 않는다 — **순수 렌더러**.
+
+**주의:**
+- `landing-content` 가 단일 원소스이므로, 카드 구성이 바뀌면 SEO 랜딩과 앱 내부 랜딩 양쪽에 자동 반영된다. 분기된 콘텐츠가 생기지 않도록 주의.
+- GWT 모듈 파일(`LandingContent.gwt.xml`) 의 inherits 는 최소한만 유지 (GWT Core, sayaya-web 기본). 외부 서비스 의존 금지.
+
+---
+
+### 24. Landing-UI 모듈 (SEO 프리렌더)
+
+**역할:** 비로그인 방문자·검색엔진 크롤러 대상 **SEO 랜딩 페이지** (GWT). 앱(`/app.html`) 과 완전히 분리된 정적 산출물로 배포되며, **빌드 타임 프리렌더를 거쳐 최종 산출물은 순수 정적 HTML** 이다. 런타임에 GWT 스크립트를 포함하지 않는다.
+
+**계층 구조:**
+
+```
+client/
+├── domain/          HeroContent (제목·부제·CTA 링크 라벨, i18n 바인딩)
+├── usecase/         LocaleResolver
+└── interfaces/
+    ├── ui/          HeroElement, FooterElement — landing-content 의 FeatureGrid 를 중앙에 조립
+    ├── redirect/    AuthRedirectScript (JWT 쿠키 감지 → location.replace('/app.html'))
+    └── seo/         MetaMarker (후처리에서 주입될 위치 표시 — JSON-LD·hreflang·canonical 자리)
+├── LandingModule    Dagger 모듈
+├── Component        Dagger 컴포넌트
+└── Application      GWT EntryPoint — 초기화 완료 + FontAwesome 치환 완료 시 body.classList.add('rendered')
+```
+
+**프리렌더 파이프라인:**
+
+```
+./gradlew :landing-ui:prerender
+  → (ko, en 로케일 각각)
+      1. GWT 컴파일 (landing-ui + landing-content, language.{locale}.json 머지)
+      2. Jetty 로컬 서빙 (build/gwt/out)
+      3. Playwright 헤드리스 접속 → body.rendered 대기
+      4. page.content() 로 HTML 덤프
+      5. 후처리(PrerenderPostProcessor):
+           - <script src=".../landing.nocache.js"> 제거
+           - <html lang>, <link rel="canonical">, hreflang 전체 변형 주입
+           - OG/Twitter/title/description 주입
+           - JSON-LD WebApplication 블록 삽입
+           - manifest.json 링크 주입
+      6. build/landing/{locale}/index.html 로 저장
+  → sitemap.xml, robots.txt 생성
+```
+
+**산출물:** `build/landing/ko/index.html`, `build/landing/en/index.html`, `build/landing/sitemap.xml`, `build/landing/robots.txt`. Kargo Release Train 에 참여하여 S3(`ceph-rgw`) 의 `handbook-<stage>/static/landing/{locale}/index.html` 및 `handbook-<stage>/static/{sitemap.xml,robots.txt}` 로 sync.
+
+**설계 결정:**
+
+| 결정 | 이유 |
+|------|------|
+| 개발은 GWT, 배포는 순수 정적 HTML | sayaya-ui/MD3 토큰 재사용으로 앱과 시각적 일관성 유지. 동시에 크롤러에겐 JS 의존 없는 HTML 제공 |
+| `landing-content` 분리 (공통 원소스) | SEO 랜딩과 앱 내부 랜딩이 기능 설명 블록을 공유 — 콘텐츠 분기 방지 |
+| 서브디렉토리 i18n (`/`, `/en/`) | Google 권장 패턴. 도메인 권위 공유, 서브도메인/쿠키 분기는 크롤러 혼동 유발 |
+| 프리렌더 중 백엔드 호출 금지 | 결정적 빌드 보장. 같은 커밋이면 같은 HTML |
+| JWT 쿠키 기반 인라인 리다이렉트 | 크롤러는 쿠키 없음 → 리다이렉트 미발생 → 랜딩 색인. 로그인 사용자만 `/app.html` 자동 이동 |
+| `/app.html` 색인 차단 (noindex, follow) | 앱 셸은 빈 DOM — thin content 판정 방지. SERP 에는 랜딩만 노출 |
+| 별도 sync-job 템플릿 | 기존 frontend sync-job 은 GWT 번들 업로드용. 랜딩은 HTML + sitemap + robots 를 여러 로케일 경로에 배치 — `handbook-lib` 에 `handbook.landing-sync-job` named template 신설 |
+
+**의존성:** landing-content (공통 DOM), sayaya-web (GWT, Elemento, Dagger), ui-components. activity 는 의존하지 않는다 — SEO 랜딩은 `/menus`·FetchApi 를 호출하지 않는다.
+
+**주의:**
+- GWT EntryPoint 는 초기화 마지막 단계에 `document.body.classList.add('rendered')` 를 호출해야 Playwright 가 올바른 시점에 덤프한다.
+- FontAwesome 은 `<i>` → `<svg>` 치환을 비동기로 수행하므로, 완료 신호까지 대기한 뒤 마커를 찍는다.
+- 후처리는 **결정적**이어야 한다. 타임스탬프·난수·빌드 번호를 HTML 에 넣지 않는다.
+- CTA/메뉴 링크는 반드시 실제 `<a href>` 앵커로 작성한다. JS 전용 클릭 핸들러는 크롤러가 추적하지 못한다.
+
+---
+
+### 25. Landing Activity (앱 내부 랜딩)
+
+**역할:** 앱 내부에서 메뉴로 접근하는 "소개" 성격의 activity. `landing-content` 의 공통 기능 설명 카드를 재사용하고, 로그인/비로그인 상태에 따라 하단 CTA 한 줄만 분기한다. 히어로·SEO 메타는 포함하지 않는다.
+
+**계층 구조 (shell-ui 측 혹은 별도 activity 모듈로 배치):**
+
+```
+client/
+├── usecase/         LandingStateProvider (/user 조회 결과를 로그인 여부로 환원)
+└── interfaces/
+    ├── ui/          LandingActivityElement (FeatureGrid + 상태별 CTA)
+    └── api/         UserApi 재사용 (activity 모듈 FetchApi)
+```
+
+**상태별 CTA:**
+
+| 상태 | CTA 라벨(플레이스홀더) | 동작 |
+|------|----------------------|------|
+| 비로그인 | "시작하기" | `/auth/login` 으로 네비게이트 |
+| 로그인 | "새 워크스페이스" | 워크스페이스 생성 다이얼로그(UC-10) 트리거 |
+| 판별 실패(네트워크 오류 등) | "시작하기" | 비로그인 variant 를 기본값으로 사용 |
+
+**메뉴 공급:**
+
+- 앱 내부 랜딩 activity 는 `/menus` 응답에 포함되어야 한다.
+- 기존 `MenuSupplier` 패턴을 따른다 — `login` 모듈이 `GET /menus` 로 Sign In/Out 을 공급하는 것과 동일한 방식.
+- **구현 옵션(추후 결정):**
+  - (a) 별도 신규 백엔드 모듈 — login 과 동일한 패턴으로 완전 분리. 장점: 경계 명확. 단점: 단일 정적 엔트리에 비해 과도한 모듈
+  - (b) gateway 내부 로컬 `MenuSupplier` 구현 — 별도 HTTP 호출 없이 gateway 가 직접 엔트리 추가. 장점: 가볍다. 단점: gateway 책임 확장
+- 공급되는 `Menu` 엔트리는 `script` (랜딩 activity nocache.js), `urlRegex()` (딥링크 라우팅용) 를 포함한다. 메뉴 이름·URL 은 추후 결정.
+
+**의존성:** landing-content (공통 DOM), activity (FetchApi, Menu, UrlBasedMenuResolver), ui-components.
+
+**주의:**
+- 본문(FeatureGrid)은 상태와 무관하게 동일. 분기는 CTA 영역 한 줄만 — `landing-content` 원소스 원칙 준수.
+- `LandingStateProvider` 는 401/네트워크 오류를 비로그인으로 환원해 안전한 기본값(`/auth/login` CTA)을 제공한다.
+
+---
+
+### 메뉴 공급자(`MenuSupplier`) 등록 현황
+
+`gateway` 의 `MenuService` 는 등록된 `MenuSupplier` 들을 병렬 호출해 `/menus` 응답을 집계한다. 현재·신규 공급자는 다음과 같다.
+
+| Supplier | 공급 엔트리 | 인증 분기 | 구현 위치 |
+|----------|-------------|-----------|-----------|
+| login | Sign In / Sign Out | principal null 여부 | `login` 서비스의 `MenuController` |
+| (신규) landing-menu | 앱 내부 랜딩(이름 미정) | 항상 공급 (로그인·비로그인 동일) | 추후 결정 — 별도 모듈 또는 gateway 로컬 |
+| search-type | 타입 메뉴 | 인증 필요 | `search-type` |
+| search-document | 문서 메뉴 | 인증 필요 | `search-document` |
+
+---
+
+### 26. MCP Server 모듈 (후속 반복)
+
+> **미구현 / 후속 반복.** 초기 릴리스에는 포함하지 않는다. 아래는 예정된 설계 스케치로, `docs/requirements.md` §3.23.2 "MCP 서버" 항목과 연동된다.
+
+**역할:** Claude Desktop 등 외부 MCP 클라이언트가 Handbook 을 툴로 사용할 수 있도록 Model Context Protocol 규격의 서버를 제공한다. 내부 `assistant` 모듈(§3.17)과는 별개 — assistant 는 Handbook 내부의 자연어 처리 UX, mcp-server 는 외부 에이전트 통합 진입점이다.
+
+**예정 계층 구조:**
+
+```
+mcp-server (Spring Boot WebFlux)
+├── domain/          McpTool, McpResource, McpPrompt (도메인 VO)
+├── usecase/         ToolDispatcher (MCP tool 호출 → Gateway REST API 변환),
+│                    ResourceBrowser (workspace/type/document 메타데이터 제공)
+└── interfaces/
+    ├── mcp/         MCP 프로토콜 엔드포인트 (SSE 또는 stdio)
+    ├── gateway/     GatewayClient (Handbook REST API 호출)
+    └── auth/        PatAuthenticator (Personal Access Token 기반 세션)
+```
+
+**노출 대상 (예시):**
+
+| MCP 구성 요소 | 내용 |
+|---------------|------|
+| `tools` | `create_workspace`, `list_types`, `create_type`, `search_documents`, `patch_document` 등 — REST API 의 thin wrapper |
+| `resources` | 워크스페이스 타입 스키마, 문서 샘플, 최근 변경 이력 |
+| `prompts` | "새 워크스페이스 설계", "스키마 호환성 점검" 등 재사용 템플릿 |
+
+**설계 결정 (예정):**
+
+| 결정 | 이유 |
+|------|------|
+| DB 직접 접근 금지, Gateway 경유 | 권한 검증 일관성 — 외부 에이전트도 내부 assistant 와 동일 보안 경로 |
+| PAT 세션 초기화 | MCP 는 상태 기반 연결이므로 한 번만 토큰 전달하면 됨 |
+| 기존 JVM 백엔드 Release Train 합류 | 다른 Kotlin 서비스와 동일한 빌드·배포 패턴 재사용 |
+| 감사 로그 `caller_type=mcp_client` 마킹 | 내부·외부 에이전트 호출 구분 (§3.23.3) |
+
+**의존성 (예정):** authentication, agent-protocol (커맨드 타입 공유), Spring Boot WebFlux, Handbook gateway (HTTP 클라이언트).
+
+---
+
 ## 에이전트 연동 설계
 
 에이전트(Assistant)가 각 모듈의 데이터를 읽고 조작하는 방법을 정리한다.
@@ -1363,6 +1539,8 @@ graph TD
         document-ui --> ui-components
         dashboard-ui --> activity
         dashboard-ui --> ui-components
+        landing-ui --> landing-content
+        landing-ui --> ui-components
         assistant --> authentication
         assistant --> agent-protocol
         assistant --> event
@@ -1398,6 +1576,8 @@ graph TD
     style workspace-ui fill:#e8eaf6
     style document-ui fill:#e8eaf6
     style dashboard-ui fill:#e8eaf6
+    style landing-ui fill:#e8eaf6
+    style landing-content fill:#fce4ec
     style assistant fill:#ede7f6
 ```
 

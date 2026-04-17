@@ -25,6 +25,9 @@
 | **시스템 관리자(System Admin)** | 전체 시스템에 대한 관리 권한을 가진 사용자 |
 | **검증 시스템(Validator)** | 이벤트를 구독하여 문서-스키마 정합성을 비동기로 검증하는 내부 시스템 |
 | **AI 에이전트(Assistant)** | 사용자의 자연어 요청을 해석하여 Gateway API를 통해 작업을 수행하는 내부 시스템 |
+| **비로그인 방문자(Anonymous Visitor)** | 로그인 없이 SEO 랜딩에 접근하는 사용자 (첫 방문자, 제품 탐색자) |
+| **검색엔진 크롤러(Crawler)** | Googlebot 등 검색엔진 인덱싱 봇. 쿠키 없이 방문하며 렌더링 엔진이 JS 를 실행할 수 있다 |
+| **외부 AI 에이전트(External Agent)** | Claude Desktop·ChatGPT 등 외부 AI 에이전트. API Key / MCP 로 Handbook 을 조작한다 |
 
 ## 유스케이스 개요
 
@@ -37,6 +40,15 @@ graph TB
         SA["시스템 관리자"]
         V["검증 시스템"]
         AI["AI 에이전트"]
+        AV["비로그인 방문자"]
+        CR["검색엔진 크롤러"]
+        EA["외부 AI 에이전트"]
+    end
+
+    subgraph "랜딩"
+        UC07["UC-07: SEO 랜딩 방문"]
+        UC08["UC-08: 로그인 사용자<br/>자동 리다이렉트"]
+        UC09["UC-09: 앱 내부 랜딩"]
     end
 
     subgraph "인증"
@@ -112,6 +124,7 @@ graph TB
         UC82["UC-82: 자연어<br/>문서 변경"]
         UC83["UC-83: 자연어<br/>정합성 보정"]
         UC84["UC-84: UI 안내<br/>(온보딩·협업)"]
+        UC85["UC-85: 외부 AI 에이전트<br/>Tool Use"]
     end
 
     subgraph "운영"
@@ -123,6 +136,12 @@ graph TB
         UC95["UC-95: 에이전트<br/>아티팩트 조회"]
     end
 
+    AV --- UC07
+    CR --- UC07
+    U --- UC08 & UC09
+    EA --- UC85
+    UC07 -.->|CTA 클릭| UC01
+    UC08 -->|쿠키 보유| UC04
     U --- UC01 & UC02 & UC03
     U --- UC04 & UC05 & UC06
     U --- UC53 & UC54 & UC55 & UC56 & UC57
@@ -167,6 +186,121 @@ graph TB
     UC82 -.->|Gateway 경유| UC51
     UC83 -.->|Gateway 경유| UC63
 ```
+
+---
+
+## 랜딩
+
+### UC-07: SEO 랜딩 방문
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 비로그인 방문자, 검색엔진 크롤러 |
+| **선행 조건** | 없음 |
+| **후행 조건** | 방문자/크롤러가 로케일별 정적 HTML 을 응답받는다. 크롤러는 콘텐츠를 인덱싱할 수 있다 |
+
+```mermaid
+sequenceDiagram
+    actor V as 방문자/크롤러
+    participant GW as Gateway API (HTTPRoute)
+    participant S3 as S3 (ceph-rgw)
+
+    V->>GW: GET / (또는 /en/)
+    GW->>S3: static/landing/{locale}/index.html
+    S3-->>GW: 정적 HTML (prerendered)
+    GW-->>V: 200 OK + HTML
+    Note over V: JS 실행 (Googlebot 포함)
+    V->>V: JWT 쿠키 검사
+    alt 쿠키 없음 (크롤러 또는 신규 방문자)
+        V->>V: 랜딩 그대로 노출
+        Note over V: 크롤러는 콘텐츠 인덱싱. 방문자는 CTA 확인
+    else 쿠키 있음 (재방문 로그인 사용자)
+        V->>V: location.replace('/app.html')
+    end
+```
+
+**기본 흐름:**
+1. 방문자 또는 크롤러가 `/` 또는 `/en/` 으로 접속한다.
+2. Gateway HTTPRoute 가 요청을 S3 의 `static/landing/{locale}/index.html` 로 매핑하여 정적 HTML 을 반환한다.
+3. HTML 에 포함된 인라인 `defer` 스크립트가 JWT 쿠키를 검사한다.
+4. 쿠키가 없으면 랜딩을 그대로 노출한다.
+5. 크롤러는 HTML 의 `<title>`, `<meta>`, JSON-LD, 기능 설명 카드를 인덱싱한다.
+6. 방문자는 히어로·기능 설명·CTA 앵커(`<a href="/app.html">`, `<a href="/auth/login">`)를 본다.
+
+**대안 흐름:**
+- 2a. `/` 요청인데 `Accept-Language` 가 `en` 인 경우에도 ko HTML 을 반환한다 (자동 리다이렉트 금지 — §3.22.2 다국어 SEO 제약).
+- 3a. JWT 쿠키가 유효하면 UC-08 로 전환.
+- 5a. 크롤러가 `/sitemap.xml` 을 별도 요청하여 다른 로케일을 발견하면 각 로케일을 개별 URL 로 인덱싱한다.
+
+---
+
+### UC-08: 로그인 사용자 랜딩 자동 리다이렉트
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 로그인 상태 사용자 |
+| **선행 조건** | JWT 쿠키가 브라우저에 유효하게 보관되어 있다 |
+| **후행 조건** | 사용자가 `/app.html` 로 이동해 앱 셸을 로딩한다 |
+
+**기본 흐름:**
+1. 사용자가 `/` 또는 `/en/` 에 접속한다 (SERP 클릭, 북마크, 직접 입력 등).
+2. 랜딩 HTML 이 로딩되고 인라인 스크립트가 JWT 쿠키를 감지한다.
+3. `location.replace('/app.html')` 로 즉시 앱 진입점으로 이동한다.
+4. 브라우저가 `/app.html` 을 요청하고, 앱 셸이 정상 부팅한다.
+5. `UrlBasedMenuResolver` 가 기본 메뉴(대시보드 또는 마지막 액션 워크스페이스) 로 라우팅한다.
+
+**예외 흐름:**
+- 2a. 쿠키가 만료되었으면 리다이렉트하지 않고 랜딩을 그대로 노출한다 (UC-07 의 미로그인 경로).
+- 3a. `location.replace` 실패 시(아주 드문 구형 브라우저) 랜딩을 그대로 노출한다.
+
+**주의:** 크롤러는 쿠키가 없으므로 이 흐름을 타지 않는다. 결과적으로 크롤러는 항상 UC-07 만 경험한다.
+
+---
+
+### UC-09: 앱 내부 랜딩 방문
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 (로그인·비로그인 모두) |
+| **선행 조건** | 사용자가 `/app.html` 진입점에 접근했다 |
+| **후행 조건** | 메뉴레일에서 선택한 랜딩 activity 가 프레임에 로딩되고, 상태별 CTA 가 표시된다 |
+
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant Shell as Shell UI
+    participant GW as Gateway
+    participant LA as Landing Activity
+    participant API as UserApi
+
+    U->>Shell: /app.html 진입
+    Shell->>GW: GET /menus
+    GW-->>Shell: [Sign In/Out, 랜딩(이름 미정), ...]
+    Shell->>U: MenuRail 렌더
+    U->>Shell: 랜딩 메뉴 선택
+    Shell->>LA: nocache.js 동적 로딩
+    LA->>API: GET /user
+    alt 200 OK (로그인)
+        API-->>LA: 사용자 정보
+        LA->>U: FeatureGrid + "새 워크스페이스" CTA
+    else 401/네트워크 오류 (비로그인)
+        API-->>LA: 401
+        LA->>U: FeatureGrid + "시작하기" CTA
+    end
+```
+
+**기본 흐름:**
+1. 사용자가 `/app.html` 에 접근한다.
+2. Shell UI 가 `/menus` 로 메뉴 목록을 받는다 (랜딩 엔트리 포함).
+3. 사용자가 MenuRail 에서 랜딩 메뉴를 선택한다.
+4. Shell 이 해당 activity 스크립트를 동적 로딩하여 프레임에 주입한다.
+5. Landing Activity 가 `GET /user` 로 로그인 상태를 판별한다.
+6. 공통 FeatureGrid 와 상태별 CTA 를 렌더한다.
+
+**대안 흐름:**
+- 2a. 비로그인 사용자는 `/menus` 응답에서 랜딩 엔트리를 항상 받는다 (`MenuSupplier` 가 인증 분기 없음).
+- 5a. `GET /user` 가 401 이거나 네트워크 오류면 비로그인 variant 로 폴백 — "시작하기" CTA.
+- 6a. 사용자가 "새 워크스페이스" CTA 를 선택하면 UC-10 (워크스페이스 생성) 으로 전환.
 
 ---
 
@@ -1277,6 +1411,64 @@ sequenceDiagram
 1. 검증 실패 이벤트가 SSE로 수신된다.
 2. 해당 메뉴에 `attention` badge가 표시된다.
 3. 사용자가 해당 메뉴에 진입하면 문제 필드에 `attention` spotlight이 표시된다.
+
+---
+
+### UC-85: 외부 AI 에이전트 Tool Use
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 외부 AI 에이전트 (Claude Desktop 등 MCP 클라이언트, 또는 OpenAPI function calling) |
+| **선행 조건** | 사용자가 발급한 Personal Access Token (PAT) 이 에이전트에 주입되어 있다 |
+| **후행 조건** | 에이전트의 요청이 Handbook API 로 실행되고, 감사 로그에 `caller_type=external_agent` (또는 `mcp_client`) 로 기록된다 |
+
+```mermaid
+sequenceDiagram
+    participant EA as 외부 AI 에이전트
+    participant MCP as mcp-server<br/>(후속)
+    participant GW as Gateway
+    participant SVC as 백엔드 서비스
+    participant AUD as Audit Log
+
+    Note over EA: 사용자 자연어: "주문 타입에 배송일 필드 추가"
+    EA->>EA: OpenAPI / MCP tool 스펙 참조
+    alt OpenAPI function calling 경로
+        EA->>GW: PATCH /workspace/{id}/types (Bearer PAT)
+    else MCP 경로 (후속)
+        EA->>MCP: tool call: patch_type(workspace, type, changes)
+        MCP->>GW: PATCH /workspace/{id}/types (Bearer PAT)
+    end
+    GW->>GW: PAT 검증 + RBAC 적용 (§3.3)
+    GW->>SVC: 라우팅
+    SVC-->>GW: 200 OK / 409 Conflict / 403 Forbidden
+    GW->>AUD: caller_type=external_agent, caller_id=token_id
+    GW-->>EA: 응답
+```
+
+**기본 흐름 (OpenAPI function calling 경로):**
+1. 사용자가 외부 AI 에이전트에게 자연어로 작업을 요청한다.
+2. 에이전트가 `/openapi.json` 또는 `/llms.txt` 로부터 Handbook 능력을 참조한다.
+3. 에이전트가 적절한 엔드포인트를 선택해 Bearer PAT 헤더와 함께 호출한다.
+4. Gateway 가 PAT 를 검증하고 워크스페이스·역할 범위(§3.3) 를 확인한다.
+5. 백엔드 서비스가 요청을 수행한다 (기존 API 흐름).
+6. 감사 로그에 `caller_type=external_agent`, `caller_id=<token_id>` 로 기록된다.
+7. 결과가 에이전트로 반환된다.
+
+**대안 흐름 (MCP 경로 — 후속 반복):**
+- 2a. 에이전트가 MCP 클라이언트라면 `mcp-server` 에 연결해 노출된 `tools` 목록을 받는다.
+- 3a. `mcp-server` 가 도구 호출을 Gateway REST API 호출로 변환하여 위임한다 (DB 직접 접근 금지).
+- 6a. 감사 로그의 `caller_type` 은 `mcp_client` 로 기록되어 OpenAPI 경로와 구분된다.
+
+**예외 흐름:**
+- 4a. PAT 가 만료되었거나 유효하지 않으면 401 반환.
+- 4b. PAT 범위 밖 워크스페이스 접근 시 403 반환.
+- 5a. 낙관적 잠금 충돌(`@Version`) 시 409 반환. 에이전트가 최신 rev 로 재시도하거나 사용자에게 보고.
+- 모든 실패도 감사 로그에 기록된다 (성공·실패 여부 필드 포함).
+
+**주의:**
+- 내부 `assistant` (UC-80~UC-84) 와 외부 AI 에이전트는 감사 로그 `caller_type` 으로 구분된다.
+- Rate limiting 은 **토큰 단위** 로 적용된다 (§7.1, §3.23.4).
+- MCP 서버 구현은 **§3.23.2 기준 후속 반복** — 초기 릴리스에는 OpenAPI function calling 경로만 제공.
 
 ---
 

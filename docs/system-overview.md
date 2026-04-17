@@ -96,6 +96,8 @@ flowchart TB
 - **type-ui**: Canvas 기반 타입 스키마 에디터
 - **agent-ui**: AI 에이전트 채팅 UI
 - **dashboard-ui / workspace-ui / login-ui**: 대시보드, 워크스페이스, 로그인
+- **landing-content**: SEO 랜딩 / 앱 내부 랜딩 공통 기능 설명 카드 DOM 라이브러리 (§3.22.1)
+- **landing-ui**: SEO 랜딩 페이지. 빌드 타임 프리렌더 → 언어별 정적 HTML (§3.22.2)
 - **ui-components**: Action / ActionManager / ChangeTracker / ToastContainer 공용
 - **agent-bridge**: CustomEvent 기반 모듈 간 브리지
 
@@ -150,6 +152,7 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 - **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독. `templates/deployment.yaml` 은 `handbook.jvm-backend.deployment` 한 줄 include 이고 서비스별 차이는 `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 흡수
 - **app** — SPA 루트 번들 차트 (kind: frontend). `app.html`, `manifest.json`, `service-worker.js`, 공용 `js/*.js`·`css/*.css`, app GWT 모듈 컴파일 출력(`/app/**`) 을 포함. HTTPRoute 가 `/` 와 `/app.html` 엔트리포인트 및 `/js/**`·`/css/**`·`/app/**`·`/manifest.json`·`/service-worker.js` 를 S3 `handbook-<stage>/static/` 으로 rewrite 하는 유일한 HTML 진입 차트
 - **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 전용 정적 자산 deploy 파이프라인 (kind: frontend, Warehouse + Stage + sync-job 만, Deployment 없음, HTTPRoute 도 없음). 각 모듈의 GWT 컴파일 출력만 동일한 S3 버킷의 `/static/js/<module>/**` 아래로 sync 하고, 브라우저 접근 경로는 app 차트의 `/js/` PathPrefix HTTPRoute 가 공통 처리
+- **landing-ui** — SEO 랜딩 전용 정적 HTML 배포 파이프라인 (kind: frontend). GWT 컴파일 결과를 Playwright 로 프리렌더한 `index.html` + `sitemap.xml`·`robots.txt`·`llms.txt`·`llms-full.txt` 를 S3 `static/landing/{locale}/index.html` 및 `static/` 루트에 sync. 전용 HTTPRoute (`/`, `/en/`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt`) 포함. sync-job 은 `handbook-lib` 의 `handbook.landing-sync-job` named template 사용
 - **infrastructure** — 공용 인프라
   - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
   - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
@@ -169,17 +172,19 @@ Browser ──TLS──▶ DNS *.apps.sayaya.cloud → 192.168.1.9 (nginx LB, L4
                     ▼
                handbook-istio Service (Gateway API 자동 프로비저닝, MetalLB)
                     │
-               ┌────┴────┐
-               ▼         ▼
-      HTTPRoute "app"                       HTTPRoute "gateway" (catch-all)
-      (/, /app.html, /js/**, /css/**,       (/*)
-       /app/**, /manifest.json,
-       /service-worker.js)
-               │                              │
-               ▼                              ▼
-       Service `ceph-rgw` (ExternalName)  service-gateway:8080 (Spring Cloud Gateway)
-       → openshift-storage Ceph RGW       → 백엔드 서비스
-       → bucket=handbook-<stage>/static
+               ┌─────────┬──────────┐
+               ▼         ▼          ▼
+      HTTPRoute "landing"   HTTPRoute "app"      HTTPRoute "gateway" (catch-all)
+      (/, /en/,             (/app.html,           (/*)
+       /sitemap.xml,         /js/**, /css/**,
+       /robots.txt,          /app/**,
+       /llms.txt,            /manifest.json,
+       /llms-full.txt)       /service-worker.js)
+               │                   │                    │
+               ▼                   ▼                    ▼
+       Service `ceph-rgw`  Service `ceph-rgw`     service-gateway:8080 (Spring Cloud Gateway)
+       → static/landing/   → static/*              → 백엔드 서비스
+         {ko,en}/index.html
 ```
 
 dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard cert 자동 적용). HTTPRoute 더 구체적인 path 가 catch-all 보다 우선. 상세는 `docs/ingress-options.md` 참조.
