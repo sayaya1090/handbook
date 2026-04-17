@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.drawer;
 
 import dev.sayaya.handbook.client.interfaces.drawer.DrawerElement;
 import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsElement;
+import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsPresenter;
 import dev.sayaya.handbook.client.interfaces.drawer.ShellAppBarElement;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.ModuleScriptManager;
@@ -19,6 +20,7 @@ public interface Component {
     DrawerElement drawer();
     ShellAppBarElement shellAppBar();
     MobileTabsElement mobileTabs();
+    MobileTabsPresenter mobileTabsPresenter();
     ModuleScriptManager script();
     HistoryManager historyManager();
     UrlBasedMenuResolver urlBasedToolResolver();

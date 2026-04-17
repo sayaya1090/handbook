@@ -1,11 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.usecase.MenuList;
-import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.client.usecase.ResponsiveOverflow;
 import dev.sayaya.handbook.domain.Menu;
-import dev.sayaya.handbook.usecase.ViewportObserver;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
@@ -14,52 +10,34 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.lang.Boolean.TRUE;
-import static java.util.Comparator.comparing;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
 
 /**
- * 모바일 뷰포트 전용 상단 Scrollable Tabs 네비게이션.
+ * 모바일 뷰포트 전용 상단 Scrollable Tabs — <b>뷰 컴포넌트</b>.
  *
- * <p><b>책임:</b> 데스크톱 {@link MenuRailElement} 를 대체해 모바일에서 상단 고정
- * {@code md-tabs} 로 메뉴 엔트리를 노출한다. 배치 규칙은:
- * <ol>
- *   <li>상단정렬 공급자({@code bottom=false}) — {@code order} 오름차순 leading 배치</li>
- *   <li>하단정렬 공급자({@code bottom=true}) — {@code order} 내림차순 trailing 배치</li>
- * </ol>
- * 데스크톱에서 세로 축 "아래일수록 중요" semantic 을 가로 축 "왼쪽일수록 중요" 매핑으로
- * 보존하기 위함. `login (order=Z, bottom=true)` 이 하단정렬 그룹의 leading 에 와서 세션
- * 토글 접근성 유지. 상세 정책은 {@code docs/contracts/menus.md#소비자-렌더-정책}.</p>
+ * <p><b>책임 (View 전용):</b> DOM 구조(md-tabs + overflow slot), 탭 엔트리 추가/제거, 레이아웃
+ * 재계산({@link ResponsiveOverflow}), 선택 상태 동기화, 모바일/데스크톱 가시성. 구독·이벤트
+ * 오케스트레이션은 {@link MobileTabsPresenter} 에 위임된다 (SRP).</p>
+ *
+ * <p><b>외부 API:</b> {@link #setEntries(List, List)} / {@link #setActive(Menu)} /
+ * {@link #setMobile(boolean)} / {@link #recomputeLayout()}. Presenter 가 MenuList/MenuSelected
+ * /ViewportObserver/window resize 를 감지해 이들을 호출한다.</p>
  *
  * <p><b>3단계 반응형 폴백</b> ({@link ResponsiveOverflow}):
  * <ol>
- *   <li><b>평면</b> — 전체가 viewport 에 들어감: 모두 md-tabs 에 표시, overflow 버튼 숨김</li>
- *   <li><b>overflow</b> — 상단정렬 + 예약폭 은 들어감: 하단정렬은 md-menu 팝업으로 이동, trailing 에 md-icon-button(…) 표시</li>
- *   <li><b>스크롤</b> — 상단정렬조차 넘침: 탭은 가로 스크롤, overflow 버튼은 sticky trailing 유지</li>
- * </ol>
- * 재계산 트리거: (1) {@link MenuList} 변경, (2) window resize, (3) {@link LabelProvider} 변경.</p>
- *
- * <p><b>의존관계:</b>
- * <ul>
- *   <li>{@link MenuList} — 메뉴 목록 구독</li>
- *   <li>{@link MenuSelected} — 양방향 active 동기화 (click → next, 구독 → active 속성)</li>
- *   <li>{@link LabelProvider} — i18n 라벨</li>
- *   <li>{@link ViewportObserver} — 모바일 여부 (데스크톱에서 [hide])</li>
- * </ul></p>
- *
- * <p><b>주의:</b> {@code md-menu} 웹컴포넌트는 shadow DOM 내부에 팝업을 렌더하므로 외부
- * CSS 가 내부 레이아웃을 간섭하지 않는다. anchor 는 {@code md-icon-button} 의 id 로 연결.</p>
+ *   <li><b>평면</b> — 전체 viewport 내 포함: 모두 md-tabs, overflow 버튼 숨김</li>
+ *   <li><b>overflow</b> — 상단정렬 + 예약폭 포함: 하단정렬 {@link OverflowMenuController} 팝업으로 수렴</li>
+ *   <li><b>스크롤</b> — 상단정렬조차 넘침: {@code md-tabs[scrollable]} 가로 스크롤 + sticky overflow</li>
+ * </ol></p>
  */
 @Singleton
 public class MobileTabsElement implements IsElement<HTMLElement> {
 
-    /** overflow 버튼 예약 폭(px). {@code ResponsiveOverflow.compute} 에 전달. */
+    /** overflow 버튼 예약 폭(px). {@link ResponsiveOverflow#compute} 에 전달. */
     private static final int RESERVE_PX = 48;
 
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("menu-tabs");
@@ -72,49 +50,63 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     private boolean partitioned = false;
 
     @Inject
-    MobileTabsElement(MenuList list, MenuSelected selected, ViewportObserver viewport,
-                      MenuTabRenderer renderer, OverflowMenuController overflow) {
+    MobileTabsElement(MenuTabRenderer renderer, OverflowMenuController overflow) {
         this.renderer = renderer;
         this.overflow = overflow;
         _this.add(tabs).add(overflow);
-
+        // 기본 hide — Presenter 가 viewport 에 따라 토글 (flash 방지를 위해 기본은 숨김).
         element().setAttribute("hide", true);
-        if (viewport.isMobileNow()) element().removeAttribute("hide");
-        viewport.isMobile().subscribe(this::setMobile);
-        list.distinctUntilChanged().subscribe(this::update);
-        selected.subscribe(this::onSelected);
-        DomGlobal.window.addEventListener("resize", e -> recomputeLayout());
     }
 
-    private static final Comparator<Menu> TOP_COMPARATOR = comparing(Menu::order);
-    private static final Comparator<Menu> BOTTOM_COMPARATOR = comparing(Menu::order, Comparator.reverseOrder());
-
-    private void update(List<Menu> menus) {
+    /**
+     * 정렬된 상단/하단 메뉴 리스트를 한 번에 전달받아 DOM 을 재구성한다. 호출자(Presenter)
+     * 가 appBarSlot 필터링·정렬 책임을 가진다.
+     */
+    public void setEntries(List<Menu> topMenus, List<Menu> bottomMenus) {
         clearAll();
-        if (menus == null) return;
-        List<Menu> top = new ArrayList<>();
-        List<Menu> bottom = new ArrayList<>();
-        for (Menu m : menus) {
-            // appBarSlot 이 지정된 메뉴는 AppBar 로 승격되므로 Tabs 에서 제외.
-            if (m.appBarSlot() != null) continue;
-            if (TRUE.equals(m.bottom())) bottom.add(m);
-            else top.add(m);
-        }
-        top.sort(TOP_COMPARATOR);
-        bottom.sort(BOTTOM_COMPARATOR);
-        for (Menu m : top) {
+        if (topMenus != null) for (Menu m : topMenus) {
             TabEntry e = createEntry(m, false);
             topEntries.add(e);
             tabs.element().appendChild(e.tab);
         }
-        for (Menu m : bottom) {
+        if (bottomMenus != null) for (Menu m : bottomMenus) {
             TabEntry e = createEntry(m, true);
             bottomEntries.add(e);
-            tabs.element().appendChild(e.tab); // 초기는 평면, recomputeLayout 에서 필요 시 menu 로 이동
+            tabs.element().appendChild(e.tab); // 초기 평면, recomputeLayout 에서 필요 시 overflow 로 이동
         }
         partitioned = false;
-        // 레이아웃 측정은 next frame 에서 — 웹컴포넌트 shadow DOM 이 stamp 된 후여야 폭이 정확.
-        DomGlobal.requestAnimationFrame(ts -> recomputeLayout());
+        // 레이아웃 측정은 next frame — 웹컴포넌트 shadow DOM stamp 후여야 폭 정확.
+        elemental2.dom.DomGlobal.requestAnimationFrame(ts -> recomputeLayout());
+    }
+
+    /** 선택 메뉴를 탭/메뉴아이템의 active/selected 속성과 동기화. */
+    public void setActive(Menu menu) {
+        for (TabEntry e : topEntries) applyActive(e, menu);
+        for (TabEntry e : bottomEntries) applyActive(e, menu);
+    }
+
+    /** 뷰포트 모바일 여부에 따라 [hide] 속성 토글 + 레이아웃 재계산 예약. */
+    public void setMobile(boolean mobile) {
+        if (mobile) {
+            element().removeAttribute("hide");
+            elemental2.dom.DomGlobal.requestAnimationFrame(ts -> recomputeLayout());
+        } else {
+            element().setAttribute("hide", true);
+        }
+    }
+
+    /** 컨테이너 폭 vs 탭 합산 폭을 기반으로 3단계 폴백 상태 갱신 (Presenter 의 resize 훅에서도 호출). */
+    public void recomputeLayout() {
+        if (element().hasAttribute("hide")) return;
+        double container = element().clientWidth;
+        if (container <= 0) return;
+        double topWidth = sumWidth(topEntries);
+        double bottomWidth = sumWidth(bottomEntries);
+        ResponsiveOverflow.Result r = ResponsiveOverflow.compute(container, topWidth, bottomWidth, RESERVE_PX);
+        setPartitioned(r.showOverflow);
+        if (r.scrollable) tabs.element().setAttribute("scrollable", true);
+        else tabs.element().removeAttribute("scrollable");
+        overflow.setHidden(!r.showOverflow);
     }
 
     private TabEntry createEntry(Menu menu, boolean isBottom) {
@@ -135,19 +127,6 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
 
     private static void detach(HTMLElement el) {
         if (el != null && el.parentNode != null) el.parentNode.removeChild(el);
-    }
-
-    private void recomputeLayout() {
-        if (element().hasAttribute("hide")) return;
-        double container = element().clientWidth;
-        if (container <= 0) return; // 아직 레이아웃 전
-        double topWidth = sumWidth(topEntries);
-        double bottomWidth = sumWidth(bottomEntries);
-        ResponsiveOverflow.Result r = ResponsiveOverflow.compute(container, topWidth, bottomWidth, RESERVE_PX);
-        setPartitioned(r.showOverflow);
-        if (r.scrollable) tabs.element().setAttribute("scrollable", true);
-        else tabs.element().removeAttribute("scrollable");
-        overflow.setHidden(!r.showOverflow);
     }
 
     private double sumWidth(List<TabEntry> entries) {
@@ -176,11 +155,6 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         }
     }
 
-    private void onSelected(Menu menu) {
-        for (TabEntry e : topEntries) applyActive(e, menu);
-        for (TabEntry e : bottomEntries) applyActive(e, menu);
-    }
-
     private void applyActive(TabEntry e, Menu selectedMenu) {
         boolean active = e.menu.equals(selectedMenu);
         if (active) e.tab.setAttribute("active", true);
@@ -188,15 +162,6 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         if (e.menuItem != null) {
             if (active) e.menuItem.setAttribute("selected", true);
             else e.menuItem.removeAttribute("selected");
-        }
-    }
-
-    private void setMobile(boolean mobile) {
-        if (mobile) {
-            element().removeAttribute("hide");
-            DomGlobal.requestAnimationFrame(ts -> recomputeLayout());
-        } else {
-            element().setAttribute("hide", true);
         }
     }
 

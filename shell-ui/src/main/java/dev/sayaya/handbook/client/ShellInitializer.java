@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client;
 import dev.sayaya.handbook.client.interfaces.ContentElement;
 import dev.sayaya.handbook.client.interfaces.ProgressElement;
 import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsElement;
+import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsPresenter;
 import dev.sayaya.handbook.client.interfaces.drawer.ShellAppBarElement;
 import dev.sayaya.handbook.client.interfaces.frame.FrameUpdater;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
@@ -58,6 +59,9 @@ public class ShellInitializer {
     private final ModuleScriptManager scriptManager;
     private final ShellAppBarElement appBar;
     private final MobileTabsElement mobileTabs;
+    // MobileTabsPresenter 는 Dagger 가 이 필드에 주입하는 시점 구독을 시작한다 (생성자 내부).
+    // 직접 호출은 없지만 참조만으로 그래프 포함 유발. @SuppressWarnings 로 unused 플래그 억제.
+    @SuppressWarnings("unused") private final MobileTabsPresenter mobileTabsPresenter;
     private final ProgressElement progressElement;
     private final ContentElement contentElement;
     private final WorkspaceEventListener workspaceEventListener;
@@ -75,6 +79,7 @@ public class ShellInitializer {
             ModuleScriptManager scriptManager,
             ShellAppBarElement appBar,
             MobileTabsElement mobileTabs,
+            MobileTabsPresenter mobileTabsPresenter,
             ProgressElement progressElement,
             ContentElement contentElement,
             WorkspaceEventListener workspaceEventListener,
@@ -91,6 +96,7 @@ public class ShellInitializer {
         this.scriptManager = scriptManager;
         this.appBar = appBar;
         this.mobileTabs = mobileTabs;
+        this.mobileTabsPresenter = mobileTabsPresenter;
         this.progressElement = progressElement;
         this.contentElement = contentElement;
         this.workspaceEventListener = workspaceEventListener;
