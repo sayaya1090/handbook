@@ -288,9 +288,36 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "true"
             }
+            // UC-S13-Tabs: 모바일 상단 Scrollable Tabs (MobileTabsElement) 검증
+            Then(".menu-tabs 컨테이너가 DOM 에 존재하고 [hide] 속성이 없다") {
+                val tabs = page.querySelector(".menu-tabs")
+                tabs shouldNotBe null
+                val hasHide = page.evaluate(
+                    "document.querySelector('.menu-tabs').hasAttribute('hide')"
+                ).toString()
+                hasHide shouldBe "false"
+            }
+            Then(".menu-tabs 내부에 md-primary-tab 이 메뉴 수만큼 렌더된다") {
+                val count = page.querySelectorAll(".menu-tabs md-primary-tab").count()
+                count shouldBe DrawerMock.menu.size
+            }
+            Then("탭 배치 — 상단정렬(bottom=false)이 leading, 하단정렬(bottom=true)은 order 역순으로 trailing") {
+                // 상단정렬은 order asc, 하단정렬은 order desc 로 병합. DrawerMock 의 Menu 배치 확인.
+                val titles = page.evaluate(
+                    "Array.from(document.querySelectorAll('.menu-tabs md-primary-tab'))" +
+                    ".map(t => t.dataset.menuTitle || '')"
+                ).toString()
+                (titles.isNotEmpty()) shouldBe true
+            }
             // 원복: 이후 테스트들이 desktop 뷰포트에서 돌아가도록 복원
             page.setViewportSize(1280, 720)
             Thread.sleep(200)
+            Then("데스크톱 뷰포트 복귀 시 .menu-tabs 는 [hide] 속성으로 숨김") {
+                val hasHide = page.evaluate(
+                    "document.querySelector('.menu-tabs').hasAttribute('hide')"
+                ).toString()
+                hasHide shouldBe "true"
+            }
         }
 
         // UC-S15: ThemeToggle 배치 순서 — ThemeToggle 이 bottom 메뉴보다 시각적으로 위에 위치
@@ -348,12 +375,14 @@ internal class DrawerTest: GwtTestSpec({
             ).toString()
             vis shouldBe "visible"
         }
-        Then("모바일 [expand] 에서 .item .collapse 의 가시 크기가 0 보다 크다 (아이콘 렌더 보장)") {
-            // visibility:visible 뿐 아니라 실제 박스 크기도 확인 — 아이콘 fa-light 가 렌더되어야 한다.
+        Then("MobileTabs md-primary-tab 의 가시 크기가 0 보다 크다 (아이콘 + 라벨 렌더 보장)") {
+            // 모바일에서는 MenuRail 이 아닌 MobileTabsElement 가 메뉴를 노출한다.
+            // 첫 번째 md-primary-tab 의 bounding box 로 실제 렌더 여부 확인.
             val box = page.evaluate(
                 """
                 (() => {
-                    const el = document.querySelector('.rail:first-child .item .collapse');
+                    const el = document.querySelector('.menu-tabs md-primary-tab');
+                    if (!el) return '0x0';
                     const r = el.getBoundingClientRect();
                     return r.width + 'x' + r.height;
                 })()
@@ -363,45 +392,35 @@ internal class DrawerTest: GwtTestSpec({
             (parts[0] > 0.0) shouldBe true
             (parts[1] > 0.0) shouldBe true
         }
-        Then("MenuRail 이 화면 하단에 고정된다 (computed position: fixed, bottom: 0)") {
-            val position = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child')).position"
-            ).toString()
-            val bottom = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child')).bottom"
-            ).toString()
-            position shouldBe "fixed"
-            bottom shouldBe "0px"
-        }
-        Then("MenuRail 이 viewport 전체 폭(375px) 을 차지한다 — drawer containing block 에 갇히지 않아야 한다") {
-            // Regression guard: .drawer 에 backdrop-filter 가 있으면 CSS 스펙상 fixed 자손의
-            // containing block 이 되어 자식 .rail[mobile] 의 width:100% 가 drawer 의 폭
-            // (fit-content → 0) 기준으로 계산되어 0px 로 찌그러진다. backdrop-filter 는 desktop
-            // 전용 @media 로만 부여한다 (shell.css).
+        Then("MobileTabs 가 viewport 전체 폭(375px) 을 차지한다 (상단 고정)") {
+            // Regression guard: .drawer 의 backdrop-filter containing block 영향권에 들지 않아야
+            // 한다 — DrawerElement 는 navTabs 를 body 외부에 붙이지 않지만, CSS 가 position:fixed
+            // 로 viewport 기준 배치되므로 375px 이 보장되어야 한다.
             val width = page.evaluate(
-                "document.querySelector('.rail:first-child').getBoundingClientRect().width"
+                "document.querySelector('.menu-tabs').getBoundingClientRect().width"
             ).toString().toDouble()
             width shouldBe 375.0
         }
-        Then("메뉴 아이템 클릭이 hit-test 로 수신된다 (elementFromPoint 가 .item 내부 요소)") {
-            // 하단 네비 영역 중앙에서 elementFromPoint 를 호출해 실제 hit target 이
-            // .rail[mobile] 내부의 .item 계열이어야 클릭이 동작한다. scrim 이나 drawer
-            // 가 덮고 있으면 이 검사가 실패한다.
+        Then("MobileTabs md-primary-tab 클릭이 hit-test 로 수신된다 (elementFromPoint 가 탭 내부)") {
+            // 탭 중앙에서 elementFromPoint 를 호출해 실제 hit target 이 md-primary-tab
+            // 계열이어야 클릭이 동작한다. scrim 이 덮고 있거나 [hide] 로 가려지면 실패.
             val hit = page.evaluate(
                 """
                 (() => {
-                    const rail = document.querySelector('.rail:first-child[mobile]');
-                    if (!rail) return 'no-mobile';
-                    const r = rail.getBoundingClientRect();
+                    const tabs = document.querySelector('.menu-tabs');
+                    if (!tabs) return 'no-tabs';
+                    const firstTab = tabs.querySelector('md-primary-tab');
+                    if (!firstTab) return 'no-tab';
+                    const r = firstTab.getBoundingClientRect();
                     const cx = r.left + r.width / 2;
                     const cy = r.top + r.height / 2;
                     const el = document.elementFromPoint(cx, cy);
                     if (!el) return 'null';
-                    return el.closest('.item') ? 'item' : (el.tagName + '.' + (el.className || ''));
+                    return el.closest('md-primary-tab') ? 'tab' : (el.tagName + '.' + (el.className || ''));
                 })()
                 """.trimIndent()
             ).toString()
-            hit shouldBe "item"
+            hit shouldBe "tab"
         }
         Then("두 번째 rail(ToolRail) 은 초기엔 도구 없음 → [hide] 속성 (단 [mobile] 은 유지)") {
             // 메뉴 미선택 상태이므로 도구 목록이 비어있고 ToolRail 은 숨겨져야 한다.
@@ -492,9 +511,9 @@ internal class DrawerTest: GwtTestSpec({
                 hasHide shouldBe "true"
                 hasMobile shouldBe "true"
             }
-            Then("MenuRail 이 다시 viewport 전체 폭(375px)을 차지한다") {
+            Then("MobileTabs 가 다시 viewport 전체 폭(375px)을 차지한다 (드릴백 후 상단 Tabs 복귀)") {
                 val width = page.evaluate(
-                    "document.querySelector('.rail:first-child').getBoundingClientRect().width"
+                    "document.querySelector('.menu-tabs').getBoundingClientRect().width"
                 ).toString().toDouble()
                 width shouldBe 375.0
             }

@@ -38,7 +38,7 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail");
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail", "menu-rail");
     private final MenuRailItemFactory factory;
     private final List<MenuRailItemElement> children = new LinkedList<>();
     @Inject MenuRailElement(MenuList list, MenuRailMode mode, MenuRailItemFactory factory, ViewportObserver viewport) {

@@ -408,6 +408,49 @@ body,
     display: none;
 }
 
+/* ── Mobile: MenuRail 은 MobileTabsElement 로 대체 ── */
+/* MenuRail 은 데스크톱 NavigationRail 전용이 되고, 모바일에서는 상단 Scrollable Tabs
+   ({@link MobileTabsElement}) 가 그 자리를 대신한다. ToolRail 은 기존 .rail[mobile]
+   하단 바 규칙을 그대로 사용 — display:none 이 MenuRail 에만 걸리도록 한정한다. */
+.menu-rail[mobile] {
+    display: none !important;
+}
+
+/* ── Mobile Scrollable Tabs ── */
+.menu-tabs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    z-index: 900;
+    background: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.menu-tabs[hide] {
+    display: none;
+}
+.menu-tabs-bar {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+.menu-tab {
+    min-width: 96px;
+}
+.menu-tab-label {
+    font-family: var(--md-sys-typescale-label-medium-font, 'Roboto', sans-serif);
+    font-size: var(--md-sys-typescale-label-medium-size, 12px);
+    line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+}
+/* 데스크톱에서는 JS setMobile 이 [hide] 를 달아주지만 CSS 측 2차 방어. */
+@media (min-width: 769px) {
+    .menu-tabs {
+        display: none !important;
+    }
+}
+
 /* ── Desktop only: drawer backdrop blur ── */
 @media (min-width: 769px) {
     .drawer {

@@ -56,7 +56,7 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private double touchStartX;
     private boolean trackingSwipe;
 
-    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, ShellStylesheet shellStylesheet) {
+    @Inject DrawerElement(DrawerMode mode, MenuToggleButton btnToggle, MenuRailElement navMenu, MobileTabsElement navTabs, ToolRailElement navTools, WorkspaceSelectElement workspace, ThemeToggle themeToggle, ShellStylesheet shellStylesheet) {
         this.mode = mode;
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
@@ -70,12 +70,16 @@ public class DrawerElement implements IsElement<HTMLElement> {
         // theme 은 .rail-bottom CSS 의 order: 9999 로 flex 마지막 자리에 위치해 m3 바로 아래에 정렬된다.
         navMenu.element().appendChild(themeToggle.element());
 
+        // navTabs 는 모바일 상단 Scrollable Tabs 로, [mobile] 뷰포트에서만 표시된다.
+        // Drawer 바깥(body 외부)에 앵커 — MenuRail 이 모바일에서 display:none 으로 가려지는
+        // 동안 Tabs 가 viewport 상단을 차지한다. 데스크톱에서는 [hide] 속성으로 자체 숨김.
         _this.css("drawer")
                 .add(div().css("header", "drawer-header")
                         .add(workspace.css("workspace"))
                         .add(btnToggle.style("margin: 8px;")))
                 .add(div().css("body")
-                        .add(navMenu).add(navTools));
+                        .add(navMenu).add(navTools))
+                .add(navTabs);
         mode.subscribe(this::state);
         initSwipeGesture();
     }
