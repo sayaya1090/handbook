@@ -1,4 +1,4 @@
-const CACHE_NAME = 'handbook-v2';
+const CACHE_NAME = 'handbook-v3';
 const STATIC_ASSETS = [
     '/',
     '/app.html',
@@ -31,11 +31,15 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     const { request } = event;
 
-    // API 요청은 캐시하지 않음
+    // API 요청 및 GWT bootstrap 파일은 캐시 bypass.
+    // *.nocache.js 는 GWT permutation selector — 매 배포마다 바뀌므로 캐시하면 구 permutation
+    // 을 계속 참조하게 되어 새 *.cache.js 해시로 도달하지 못한다.
     if (request.url.includes('/workspace/') ||
         request.url.includes('/auth/') ||
         request.url.includes('/menus') ||
-        request.url.includes('/user')) {
+        request.url.includes('/user') ||
+        request.url.includes('.nocache.js') ||
+        request.url.includes('.devmode.js')) {
         return;
     }
 
