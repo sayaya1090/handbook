@@ -6,8 +6,6 @@
 :root,
 body,
 .drawer,
-.drawer .header,
-.drawer .header .workspace,
 .frame,
 .rail,
 .rail .item,
@@ -55,21 +53,8 @@ body,
 .drawer[hide] {
     background-color: transparent;
 }
-.drawer .header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-}
-.drawer .header .workspace {
-    min-width: 0px;
-    max-width: 16rem;
-    --_text-field-label-text-line-height: 0.8rem;
-    --_text-field-input-text-line-height: 0.8rem;
-    --md-outlined-field-top-space: 14px;
-    --md-outlined-field-bottom-space: 14px;
-    transition: margin-left 400ms cubic-bezier(.2,0,0,1), opacity 400ms cubic-bezier(.2,0,0,1);
-}
+/* `.drawer .header` 블록은 AppBar 도입(2026-04) 으로 Drawer 에서 header DOM 이 제거되어 dead
+   regulation 이 되었다. WorkspaceSelect / 햄버거 는 `.shell-app-bar-*` 로 이관. */
 .rail {
     display: flex;
     flex-direction: column;
