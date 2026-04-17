@@ -41,7 +41,7 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail");
+    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail", "tool-rail");
     private final ToolRailItemFactory factory;
     private final List<ToolRailItemElement> children = new LinkedList<>();
     private final CloseToolRailButton close;

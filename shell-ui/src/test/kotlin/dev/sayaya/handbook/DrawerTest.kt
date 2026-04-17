@@ -64,13 +64,13 @@ internal class DrawerTest: GwtTestSpec({
         Then("bottom=true && appBarSlot==null 메뉴에만 .bottom-menu 클래스가 부여된다") {
             // appBarSlot 이 지정된 메뉴는 AppBar 로 승격되어 MenuRail 에서 제외되므로
             // .bottom-menu 카운트는 (bottom=true && appBarSlot==null) 메뉴 수와 일치.
-            val bottomMenus = page.querySelectorAll(".rail:first-child .item.bottom-menu")
+            val bottomMenus = page.querySelectorAll(".menu-rail .item.bottom-menu")
             val bottomCount = DrawerMock.menu.count { it.bottom() == true && it.appBarSlot() == null }
             bottomMenus.count() shouldBe bottomCount
         }
         Then("MenuRail 의 총 .item 수는 네비게이션 메뉴 수(appBarSlot==null)와 일치한다") {
             // theme 은 AppBar 로 이동, appBarSlot 지정 메뉴는 AppBar trailing 으로 승격 → MenuRail 엔 미렌더.
-            val items = page.querySelectorAll(".rail:first-child .item")
+            val items = page.querySelectorAll(".menu-rail .item")
             items.count() shouldBe DrawerMock.menu.count { it.appBarSlot() == null }
         }
         Then("appBarSlot=\"trailing\" 메뉴는 AppBar trailing 의 .shell-app-bar-action 으로 렌더된다") {
@@ -118,7 +118,7 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
         Then("메뉴 레일에 아이템이 네비게이션 메뉴 수(appBarSlot==null)만큼 렌더링된다") {
-            val items = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom)")
+            val items = page.querySelectorAll(".menu-rail .item:not(.rail-bottom)")
             items.count() shouldBe DrawerMock.menu.count { it.appBarSlot() == null }
         }
         Then("각 메뉴 레일 아이템에 아이콘 요소가 존재한다") {
@@ -148,10 +148,10 @@ internal class DrawerTest: GwtTestSpec({
             // 초기 상태: 아직 아무 메뉴도 선택되지 않은 아이템 기준.
             // computed display 가 outline 은 non-none, filled 는 none 이어야 함.
             val outlineDisplay = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item:not([selected]) .icon-outline')).display"
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).display"
             ).toString()
             val filledDisplay = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item:not([selected]) .icon-filled')).display"
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-filled')).display"
             ).toString()
             filledDisplay shouldBe "none"
             (outlineDisplay != "none") shouldBe true
@@ -160,8 +160,8 @@ internal class DrawerTest: GwtTestSpec({
             // 각 네비 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 렌더 → navCount * 2.
             // appBarSlot 지정 메뉴와 .rail-bottom(ThemeToggle) 은 제외.
             val expected = DrawerMock.menu.count { it.appBarSlot() == null } * 2
-            val outlineCount = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom) .icon-outline").count()
-            val filledCount = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom) .icon-filled").count()
+            val outlineCount = page.querySelectorAll(".menu-rail .item:not(.rail-bottom) .icon-outline").count()
+            val filledCount = page.querySelectorAll(".menu-rail .item:not(.rail-bottom) .icon-filled").count()
             outlineCount shouldBe expected
             filledCount shouldBe expected
         }
@@ -171,7 +171,7 @@ internal class DrawerTest: GwtTestSpec({
             page.click("#url1")
             Thread.sleep(500)
             val bg = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item[selected] .collapse')).backgroundColor"
+                "getComputedStyle(document.querySelector('.menu-rail .item[selected] .collapse')).backgroundColor"
             ).toString()
             // transparent → 'rgba(0, 0, 0, 0)'
             (bg.contains("0, 0") || bg == "transparent") shouldBe true
@@ -190,10 +190,10 @@ internal class DrawerTest: GwtTestSpec({
             }
             Then("선택 아이템은 .icon-filled 가 보이고 .icon-outline 은 숨겨진다") {
                 val outlineDisplay = page.evaluate(
-                    "getComputedStyle(document.querySelector('.rail:first-child .item[selected] .icon-outline')).display"
+                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-outline')).display"
                 ).toString()
                 val filledDisplay = page.evaluate(
-                    "getComputedStyle(document.querySelector('.rail:first-child .item[selected] .icon-filled')).display"
+                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-filled')).display"
                 ).toString()
                 outlineDisplay shouldBe "none"
                 (filledDisplay != "none") shouldBe true
@@ -230,7 +230,7 @@ internal class DrawerTest: GwtTestSpec({
                 page.querySelector("nav.drawer") shouldNotBe null
             }
             Then("메뉴 레일 아이템 수가 유지된다 (AppBar 승격 메뉴 제외)") {
-                val items = page.querySelectorAll(".rail:first-child .item:not(.rail-bottom)")
+                val items = page.querySelectorAll(".menu-rail .item:not(.rail-bottom)")
                 items.count() shouldBe DrawerMock.menu.count { it.appBarSlot() == null }
             }
         }
@@ -257,23 +257,23 @@ internal class DrawerTest: GwtTestSpec({
             }
             Then("두 rail 모두 [mobile] 속성이 부착된다 — 레이아웃과 가시성이 직교") {
                 val menuMobile = page.evaluate(
-                    "document.querySelector('.rail:first-child').hasAttribute('mobile')"
+                    "document.querySelector('.menu-rail').hasAttribute('mobile')"
                 ).toString()
                 val toolMobile = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].hasAttribute('mobile')"
+                    "document.querySelector('.tool-rail').hasAttribute('mobile')"
                 ).toString()
                 menuMobile shouldBe "true"
                 toolMobile shouldBe "true"
             }
             Then("드릴인 상태: 두 번째 rail(ToolRail) 이 EXPAND — [expand] 속성 부착") {
                 val hasExpand = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].hasAttribute('expand')"
+                    "document.querySelector('.tool-rail').hasAttribute('expand')"
                 ).toString()
                 hasExpand shouldBe "true"
             }
             Then("드릴인 상태: 첫 번째 rail(MenuRail) 은 HIDE — [hide] 속성 부착") {
                 val hasHide = page.evaluate(
-                    "document.querySelector('.rail:first-child').hasAttribute('hide')"
+                    "document.querySelector('.menu-rail').hasAttribute('hide')"
                 ).toString()
                 hasHide shouldBe "true"
             }
@@ -349,10 +349,10 @@ internal class DrawerTest: GwtTestSpec({
         // bottom-menu 는 MenuRail 의 bottom 정렬(order:auto→9000) 로 하단에 위치하는 건 유지.
         Then("bottom-menu 는 MenuRail 내 일반 메뉴보다 flex order 가 크다 (시각적으로 뒤)") {
             val bottomOrder = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item.bottom-menu')).order"
+                "getComputedStyle(document.querySelector('.menu-rail .item.bottom-menu')).order"
             ).toString()
             val normalOrder = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item:not(.bottom-menu)')).order"
+                "getComputedStyle(document.querySelector('.menu-rail .item:not(.bottom-menu)')).order"
             ).toString()
             bottomOrder.toInt() shouldBeGreaterThan normalOrder.toInt() - 1
         }
@@ -374,17 +374,17 @@ internal class DrawerTest: GwtTestSpec({
         }
         Then("두 rail 모두 [mobile] 속성이 부착된다") {
             val menuMobile = page.evaluate(
-                "document.querySelector('.rail:first-child').hasAttribute('mobile')"
+                "document.querySelector('.menu-rail').hasAttribute('mobile')"
             ).toString()
             val toolMobile = page.evaluate(
-                "document.querySelectorAll('.rail')[1].hasAttribute('mobile')"
+                "document.querySelector('.tool-rail').hasAttribute('mobile')"
             ).toString()
             menuMobile shouldBe "true"
             toolMobile shouldBe "true"
         }
         Then("첫 번째 rail(MenuRail) 이 [expand] 가시성으로 하단 바를 차지한다") {
             val hasExpand = page.evaluate(
-                "document.querySelector('.rail:first-child').hasAttribute('expand')"
+                "document.querySelector('.menu-rail').hasAttribute('expand')"
             ).toString()
             hasExpand shouldBe "true"
         }
@@ -394,7 +394,7 @@ internal class DrawerTest: GwtTestSpec({
             // 모바일 전용 override (.rail[mobile][expand] .item .collapse { visibility: visible }) 가
             // 필요하다.
             val vis = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item .collapse')).visibility"
+                "getComputedStyle(document.querySelector('.menu-rail .item .collapse')).visibility"
             ).toString()
             vis shouldBe "visible"
         }
@@ -451,7 +451,7 @@ internal class DrawerTest: GwtTestSpec({
             val attrs = page.evaluate(
                 """
                 (() => {
-                    const r = document.querySelectorAll('.rail')[1];
+                    const r = document.querySelector('.tool-rail');
                     return JSON.stringify({
                         hide: r.hasAttribute('hide'),
                         mobile: r.hasAttribute('mobile'),
@@ -472,29 +472,29 @@ internal class DrawerTest: GwtTestSpec({
             Thread.sleep(500)
             Then("MenuRail 은 HIDE 된다 — [hide] 속성 부착, [mobile] 유지") {
                 val hasHide = page.evaluate(
-                    "document.querySelector('.rail:first-child').hasAttribute('hide')"
+                    "document.querySelector('.menu-rail').hasAttribute('hide')"
                 ).toString()
                 val hasMobile = page.evaluate(
-                    "document.querySelector('.rail:first-child').hasAttribute('mobile')"
+                    "document.querySelector('.menu-rail').hasAttribute('mobile')"
                 ).toString()
                 hasHide shouldBe "true"
                 hasMobile shouldBe "true"
             }
             Then("ToolRail 이 드릴인 (EXPAND) 상태 — 두 번째 rail 에 [expand] 속성") {
                 val hasExpand = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].hasAttribute('expand')"
+                    "document.querySelector('.tool-rail').hasAttribute('expand')"
                 ).toString()
                 hasExpand shouldBe "true"
             }
             Then("ToolRail 이 viewport 전체 폭(375px)을 차지한다") {
                 val width = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].getBoundingClientRect().width"
+                    "document.querySelector('.tool-rail').getBoundingClientRect().width"
                 ).toString().toDouble()
                 width shouldBe 375.0
             }
             Then("ToolRail 의 첫 자식이 CloseToolRailButton(← 아이콘) 이다") {
                 val firstId = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].firstElementChild && document.querySelectorAll('.rail')[1].firstElementChild.id"
+                    "document.querySelector('.tool-rail').firstElementChild && document.querySelector('.tool-rail').firstElementChild.id"
                 ).toString()
                 firstId shouldBe "close-tool-rail"
             }
@@ -502,7 +502,7 @@ internal class DrawerTest: GwtTestSpec({
                 // 드릴인 중에도 하단 바 아이콘이 사라지지 않아야 한다. CloseToolRailButton 과
                 // 도구 아이템들이 모두 .collapse 슬롯으로 렌더되므로 .collapse 의 가시성을 체크.
                 val vis = page.evaluate(
-                    "getComputedStyle(document.querySelectorAll('.rail')[1].querySelector('.item .collapse')).visibility"
+                    "getComputedStyle(document.querySelector('.tool-rail').querySelector('.item .collapse')).visibility"
                 ).toString()
                 vis shouldBe "visible"
             }
@@ -520,16 +520,16 @@ internal class DrawerTest: GwtTestSpec({
             Thread.sleep(500)
             Then("MenuRail 이 다시 EXPAND 로 복귀한다 — 첫 번째 rail 에 [expand] 속성") {
                 val hasExpand = page.evaluate(
-                    "document.querySelector('.rail:first-child').hasAttribute('expand')"
+                    "document.querySelector('.menu-rail').hasAttribute('expand')"
                 ).toString()
                 hasExpand shouldBe "true"
             }
             Then("ToolRail 은 다시 HIDE 된다 — [hide] 속성, [mobile] 은 유지") {
                 val hasHide = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].hasAttribute('hide')"
+                    "document.querySelector('.tool-rail').hasAttribute('hide')"
                 ).toString()
                 val hasMobile = page.evaluate(
-                    "document.querySelectorAll('.rail')[1].hasAttribute('mobile')"
+                    "document.querySelector('.tool-rail').hasAttribute('mobile')"
                 ).toString()
                 hasHide shouldBe "true"
                 hasMobile shouldBe "true"
