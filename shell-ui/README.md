@@ -283,14 +283,33 @@ tasks.jar {
 
 ```
 body
-├── header.shell-app-bar          (AppBar, fixed top)
+├── header.shell-app-bar          (fixed, left: var(--shell-drawer-width), right: 0)
 ├── div.menu-tabs                 (모바일 전용 Tabs, AppBar 바로 아래)
 ├── div.progress-container
-└── div#content > nav.drawer
+└── div#content > nav.drawer(fixed top:0 bottom:0 width:var(--shell-drawer-width))
                   └── div.body > div.rail.menu-rail + div.rail.tool-rail
 ```
 
 AppBar / MobileTabs 는 **body 직속**이어야 한다 — Drawer 의 `backdrop-filter` 가 자손 `position:fixed` 의 containing block 을 오염시키는 CSS 스펙 이슈 회피.
+
+### 정석 MD3 Layout (2026-04 재구조)
+
+Drawer 와 AppBar 를 **같은 상단 레이어에서 나란히** 배치한다 (Top App Bar + Navigation Rail 관용). Drawer 가 AppBar 위로 올라오지 않도록 AppBar 는 Drawer 오른쪽 영역만 차지한다.
+
+```
+:root {
+    --shell-drawer-width: 56px;   /* 기본 (collapse) */
+}
+body:has(nav.drawer[open])    { --shell-drawer-width: 16rem; }
+body:has(nav.drawer[hide]),
+body:has(nav.drawer[overlay]) { --shell-drawer-width: 0; }
+@media (max-width: 768px)     { :root { --shell-drawer-width: 0; } }
+```
+
+- **Drawer**: `position:fixed; top:0; left:0; bottom:0; width:var(--shell-drawer-width); z-index:1000;` + 반투명 배경(`color-mix(surface-container-high 60%, transparent)`).
+- **AppBar**: `left:var(--shell-drawer-width); z-index:950;` — Drawer 오른쪽부터 시작. `[scrolled]` 속성 토글로 Surface ↔ Surface-container + elevation 2 전환.
+- **Frame**: `left:0; top:var(--shell-app-bar-height);` — viewport 전역에 깔려 Drawer 반투명 너머로 비쳐 보임.
+- **WorkspaceSelect**: AppBar center 에 상시 노출 (MenuRailMode 종속 숨김 로직 제거, 2026-04). `body` 의 `padding-top` 은 Drawer 가 fixed 라 불필요해 제거.
 
 > 과거(2026-03 이전) 의 "단일 하단 바 드릴인" 모델은 Section 7 (docs/design.md) 에 아카이브.
 

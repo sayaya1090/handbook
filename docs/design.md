@@ -240,28 +240,28 @@ Active Item  → corner-full (pill)
 
 **`Menu.appBarSlot`** 필드로 특정 메뉴(예: `login` SIGN_IN/SIGN_OUT)를 네비게이션 축에서 빼고 AppBar slot 으로 승격 — 세션 액션 semantic 을 네비게이션과 혼동하지 않게 한다. 상세 규약은 `docs/contracts/menus.md#appbarslot-규약`.
 
-### 전체 레이아웃 (데스크톱)
+### 전체 레이아웃 (데스크톱) — MD3 Top App Bar + Navigation Rail
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│ Shell App Bar (fixed top: 0, height: 56px)                   │
-│ [☰] [▼ Workspace]         [Theme toggle] [Sign Out]           │
-├──────────────────────────────────────────────────────────────┤
-│ Progress Bar (top: 56px, 전체 너비)                           │
-├────────┬─────────────────────────────────────────────────────┤
-│        │                                                     │
-│ Drawer │              Frame (콘텐츠 영역)                     │
-│ 56px   │                                                     │
-│  /     │     ┌─────────────────────────────┐                 │
-│ 256px  │     │  Toast Container            │                 │
-│        │     └─────────────────────────────┘                 │
+┌────────┬─────────────────────────────────────────────────────┐
+│        │ Shell App Bar (fixed, left: drawer-width, right: 0) │
+│        │ [▼ Workspace]            [Theme] [Sign Out]         │
+│ Drawer ├─────────────────────────────────────────────────────┤
+│ fixed  │ Progress Bar                                        │
+│ top: 0 ├─────────────────────────────────────────────────────┤
+│ 56 /   │                                                     │
+│ 256px  │            Frame (전역 깔림 — Drawer 반투명           │
+│        │            배경 너머로 비쳐 보임)                     │
 │ Menu   │                                                     │
-│ Rail   │                                                     │
-│ +      │     ┌─────────────────────────────────────┐         │
-│ Tool   │     │  Agent Input (하단 중앙, max-w: 720) │         │
+│ Rail + │     ┌─────────────────────────────────────┐         │
+│ Tool   │     │  Agent Input (하단 중앙, max-w: 720)│         │
 │ Rail   │     └─────────────────────────────────────┘         │
 └────────┴─────────────────────────────────────────────────────┘
 ```
+
+**정석 배치 (2026-04 재구조):** Drawer 가 `fixed top:0 bottom:0 left:0` 로 viewport 전체 세로를 차지하고, AppBar 는 `left: var(--shell-drawer-width)` 로 Drawer 오른쪽만. Frame 은 viewport 전역(`left:0 top:appbar-height`) 에 깔려 Drawer 반투명 배경 뒤로 비쳐 보인다 (Standard Navigation Drawer + translucent surface). AppBar scroll 상태는 `window.scrollY>0` 시 `[scrolled]` 속성 자동 토글 — 기본 Surface / scrolled 시 Surface-container + elevation 2 로 전환(MD3 Small Top App Bar 스펙 준수).
+
+**CSS 토큰 공유:** `:root` 에 `--shell-drawer-width` 를 두고 `body:has(nav.drawer[open/hide/overlay])` 셀렉터로 동적 재지정 — AppBar left / Drawer width 가 한 토큰을 공유해 transition 동기.
 
 ### 전체 레이아웃 (모바일, ≤ 768px)
 
