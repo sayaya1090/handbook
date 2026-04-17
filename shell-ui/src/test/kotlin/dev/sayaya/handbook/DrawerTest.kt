@@ -23,32 +23,28 @@ internal class DrawerTest: GwtTestSpec({
         Then("메뉴 토글 버튼이 존재한다") {
             page.querySelector("#menu-toggle-button") shouldNotBe null
         }
-        Then("메뉴 토글 버튼은 헤더 안에 위치한다") {
-            // 워크스페이스 셀렉터와 가로 일렬로 같은 .drawer-header 안에 있어야 함
-            val headerToggle = page.querySelector(".drawer-header #menu-toggle-button")
-            headerToggle shouldNotBe null
+        Then("메뉴 토글 버튼은 AppBar leading 안에 위치한다") {
+            // AppBar 도입 후 햄버거 토글은 Drawer header 가 아닌 .shell-app-bar-leading 에 배치.
+            val leadingToggle = page.querySelector(".shell-app-bar-leading #menu-toggle-button")
+            leadingToggle shouldNotBe null
         }
-        Then("테마 토글 버튼이 메뉴 레일 하단에 .item.rail-bottom 으로 존재한다") {
-            // ThemeToggle 은 NavigationRailItemElement 를 상속 → .item 구조 + .rail-bottom 클래스
-            val themeBtn = page.querySelector(".rail .item.rail-bottom")
+        Then("테마 토글 버튼이 AppBar trailing 의 .item.rail-bottom 으로 존재한다") {
+            // ThemeToggle 은 NavigationRailItemElement 를 상속 → .item 구조 + .rail-bottom 클래스.
+            // AppBar 도입 후 MenuRail 하단이 아닌 AppBar trailing 으로 이동.
+            val themeBtn = page.querySelector(".shell-app-bar-trailing .item.rail-bottom")
             themeBtn shouldNotBe null
-        }
-        Then("테마 토글 버튼은 MenuRail(첫 번째 rail) 에 속한다") {
-            // 두 번째 rail(ToolRail) 이 아닌 MenuRail 에 append 되어야 함
-            val themeInMenuRail = page.querySelector(".rail:first-child .item.rail-bottom")
-            themeInMenuRail shouldNotBe null
         }
         Then("테마 토글 버튼은 .collapse 와 md-item start slot 두 곳에 SVG 를 가진다") {
             // 아이콘 버튼(collapse 모드) + md-item 의 start slot(expand 모드) 두 위치 독립 렌더
-            val collapseSvg = page.querySelector(".rail .item.rail-bottom .collapse svg.theme-toggle-svg")
-            val startSvg = page.querySelector(".rail .item.rail-bottom md-item svg.theme-toggle-svg[slot='start']")
+            val collapseSvg = page.querySelector(".shell-app-bar-trailing .item.rail-bottom .collapse svg.theme-toggle-svg")
+            val startSvg = page.querySelector(".shell-app-bar-trailing .item.rail-bottom md-item svg.theme-toggle-svg[slot='start']")
             collapseSvg shouldNotBe null
             startSvg shouldNotBe null
         }
         Then("테마 토글 버튼 SVG 안에 sun/moon 두 path 가 모두 존재한다") {
             // 일출/일몰 morph keyframes 를 위해 두 아이콘이 동시 렌더되고 CSS 가 가시성을 전환
-            val sun = page.querySelector(".rail .item.rail-bottom svg .sun")
-            val moon = page.querySelector(".rail .item.rail-bottom svg .moon")
+            val sun = page.querySelector(".shell-app-bar-trailing .item.rail-bottom svg .sun")
+            val moon = page.querySelector(".shell-app-bar-trailing .item.rail-bottom svg .moon")
             sun shouldNotBe null
             moon shouldNotBe null
         }
@@ -58,14 +54,14 @@ internal class DrawerTest: GwtTestSpec({
             val bottomCount = DrawerMock.menu.count { it.bottom() == true }
             bottomMenus.count() shouldBe bottomCount
         }
-        Then("MenuRail 의 총 .item 수는 메뉴 수 + 1(theme) 이다") {
+        Then("MenuRail 의 총 .item 수는 메뉴 수와 일치한다 (theme 은 AppBar 로 이동)") {
             val items = page.querySelectorAll(".rail:first-child .item")
-            items.count() shouldBe (DrawerMock.menu.size + 1)
+            items.count() shouldBe DrawerMock.menu.size
         }
         Then("테마 토글 버튼 headline 에 i18n 라벨 텍스트가 존재한다") {
             // LabelProvider fallback 값(Switch to Dark/Light)이라도 비어있지 않아야 함
             val headline = page.evaluate(
-                "document.querySelector('.rail .item.rail-bottom md-item [slot=headline]').textContent"
+                "document.querySelector('.shell-app-bar-trailing .item.rail-bottom md-item [slot=headline]').textContent"
             ).toString()
             (headline.isNotBlank()) shouldBe true
         }
@@ -75,10 +71,10 @@ internal class DrawerTest: GwtTestSpec({
         }
         When("테마 토글 버튼을 클릭하면") {
             val beforeHeadline = page.evaluate(
-                "document.querySelector('.rail .item.rail-bottom md-item [slot=headline]').textContent"
+                "document.querySelector('.shell-app-bar-trailing .item.rail-bottom md-item [slot=headline]').textContent"
             ).toString()
             val before = page.evaluate("document.documentElement.getAttribute('color-theme')").toString()
-            page.click(".rail .item.rail-bottom")
+            page.click(".shell-app-bar-trailing .item.rail-bottom")
             Thread.sleep(200)
             Then("color-theme 속성이 반대 값으로 토글된다") {
                 val after = page.evaluate("document.documentElement.getAttribute('color-theme')").toString()
@@ -95,7 +91,7 @@ internal class DrawerTest: GwtTestSpec({
             }
             Then("headline 라벨이 토글 후 반대 값으로 바뀐다") {
                 val afterHeadline = page.evaluate(
-                    "document.querySelector('.rail .item.rail-bottom md-item [slot=headline]').textContent"
+                    "document.querySelector('.shell-app-bar-trailing .item.rail-bottom md-item [slot=headline]').textContent"
                 ).toString()
                 afterHeadline shouldNotBe beforeHeadline
                 afterHeadline.isNotBlank() shouldBe true
@@ -221,37 +217,12 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
-        // UC-S13 (모바일) + UC-S15 (ThemeToggle): mobile 모드에서도 테마 토글이 숨겨지지 않는다.
-        // 실제 상태 기계(DrawerMode.OVERLAY 전환) 와 무관하게 CSS 규칙만 검증 — 레일에 [mobile]
-        // 속성을 직접 부착해 계산 스타일을 확인한다. 앞선 URL 클릭들로 남은 상태 속성은 일시
-        // 제거해 격리시킨 뒤 원복한다.
-        Then("mobile 속성이 부착된 레일에서도 테마 토글의 display 가 none 이 아니다") {
-            val priorAttrs = page.evaluate(
-                """
-                (() => {
-                    const r = document.querySelector('.rail:first-child');
-                    const prior = ['expand','collapse','hide','mobile']
-                        .filter(a => r.hasAttribute(a));
-                    prior.forEach(a => r.removeAttribute(a));
-                    r.setAttribute('mobile', 'true');
-                    r.setAttribute('expand', 'true');
-                    return JSON.stringify(prior);
-                })()
-                """.trimIndent()
-            ).toString()
+        // UC-S15 (ThemeToggle): AppBar 도입 후 ThemeToggle 은 MenuRail 이 아닌 AppBar trailing 에
+        // 상주하므로 모바일/데스크톱 양쪽에서 항상 접근 가능. MenuRail 모바일 숨김과 무관.
+        Then("AppBar trailing 의 테마 토글은 display 가 none 이 아니다") {
             val themeDisplay = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item.rail-bottom')).display"
+                "getComputedStyle(document.querySelector('.shell-app-bar-trailing .item.rail-bottom')).display"
             ).toString()
-            page.evaluate(
-                """
-                (() => {
-                    const r = document.querySelector('.rail:first-child');
-                    r.removeAttribute('mobile');
-                    r.removeAttribute('expand');
-                    JSON.parse('$priorAttrs').forEach(a => r.setAttribute(a, 'true'));
-                })()
-                """.trimIndent()
-            )
             themeDisplay shouldNotBe "none"
         }
 
@@ -287,6 +258,25 @@ internal class DrawerTest: GwtTestSpec({
                     "document.querySelector('.rail:first-child').hasAttribute('hide')"
                 ).toString()
                 hasHide shouldBe "true"
+            }
+            // UC-S13-AppBar: 모바일 Top AppBar (ShellAppBarElement) 검증
+            Then(".shell-app-bar 가 모바일에서 표시된다 ([hide] 없음)") {
+                val hasHide = page.evaluate(
+                    "document.querySelector('.shell-app-bar').hasAttribute('hide')"
+                ).toString()
+                hasHide shouldBe "false"
+            }
+            Then("AppBar leading 에 MenuToggleButton 이 이동되어 있다") {
+                val leadingHasToggle = page.evaluate(
+                    "document.querySelector('.shell-app-bar-leading #menu-toggle-button') !== null"
+                ).toString()
+                leadingHasToggle shouldBe "true"
+            }
+            Then("AppBar trailing 에 ThemeToggle 이 이동되어 있다") {
+                val trailingHasTheme = page.evaluate(
+                    "document.querySelector('.shell-app-bar-trailing .item.rail-bottom') !== null"
+                ).toString()
+                trailingHasTheme shouldBe "true"
             }
             // UC-S13-Tabs: 모바일 상단 Scrollable Tabs (MobileTabsElement) 검증
             Then(".menu-tabs 컨테이너가 DOM 에 존재하고 [hide] 속성이 없다") {
@@ -336,18 +326,16 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
-        // UC-S15: ThemeToggle 배치 순서 — ThemeToggle 이 bottom 메뉴보다 시각적으로 위에 위치
-        Then("bottom 메뉴가 DOM 상 ThemeToggle 뒤에 위치한다 (flex order: theme=1, bottom=2)") {
-            // MenuRailElement 는 일반 메뉴 → ThemeToggle append 순서로 DOM 구성.
-            // bottom 메뉴는 DOM 순서상 theme 보다 앞에 있더라도 CSS flex order 로 뒤로 밀림.
-            // 여기서는 computed style 의 order 값을 직접 검증.
-            val themeOrder = page.evaluate(
-                "getComputedStyle(document.querySelector('.rail:first-child .item.rail-bottom')).order"
-            ).toString()
+        // UC-S15 (deprecated): ThemeToggle 은 AppBar 로 이동했으므로 MenuRail 내부 order 비교 불필요.
+        // bottom-menu 는 MenuRail 의 bottom 정렬(order:auto→9000) 로 하단에 위치하는 건 유지.
+        Then("bottom-menu 는 MenuRail 내 일반 메뉴보다 flex order 가 크다 (시각적으로 뒤)") {
             val bottomOrder = page.evaluate(
                 "getComputedStyle(document.querySelector('.rail:first-child .item.bottom-menu')).order"
             ).toString()
-            themeOrder.toInt() shouldBeLessThanOrEqual bottomOrder.toInt() - 1
+            val normalOrder = page.evaluate(
+                "getComputedStyle(document.querySelector('.rail:first-child .item:not(.bottom-menu)')).order"
+            ).toString()
+            bottomOrder.toInt() shouldBeGreaterThan normalOrder.toInt() - 1
         }
     }
 
