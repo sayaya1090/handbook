@@ -20,4 +20,10 @@ import java.util.*
 interface R2dbcWebhookRepository : ReactiveCrudRepository<R2dbcWebhookEntity, UUID> {
     fun findByWorkspace(workspace: UUID): Flux<R2dbcWebhookEntity>
     fun findByWorkspaceAndActiveTrue(workspace: UUID): Flux<R2dbcWebhookEntity>
+
+    /**
+     * 워크스페이스 삭제 cascade 의 일부로, 해당 워크스페이스에 속한 모든 웹훅 row 를 삭제한다.
+     * Spring Data R2DBC 가 메서드명으로부터 `DELETE FROM webhooks WHERE workspace = ?` 을 자동 파생한다.
+     */
+    fun deleteByWorkspace(workspace: UUID): reactor.core.publisher.Mono<Void>
 }

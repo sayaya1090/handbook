@@ -24,4 +24,13 @@ interface GroupRepository {
      * @return 완료 시그널
      */
     fun addMember(workspaceId: UUID, principal: Principal): Mono<Void>
+
+    /**
+     * 주어진 워크스페이스에 속한 모든 그룹과 그룹 멤버 row 를 삭제한다.
+     * 워크스페이스 cascade 삭제의 일부로 호출된다.
+     *
+     * @param workspaceId 워크스페이스 ID
+     * @return 완료 시그널
+     */
+    fun deleteByWorkspace(workspaceId: UUID): Mono<Void>
 }

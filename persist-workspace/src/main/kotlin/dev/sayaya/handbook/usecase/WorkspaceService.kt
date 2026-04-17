@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.Workspace
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 import java.security.Principal
 import java.util.*
@@ -9,18 +10,25 @@ import java.util.*
  * 워크스페이스 CUD 및 참여 유스케이스.
  *
  * **책임:** 워크스페이스 생성/수정/삭제와 참여(join) 요청을 처리한다.
+ * 삭제는 연관 그룹·그룹 멤버·웹훅 row 를 함께 제거하는 cascade 삭제를 단일 트랜잭션으로 수행한다.
  *
  * **의존관계:**
  * - [WorkspaceRepository] — 워크스페이스 엔티티 영속화
- * - [GroupRepository] — 그룹 생성/멤버 배정
+ * - [GroupRepository] — 그룹 생성/멤버 배정/워크스페이스 단위 삭제
+ * - [WebhookService] — 웹훅 워크스페이스 단위 삭제
  * - [WorkspaceEventPublisher] — Kafka 이벤트 발행
+ * - [TransactionalOperator] — cascade 삭제의 원자성 보장 (R2DBC reactive 트랜잭션)
  *
  * **주의:** create 시 Admin 그룹을 자동 생성하고, join 시 Member 그룹에 배정한다.
+ * delete 의 cascade 범위는 현재 persist-workspace 내부 테이블 (`group`, `group_member`, `webhooks`) 까지이며,
+ * document/type 테이블 cascade 는 후속 반복에서 확장된다.
  */
 class WorkspaceService(
     private val workspaceRepo: WorkspaceRepository,
     private val groupRepo: GroupRepository,
+    private val webhookService: WebhookService,
     private val eventPublisher: WorkspaceEventPublisher,
+    private val tx: TransactionalOperator,
 ) {
     fun create(principal: Principal, name: String, description: String?): Mono<Workspace> {
         val workspace = Workspace(UUID.randomUUID(), name, description)
@@ -32,8 +40,18 @@ class WorkspaceService(
     fun update(workspace: Workspace): Mono<Workspace> =
         workspaceRepo.update(workspace)
 
+    /**
+     * 워크스페이스 삭제. 트랜잭션 내에서 참조하는 row(웹훅 → 그룹 멤버 → 그룹 → 워크스페이스)
+     * 를 역순으로 삭제하고, 커밋 후 `WORKSPACE_DELETED` 이벤트를 발행한다.
+     *
+     * 이벤트 발행은 의도적으로 트랜잭션 밖이다 — DB 커밋 실패 시 Kafka 에 유령 이벤트가
+     * 남지 않도록.
+     */
     fun delete(id: UUID): Mono<Void> =
-        workspaceRepo.delete(id)
+        webhookService.deleteByWorkspace(id)
+            .then(groupRepo.deleteByWorkspace(id))
+            .then(workspaceRepo.delete(id))
+            .`as`(tx::transactional)
             .then(eventPublisher.publishDeleted(id))
 
     /**

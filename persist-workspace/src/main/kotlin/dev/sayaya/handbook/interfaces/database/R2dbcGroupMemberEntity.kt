@@ -7,6 +7,6 @@ import java.util.*
 @Table("group_member")
 data class R2dbcGroupMemberEntity(
     val workspace: UUID,
-    @Column("\"group\"") val group: String,
+    @Column("group") val group: String,
     val member: UUID,
 )

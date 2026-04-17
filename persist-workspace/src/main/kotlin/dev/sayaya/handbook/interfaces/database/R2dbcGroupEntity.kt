@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
-@Table("\"group\"")
+@Table("group")
 data class R2dbcGroupEntity(
     val workspace: UUID,
     val name: String,

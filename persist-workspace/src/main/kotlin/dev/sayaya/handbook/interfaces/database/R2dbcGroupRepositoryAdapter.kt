@@ -4,6 +4,8 @@ import dev.sayaya.handbook.domain.Group
 import dev.sayaya.handbook.domain.Workspace
 import dev.sayaya.handbook.usecase.GroupRepository
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
+import org.springframework.data.relational.core.query.Criteria
+import org.springframework.data.relational.core.query.Query
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 import java.security.Principal
@@ -44,6 +46,17 @@ class R2dbcGroupRepositoryAdapter(
             member = UUID.fromString(principal.name),
         )
         return template.insert(memberEntity).then()
+    }
+
+    /**
+     * `group_member` 먼저 삭제한 뒤 `group` row 를 삭제한다. FK 가 물리적으로 선언되어
+     * 있지 않더라도 의미론적 참조 순서를 보존한다.
+     */
+    override fun deleteByWorkspace(workspaceId: UUID): Mono<Void> {
+        val criteria = Query.query(Criteria.where("workspace").`is`(workspaceId))
+        return template.delete(criteria, R2dbcGroupMemberEntity::class.java)
+            .then(template.delete(criteria, R2dbcGroupEntity::class.java))
+            .then()
     }
 
     companion object {

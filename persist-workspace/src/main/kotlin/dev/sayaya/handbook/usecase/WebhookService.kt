@@ -56,6 +56,16 @@ class WebhookService(
     }
 
     /**
+     * 워크스페이스 cascade 삭제의 일부로, 해당 워크스페이스의 모든 웹훅을 제거한다.
+     *
+     * @param workspace 워크스페이스 ID
+     * @return 완료 시그널
+     */
+    fun deleteByWorkspace(workspace: UUID): Mono<Void> {
+        return webhookRepository.deleteByWorkspace(workspace)
+    }
+
+    /**
      * 특정 워크스페이스에서 주어진 이벤트 타입을 구독하는 활성 웹훅을 조회한다.
      *
      * events가 비어 있는 웹훅은 모든 이벤트를 구독하는 것으로 간주한다.

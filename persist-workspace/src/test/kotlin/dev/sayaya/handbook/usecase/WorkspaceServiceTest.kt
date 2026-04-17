@@ -5,6 +5,7 @@ import dev.sayaya.handbook.domain.Workspace
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.security.Principal
@@ -13,8 +14,12 @@ import java.util.*
 class WorkspaceServiceTest : BehaviorSpec({
     val workspaceRepo = mockk<WorkspaceRepository>()
     val groupRepo = mockk<GroupRepository>()
+    val webhookService = mockk<WebhookService>()
     val eventPublisher = mockk<WorkspaceEventPublisher>()
-    val service = WorkspaceService(workspaceRepo, groupRepo, eventPublisher)
+    // 테스트에서는 TransactionalOperator 를 no-op 으로 사용 — delegate 체인만 검증
+    val tx = mockk<TransactionalOperator>()
+    every { tx.transactional(any<Mono<Void>>()) } answers { firstArg() }
+    val service = WorkspaceService(workspaceRepo, groupRepo, webhookService, eventPublisher, tx)
 
     Given("워크스페이스 생성 요청이 주어졌을 때") {
         val principal = mockk<Principal>()
@@ -66,6 +71,8 @@ class WorkspaceServiceTest : BehaviorSpec({
 
     Given("워크스페이스 삭제 요청이 주어졌을 때") {
         val id = UUID.randomUUID()
+        every { webhookService.deleteByWorkspace(id) } returns Mono.empty()
+        every { groupRepo.deleteByWorkspace(id) } returns Mono.empty()
         every { workspaceRepo.delete(id) } returns Mono.empty()
         every { eventPublisher.publishDeleted(id) } returns Mono.empty()
 
@@ -76,8 +83,16 @@ class WorkspaceServiceTest : BehaviorSpec({
                 StepVerifier.create(result)
                     .verifyComplete()
             }
-            Then("WORKSPACE_DELETED 이벤트가 발행된다") {
-                verify { eventPublisher.publishDeleted(id) }
+            Then("cascade 순서대로 웹훅 → 그룹 → 워크스페이스가 삭제된다") {
+                verifyOrder {
+                    webhookService.deleteByWorkspace(id)
+                    groupRepo.deleteByWorkspace(id)
+                    workspaceRepo.delete(id)
+                }
+            }
+            Then("트랜잭션으로 묶인 뒤 WORKSPACE_DELETED 이벤트가 발행된다") {
+                verify(exactly = 1) { tx.transactional(any<Mono<Void>>()) }
+                verify(exactly = 1) { eventPublisher.publishDeleted(id) }
             }
         }
     }

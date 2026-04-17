@@ -102,6 +102,19 @@ interface Event<T : Serializable> {
 }
 ```
 
+22## 별개 토픽 — `workspace-events`
+
+워크스페이스 도메인의 최상위 CUD 이벤트는 `handbook-events` 와 **분리된 `workspace-events` 토픽** 으로 발행된다. 페이로드도 공통 `Event<T>` 인터페이스를 따르지 않는 raw Map 형태다. 역사적 경위로 분리되어 있으며, 향후 `handbook-events` 로의 통합은 별도 설계 반복 과제이다.
+
+| EventType | 발행 서비스 | 페이로드 | 구독자 |
+|-----------|-----------|---------|--------|
+| `WORKSPACE_CREATED` | persist-workspace | `{workspaceId, name}` | (현재 없음 — shell-ui 후속 반복에서 추가 예정) |
+| `WORKSPACE_DELETED` | persist-workspace | `{workspaceId}` | (현재 없음 — cascade 로 관련 row 제거 시 클라이언트 캐시 purge 가 필요해지는 시점에 추가) |
+
+**cascade 정책 (1차 구현):** `WORKSPACE_DELETED` 는 `WorkspaceService.delete` 내부에서 cascade 로 그룹·그룹 멤버·웹훅 row 를 삭제한 뒤 트랜잭션 커밋 후에 단일 이벤트로 발행된다. 세부 건수나 하위 엔티티별 이벤트 재발행은 하지 않는다 (YAGNI). `document`/`type` cascade 로 범위가 확장될 때 `cascade: { groups, members, webhooks, documents, types }` 같은 선택적 하위 객체로 페이로드를 확장할 여지를 남겨둔다.
+
+**`handbook-events` 표와의 관계:** 아래 `handbook-events` 이벤트 타입 표에는 의도적으로 `WORKSPACE_*` 를 기재하지 않는다 (다른 토픽이므로). 소비자도 `Event<T>` 역직렬화 경로와는 별개다.
+
 ## Dead Letter Queue
 
 | 토픽 | 소스 | 용도 |
