@@ -27,9 +27,9 @@ class MenuServiceTest : DescribeSpec({
     describe("MenuService는") {
 
         it("여러 공급자의 메뉴를 병렬로 호출하여 순서대로 정렬한다") {
-            every { supplier1.menu(headers) } returns Flux.just(menu2).delaySequence(Duration.ofMillis(700))
-            every { supplier2.menu(headers) } returns Flux.just(menu1).delaySequence(Duration.ofMillis(1000))
-            every { supplier3.menu(headers) } returns Flux.just(menu3).delaySequence(Duration.ofMillis(500))
+            every { supplier1.menu(headers) } returns Flux.just(menu2).delaySequence(Duration.ofMillis(600))
+            every { supplier2.menu(headers) } returns Flux.just(menu1).delaySequence(Duration.ofMillis(800))
+            every { supplier3.menu(headers) } returns Flux.just(menu3).delaySequence(Duration.ofMillis(400))
 
             val startTime = System.currentTimeMillis()
             StepVerifier.create(menuService.menus(headers))
@@ -37,8 +37,9 @@ class MenuServiceTest : DescribeSpec({
                 .verifyComplete()
             val totalTime = System.currentTimeMillis() - startTime
 
-            // 병렬 실행: ~1000ms (가장 긴 작업), 순차 실행이면 2200ms
-            totalTime.shouldBeBetween(800, 1800)
+            // 병렬 실행: ~800ms (가장 긴 작업, AGGREGATE_TIMEOUT=1s 이내).
+            // 순차 실행이면 1800ms 이상.
+            totalTime.shouldBeBetween(600, 1500)
             verify(exactly = 1) { supplier1.menu(headers) }
             verify(exactly = 1) { supplier2.menu(headers) }
             verify(exactly = 1) { supplier3.menu(headers) }
