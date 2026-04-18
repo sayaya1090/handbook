@@ -76,6 +76,11 @@ body,
        어긋날 때 flex 가 rail 을 압축해 menu-rail 이 순간 줄어들었다가 원복되는 jitter 방지.
        drawer/rail transition 을 400ms 로 동기화했지만 페인트 타이밍 편차 대비 고정. */
     flex-shrink: 0;
+    /* box-sizing: border-box — .rail[expand] 가 `padding: 0 0.6rem` 을 쓰므로 default
+       content-box 면 실제 외곽 폭 = 16rem + 1.2rem = 17.2rem 로 --shell-drawer-width
+       calc(16+16=32rem) 와 어긋나 두 번째 rail(tool-rail) 이 drawer 밖으로 밀려 좁아
+       보인다. border-box 로 padding 을 width 안에 포함해 rail 외곽 폭을 16rem 로 고정. */
+    box-sizing: border-box;
     transition: width 400ms cubic-bezier(.2,0,0,1), padding-left 400ms cubic-bezier(.2,0,0,1);
 }
 .rail[collapse] {

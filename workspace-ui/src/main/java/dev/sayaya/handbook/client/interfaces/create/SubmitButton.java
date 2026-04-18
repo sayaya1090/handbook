@@ -53,7 +53,7 @@ public class SubmitButton implements IsElement<HTMLElement> {
                  WorkspaceRepository api, ToastContainer toastContainer,
                  LabelProvider labelProvider) {
         _this = ButtonElementBuilder.button().filled().css("ws-submit");
-        _this.text("Create");
+        _this.element().textContent = "Create";
 
         labelProvider.subscribe(labels -> currentLabels = labels);
 
@@ -90,8 +90,12 @@ public class SubmitButton implements IsElement<HTMLElement> {
     }
 
     private void updateLabel(Mode m, LabelProvider labelProvider) {
-        if (m == Mode.CREATE) _this.text("Create");
-        else _this.text("Request to join");
+        // 주의: elemento `.text()` 는 텍스트 노드를 append — 반복 호출 시 "CreateCreateCreate" 누적.
+        // textContent 대입으로 기존 자식 텍스트를 완전히 교체한다.
+        String label = (m == Mode.CREATE)
+                ? currentLabels.getOrDefault("workspace.create.submit", "Create")
+                : currentLabels.getOrDefault("workspace.join.submit", "Request to join");
+        _this.element().textContent = label;
     }
 
 }
