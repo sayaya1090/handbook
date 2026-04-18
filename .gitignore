@@ -1,3 +1,6 @@
+# Claude Code 런타임 lock (스케줄러/루프)
+.claude/scheduled_tasks.lock
+
 # Compiled class file
 *.class
 
