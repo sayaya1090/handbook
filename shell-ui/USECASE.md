@@ -379,3 +379,20 @@ sequenceDiagram
 | UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, WindowProgressBridge, WindowUriBridge, WindowLabelBridge | ❌ 테스트 미작성 (구현 완료) |
+| UC-S21 (빈 워크스페이스 온보딩, UC-12) | 빈 WorkspaceList → 가상 Menu push → workspace-ui 로드 | 유스케이스 | WorkspaceOnboardingBootstrapper, WorkspaceList, MenuSelected, ModuleScriptManager, ShellInitializer | ❌ 테스트 미작성 — `BehaviorSubject`/`Menu` 가 `@JsType(isNative=true)` 라 순수 JVM Kotest 불가. GWT Playwright 테스트 엔트리포인트 신설 필요 (예정 케이스: empty → push 1회 + Menu 필드 검증, non-empty → push 없음, empty↔non-empty 반복 → 최초 1회만) |
+
+---
+
+## 에이전트 연동
+
+shell-ui 는 프론트엔드 Shell 모듈로 공개 REST API 를 노출하지 않는다. 그러나 외부/내부 AI 에이전트가 Shell 파이프라인과 상호작용하는 지점이 존재하므로 아래와 같이 기록한다.
+
+| # | 항목 | 값 | 비고 |
+|---|------|---|------|
+| 1 | 내부 assistant 연동 | `AGENT_COMMAND` 수신 (`navigate`, `highlight`, `mutate`) | assistant 가 shell 의 URL 변경·DOM selector 하이라이트를 유도. `UrlBasedMenuResolver` / `HistoryManager` 가 navigate 타겟, `HighlightEffect` 가 highlight 타겟 |
+| 2 | 외부 AI Tool Use | N/A — 백엔드 API 없음 | shell-ui 자체는 `/openapi.json` 미발행. 외부 에이전트는 gateway 경유 백엔드 서비스로만 접근 |
+| 3 | OpenAPI 어노테이션 | N/A | 동일 사유 |
+| 4 | 감사 경로 | N/A (shell 자체) | 단, shell 이 트리거한 백엔드 호출은 각 서비스에서 `AuditEntry` 발행 (`docs/contracts/audit.md`) |
+| 5 | Agent Command 타겟 | URL 패턴: `MenuList.urlRegex` 에 등록된 메뉴 경로. selector: `.menu-rail .item`, `.tool-rail .item`, `.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
+
+**UC-S21 특기사항**: 가상 onboarding Menu 는 `MenuList` 밖에서 합성되므로 `urlRegex` 미지정 — 외부 에이전트의 navigate 커맨드로 직접 트리거 불가능. 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.

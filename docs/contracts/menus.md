@@ -12,6 +12,19 @@
   - `interfaces/api/MenuController.kt`
 - **(신규) landing-menu** — 앱 내부 랜딩 엔트리 (구현 위치 미정 — 별도 모듈 또는 gateway 로컬)
 
+### Client-side synthetic menus
+
+백엔드 `/menus` 집계 밖에서 **Shell 이 런타임에 합성**하는 가상 메뉴. `MenuList` 에 등록되지 않고 `urlRegex` 도 미지정이므로 `UrlBasedMenuResolver` 매칭 대상이 아니며, MenuRail / MobileTabs 에도 노출되지 않는다. 오직 `MenuSelected` 스트림에만 push 되어 기존 `ModuleScriptManager` 파이프라인으로 모듈 스크립트 로드를 유도한다.
+
+| 합성 소스 | 트리거 | 로드 대상 | UC |
+|----------|--------|----------|-----|
+| `shell-ui/WorkspaceOnboardingBootstrapper` | `WorkspaceList` 가 empty 방출 | `js/workspace/workspace.nocache.js` (workspace-ui Create/Join) | UC-12 / UC-S21 |
+
+**제약**
+- `urlRegex` 미지정 → 딥링크·URL 기반 자동 선택 불가. 합성 메뉴는 일시 상태 (도메인 조건 복귀 시 더 이상 발화하지 않음) 에만 사용.
+- `loaded` 플래그로 세션 내 1회 발화 보장 — 도메인 조건이 재진입해도 반복 push 금지.
+- 외부 에이전트의 navigate 커맨드로 직접 트리거 불가 (MenuList 부재). 에이전트가 유도하려면 도메인 조건을 우회 조작해야 한다.
+
 ## 소비자 (Consumers)
 
 - **gateway** — `MenuService` 가 모든 공급자를 병렬 호출해 집계

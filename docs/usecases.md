@@ -409,7 +409,7 @@ flowchart TD
 2. 참여 중인 워크스페이스가 있으면, 마지막으로 액션을 취한 워크스페이스로 자동 진입한다.
 
 **대안 흐름:**
-- 2a. 참여 중인 워크스페이스가 없으면, 워크스페이스 생성(UC-10), 조인(UC-06), 또는 대화형 설계(UC-80) 화면을 표시한다.
+- 2a. 참여 중인 워크스페이스가 없으면, Shell 이 `workspace-ui` 모듈을 자동 주입해 워크스페이스 생성(UC-10), 조인(UC-06), 또는 대화형 설계(UC-80) 화면을 표시한다. 주입 메커니즘 상세는 **UC-12 (빈 워크스페이스 자동 온보딩)** 참조.
 
 ---
 
@@ -484,6 +484,60 @@ flowchart TD
 **기본 흐름:**
 1. 관리자가 워크스페이스 삭제를 요청한다.
 2. 시스템이 종속 데이터를 포함하여 cascade 삭제한다.
+
+---
+
+### UC-12: 빈 워크스페이스 자동 온보딩
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | Shell UI (시스템) |
+| **선행 조건** | 사용자가 로그인 완료 상태이며, 참여 중인 워크스페이스 목록이 비어 있다 |
+| **후행 조건** | `workspace-ui` 모듈이 자동 로드되어 Create/Join 온보딩 화면이 표시된다 |
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as 사용자
+    participant Shell as Shell UI
+    participant WL as WorkspaceList
+    participant OB as WorkspaceOnboardingBootstrapper
+    participant MS as MenuSelected
+    participant MSM as ModuleScriptManager
+    participant WUI as workspace-ui (iframe)
+
+    User->>Shell: 로그인 완료
+    Shell->>WL: 워크스페이스 목록 조회
+    WL-->>OB: empty 방출 (distinctUntilChanged)
+    OB->>OB: loaded 플래그 확인 (중복 가드)
+    OB->>MS: 가상 onboarding Menu push<br/>(title=workspace.onboarding,<br/>script=js/workspace/workspace.nocache.js,<br/>icon=fa-circle-plus, order=0)
+    MS-->>MSM: 메뉴 선택 이벤트
+    MSM->>WUI: workspace.nocache.js 로드 + 프레임 렌더
+    WUI-->>User: Create/Join 온보딩 화면 표시
+
+    Note over User,WUI: 사용자가 워크스페이스 생성/조인 완료 시
+    User->>WL: 워크스페이스 생성 (UC-10) 또는 조인 (UC-06)
+    WL-->>Shell: non-empty 방출
+    Shell->>Shell: UrlBasedMenuResolver 정상 경로 복귀
+```
+
+**기본 흐름:**
+1. 사용자가 로그인하면 Shell 이 `WorkspaceList` 를 구독한다.
+2. `WorkspaceList` 가 빈 목록을 방출한다.
+3. `WorkspaceOnboardingBootstrapper` 가 이를 감지하고 `loaded` 플래그로 중복 실행을 가드한다.
+4. 가상 onboarding `Menu` (title=`workspace.onboarding`, script=`js/workspace/workspace.nocache.js`, icon=`fa-circle-plus`, iconType=`solid`, order=`0`) 를 `MenuSelected` 에 1회 push 한다.
+5. `ModuleScriptManager` 가 기존 파이프라인에 따라 `workspace.nocache.js` 를 로드하고 프레임을 렌더한다.
+6. 사용자는 UC-10 (생성) 또는 UC-06 (조인) 을 수행한다.
+
+**대안 흐름:**
+- 4a. 가상 Menu 는 `MenuList` 에 등록되지 않으므로 MenuRail / MobileTabs 에는 노출되지 않는다 (오직 `MenuSelected` 스트림에만 흐름).
+- 6a. 사용자가 워크스페이스를 생성/조인하여 `WorkspaceList` 가 non-empty 로 전환되면 `UrlBasedMenuResolver` 의 정상 경로로 복귀한다. Bootstrapper 는 `loaded=true` 로 고정되어 재실행되지 않는다.
+- 2a. `WorkspaceList` 가 non-empty 를 먼저 방출하면 Bootstrapper 는 push 를 수행하지 않고, UC-04 의 기본 흐름(마지막 액션 워크스페이스 진입)이 진행된다.
+
+**관련 컴포넌트:**
+- `shell-ui/src/main/java/dev/sayaya/handbook/client/usecase/WorkspaceOnboardingBootstrapper.java`
+- `WorkspaceList`, `MenuSelected`, `ModuleScriptManager` (shell-ui)
+- `workspace-ui` 모듈 (`workspace.nocache.js`)
 
 ---
 
