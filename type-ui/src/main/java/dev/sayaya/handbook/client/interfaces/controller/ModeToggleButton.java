@@ -7,6 +7,7 @@ import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -37,15 +38,14 @@ public class ModeToggleButton implements IsElement<HTMLDivElement> {
         layoutBtn = ButtonElementBuilder.button().outlined()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrows-up-down-left-right"))
                 .css("type-ctrl-btn")
+                .on(EventType.click, e -> canvasMode.setMode(Mode.LAYOUT))
                 .element();
 
         typeBtn = ButtonElementBuilder.button().outlined()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-pen"))
                 .css("type-ctrl-btn")
+                .on(EventType.click, e -> canvasMode.setMode(Mode.TYPE))
                 .element();
-
-        layoutBtn.addEventListener("click", e -> canvasMode.setMode(Mode.LAYOUT));
-        typeBtn.addEventListener("click", e -> canvasMode.setMode(Mode.TYPE));
 
         canvasMode.subscribe(mode -> {
             layoutBtn.toggleAttribute("selected", mode == Mode.LAYOUT);

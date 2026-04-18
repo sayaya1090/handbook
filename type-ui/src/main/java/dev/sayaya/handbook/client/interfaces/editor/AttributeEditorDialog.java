@@ -12,6 +12,7 @@ import elemental2.dom.HTMLElement;
 import elemental2.dom.KeyboardEvent;
 import elemental2.dom.NodeList;
 import jsinterop.base.Js;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -70,8 +71,9 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         typeSelector = div().css("attr-type-selector").element();
         String[] types = {"text", "number", "date", "enum", "bool", "array", "map", "file", "document"};
         for (String type : types) {
-            HTMLElement btn = ButtonElementBuilder.button().outlined().text(type).css("attr-type-btn").element();
-            btn.addEventListener("click", e -> selectType(type));
+            var btn = ButtonElementBuilder.button().outlined().text(type).css("attr-type-btn")
+                    .on(EventType.click, e -> selectType(type))
+                    .element();
             typeButtons.put(type, btn);
             typeSelector.appendChild(btn);
         }
@@ -83,11 +85,13 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         headerDiv.textContent = "Edit Attribute";
         headerDiv.id = "attr-editor-headline";
 
-        HTMLElement applyBtn = ButtonElementBuilder.button().filled().text("Apply").css("attr-edit-apply").element();
-        applyBtn.addEventListener("click", e -> apply());
+        var applyBtn = ButtonElementBuilder.button().filled().text("Apply").css("attr-edit-apply")
+                .on(EventType.click, e -> apply())
+                .element();
 
-        HTMLElement closeBtn = ButtonElementBuilder.button().text().text("Close").css("attr-edit-close").element();
-        closeBtn.addEventListener("click", e -> hide());
+        var closeBtn = ButtonElementBuilder.button().text().text("Close").css("attr-edit-close")
+                .on(EventType.click, e -> hide())
+                .element();
 
         root = div().css("attr-editor-dialog")
                 .add(headerDiv)

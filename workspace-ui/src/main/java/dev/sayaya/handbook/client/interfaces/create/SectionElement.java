@@ -7,10 +7,12 @@ import dev.sayaya.handbook.client.usecase.CreateWorkspaceMode.Mode;
 import dev.sayaya.handbook.client.usecase.CreateWorkspaceParam;
 import dev.sayaya.ui.elements.RadioElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
+
+import org.jboss.elemento.Elements;
 
 import static org.jboss.elemento.Elements.div;
 
@@ -38,18 +40,17 @@ public class SectionElement implements IsElement<HTMLDivElement> {
                 .name("create-workspace")
                 .value(mode.name());
 
-        label = (HTMLElement) DomGlobal.document.createElement("label");
-        label.classList.add("ws-section-label");
+        label = Elements.label().css("ws-section-label").element();
 
         input = TextFieldElementBuilder.textField().outlined().css("ws-section-input");
+        input.on(EventType.focus, e -> modeState.next(mode))
+                .on(EventType.input, e -> {
+                    if (modeState.getValue() == mode) param.next(input.element().value);
+                });
 
-        radio.onChange((e) -> {
+        radio.onChange(e -> {
             modeState.next(mode);
             input.element().focus();
-        });
-        input.element().addEventListener("focus", e -> modeState.next(mode));
-        input.element().addEventListener("input", e -> {
-            if (modeState.getValue() == mode) param.next(input.element().value);
         });
 
         modeState.subscribe(m -> {
