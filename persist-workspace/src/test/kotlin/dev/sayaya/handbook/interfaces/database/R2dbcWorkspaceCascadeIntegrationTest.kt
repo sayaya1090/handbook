@@ -101,7 +101,7 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
 
         // 두 워크스페이스 씨드
         listOf(keep to "keeper", target to "doomed").forEach { (id, label) ->
-            workspaceRepo.save(Workspace(id, label, null)).block()
+            workspaceRepo.save(Workspace(id, label, null), UUID.randomUUID()).block()
             val principal = Principal { UUID.randomUUID().toString() }
             groupRepo.createAndAssign(Workspace(id, label, null), principal, "Admin", null).block()
         }
@@ -184,7 +184,7 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
         val ws = UUID.randomUUID()
         val subUuid = UUID.randomUUID()
         val idUuid = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "sub-wins", null)).block()
+        workspaceRepo.save(Workspace(ws, "sub-wins", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             groupRepo.createAndAssign(
@@ -203,7 +203,7 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
     Given("UserAuthentication 에 sub 는 null 이고 id 만 있는 Phase 1a 이전 토큰") {
         val ws = UUID.randomUUID()
         val idUuid = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "id-fallback", null)).block()
+        workspaceRepo.save(Workspace(ws, "id-fallback", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             groupRepo.createAndAssign(
@@ -221,7 +221,7 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
 
     Given("UserAuthentication 에 sub · id 모두 null 인 경우") {
         val ws = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "both-null", null)).block()
+        workspaceRepo.save(Workspace(ws, "both-null", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             Then("name(username) 이 UUID 로 파싱 불가해 IllegalArgumentException 이 던져진다") {
@@ -240,7 +240,7 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
     Given("UserAuthentication 이 아닌 익명 Principal") {
         val ws = UUID.randomUUID()
         val legacyUuid = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "legacy-principal", null)).block()
+        workspaceRepo.save(Workspace(ws, "legacy-principal", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             val principal = Principal { legacyUuid.toString() }

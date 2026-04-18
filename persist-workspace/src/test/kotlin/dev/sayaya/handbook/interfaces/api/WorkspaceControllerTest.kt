@@ -42,23 +42,47 @@ class WorkspaceControllerTest : BehaviorSpec({
 
     // 워크스페이스 생성 — @AuthenticationPrincipal UserAuthentication 주입 + 이름 정규식 검증.
     Given("워크스페이스 생성 API") {
+        val creatorSlot = slot<UUID>()
         val principalSlot = slot<java.security.Principal>()
         val nameSlot = slot<String>()
         every {
-            service.create(capture(principalSlot), capture(nameSlot), any())
+            service.create(capture(creatorSlot), capture(principalSlot), capture(nameSlot), any())
         } returns Mono.just(workspace)
 
         When("유효한 이름과 UserAuthentication 으로 create 를 호출하면") {
             val request = WorkspaceController.CreateWorkspaceRequest("TestWorkspace", "테스트")
             val result = controller.create(testPrincipal, request).block()
 
-            Then("서비스가 같은 principal/이름/설명으로 호출되고 생성된 워크스페이스가 반환된다") {
+            Then("서비스가 creator UUID / principal / 이름 / 설명으로 호출되고 생성된 워크스페이스가 반환된다") {
                 result shouldBe workspace
+                // creator UUID = testPrincipal.id (sub 가 null 이면 id 폴백 — 기존 토큰 호환).
+                creatorSlot.captured shouldBe UUID.fromString(testUserId)
                 // principal 이 UserAuthentication 타입으로 service 에 전달됨 (auth-expert 회귀 방지).
                 principalSlot.captured shouldBeSameInstanceAs testPrincipal
                 (principalSlot.captured as UserAuthentication).id shouldBe testUserId
                 nameSlot.captured shouldBe "TestWorkspace"
-                verify(exactly = 1) { service.create(any(), "TestWorkspace", "테스트") }
+                verify(exactly = 1) { service.create(any(), any(), "TestWorkspace", "테스트") }
+            }
+        }
+
+        When("sub 클레임이 있는 최신 토큰으로 create 를 호출하면") {
+            val subUuid = UUID.randomUUID().toString()
+            val jtiUuid = UUID.randomUUID().toString() // 다른 값 — 토큰 ID 와 user UUID 가 분리된 Phase 1a 이후 경로
+            val principal = UserAuthentication(
+                id = jtiUuid,
+                username = "Test User 2",
+                issuer = "test",
+                issuedDateTime = LocalDateTime.now(),
+                notBeforeDateTime = LocalDateTime.now(),
+                expireDateTime = LocalDateTime.now().plusHours(1),
+                token = "dummy.jwt.token",
+                sub = subUuid,
+            )
+            val request = WorkspaceController.CreateWorkspaceRequest("SubToken", null)
+            controller.create(principal, request).block()
+
+            Then("sub 가 우선되어 creator UUID 로 service 에 전달된다 (group_member.member 와 일관)") {
+                creatorSlot.captured shouldBe UUID.fromString(subUuid)
             }
         }
 
@@ -74,18 +98,18 @@ class WorkspaceControllerTest : BehaviorSpec({
         }
     }
 
-    // 워크스페이스 수정 API
+    // 워크스페이스 수정 API — UserAuthentication 주입을 확인하기 위해 직접 메서드 호출.
     Given("워크스페이스 수정 API") {
-        every { service.update(any()) } returns Mono.just(workspace)
+        val modifierSlot = slot<UUID>()
+        every { service.update(any(), capture(modifierSlot)) } returns Mono.just(workspace)
 
-        When("PUT /workspace/{id}를 호출하면") {
-            Then("200 OK가 반환된다") {
-                client.put()
-                    .uri("/workspace/${workspace.id}")
-                    .header("Content-Type", "application/vnd.sayaya.handbook.v1+json")
-                    .bodyValue(WorkspaceController.UpdateWorkspaceRequest("TestWorkspace", "테스트"))
-                    .exchange()
-                    .expectStatus().isOk
+        When("UserAuthentication 과 함께 update 를 호출하면") {
+            val request = WorkspaceController.UpdateWorkspaceRequest("TestWorkspace", "테스트")
+            val result = controller.update(workspace.id, testPrincipal, request).block()
+
+            Then("수정자 UUID 가 service 에 전달되고 수정된 워크스페이스가 반환된다") {
+                result shouldBe workspace
+                modifierSlot.captured shouldBe UUID.fromString(testUserId)
             }
         }
     }

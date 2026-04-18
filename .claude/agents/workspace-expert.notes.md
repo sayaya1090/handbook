@@ -6,6 +6,9 @@
 
 ## 요청 로그
 
+- 2026-04-18: 워크스페이스 생성 I18N 미적용 → WorkspaceModule.languagePackRepository 가 fetch 없이 빈 subject 만 반환 + LanguageDetector 가 "ko-KR" 통째 반환. TypeModule/DocumentModule 패턴(fetchApi.request("js/language.<lang>.json") + UserPreferences→navigator split("-")[0]) 으로 교체 필요
+- 2026-04-18: 모바일 CREATE 버튼 잘림 → .ws-content overflow-y:auto + .ws-dialog min-height→height:auto+padding-bottom safe-area 로 스크롤 허용
+- 2026-04-18: workspace.created_by zero UUID 조사 → R2dbcWorkspaceRepositoryAdapter.create 에서 createdBy/modifiedBy 를 UUID(0,0) 하드코딩. Service 시그니처에 principal 전달 필요
 - 2026-04-18: 직전 설계 3건 실제 Edit 적용 → CSS inset:0 + search-workspace listForUser + Group userUuid sub 우선
 - 2026-04-18: 3건 병렬(ws-content 배경 끊김/search-workspace principal 필터/Group sub 전환) → A/B/C 각 수정안 + 테스트 계획 제시
 - 2026-04-18: POST /workspace 200 후 /user 에 workspace 없음 조사 → /user 는 workspace 미반환. 목록은 GET /workspaces 별도 엔드포인트
@@ -23,6 +26,8 @@
 - `.ws-content` 가 frame 내부에 append 되는데 `height: 100dvh` 로 viewport 전체 높이를 요청 → frame 영역(viewport - 16px*2 - appbar) 을 overflow. 배경이 frame 내부에서만 그려져 frame 경계에서 끊긴 것처럼 보임. FrameUpdater 는 자식을 `.frame` (position:absolute; inset:16px) 에 append 하므로 자식은 `inset:0` + `width:100%` + `min-height:100%` 가 정석.
 - `WebTestClient.bindToController` 만 쓰면 spring-security resolver 체인이 걸리지 않아 `@AuthenticationPrincipal UserAuthentication` 이 null 로 주입됨. 해당 엔드포인트는 메서드 직접 호출 (`controller.list(principal)`) 로 검증해야 함 (persist-workspace WorkspaceControllerTest 패턴).
 - MockK `verify(exactly = 0) { ... }` 는 spec 전체 누적 호출을 보므로, 여러 Given 에서 같은 mock 을 공유하면 다른 Given 의 호출이 섞여 실패. 호출 0회 검증은 해당 Given 전용 mock 인스턴스로 격리.
+- `.ws-content` 가 `position:absolute; inset:0` 로 frame 영역에 고정되는데 모바일에서 dialog 를 `min-height:100dvh` 로 두고 스크롤 옵션을 안 주면 하단(버튼) 잘림. 컨테이너에 `overflow-y:auto` 필수. dialog 는 `min-height` 대신 `height:auto` + 충분한 padding-bottom(safe-area 포함) 으로 내용만큼만 차지 + 필요 시 컨테이너가 스크롤.
+- 신규 GWT UI 모듈의 Dagger Module 복사·붙여넣기 시 `LanguagePackRepository` 가 `behavior(Labels.empty()).asObservable()` 스텁인 채로 남으면 UI 전체가 영문 fallback 만 노출. `LabelProvider.subscribe` 구독은 되는데 emit 이 비어 있어 키 누락과 증상이 동일 — 로그에 HTTP 요청이 안 찍히는 것으로 구분. workspace-ui 의 회귀가 이 경로. 신규 모듈은 TypeModule/DocumentModule 의 fetchApi+AsyncSubject.await 패턴을 그대로 복사하고, LanguageDetector 도 `navigator.language.split("-")[0]` 처리 필요 (`ko-KR` → `ko`).
 
 ## 내부 체크리스트
 

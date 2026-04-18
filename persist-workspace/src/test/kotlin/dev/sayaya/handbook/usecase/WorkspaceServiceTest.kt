@@ -23,10 +23,11 @@ class WorkspaceServiceTest : BehaviorSpec({
 
     Given("워크스페이스 생성 요청이 주어졌을 때") {
         val principal = mockk<Principal>()
+        val creator = UUID.randomUUID()
         val name = "MyWorkspace"
         val description = "테스트 워크스페이스"
 
-        every { workspaceRepo.save(any()) } answers {
+        every { workspaceRepo.save(any(), creator) } answers {
             Mono.just(firstArg())
         }
         every { groupRepo.createAndAssign(any(), principal, "Admin", null) } returns Mono.just(
@@ -35,7 +36,7 @@ class WorkspaceServiceTest : BehaviorSpec({
         every { eventPublisher.publishCreated(any()) } returns Mono.empty()
 
         When("create를 호출하면") {
-            val result = service.create(principal, name, description)
+            val result = service.create(creator, principal, name, description)
 
             Then("워크스페이스가 생성된다") {
                 StepVerifier.create(result)
@@ -44,6 +45,9 @@ class WorkspaceServiceTest : BehaviorSpec({
                         it.description shouldBe description
                     }
                     .verifyComplete()
+            }
+            Then("워크스페이스 저장 시 creator UUID 가 함께 전달된다 — created_by 감사 회귀 방지") {
+                verify(exactly = 1) { workspaceRepo.save(any(), creator) }
             }
             Then("Admin 그룹이 생성되고 할당된다") {
                 verify { groupRepo.createAndAssign(any(), principal, "Admin", null) }
@@ -56,15 +60,19 @@ class WorkspaceServiceTest : BehaviorSpec({
 
     Given("워크스페이스 수정 요청이 주어졌을 때") {
         val workspace = Workspace(UUID.randomUUID(), "UpdatedName", "수정된 설명")
-        every { workspaceRepo.update(workspace) } returns Mono.just(workspace)
+        val modifier = UUID.randomUUID()
+        every { workspaceRepo.update(workspace, modifier) } returns Mono.just(workspace)
 
         When("update를 호출하면") {
-            val result = service.update(workspace)
+            val result = service.update(workspace, modifier)
 
             Then("수정된 워크스페이스가 반환된다") {
                 StepVerifier.create(result)
                     .assertNext { it.name shouldBe "UpdatedName" }
                     .verifyComplete()
+            }
+            Then("modifier UUID 가 repo.update 에 전달된다 — last_modified_by 감사 회귀 방지") {
+                verify(exactly = 1) { workspaceRepo.update(workspace, modifier) }
             }
         }
     }

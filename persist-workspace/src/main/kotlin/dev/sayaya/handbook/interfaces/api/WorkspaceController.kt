@@ -46,7 +46,7 @@ class WorkspaceController(private val svc: WorkspaceService) {
         @RequestBody param: CreateWorkspaceRequest,
     ): Mono<Workspace> {
         validateName(param.name)
-        return svc.create(principal, param.name, param.description)
+        return svc.create(userUuid(principal), principal, param.name, param.description)
     }
 
     @PutMapping(
@@ -57,10 +57,11 @@ class WorkspaceController(private val svc: WorkspaceService) {
     @ResponseStatus(HttpStatus.OK)
     fun update(
         @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserAuthentication,
         @RequestBody param: UpdateWorkspaceRequest,
     ): Mono<Workspace> {
         validateName(param.name)
-        return svc.update(Workspace(id, param.name, param.description))
+        return svc.update(Workspace(id, param.name, param.description), userUuid(principal))
     }
 
     @DeleteMapping("/{id}")
@@ -88,6 +89,22 @@ class WorkspaceController(private val svc: WorkspaceService) {
                 "Workspace name must contain only alphanumeric, Korean, hyphen, or underscore characters (max 255)"
             )
         }
+    }
+
+    /**
+     * `UserAuthentication` 에서 사용자 UUID 를 추출한다.
+     *
+     * 우선순위는 [dev.sayaya.handbook.interfaces.database.R2dbcGroupRepositoryAdapter] 의
+     * `userUuid` 와 **동일**: `sub` → `id(jti, Phase 1a 폴백)` → `name` 순.
+     * 두 경로 모두 같은 UUID 를 돌려주어야 `workspace.created_by` 와
+     * `group_member.member` 가 일치한다.
+     */
+    private fun userUuid(principal: UserAuthentication): UUID {
+        val raw = principal.sub
+            ?: principal.id
+            ?: principal.name
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "principal has no sub/id/name")
+        return UUID.fromString(raw)
     }
 
     data class CreateWorkspaceRequest(val name: String, val description: String? = null)

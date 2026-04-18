@@ -30,15 +30,27 @@ class WorkspaceService(
     private val eventPublisher: WorkspaceEventPublisher,
     private val tx: TransactionalOperator,
 ) {
-    fun create(principal: Principal, name: String, description: String?): Mono<Workspace> {
+    /**
+     * 새 워크스페이스를 생성한다. Admin 그룹을 함께 생성하고 생성자를 그 그룹의 첫 멤버로 배정한다.
+     *
+     * @param creator 생성자 사용자 UUID — `workspace.created_by` 및 `last_modified_by` 에 기록된다.
+     *   `group_member.member` 와 동일 출처(Principal) 에서 추출되어야 감사 일관성이 유지된다.
+     * @param principal GroupRepo 의 `createAndAssign` 에 전달되어 Admin 멤버로 배정된다.
+     */
+    fun create(creator: UUID, principal: Principal, name: String, description: String?): Mono<Workspace> {
         val workspace = Workspace(UUID.randomUUID(), name, description)
-        return workspaceRepo.save(workspace)
+        return workspaceRepo.save(workspace, creator)
             .delayUntil { groupRepo.createAndAssign(it, principal, GROUP_ADMIN, null) }
             .delayUntil { eventPublisher.publishCreated(it) }
     }
 
-    fun update(workspace: Workspace): Mono<Workspace> =
-        workspaceRepo.update(workspace)
+    /**
+     * 기존 워크스페이스를 수정한다.
+     *
+     * @param modifier 수정자 사용자 UUID — `workspace.last_modified_by` 에 기록된다.
+     */
+    fun update(workspace: Workspace, modifier: UUID): Mono<Workspace> =
+        workspaceRepo.update(workspace, modifier)
 
     /**
      * 워크스페이스 삭제. 트랜잭션 내에서 참조하는 row(웹훅 → 그룹 멤버 → 그룹 → 워크스페이스)

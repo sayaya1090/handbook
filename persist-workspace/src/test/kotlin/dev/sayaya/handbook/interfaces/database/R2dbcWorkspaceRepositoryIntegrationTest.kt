@@ -50,6 +50,7 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
 
     Given("워크스페이스 생성") {
         val workspaceId = UUID.randomUUID()
+        val creator = UUID.randomUUID()
         val workspace = Workspace(
             id = workspaceId,
             name = "테스트 워크스페이스",
@@ -58,7 +59,7 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
 
         When("save를 호출하면") {
             Then("저장된 워크스페이스가 반환된다") {
-                StepVerifier.create(adapter.save(workspace))
+                StepVerifier.create(adapter.save(workspace, creator))
                     .assertNext { saved ->
                         saved.id shouldBe workspaceId
                         saved.name shouldBe "테스트 워크스페이스"
@@ -66,22 +67,52 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
                     }
                     .verifyComplete()
             }
+
+            Then("created_by / last_modified_by 에 명시 전달한 creator UUID 가 기록된다") {
+                val createdBy = DatabaseClient.create(connectionFactory)
+                    .sql("SELECT created_by FROM workspace WHERE id = :w")
+                    .bind("w", workspaceId)
+                    .map { row -> row.get("created_by", UUID::class.java) }
+                    .one().block()
+                val lastModifiedBy = DatabaseClient.create(connectionFactory)
+                    .sql("SELECT last_modified_by FROM workspace WHERE id = :w")
+                    .bind("w", workspaceId)
+                    .map { row -> row.get("last_modified_by", UUID::class.java) }
+                    .one().block()
+                createdBy shouldBe creator
+                lastModifiedBy shouldBe creator
+            }
         }
 
         When("update를 호출하면") {
-            Then("수정된 워크스페이스가 반환된다") {
+            Then("수정된 워크스페이스가 반환되고 last_modified_by 가 modifier 로 갱신된다") {
                 val updated = Workspace(
                     id = workspaceId,
                     name = "수정된 워크스페이스",
                     description = "수정됨",
                 )
-                StepVerifier.create(adapter.update(updated))
+                val modifier = UUID.randomUUID()
+                StepVerifier.create(adapter.update(updated, modifier))
                     .assertNext { saved ->
                         saved.id shouldBe workspaceId
                         saved.name shouldBe "수정된 워크스페이스"
                         saved.description shouldBe "수정됨"
                     }
                     .verifyComplete()
+
+                val createdBy = DatabaseClient.create(connectionFactory)
+                    .sql("SELECT created_by FROM workspace WHERE id = :w")
+                    .bind("w", workspaceId)
+                    .map { row -> row.get("created_by", UUID::class.java) }
+                    .one().block()
+                val lastModifiedBy = DatabaseClient.create(connectionFactory)
+                    .sql("SELECT last_modified_by FROM workspace WHERE id = :w")
+                    .bind("w", workspaceId)
+                    .map { row -> row.get("last_modified_by", UUID::class.java) }
+                    .one().block()
+                // update 는 last_modified_by 만 바꾼다 — created_by 는 원본 creator 유지.
+                createdBy shouldBe creator
+                lastModifiedBy shouldBe modifier
             }
         }
 
@@ -96,7 +127,7 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
                     name = "삭제된 워크스페이스",
                     description = null,
                 )
-                StepVerifier.create(adapter.update(deleted))
+                StepVerifier.create(adapter.update(deleted, UUID.randomUUID()))
                     .verifyComplete()
             }
         }
@@ -114,7 +145,7 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
         When("각각 save를 호출하면") {
             Then("모두 저장된다") {
                 workspaces.forEach { ws ->
-                    StepVerifier.create(adapter.save(ws))
+                    StepVerifier.create(adapter.save(ws, UUID.randomUUID()))
                         .assertNext { saved ->
                             saved.id shouldBe ws.id
                             saved.name shouldBe ws.name
