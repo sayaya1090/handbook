@@ -5,6 +5,7 @@ import dev.sayaya.handbook.usecase.WorkspaceReadRepository
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -24,6 +25,7 @@ import java.util.UUID
 @Repository
 class R2dbcWorkspaceReadAdapter(
     private val template: R2dbcEntityTemplate,
+    private val databaseClient: DatabaseClient,
 ) : WorkspaceReadRepository {
 
     override fun findAll(): Flux<Workspace> =
@@ -34,6 +36,26 @@ class R2dbcWorkspaceReadAdapter(
             Query.query(Criteria.where("id").`is`(id)),
             R2dbcWorkspaceEntity::class.java,
         ).map { it.toDomain() }
+
+    override fun findByUserSub(sub: UUID): Flux<Workspace> =
+        databaseClient.sql(
+            """
+            SELECT DISTINCT w.id, w.name, w.description
+              FROM workspace w
+              JOIN group_member gm ON gm.workspace = w.id
+             WHERE gm.member = :sub
+             ORDER BY w.name
+            """.trimIndent(),
+        )
+            .bind("sub", sub)
+            .map { row, _ ->
+                Workspace(
+                    id = row.get("id", UUID::class.java)!!,
+                    name = row.get("name", String::class.java)!!,
+                    description = row.get("description", String::class.java),
+                )
+            }
+            .all()
 
     private fun R2dbcWorkspaceEntity.toDomain() = Workspace(id, name, description)
 }

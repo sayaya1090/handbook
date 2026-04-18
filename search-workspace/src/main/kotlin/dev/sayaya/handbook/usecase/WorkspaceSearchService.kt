@@ -23,5 +23,15 @@ class WorkspaceSearchService(
     private val repository: WorkspaceReadRepository,
 ) {
     fun list(): Flux<Workspace> = repository.findAll()
+
+    /**
+     * principal (사용자 UUID) 기준 워크스페이스 목록.
+     *
+     * 사용자가 속한 그룹의 워크스페이스만 반환 — 어드민 그룹 포함. persist-workspace 가
+     * 생성 시 생성자를 admin 그룹에 자동 배정하므로, 방금 만든 워크스페이스도 즉시 응답에
+     * 포함된다.
+     */
+    fun listForUser(sub: UUID): Flux<Workspace> = repository.findByUserSub(sub)
+
     fun findById(id: UUID): Mono<Workspace> = repository.findById(id)
 }

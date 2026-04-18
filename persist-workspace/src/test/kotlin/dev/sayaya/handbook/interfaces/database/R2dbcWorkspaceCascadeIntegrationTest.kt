@@ -1,8 +1,10 @@
 package dev.sayaya.handbook.interfaces.database
 
 import dev.sayaya.handbook.domain.Workspace
+import dev.sayaya.handbook.interfaces.authentication.UserAuthentication
 import dev.sayaya.handbook.usecase.WebhookService
 import dev.sayaya.handbook.usecase.WorkspaceService
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -23,6 +25,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.security.Principal
+import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -150,6 +153,106 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
                 keptGroups shouldBe 1L
                 keptMembers shouldBe 1L
                 keptWorkspace shouldBe 1L
+            }
+        }
+    }
+
+    // ── userUuid 우선순위 검증 (2026-04-18 Phase 1a) ──────────────────────────
+    // R2dbcGroupRepositoryAdapter.userUuid 는 private 이므로 createAndAssign 호출 후
+    // DB 의 group_member.member 컬럼이 어떤 UUID 로 기록되는지를 관측해 간접 검증한다.
+    // sub 우선 → id 폴백 → 둘 다 null 이면 예외, 세 경로를 모두 커버한다.
+
+    fun userAuth(sub: String?, id: String?) = UserAuthentication(
+        id = id,
+        username = "not-a-uuid-display-name",
+        issuer = "test",
+        issuedDateTime = LocalDateTime.now(),
+        notBeforeDateTime = LocalDateTime.now(),
+        expireDateTime = LocalDateTime.now().plusHours(1),
+        token = "dummy.jwt.token",
+        sub = sub,
+    )
+
+    fun readMember(workspaceId: UUID): UUID? = client
+        .sql("SELECT member FROM group_member WHERE workspace = :w")
+        .bind("w", workspaceId)
+        .map { row -> row.get("member", UUID::class.java) }
+        .one()
+        .block()
+
+    Given("UserAuthentication 에 sub · id 가 모두 있는 경우") {
+        val ws = UUID.randomUUID()
+        val subUuid = UUID.randomUUID()
+        val idUuid = UUID.randomUUID()
+        workspaceRepo.save(Workspace(ws, "sub-wins", null)).block()
+
+        When("createAndAssign 을 호출하면") {
+            groupRepo.createAndAssign(
+                Workspace(ws, "sub-wins", null),
+                userAuth(sub = subUuid.toString(), id = idUuid.toString()),
+                "Admin",
+                null,
+            ).block()
+
+            Then("sub 가 우선 사용되어 group_member.member 로 기록된다") {
+                readMember(ws) shouldBe subUuid
+            }
+        }
+    }
+
+    Given("UserAuthentication 에 sub 는 null 이고 id 만 있는 Phase 1a 이전 토큰") {
+        val ws = UUID.randomUUID()
+        val idUuid = UUID.randomUUID()
+        workspaceRepo.save(Workspace(ws, "id-fallback", null)).block()
+
+        When("createAndAssign 을 호출하면") {
+            groupRepo.createAndAssign(
+                Workspace(ws, "id-fallback", null),
+                userAuth(sub = null, id = idUuid.toString()),
+                "Admin",
+                null,
+            ).block()
+
+            Then("id(jti) 가 폴백으로 member 에 기록된다") {
+                readMember(ws) shouldBe idUuid
+            }
+        }
+    }
+
+    Given("UserAuthentication 에 sub · id 모두 null 인 경우") {
+        val ws = UUID.randomUUID()
+        workspaceRepo.save(Workspace(ws, "both-null", null)).block()
+
+        When("createAndAssign 을 호출하면") {
+            Then("name(username) 이 UUID 로 파싱 불가해 IllegalArgumentException 이 던져진다") {
+                shouldThrow<IllegalArgumentException> {
+                    groupRepo.createAndAssign(
+                        Workspace(ws, "both-null", null),
+                        userAuth(sub = null, id = null),
+                        "Admin",
+                        null,
+                    ).block()
+                }
+            }
+        }
+    }
+
+    Given("UserAuthentication 이 아닌 익명 Principal") {
+        val ws = UUID.randomUUID()
+        val legacyUuid = UUID.randomUUID()
+        workspaceRepo.save(Workspace(ws, "legacy-principal", null)).block()
+
+        When("createAndAssign 을 호출하면") {
+            val principal = Principal { legacyUuid.toString() }
+            groupRepo.createAndAssign(
+                Workspace(ws, "legacy-principal", null),
+                principal,
+                "Admin",
+                null,
+            ).block()
+
+            Then("principal.name 을 그대로 파싱해 member 로 기록한다 (기존 integration 경로 호환)") {
+                readMember(ws) shouldBe legacyUuid
             }
         }
     }

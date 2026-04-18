@@ -5,13 +5,18 @@
  * ────────────────────────────────────────────── */
 
 /* ── Backdrop ── */
+/* Frame 내부 full-bleed: FrameUpdater 가 자식을 `.frame`(position:absolute; inset:16px) 에 append 하므로
+ * `inset: 0` 으로 frame 영역을 가득 채우고, frame 모서리와 일치하는 radius 로 배경 끊김을 제거한다.
+ * `height: 100dvh` 는 frame 을 overflow 시켜 배경이 경계에서 잘려 보이므로 사용 금지. */
 .ws-content {
+    position: absolute;
+    inset: 0;
     display: flex;
-    height: 100dvh;
     align-items: center;
     justify-content: center;
     padding: 24px;
     box-sizing: border-box;
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
     background:
         radial-gradient(circle at 20% 20%,
             color-mix(in srgb, var(--md-sys-color-primary-container) 45%, transparent),
@@ -162,6 +167,7 @@
     .ws-content {
         padding: 0;
         align-items: stretch;
+        border-radius: 0;
         background: var(--md-sys-color-surface, #fff);
     }
     .ws-dialog {

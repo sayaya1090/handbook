@@ -19,4 +19,16 @@ import java.util.UUID
 interface WorkspaceReadRepository {
     fun findAll(): Flux<Workspace>
     fun findById(id: UUID): Mono<Workspace>
+
+    /**
+     * 사용자(UUID = JWT `sub`) 가 멤버로 속한 그룹의 워크스페이스를 반환한다.
+     *
+     * **정의:** `group_member.member = :sub` 인 레코드가 하나라도 있는 워크스페이스 (DISTINCT).
+     * 어드민 그룹 포함 — persist-workspace 는 워크스페이스 생성 시 생성자를 자동으로 admin
+     * 그룹에 배정한다.
+     *
+     * **권한 필터링 경로:** `GET /workspaces` 소비자가 principal.sub 기준으로 필터링한
+     * 목록만 돌려받도록 한다 (모든 워크스페이스 노출 금지).
+     */
+    fun findByUserSub(sub: UUID): Flux<Workspace>
 }

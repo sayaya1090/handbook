@@ -32,11 +32,14 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
     )
 
     val template = R2dbcEntityTemplate(connectionFactory)
-    val adapter = R2dbcWorkspaceReadAdapter(template)
     val client = DatabaseClient.create(connectionFactory)
+    val adapter = R2dbcWorkspaceReadAdapter(template, client)
 
     val wsId1 = UUID.randomUUID()
     val wsId2 = UUID.randomUUID()
+    val wsId3 = UUID.randomUUID() // alice 가 속하지 않은 워크스페이스
+    val alice = UUID.randomUUID()
+    val bob = UUID.randomUUID()
 
     beforeSpec {
         client.sql("""
@@ -54,20 +57,41 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
         """).then().block()
 
         client.sql("""
+            CREATE TABLE group_member (
+                workspace UUID NOT NULL,
+                "group" VARCHAR(255) NOT NULL,
+                member UUID NOT NULL,
+                PRIMARY KEY (workspace, "group", member)
+            )
+        """).then().block()
+
+        client.sql("""
             INSERT INTO workspace (id, name, description) VALUES
             ('$wsId1', 'alpha', 'first workspace'),
-            ('$wsId2', 'beta', null)
+            ('$wsId2', 'beta', null),
+            ('$wsId3', 'gamma', 'bob only')
+        """).then().block()
+
+        // alice 는 alpha(admin) + beta(Member) 소속, bob 은 gamma(admin) 소속.
+        // 한 워크스페이스에서 다중 그룹 소속이어도 DISTINCT 로 한 번만 반환되는지 검증하기 위해
+        // alice 를 alpha 의 admin 과 Member 두 그룹 모두에 등록한다.
+        client.sql("""
+            INSERT INTO group_member (workspace, "group", member) VALUES
+            ('$wsId1', 'admin',  '$alice'),
+            ('$wsId1', 'Member', '$alice'),
+            ('$wsId2', 'Member', '$alice'),
+            ('$wsId3', 'admin',  '$bob')
         """).then().block()
     }
 
     afterSpec { postgres.stop() }
 
-    Given("workspace 테이블에 두 건이 적재된 상태에서") {
+    Given("workspace 테이블에 세 건이 적재되고 그룹 멤버십이 설정된 상태에서") {
         When("findAll 을 호출하면") {
             Then("모든 워크스페이스가 도메인 객체로 매핑되어 반환된다") {
                 StepVerifier.create(adapter.findAll().collectList())
                     .assertNext { list ->
-                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2)
+                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2, wsId3)
                         list.first { it.id == wsId1 }.name shouldBe "alpha"
                         list.first { it.id == wsId1 }.description shouldBe "first workspace"
                         list.first { it.id == wsId2 }.description shouldBe null
@@ -87,6 +111,34 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
             }
             Then("존재하지 않는 id 로 조회하면 빈 결과") {
                 StepVerifier.create(adapter.findById(UUID.randomUUID()))
+                    .verifyComplete()
+            }
+        }
+
+        When("findByUserSub(alice) 를 호출하면") {
+            Then("alice 가 속한 alpha · beta 만 DISTINCT 로 반환된다") {
+                StepVerifier.create(adapter.findByUserSub(alice).collectList())
+                    .assertNext { list ->
+                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2)
+                    }
+                    .verifyComplete()
+            }
+        }
+
+        When("findByUserSub(bob) 를 호출하면") {
+            Then("bob 이 속한 gamma 만 반환된다") {
+                StepVerifier.create(adapter.findByUserSub(bob).collectList())
+                    .assertNext { list ->
+                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId3)
+                    }
+                    .verifyComplete()
+            }
+        }
+
+        When("아무 그룹에도 속하지 않은 사용자로 findByUserSub 를 호출하면") {
+            Then("빈 Flux 가 반환된다") {
+                StepVerifier.create(adapter.findByUserSub(UUID.randomUUID()).collectList())
+                    .assertNext { list -> list shouldBe emptyList() }
                     .verifyComplete()
             }
         }

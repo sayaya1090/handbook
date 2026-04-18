@@ -1,11 +1,13 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Workspace
+import dev.sayaya.handbook.interfaces.authentication.UserAuthentication
 import dev.sayaya.handbook.usecase.WorkspaceSearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -40,9 +42,10 @@ class WorkspaceController(
 ) {
 
     @Operation(
-        summary = "List workspaces (read-only)",
-        description = "Returns all workspaces visible to the caller. External AI agents call this " +
-            "first to discover available workspace IDs before issuing domain-specific tool calls " +
+        summary = "List workspaces visible to caller (read-only)",
+        description = "Returns workspaces where the authenticated principal is a member of any " +
+            "group (including the auto-created admin group). External AI agents call this first " +
+            "to discover available workspace IDs before issuing domain-specific tool calls " +
             "(e.g. list_types, search_documents). The service runs on a PostgreSQL session forced " +
             "to `default_transaction_read_only=on`, so accidental writes are rejected by the DB.",
     )
@@ -51,7 +54,16 @@ class WorkspaceController(
         produces = ["application/vnd.sayaya.handbook.v1+json"],
     )
     @ResponseStatus(HttpStatus.OK)
-    fun list(): Flux<Workspace> = service.list()
+    fun list(
+        @AuthenticationPrincipal authentication: UserAuthentication,
+    ): Flux<Workspace> {
+        // Phase 1a: sub(사용자 UUID) 우선, 없으면 id(jti 이전 토큰에서는 사용자 UUID)로 폴백.
+        val userId = authentication.sub ?: authentication.id
+            ?: return Flux.empty()
+        val userUuid = runCatching { UUID.fromString(userId) }.getOrNull()
+            ?: return Flux.empty()
+        return service.listForUser(userUuid)
+    }
 
     @Operation(
         summary = "Get workspace by id (read-only)",

@@ -6,6 +6,8 @@
 
 ## 요청 로그
 
+- 2026-04-18: 직전 설계 3건 실제 Edit 적용 → CSS inset:0 + search-workspace listForUser + Group userUuid sub 우선
+- 2026-04-18: 3건 병렬(ws-content 배경 끊김/search-workspace principal 필터/Group sub 전환) → A/B/C 각 수정안 + 테스트 계획 제시
 - 2026-04-18: POST /workspace 200 후 /user 에 workspace 없음 조사 → /user 는 workspace 미반환. 목록은 GET /workspaces 별도 엔드포인트
 - 2026-04-18: 워크스페이스 생성 UI 리디자인 → handbook-old JoinApplication 기반 stepper/list 이식
 - 2026-04-18: POST /workspace 500 조사 → @AuthenticationPrincipal Principal 타입 바인딩 실패 의심 (UserAuthentication.getPrincipal()=String)
@@ -18,6 +20,9 @@
 ## 반복 함정
 
 - `@AuthenticationPrincipal` 은 `Authentication` 전체가 아니라 `Authentication.getPrincipal()` 반환값을 주입한다. `UserAuthentication.getPrincipal()` 은 `String username` 이므로 `Principal`/`UserAuthentication` 타입 선언과 충돌. login/TokenRefreshController 가 `UserAuthentication` 으로 받아도 동작하려면 별도 resolver 또는 `getPrincipal()` override 가 `this` 를 반환해야 함 — 실제로는 하지 않아 잠재 회귀.
+- `.ws-content` 가 frame 내부에 append 되는데 `height: 100dvh` 로 viewport 전체 높이를 요청 → frame 영역(viewport - 16px*2 - appbar) 을 overflow. 배경이 frame 내부에서만 그려져 frame 경계에서 끊긴 것처럼 보임. FrameUpdater 는 자식을 `.frame` (position:absolute; inset:16px) 에 append 하므로 자식은 `inset:0` + `width:100%` + `min-height:100%` 가 정석.
+- `WebTestClient.bindToController` 만 쓰면 spring-security resolver 체인이 걸리지 않아 `@AuthenticationPrincipal UserAuthentication` 이 null 로 주입됨. 해당 엔드포인트는 메서드 직접 호출 (`controller.list(principal)`) 로 검증해야 함 (persist-workspace WorkspaceControllerTest 패턴).
+- MockK `verify(exactly = 0) { ... }` 는 spec 전체 누적 호출을 보므로, 여러 Given 에서 같은 mock 을 공유하면 다른 Given 의 호출이 섞여 실패. 호출 0회 검증은 해당 Given 전용 mock 인스턴스로 격리.
 
 ## 내부 체크리스트
 
