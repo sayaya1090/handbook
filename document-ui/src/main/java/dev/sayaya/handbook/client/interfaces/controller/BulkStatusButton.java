@@ -5,9 +5,10 @@ import dev.sayaya.handbook.client.usecase.ChangeStatusAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.SelectedRows;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLSelectElement;
+import org.jboss.elemento.Elements;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -16,7 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.jboss.elemento.Elements.button;
+import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.select;
+import static org.jboss.elemento.Elements.span;
 
 /**
  * 선택된 문서들의 상태를 일괄 변경하는 드롭다운 버튼.
@@ -38,43 +41,29 @@ import static org.jboss.elemento.Elements.button;
  */
 @Singleton
 public class BulkStatusButton implements IsElement<HTMLElement> {
+    private static final String[] STATUSES = {"DRAFT", "REVIEW", "PUBLISHED"};
+
     private final HTMLElement element;
 
     @Inject
     public BulkStatusButton(ActionManager actionManager, DocumentList documentList,
                             SelectedRows selectedRows, LabelProvider labelProvider) {
-        var container = (HTMLElement) DomGlobal.document.createElement("div");
-        container.classList.add("doc-ctrl-bulk-status");
+        var label = span().css("doc-ctrl-bulk-status-label");
+        var labelEl = label.element();
 
-        var label = (HTMLElement) DomGlobal.document.createElement("span");
-        label.classList.add("doc-ctrl-bulk-status-label");
-
-        HTMLSelectElement select = (HTMLSelectElement) DomGlobal.document.createElement("select");
-        select.classList.add("doc-ctrl-bulk-status-select");
-
-        var defaultOpt = DomGlobal.document.createElement("option");
-        defaultOpt.setAttribute("value", "");
-        defaultOpt.textContent = "---";
-        select.appendChild(defaultOpt);
-
-        String[] statuses = {"DRAFT", "REVIEW", "PUBLISHED"};
-        for (String status : statuses) {
-            var opt = DomGlobal.document.createElement("option");
-            opt.setAttribute("value", status);
-            opt.textContent = status;
-            select.appendChild(opt);
+        var selectBuilder = select().css("doc-ctrl-bulk-status-select");
+        HTMLSelectElement selectEl = selectBuilder.element();
+        selectEl.appendChild(Elements.option().attr("value", "").text("---").element());
+        for (String status : STATUSES) {
+            selectEl.appendChild(Elements.option().attr("value", status).text(status).element());
         }
-
-        labelProvider.subscribe(labels ->
-                label.textContent = labels.getOrDefault("document.bulk_status", "Status"));
-
-        select.addEventListener("change", e -> {
-            String newStatus = select.value;
+        selectBuilder.on(EventType.change, e -> {
+            String newStatus = selectEl.value;
             if (newStatus == null || newStatus.isEmpty()) return;
 
             Set<Integer> selected = selectedRows.getValue();
             if (selected.isEmpty()) {
-                select.value = "";
+                selectEl.value = "";
                 return;
             }
 
@@ -82,12 +71,16 @@ public class BulkStatusButton implements IsElement<HTMLElement> {
             indices.sort(Integer::compareTo);
             actionManager.execute(new ChangeStatusAction(documentList, indices, newStatus));
             selectedRows.clear();
-            select.value = "";
+            selectEl.value = "";
         });
 
-        container.appendChild(label);
-        container.appendChild(select);
-        this.element = container;
+        labelProvider.subscribe(labels ->
+                labelEl.textContent = labels.getOrDefault("document.bulk_status", "Status"));
+
+        this.element = div().css("doc-ctrl-bulk-status")
+                .add(label)
+                .add(selectBuilder)
+                .element();
     }
 
     @Override

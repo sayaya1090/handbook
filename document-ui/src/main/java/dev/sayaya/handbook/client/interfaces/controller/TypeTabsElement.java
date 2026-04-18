@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.interfaces.controller;
 import dev.sayaya.handbook.client.domain.TypeInfo;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -42,9 +43,10 @@ public class TypeTabsElement implements IsElement<elemental2.dom.HTMLElement> {
         element.innerHTML = "";
         if (types == null) return;
         for (TypeInfo type : types) {
-            var tab = span().css("doc-type-tab").element();
-            tab.textContent = type.id;
-            tab.addEventListener("click", e -> typeProvider.next(type));
+            var tab = span().css("doc-type-tab")
+                    .text(type.id)
+                    .on(EventType.click, e -> typeProvider.next(type))
+                    .element();
             element.appendChild(tab);
         }
     }

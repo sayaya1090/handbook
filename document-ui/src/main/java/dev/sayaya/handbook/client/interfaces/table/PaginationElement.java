@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.PageState;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -45,9 +46,27 @@ public class PaginationElement implements IsElement<elemental2.dom.HTMLElement> 
     public PaginationElement(PageState pageState, DocumentList documentList, LabelProvider labelProvider) {
         this.pageState = pageState;
         this.pageInfo = span().css("doc-page-info").element();
-        this.prevButton = ButtonElementBuilder.button().text().css("doc-page-btn", "doc-page-prev").element();
+        this.prevButton = ButtonElementBuilder.button().text()
+                .css("doc-page-btn", "doc-page-prev")
+                .on(EventType.click, e -> {
+                    var current = pageState.getValue();
+                    if (current.page > 0) {
+                        current.page--;
+                        pageState.next(current);
+                    }
+                })
+                .element();
         this.prevButton.textContent = "\u25C0";
-        this.nextButton = ButtonElementBuilder.button().text().css("doc-page-btn", "doc-page-next").element();
+        this.nextButton = ButtonElementBuilder.button().text()
+                .css("doc-page-btn", "doc-page-next")
+                .on(EventType.click, e -> {
+                    var current = pageState.getValue();
+                    if (hasMore) {
+                        current.page++;
+                        pageState.next(current);
+                    }
+                })
+                .element();
         this.nextButton.textContent = "\u25B6";
         this.emptyMessage = span().css("doc-page-empty").element();
         this.emptyMessage.textContent = "No results";
@@ -58,22 +77,6 @@ public class PaginationElement implements IsElement<elemental2.dom.HTMLElement> 
                 .add(emptyMessage)
                 .add(nextButton)
                 .element();
-
-        prevButton.addEventListener("click", e -> {
-            Search current = pageState.getValue();
-            if (current.page > 0) {
-                current.page--;
-                pageState.next(current);
-            }
-        });
-
-        nextButton.addEventListener("click", e -> {
-            Search current = pageState.getValue();
-            if (hasMore) {
-                current.page++;
-                pageState.next(current);
-            }
-        });
 
         // 문서 목록이 변경되면 마지막 페이지 여부를 판단
         documentList.asObservable().subscribe(docs -> {
