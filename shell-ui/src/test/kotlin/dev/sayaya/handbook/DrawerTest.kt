@@ -163,15 +163,17 @@ internal class DrawerTest: GwtTestSpec({
 
         Then("미선택 아이템은 .icon-outline 이 보이고 .icon-filled 는 숨겨진다") {
             // 초기 상태: 아직 아무 메뉴도 선택되지 않은 아이템 기준.
-            // computed display 가 outline 은 non-none, filled 는 none 이어야 함.
-            val outlineDisplay = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).display"
+            // 2026-04-18 display:none 토글 → opacity+visibility 크로스페이드로 변경되어
+            // 두 아이콘 모두 항상 레이아웃에 존재한다 (bbox 공유). 가시성은 visibility
+            // 속성으로 검증한다. shell.css 의 `.icon-outline` / `.icon-filled` 규칙 참조.
+            val outlineVisibility = page.evaluate(
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).visibility"
             ).toString()
-            val filledDisplay = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-filled')).display"
+            val filledVisibility = page.evaluate(
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-filled')).visibility"
             ).toString()
-            filledDisplay shouldBe "none"
-            (outlineDisplay != "none") shouldBe true
+            filledVisibility shouldBe "hidden"
+            outlineVisibility shouldBe "visible"
         }
         Then("모든 네비게이션 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
             // 각 네비 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 렌더 → navCount * 2.
@@ -206,14 +208,16 @@ internal class DrawerTest: GwtTestSpec({
                 selected.count() shouldBe 1
             }
             Then("선택 아이템은 .icon-filled 가 보이고 .icon-outline 은 숨겨진다") {
-                val outlineDisplay = page.evaluate(
-                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-outline')).display"
+                // 2026-04-18: display 토글 → visibility 크로스페이드로 변경. 두 아이콘이
+                // 항상 레이아웃에 존재하므로 가시성은 visibility 로 검증.
+                val outlineVisibility = page.evaluate(
+                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-outline')).visibility"
                 ).toString()
-                val filledDisplay = page.evaluate(
-                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-filled')).display"
+                val filledVisibility = page.evaluate(
+                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-filled')).visibility"
                 ).toString()
-                outlineDisplay shouldBe "none"
-                (filledDisplay != "none") shouldBe true
+                outlineVisibility shouldBe "hidden"
+                filledVisibility shouldBe "visible"
             }
         }
 

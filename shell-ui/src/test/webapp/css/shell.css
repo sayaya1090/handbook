@@ -77,12 +77,17 @@ body,
        어긋날 때 flex 가 rail 을 압축해 menu-rail 이 순간 줄어들었다가 원복되는 jitter 방지.
        drawer/rail transition 을 400ms 로 동기화했지만 페인트 타이밍 편차 대비 고정. */
     flex-shrink: 0;
-    /* box-sizing: border-box — .rail[expand] 가 `padding: 0 0.6rem` 을 쓰므로 default
-       content-box 면 실제 외곽 폭 = 16rem + 1.2rem = 17.2rem 로 --shell-drawer-width
-       calc(16+16=32rem) 와 어긋나 두 번째 rail(tool-rail) 이 drawer 밖으로 밀려 좁아
-       보인다. border-box 로 padding 을 width 안에 포함해 rail 외곽 폭을 16rem 로 고정. */
+    /* box-sizing: border-box — 과거 `.rail[expand]` 에 `padding: 0 0.6rem` 을 두던 시절의
+       잔재이지만, 향후 border/padding 추가 시에도 rail 외곽 폭을 토큰과 일치시키기 위해
+       유지한다 (--shell-drawer-width 계산 경계 안정화).
+       2026-04-18 collapse/expand 전환 시 아이콘 x 좌표 시프트(약 9.6px) 해소를 위해
+       `.rail[expand]` 의 좌우 padding 과 align-items 오버라이드를 제거했다. `.item`
+       (width:100%) + `.item .collapse` (margin:4px 8px, 40px 버튼) + md-item start slot
+       (padding-inline-start:16px, 24px 아이콘) 조합이 이미 icon center x=28px 로 두
+       모드를 정렬하고 있어, rail 에 좌측 padding 을 추가하면 이 정렬이 모두 우측으로
+       시프트된다. */
     box-sizing: border-box;
-    transition: width 400ms cubic-bezier(.2,0,0,1), padding-left 400ms cubic-bezier(.2,0,0,1);
+    transition: width 400ms cubic-bezier(.2,0,0,1);
 }
 .rail[collapse] {
     width: 3.5rem;
@@ -90,8 +95,6 @@ body,
 }
 .rail[expand] {
     width: 16rem;
-    align-items: flex-start;
-    padding: 0 0.6rem;
 }
 .rail[hide] {
     width: 0px;
@@ -159,17 +162,50 @@ body,
 }
 /* 선택 상태는 배경 채움이 아니라 outline → filled 아이콘 스왑 + label color 로 표현.
    MD3 는 nav rail 에서 "선택 시 filled, 미선택 시 outlined" 아이콘 패턴을 권장한다.
-   MenuRailItemElement/ToolRailItemElement 가 두 weight 의 아이콘을 동시 렌더하고 .icon-outline /
-   .icon-filled 로 구분하며, 여기 셀렉터가 선택 상태에 따라 가시성을 토글한다.
-   ThemeToggle 의 sun/moon SVG 는 이 클래스를 쓰지 않으므로 영향받지 않는다. */
+   MenuRailItemElement/ToolRailItemElement/MenuTabBuilder 가 두 weight 의 아이콘을
+   동시 렌더하고 .icon-outline / .icon-filled 로 구분한다. ThemeToggle 의 sun/moon SVG
+   는 이 클래스를 쓰지 않으므로 영향받지 않는다.
+
+   ── 2026-04-18 display:none 토글 → opacity + visibility 크로스페이드 ──
+   기존 `display:none` 은 미선택 아이콘을 레이아웃에서 완전히 제거 → selected 토글
+   시 flex 레이아웃이 재계산되어 아이콘 좌표가 1px 흔들리고, MD3 motion 가이드의
+   fade-through 가 아니라 하드 스왑이라 selection feedback 이 끊겨 보였다.
+   해결: 두 `<i>` 를 같은 bbox 에 stack — `<i>` 자체를 `position:absolute; inset:0`
+   로 부모 박스 전체에 겹쳐 두 아이콘이 동일 중심을 공유. 부모는 md-icon-button host
+   (`.collapse`, shadow 내부가 relative 제공) 와 md-item host (slot="start" 가 light DOM
+   자식으로 투영되며 slot 부모는 md-item 이 shadow 에서 flex 배치) 두 종류라
+   positioning context 는 두 케이스 모두 자연히 확보된다 (md-icon-button 의
+   `.touch-target` 이 relative, md-item 의 `.list-item` 이 relative).
+   토글은 `opacity` + `visibility` 200ms cubic-bezier(.2,0,0,1) (MD3
+   emphasized-decelerate). `visibility:hidden` 은 Playwright `toBeVisible()` 에서
+   invisible 로 인식되고 `getComputedStyle(...).visibility` 도 "hidden" 문자열로 검증
+   가능. */
+.rail .item .icon-outline,
 .rail .item .icon-filled {
-    display: none;
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    place-items: center;
+    place-content: center;
+    transition-property: opacity, visibility;
+    transition-duration: var(--md-sys-motion-duration-medium2, 200ms);
+    transition-timing-function: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.2, 0, 0, 1));
+}
+.rail .item .icon-outline {
+    opacity: 1;
+    visibility: visible;
+}
+.rail .item .icon-filled {
+    opacity: 0;
+    visibility: hidden;
 }
 .rail .item[selected] .icon-outline {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
 }
 .rail .item[selected] .icon-filled {
-    display: inline-flex;
+    opacity: 1;
+    visibility: visible;
 }
 .rail .item[selected] .expand {
     --md-list-item-label-text-color: var(--md-sys-color-primary);
@@ -177,11 +213,17 @@ body,
 }
 /* ── MenuRail 상단 햄버거 토글 (2026-04 AppBar leading → Rail 상단 이관) ──
    rail 은 flex-column 이고 햄버거는 MenuRailElement 가 rail 첫 자식으로 append.
-   rail[collapse] 3.5rem 에서 중앙 정렬, rail[expand] 16rem 에서는 좌측 여유로 자연 배치.
-   모바일([mobile])은 MenuRail 이 display:none 또는 bottom-bar 형태라 햄버거 실질 용도 없음. */
+   collapse(3.5rem) ↔ expand(16rem) 전환 시 아이콘 x 좌표를 **고정**하기 위해
+   `align-self: flex-start` + `margin-left: 8px` 로 배치한다 — 40px 버튼의 center 가
+   항상 x=28px 에 오도록. `.item .collapse`(margin:4px 8px, 40px) 및 md-item start slot
+   (padding-inline-start:16px, 24px 아이콘) 과 동일한 정렬이며, 이 셋이 같은 수직선에
+   놓여 전환 시 좌우 흔들림이 사라진다. (`align-self: center` 는 rail 폭에 따라 x 가
+   바뀌어 시프트 원인이었음.) 모바일([mobile])은 MenuRail 이 display:none 이라 햄버거
+   실질 용도 없음. */
 .menu-rail > #menu-toggle-button {
     flex-shrink: 0;
-    align-self: center;
+    align-self: flex-start;
+    margin-left: 8px;
     margin-top: 4px;
     margin-bottom: 4px;
 }
