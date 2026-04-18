@@ -271,6 +271,14 @@ body,
     --md-list-item-top-space: 8px;
     --md-list-item-bottom-space: 8px;
     --md-list-item-one-line-container-height: 48px;
+    /* supporting-text 계층 — label 이 headline-large 로 큰 편이라 MD3 기본 body-small(12px)
+       은 상대적으로 자잘해 대비 격차가 과했다. body-medium(14px/400) + on-surface-variant 로
+       올려 정보 위계를 회복. */
+    --md-list-item-supporting-text-color: var(--md-sys-color-on-surface-variant);
+    --md-list-item-supporting-text-font: var(--md-sys-typescale-body-medium-font, var(--md-ref-typeface-plain, 'Roboto', sans-serif));
+    --md-list-item-supporting-text-size: var(--md-sys-typescale-body-medium-size, 14px);
+    --md-list-item-supporting-text-line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+    --md-list-item-supporting-text-weight: var(--md-sys-typescale-body-medium-weight, 400);
     min-height: 48px;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -428,24 +436,47 @@ body,
 :root {
     --shell-app-bar-height: 56px;
     /* Drawer 의 현재 width 를 토큰으로 노출해 AppBar/MobileTabs/Content 등이 동적으로
-       참조. drawer state(open/collapse/hide/overlay) 와 viewport(모바일) 에 따라
-       body-level :has 셀렉터가 이 값을 재지정한다. */
-    --shell-drawer-width: 56px;
+       참조. Drawer 폭은 **내부 두 rail(.menu-rail / .tool-rail) 의 현재 상태 조합**으로
+       결정된다 — body-level :has 셀렉터가 rail 상태별로 calc 합을 재지정.
+       기본값은 .menu-rail[collapse] 단독(3.5rem). 매핑:
+         menu[collapse] + tool[hide|collapse] → 3.5rem
+         menu[expand]   + tool[hide]          → 16rem
+         menu[collapse] + tool[expand]        → calc(3.5rem + 16rem) = 19.5rem
+         menu[expand]   + tool[collapse]      → calc(16rem + 3.5rem) = 19.5rem
+         menu[expand]   + tool[expand]        → calc(16rem + 16rem)  = 32rem
+       [hide]/[overlay]/모바일은 맨 아래 override 로 0 으로 눌린다. */
+    --shell-drawer-width: 3.5rem;
 }
-body:has(nav.drawer[open]) {
+body:has(nav.drawer .menu-rail[expand]) {
     --shell-drawer-width: 16rem;
 }
-/* [hide]/[overlay] 규칙은 [open] 뒤에 정의해야 한다 — Drawer 상태 머신 상 OVERLAY 는
-   내부적으로 open 속성도 함께 부여(DrawerElement.state) 하므로 [open][overlay] 조합이
-   발생한다. 이 경우 "overlay 는 AppBar 전체가로 + rail 위에 스크림 오버레이" semantic
-   을 따라야 해 drawer-width=0 이 이겨야 한다. specificity 동일 시 선언 순서로 override. */
+body:has(nav.drawer .menu-rail[collapse]):has(nav.drawer .tool-rail[expand]) {
+    --shell-drawer-width: calc(3.5rem + 16rem);
+}
+body:has(nav.drawer .menu-rail[expand]):has(nav.drawer .tool-rail[collapse]) {
+    --shell-drawer-width: calc(16rem + 3.5rem);
+}
+body:has(nav.drawer .menu-rail[expand]):has(nav.drawer .tool-rail[expand]) {
+    --shell-drawer-width: calc(16rem + 16rem);
+}
+/* [hide]/[overlay] 규칙은 rail 상태 규칙 뒤에 정의해야 한다 — Drawer 상태 머신 상 OVERLAY 는
+   내부적으로 rail state 도 함께 부여(DrawerElement.state) 하므로 조합이 발생한다. "overlay 는
+   AppBar 전체가로 + rail 위에 스크림 오버레이" semantic 을 따라야 해 drawer-width=0 이
+   이겨야 한다. specificity 동일 시 선언 순서로 override. */
 body:has(nav.drawer[hide]),
 body:has(nav.drawer[overlay]) {
     --shell-drawer-width: 0px;
 }
 @media (max-width: 768px) {
-    /* 모바일은 Drawer 가 기본 HIDE, MobileTabs 가 네비 대체 → AppBar 전체 가로. */
-    :root {
+    /* 모바일은 Drawer 가 기본 HIDE, MobileTabs 가 네비 대체 → AppBar 전체 가로.
+       rail 상태 기반 body:has 규칙을 모두 0 으로 눌러야 한다 — 모바일에서 rail 에
+       [mobile][expand] 가 동시에 붙는 케이스가 있어 데스크톱용 rail 분기가 매치되면
+       drawer-width 가 16rem 으로 잡혀 MobileTabs 가 가려진다. */
+    :root,
+    body:has(nav.drawer .menu-rail[expand]),
+    body:has(nav.drawer .menu-rail[collapse]):has(nav.drawer .tool-rail[expand]),
+    body:has(nav.drawer .menu-rail[expand]):has(nav.drawer .tool-rail[collapse]),
+    body:has(nav.drawer .menu-rail[expand]):has(nav.drawer .tool-rail[expand]) {
         --shell-drawer-width: 0px;
     }
 }
