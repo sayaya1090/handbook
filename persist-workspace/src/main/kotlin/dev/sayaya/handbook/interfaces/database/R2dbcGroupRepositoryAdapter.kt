@@ -2,6 +2,7 @@ package dev.sayaya.handbook.interfaces.database
 
 import dev.sayaya.handbook.domain.Group
 import dev.sayaya.handbook.domain.Workspace
+import dev.sayaya.handbook.interfaces.authentication.UserAuthentication
 import dev.sayaya.handbook.usecase.GroupRepository
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
@@ -32,7 +33,7 @@ class R2dbcGroupRepositoryAdapter(
         val memberEntity = R2dbcGroupMemberEntity(
             workspace = workspace.id,
             group = name,
-            member = UUID.fromString(creator.name),
+            member = userUuid(creator),
         )
         return template.insert(groupEntity)
             .delayUntil { template.insert(memberEntity) }
@@ -43,9 +44,24 @@ class R2dbcGroupRepositoryAdapter(
         val memberEntity = R2dbcGroupMemberEntity(
             workspace = workspaceId,
             group = GROUP_MEMBER,
-            member = UUID.fromString(principal.name),
+            member = userUuid(principal),
         )
         return template.insert(memberEntity).then()
+    }
+
+    /**
+     * Principal 에서 사용자 UUID 를 추출한다.
+     *
+     * 운영 경로: `UserAuthentication.getName()` 은 JWT `name` 클레임(사람이 읽는 표시명,
+     * 예: "Sangjay Bien") 을 반환하므로 `UUID.fromString(principal.name)` 은 실패.
+     * UUID 는 `UserAuthentication.id` (JWT `jti`) 에 들어있으므로 다운캐스트해서 읽는다.
+     *
+     * 테스트 경로: `Principal { UUID.randomUUID().toString() }` 람다로 name 에 UUID 문자열을
+     * 직접 넣는 패턴이 인테그레이션 테스트에 존재 — 이 경우 그대로 `principal.name` 을 파싱.
+     */
+    private fun userUuid(principal: Principal): UUID = when (principal) {
+        is UserAuthentication -> UUID.fromString(principal.id ?: error("UserAuthentication.id (JWT jti) is null"))
+        else -> UUID.fromString(principal.name)
     }
 
     /**
