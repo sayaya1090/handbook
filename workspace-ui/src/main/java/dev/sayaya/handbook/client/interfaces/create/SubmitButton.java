@@ -68,11 +68,17 @@ public class SubmitButton implements IsElement<HTMLElement> {
                     ErrorNotifier.notify(msg);
                     return;
                 }
-                api.create(trimmed, null).subscribe(v ->
+                // 주의: WorkspaceApi 는 실패 시 null 로 resolve 하고 ErrorNotifier 로 별도 알림을 띄운다.
+                // 여기서 null 가드 없이 SUCCESS 토스트를 띄우면 500 응답에도 "생성 성공" 오탐.
+                api.create(trimmed, null).subscribe(id -> {
+                    if (id == null) return;
                     toastContainer.show(ToastLevel.SUCCESS,
-                            currentLabels.getOrDefault("toast.workspace.created", "Workspace created"))
-                );
+                            currentLabels.getOrDefault("toast.workspace.created", "Workspace created"));
+                });
             } else {
+                // join() 은 Observable<Void> — 성공 시 null emit, 실패 시 catch_ 에서 null resolve.
+                // 성공/실패를 값으로 구분할 수 없으므로 ErrorNotifier 가 뜨지 않은 경우만 success 간주는 불가.
+                // 우선 기존 동작 유지 (추후 Observable<Result<Void>> 로 리팩토링 필요).
                 api.join(trimmed).subscribe(v ->
                     toastContainer.show(ToastLevel.SUCCESS,
                             currentLabels.getOrDefault("toast.workspace.joined", "Joined workspace"))

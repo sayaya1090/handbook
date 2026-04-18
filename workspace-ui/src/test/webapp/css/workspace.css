@@ -1,104 +1,187 @@
-/* ── Workspace Create Content ── */
+/* ──────────────────────────────────────────────
+ * workspace-ui — create/join dialog
+ * MD3 토큰 기반. 하드코딩 값은 fallback 으로만 사용.
+ * 기존 테스트 selector 는 절대 변경 금지: .ws-dialog / .ws-section / .ws-section-input / .ws-submit
+ * ────────────────────────────────────────────── */
+
+/* ── Backdrop ── */
 .ws-content {
     display: flex;
     height: 100dvh;
     align-items: center;
     justify-content: center;
-    background: var(--md-sys-color-surface-container-high, #f0f0f0);
+    padding: 24px;
+    box-sizing: border-box;
+    background:
+        radial-gradient(circle at 20% 20%,
+            color-mix(in srgb, var(--md-sys-color-primary-container) 45%, transparent),
+            transparent 55%),
+        radial-gradient(circle at 80% 80%,
+            color-mix(in srgb, var(--md-sys-color-tertiary-container) 35%, transparent),
+            transparent 55%),
+        var(--md-sys-color-surface-container-high, #f0f0f0);
 }
 
-/* ── Dialog ── */
+/* ── Dialog card ── */
 .ws-dialog {
-    border: 1px solid var(--md-sys-color-outline-variant, #ccc);
-    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
-    padding: 24px;
-    width: 420px;
+    box-sizing: border-box;
+    width: min(480px, 100%);
+    padding: 32px;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
-    gap: 16px;
-    background: var(--md-sys-color-surface, white);
+    gap: 20px;
+    background: var(--md-sys-color-surface, #fff);
+    color: var(--md-sys-color-on-surface, #1a1a1a);
+    border: 1px solid var(--md-sys-color-outline-variant, #ccc);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
     box-shadow: var(--md-sys-elevation-level3);
-    transition: height var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, ease);
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+    animation: ws-dialog-enter
+        var(--md-sys-motion-duration-long2, 500ms)
+        var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1))
+        forwards;
+}
+@keyframes ws-dialog-enter {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
-/* ── Section (CREATE / JOIN) ── */
+/* ── Header ── */
+.ws-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.ws-title {
+    margin: 0;
+    font-family: var(--md-sys-typescale-headline-small-font, inherit);
+    font-size: var(--md-sys-typescale-headline-small-size, 24px);
+    line-height: var(--md-sys-typescale-headline-small-line-height, 32px);
+    font-weight: var(--md-sys-typescale-headline-small-weight, 400);
+    color: var(--md-sys-color-on-surface, #1a1a1a);
+}
+.ws-subtitle {
+    margin: 0;
+    font-family: var(--md-sys-typescale-body-medium-font, inherit);
+    font-size: var(--md-sys-typescale-body-medium-size, 14px);
+    line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+    color: var(--md-sys-color-on-surface-variant, #555);
+}
+
+/* ── Section card (CREATE / JOIN) ── */
 .ws-section {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 12px;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--md-sys-color-outline-variant, #ccc);
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+    background: var(--md-sys-color-surface, #fff);
+    cursor: pointer;
+    transition:
+        border-color var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, ease),
+        background-color var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, ease),
+        box-shadow var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, ease);
 }
-.ws-section input[type="radio"] {
-    margin-top: 6px;
+.ws-section:hover {
+    background: var(--md-sys-color-surface-container-low, #f7f7f7);
+}
+.ws-section-active {
+    border-color: var(--md-sys-color-primary, #6750a4);
+    background: color-mix(in srgb, var(--md-sys-color-primary-container) 28%, var(--md-sys-color-surface));
+    box-shadow: var(--md-sys-elevation-level1);
+}
+.ws-section-radio {
+    flex-shrink: 0;
+    margin-top: 2px;
 }
 .ws-section-content {
     display: flex;
     flex-direction: column;
     gap: 8px;
     flex: 1;
+    min-width: 0;
 }
 .ws-section-label {
-    font-size: var(--md-sys-typescale-body-large-size, 16px);
-    font-weight: 500;
+    font-family: var(--md-sys-typescale-title-medium-font, inherit);
+    font-size: var(--md-sys-typescale-title-medium-size, 16px);
+    line-height: var(--md-sys-typescale-title-medium-line-height, 24px);
+    font-weight: var(--md-sys-typescale-title-medium-weight, 500);
     color: var(--md-sys-color-on-surface, #1a1a1a);
-    line-height: 1.4;
 }
+.ws-section-supporting {
+    font-family: var(--md-sys-typescale-body-small-font, inherit);
+    font-size: var(--md-sys-typescale-body-small-size, 12px);
+    line-height: var(--md-sys-typescale-body-small-line-height, 16px);
+    color: var(--md-sys-color-on-surface-variant, #666);
+}
+.ws-section-supporting:empty { display: none; }
 .ws-section-input {
     width: 100%;
+    margin-top: 4px;
 }
 
 /* ── Divider ── */
 .ws-divider {
     display: flex;
     align-items: center;
-    text-align: center;
+    gap: 12px;
     color: var(--md-sys-color-on-surface-variant, #666);
-    font-size: var(--md-sys-typescale-body-medium-size, 14px);
+    font-family: var(--md-sys-typescale-label-medium-font, inherit);
+    font-size: var(--md-sys-typescale-label-medium-size, 12px);
+    line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 .ws-divider::before,
 .ws-divider::after {
     content: "";
     flex: 1;
-    border-bottom: 1px solid var(--md-sys-color-outline-variant, #ccc);
+    height: 1px;
+    background: var(--md-sys-color-outline-variant, #ccc);
 }
-.ws-divider::before { margin-right: 12px; }
-.ws-divider::after { margin-left: 12px; }
+.ws-divider-label {
+    padding: 0 4px;
+}
 
 /* ── Submit ── */
 .ws-submit {
     margin-top: 8px;
-    align-self: flex-end;
+    align-self: stretch;
+    min-height: 48px;
+    --md-filled-button-container-shape: var(--md-sys-shape-corner-large, 16px);
 }
 
-/* ── 모바일 (< 768px) ── */
+/* ── Mobile (< 768px) ── */
 @media (max-width: 768px) {
+    .ws-content {
+        padding: 0;
+        align-items: stretch;
+        background: var(--md-sys-color-surface, #fff);
+    }
     .ws-dialog {
         width: 100%;
-        height: 100dvh;
+        min-height: 100dvh;
+        padding: 24px 20px;
         border-radius: 0;
         border: none;
         box-shadow: none;
-        padding: 24px 16px;
-        justify-content: center;
-    }
-    .ws-section input[type="radio"] {
-        min-width: 24px;
-        min-height: 24px;
-        margin-top: 4px;
+        justify-content: flex-start;
     }
     .ws-section {
-        min-height: 48px;
-        padding: 4px 0;
+        padding: 14px;
+        gap: 12px;
     }
-    .ws-section-label {
-        font-size: var(--md-sys-typescale-body-large-size, 16px);
-        min-height: 44px;
-        display: flex;
-        align-items: center;
+    .ws-section-radio {
+        min-width: 24px;
+        min-height: 24px;
     }
     .ws-submit {
-        align-self: stretch;
-        min-height: 48px;
+        margin-top: auto;
     }
 }

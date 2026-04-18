@@ -6,15 +6,16 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: 워크스페이스 생성 UI 리디자인 → handbook-old JoinApplication 기반 stepper/list 이식
+- 2026-04-18: POST /workspace 500 조사 → @AuthenticationPrincipal Principal 타입 바인딩 실패 의심 (UserAuthentication.getPrincipal()=String)
 
 ## 탐색 패턴
 
-(미확보)
+- 500 원인 조사: 컨트롤러 → Service → Repository 순으로 Principal 사용 지점 추적. 특히 `@AuthenticationPrincipal` 주입 타입과 `UserAuthentication.getPrincipal()` 반환 타입 일치 여부 확인.
 
 ## 반복 함정
 
-(미확보)
+- `@AuthenticationPrincipal` 은 `Authentication` 전체가 아니라 `Authentication.getPrincipal()` 반환값을 주입한다. `UserAuthentication.getPrincipal()` 은 `String username` 이므로 `Principal`/`UserAuthentication` 타입 선언과 충돌. login/TokenRefreshController 가 `UserAuthentication` 으로 받아도 동작하려면 별도 resolver 또는 `getPrincipal()` override 가 `this` 를 반환해야 함 — 실제로는 하지 않아 잠재 회귀.
 
 ## 내부 체크리스트
 
