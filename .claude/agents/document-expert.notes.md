@@ -6,7 +6,7 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: search-document MenuController allowedSessionStates → IN_WORKSPACE 선언 + 테스트
 
 ## 탐색 패턴
 

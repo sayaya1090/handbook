@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Menu
+import dev.sayaya.handbook.domain.SessionStateKind
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -43,6 +44,18 @@ class MenuControllerTest : BehaviorSpec({
             Then("tools 목록은 'workspace info', 'groups', 'permissions' 순서로 3개다") {
                 val toolTitles = MenuController.MENU.tools().map { it.title() }
                 toolTitles shouldContainExactly listOf("workspace info", "groups", "permissions")
+            }
+        }
+        When("allowed_session_states 계약을 검사하면") {
+            val menu = MenuController.MENU
+            Then("IN_WORKSPACE 세션에서는 isAllowedFor == true") {
+                menu.isAllowedFor(SessionStateKind.IN_WORKSPACE) shouldBe true
+            }
+            Then("AUTHENTICATED 세션에서는 isAllowedFor == false (계층 추론 없음)") {
+                menu.isAllowedFor(SessionStateKind.AUTHENTICATED) shouldBe false
+            }
+            Then("ANONYMOUS 세션에서는 isAllowedFor == false") {
+                menu.isAllowedFor(SessionStateKind.ANONYMOUS) shouldBe false
             }
         }
     }

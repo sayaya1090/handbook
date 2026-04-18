@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.interfaces.api
 
+import dev.sayaya.handbook.domain.SessionStateKind
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import org.springframework.test.web.reactive.server.WebTestClient
 
 // UC-SD3: 메뉴 제공
@@ -16,6 +18,25 @@ class MenuControllerTest : BehaviorSpec({
                     .header("Accept", "application/vnd.sayaya.handbook.v1+json")
                     .exchange()
                     .expectStatus().isOk
+            }
+        }
+    }
+
+    Given("documents 메뉴의 allowedSessionStates 선언") {
+        val menu = MenuController.MENU
+        When("IN_WORKSPACE 세션 상태에서 평가하면") {
+            Then("isAllowedFor 는 true 를 반환한다") {
+                menu.isAllowedFor(SessionStateKind.IN_WORKSPACE) shouldBe true
+            }
+        }
+        When("ANONYMOUS 세션 상태에서 평가하면") {
+            Then("isAllowedFor 는 false 를 반환한다 — 워크스페이스 진입 후에만 노출") {
+                menu.isAllowedFor(SessionStateKind.ANONYMOUS) shouldBe false
+            }
+        }
+        When("AUTHENTICATED 세션 상태에서 평가하면") {
+            Then("isAllowedFor 는 false 를 반환한다 — 계층 추론 없음") {
+                menu.isAllowedFor(SessionStateKind.AUTHENTICATED) shouldBe false
             }
         }
     }

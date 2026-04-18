@@ -8,7 +8,7 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: search-type allowedSessionStates → IN_WORKSPACE 명시 + 테스트
 
 ## 탐색 패턴
 

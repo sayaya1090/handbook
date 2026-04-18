@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Menu
+import dev.sayaya.handbook.domain.SessionStateKind
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -21,6 +22,9 @@ class MenuController {
     companion object {
         // title 은 표시 리터럴이 아닌 i18n 키. shell-ui 의 LabelProvider 가 language.{locale}.json
         // 의 매핑으로 해석. docs/contracts/menus.md 의 "title i18n 키 규약" 참조.
+        // allowedSessionStates 는 계층 추론 없는 명시 집합. docs/contracts/menus.md §allowedSessionStates 규약.
+        // Sign In: 비로그인(ANONYMOUS) 사용자만 노출.
+        // Sign Out: 로그인된 사용자(AUTHENTICATED, IN_WORKSPACE)만 노출 — 두 상태 반드시 열거.
         val SIGN_IN: Menu = Menu.builder()
             .title("login.sign_in")
             .order("Z")
@@ -29,6 +33,7 @@ class MenuController {
             .script("js/login/login.nocache.js")
             .bottom(true)
             .appBarSlot("trailing")
+            .allowedSessionStates(SessionStateKind.ANONYMOUS)
             .build()
 
         val SIGN_OUT: Menu = Menu.builder()
@@ -39,6 +44,7 @@ class MenuController {
             .script("js/logout/logout.nocache.js")
             .bottom(true)
             .appBarSlot("trailing")
+            .allowedSessionStates(SessionStateKind.AUTHENTICATED, SessionStateKind.IN_WORKSPACE)
             .build()
     }
 

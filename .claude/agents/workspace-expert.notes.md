@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-04-18: Phase C search-workspace MenuController allowedSessionStates → IN_WORKSPACE 단일 선언 + 테스트 3건(isAllowedFor ANON/AUTH/IN_WS) 설계안 반환
 - 2026-04-18: Phase B Menu+SessionStateKind → Menu.java 필드/빌더/헬퍼 추가 완료, enum 파일은 메인 Claude 생성 위임
 - 2026-04-18: 워크스페이스 생성 I18N 미적용 → WorkspaceModule.languagePackRepository 가 fetch 없이 빈 subject 만 반환 + LanguageDetector 가 "ko-KR" 통째 반환. TypeModule/DocumentModule 패턴(fetchApi.request("js/language.<lang>.json") + UserPreferences→navigator split("-")[0]) 으로 교체 필요
 - 2026-04-18: 모바일 CREATE 버튼 잘림 → .ws-content overflow-y:auto + .ws-dialog min-height→height:auto+padding-bottom safe-area 로 스크롤 허용

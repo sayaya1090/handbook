@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.interfaces.api
 
+import dev.sayaya.handbook.domain.SessionStateKind
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -32,6 +33,18 @@ class MenuControllerTest : BehaviorSpec({
                 MenuController.SIGN_IN.order() shouldBe "Z"
                 MenuController.SIGN_OUT.appBarSlot() shouldBe "trailing"
                 MenuController.SIGN_OUT.order() shouldBe "Z"
+            }
+            Then("SIGN_IN 은 ANONYMOUS 세션에만 허용된다") {
+                // 계약: docs/contracts/menus.md §allowedSessionStates 규약.
+                // 비로그인 사용자에게만 Sign In 노출.
+                MenuController.SIGN_IN.allowedSessionStatesSet() shouldBe setOf(SessionStateKind.ANONYMOUS)
+            }
+            Then("SIGN_OUT 은 AUTHENTICATED 와 IN_WORKSPACE 를 모두 명시해야 한다") {
+                // 계층 추론 없음 원칙 (SessionStateKind Javadoc).
+                // "로그인 이후 모두" 는 AUTHENTICATED 와 IN_WORKSPACE 를 명시 열거해야 한다.
+                // AUTHENTICATED 만 선언해 IN_WORKSPACE 에서 Sign Out 이 사라지는 회귀 방지.
+                MenuController.SIGN_OUT.allowedSessionStatesSet() shouldBe
+                    setOf(SessionStateKind.AUTHENTICATED, SessionStateKind.IN_WORKSPACE)
             }
         }
     }

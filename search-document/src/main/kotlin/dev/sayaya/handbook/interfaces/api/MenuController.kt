@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Menu
+import dev.sayaya.handbook.domain.SessionStateKind
 import dev.sayaya.handbook.domain.Tool
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,6 +22,7 @@ class MenuController {
             .tools(
                 Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
             ).url("^documents")
+            .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
             .build()
     }
 

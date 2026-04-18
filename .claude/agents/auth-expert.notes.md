@@ -11,6 +11,7 @@
 
 ## 요청 로그
 
+- 2026-04-18: Phase C MenuController allowedSessionStates → Sign In=ANONYMOUS, Sign Out=AUTHENTICATED+IN_WORKSPACE
 - 2026-04-18: Phase 1a 구현 점검 → 코드·테스트·API 문서 모두 반영 완료, DDL 003_login.sql 생성만 남음
 - 2026-04-18: Phase 1a 내부 UUID 도입 → user 테이블/lookup-create/JWT sub=UUID 설계
 - 2026-04-18: GET /user 에 workspace 없음 → UserController 는 JWT claim 만 반환, workspace 조회 미구현 (가설 A).
