@@ -4,16 +4,20 @@ import dagger.Provides;
 import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.UserRepository;
-import dev.sayaya.rx.Observable;
+import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Singleton;
+import java.util.List;
 
 /**
  * UC-S21 (빈 워크스페이스 자동 온보딩) 테스트용 Dagger 모듈.
- * UserRepository 를 BehaviorSubject 로 mock 해 테스트가 런타임에 User 를 교체할 수 있게 한다.
+ *
+ * <p>{@link WorkspaceRepository} 를 {@link BehaviorSubject} 로 mock 해 테스트가 런타임에
+ * 워크스페이스 목록을 교체할 수 있게 한다. {@link User} 는 identity 만 담당하므로 목록 제어는
+ * workspaceSubject 가 독립적으로 수행한다.</p>
  */
 @dagger.Module
 public class OnboardingMock {
@@ -23,14 +27,11 @@ public class OnboardingMock {
     @Provides @Singleton UserRepository provideUserRepository(BehaviorSubject<User> subject) {
         return subject::asObservable;
     }
-
-    /** JsPropertyMap 기반 User 합성 — 네이티브 JsType 필드에 workspaces 배열 주입. */
-    public static User user(Workspace[] workspaces) {
-        JsPropertyMap<Object> obj = JsPropertyMap.of();
-        obj.set("id", "u-onboarding-test");
-        obj.set("name", "Onboarding Tester");
-        obj.set("workspaces", workspaces);
-        return Js.cast(obj);
+    @Provides @Singleton BehaviorSubject<List<Workspace>> provideWorkspaceSubject() {
+        return BehaviorSubject.behavior(List.of());
+    }
+    @Provides @Singleton WorkspaceRepository provideWorkspaceRepository(BehaviorSubject<List<Workspace>> subject) {
+        return subject::asObservable;
     }
 
     public static Workspace workspace(String id, String name) {

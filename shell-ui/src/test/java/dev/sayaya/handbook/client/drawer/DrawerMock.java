@@ -5,8 +5,10 @@ import dev.sayaya.handbook.client.domain.User;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.ViewportObserver;
+import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
+import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.Progress;
@@ -81,6 +83,9 @@ public class DrawerMock {
     }
     @Provides @Singleton UserRepository provideUserRepository() {
         return () -> behavior(user);
+    }
+    @Provides @Singleton WorkspaceRepository provideWorkspaceRepository() {
+        return () -> behavior(List.<Workspace>of());
     }
     @Provides @Singleton BehaviorSubject<String> provideUri() {
         return behavior(null);

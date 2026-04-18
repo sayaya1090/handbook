@@ -1,10 +1,11 @@
 package dev.sayaya.handbook.client.onboarding;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.domain.Menu;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.EventType;
+
+import java.util.List;
 
 import static org.jboss.elemento.Elements.body;
 import static org.jboss.elemento.Elements.button;
@@ -22,8 +23,8 @@ import static org.jboss.elemento.Elements.div;
  *   <li>{@code #selected-menu-script} — 최신 Menu 의 script</li>
  *   <li>{@code #selected-menu-icon} — 최신 Menu 의 icon</li>
  *   <li>{@code #push-count} — MenuSelected 가 non-null 로 방출된 누적 횟수</li>
- *   <li>{@code #emit-empty} 버튼 — workspaces=null 인 User 를 upstream 으로 push</li>
- *   <li>{@code #emit-non-empty} 버튼 — workspace 1개를 가진 User 를 push</li>
+ *   <li>{@code #emit-empty} 버튼 — 빈 workspace list 를 upstream 으로 push</li>
+ *   <li>{@code #emit-non-empty} 버튼 — workspace 1개가 담긴 list 를 push</li>
  * </ul></p>
  */
 public class Application implements EntryPoint {
@@ -57,10 +58,10 @@ public class Application implements EntryPoint {
         body().add(div().id("onboarding-test-root")
                 .add(title).add(script).add(icon).add(iconType).add(order).add(count)
                 .add(button("emit-empty").id("emit-empty")
-                        .on(EventType.click, e -> components.userSubject().next(OnboardingMock.user(null))))
+                        .on(EventType.click, e -> components.workspaceSubject().next(List.of())))
                 .add(button("emit-non-empty").id("emit-non-empty")
-                        .on(EventType.click, e -> components.userSubject().next(OnboardingMock.user(
-                                new Workspace[] { OnboardingMock.workspace("ws-1", "Test WS") }))))
+                        .on(EventType.click, e -> components.workspaceSubject().next(
+                                List.of(OnboardingMock.workspace("ws-1", "Test WS")))))
         );
     }
 }

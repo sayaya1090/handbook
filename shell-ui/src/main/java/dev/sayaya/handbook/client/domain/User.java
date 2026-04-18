@@ -13,5 +13,4 @@ import lombok.experimental.Accessors;
 public final class User {
     private String id;
     private String name;
-    private Workspace[] workspaces;
 }

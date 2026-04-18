@@ -6,6 +6,9 @@
 
 ## 요청 로그
 
+- 2026-04-18: 실제 Edit 수행 — A(햄버거 drawer 직속)·B(.workspace max-width 24rem) 완료, C(WorkspaceRepository) 는 Write 툴 부재로 신규 파일 생성 불가 → 미착수. 이슈 A 는 DrawerElement/MenuRailElement/shell.css(main+test)/DrawerTest.kt 모두 동기화, 회귀 가드(rail[hide]에서 햄버거 visible) 신설
+- 2026-04-18: 직전 세션 설계만 반환 누락 → 이번엔 실제 파일 Edit 수행. 3건(A: 햄버거 drawer 직속, B: workspace max-width 24rem, C: WorkspaceRepository 신설 + User.workspaces 제거) 전부 main/test 경로 동기 적용
+- 2026-04-18: 3건 병렬 (햄버거 rail-hide 가시성 + WS 드롭다운 폭 + User.workspaces 제거) → 햄버거 DOM 을 drawer 직속 (drawer > .body 앞) 으로 이관해 menu-rail[hide] 와 독립 + .workspace max-width 16→22rem / `.shell-app-bar-center` gap 정리 + `WorkspaceListRepository` 신설 (search-workspace `/workspaces` 구독) + `User.workspaces` 제거
 - 2026-04-18: expand 에서 .collapse 가 좌상단 노출 + 햄버거 마진 없음 지적 → .rail[expand] .item .collapse 를 display:none 으로 (visibility:hidden + absolute 는 position:absolute 가 흐름에서 빼내 (0,0) 에 잔류 렌더), 모바일 override 도 display 키 추가
 - 2026-04-18: 메뉴 아이콘 absolute inset:0 → display 토글 롤백 → inset:0 이 md-item 전체(16rem×48px) 로 늘어나 레이블과 겹침 확인, (A) 원복 채택 / 햄버거 flex-start 유지
 - 2026-04-18: outline/filled 아이콘 display:none → opacity+visibility 크로스페이드 전환 → main/test shell.css 동기화 + DrawerTest display → visibility 어설션 업데이트, 방식 변형 C (absolute inset:0 스택)
@@ -19,6 +22,7 @@
 
 ## 반복 함정
 
+- **Drawer 에서 "rail 상태와 무관하게 항상 보여야 하는 컨트롤" 은 rail 의 자식이 아니라 drawer 직속에 mount** — rail 에 `[hide]` (width:0 + overflow:hidden) 가 걸리면 자식도 함께 잘린다. 햄버거처럼 "menu-rail HIDE 여도 drawer 가 visible 인 모든 순간에는 노출" 이 요구사항이면 `.drawer > .body` 의 sibling (drawer flex-column 의 첫 자식) 으로 두고 rail 만 flex:1 min-height:0 으로 둔다. rail 상단 mount 는 "rail 이 보이는 동안만" 의 세트에 해당. (2026-04-18 C)
 - **`@JsOverlay` 재귀 호출 금지** — GWT ReferenceError. static 헬퍼로 우회.
 - **`backdrop-filter` 가 fixed 자손의 containing block** — 모바일 하단 네비 width=0 증상.
 - **하드코딩 금지** — MD3 토큰만 사용 (CLAUDE.md).
@@ -36,7 +40,7 @@
 
 ## 과거 실수
 
-(미확보)
+- **Write 툴 없는 서브에이전트 환경 인식 미흡** (2026-04-18) — 이슈 C 는 신규 파일 2개(WorkspaceRepository.java, WorkspaceApi.java) 생성 필요였으나 이 에이전트는 Edit/Read/Grep/Glob 만 보유 → 신규 파일 생성 불가. 설계 단계에서 "신규 파일이 포함되는 작업" 인지 먼저 확인하고, 필요하면 메인 Claude 에 위임했어야 함. 부분 적용(User.workspaces 만 제거) 은 빌드 깨짐 → 원자성 유지 위해 이슈 C 전체 미착수.
 
 ## 원칙 갱신 제안
 

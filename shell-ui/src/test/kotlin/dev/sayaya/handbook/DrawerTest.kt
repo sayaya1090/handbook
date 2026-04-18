@@ -31,14 +31,48 @@ internal class DrawerTest: GwtTestSpec({
             ).toString()
             hasHide shouldBe "false"
         }
-        Then("메뉴 토글 버튼은 MenuRail 상단 직속 자식이다") {
-            // 2026-04: 햄버거 토글을 AppBar leading → MenuRail 상단으로 이관 (MD3 Navigation
-            // Rail 정석). AppBar `left: var(--shell-drawer-width)` 로 인해 rail expand 시
-            // 우측으로 밀리는 회귀 해결.
+        Then("메뉴 토글 버튼은 Drawer 직속 자식이다 (MenuRail 과 독립)") {
+            // 2026-04-18: 햄버거 토글을 MenuRail 상단 → Drawer 직속(첫 자식) 으로 이관.
+            // 이유: MenuRail 이 HIDE(width:0 + overflow:hidden) 상태에서도 drawer 자체가
+            // visible 인 동안에는 햄버거가 보여야 하는데, rail 의 자식이면 함께 잘린다.
+            // AppBar leading 도 아님(rail expand 시 우측 밀림 회귀 때문).
+            val drawerToggle = page.querySelector(".drawer > #menu-toggle-button")
+            drawerToggle shouldNotBe null
             val railToggle = page.querySelector(".menu-rail > #menu-toggle-button")
-            railToggle shouldNotBe null
+            railToggle shouldBe null
             val leadingToggle = page.querySelector(".shell-app-bar-leading #menu-toggle-button")
             leadingToggle shouldBe null
+        }
+        Then("WorkspaceSelect 의 .workspace max-width 가 24rem 이상이다 — 긴 이름 가독성") {
+            // 2026-04-18: 워크스페이스명이 길어 기존 16rem 에서 ellipsis 로 잘리는 회귀 대응.
+            // AppBar center flex:1 min-width:0 로 자연 shrink 가 보장되므로 상한만 확장.
+            val maxWidthPx = page.evaluate(
+                """
+                (() => {
+                    const el = document.querySelector('.shell-app-bar-center .workspace');
+                    if (!el) return 0;
+                    const v = getComputedStyle(el).maxWidth;
+                    if (!v || v === 'none') return 99999;
+                    // px 또는 rem 환산 — getComputedStyle 은 항상 px 반환
+                    return parseFloat(v);
+                })()
+                """.trimIndent()
+            ).toString().toDouble()
+            // 24rem = 24 * 16 = 384px. 여유 있게 380 이상이면 통과.
+            (maxWidthPx >= 380.0) shouldBe true
+        }
+        Then("햄버거 토글은 MenuRail HIDE 상태에서도 visible 이다 — rail 과 독립") {
+            // 회귀 가드: rail 에 [hide] 가 걸려 width:0 + overflow:hidden 이어도 drawer 직속에
+            // 있으므로 햄버거 display 는 none 이 아니어야 한다.
+            page.evaluate("document.querySelector('.menu-rail').setAttribute('hide', '')")
+            Thread.sleep(50)
+            val toggleDisplay = page.evaluate(
+                "getComputedStyle(document.querySelector('.drawer > #menu-toggle-button')).display"
+            ).toString()
+            toggleDisplay shouldNotBe "none"
+            // 원복 — rail mode 상태는 MenuRailMode 가 다시 set 하지만 이 속성 변경이 후속 테스트에
+            // 영향을 미치지 않도록 명시적으로 되돌린다.
+            page.evaluate("document.querySelector('.menu-rail').removeAttribute('hide')")
         }
         Then("WorkspaceSelectElement 는 AppBar center 안에 위치한다") {
             // 기존 .drawer-header 에 있던 WorkspaceSelect 를 AppBar center 로 이동.
@@ -303,15 +337,15 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "false"
             }
-            Then("모바일에서도 MenuToggleButton 은 MenuRail 상단에 DOM 으로 존재한다 (CSS 로 숨김)") {
-                // MenuRail[mobile] > #menu-toggle-button { display:none } 로 숨겨지나 DOM
-                // 자체는 유지 — 데스크톱 복귀 시 재표시 needed 없음.
-                val railHasToggle = page.evaluate(
-                    "document.querySelector('.menu-rail > #menu-toggle-button') !== null"
+            Then("모바일에서도 MenuToggleButton 은 Drawer 직속에 DOM 으로 존재한다 (CSS 로 숨김)") {
+                // 2026-04-18 이관 이후: `.drawer:has(.menu-rail[mobile]) > #menu-toggle-button { display:none }`
+                // 로 숨겨지나 DOM 자체는 유지 — 데스크톱 복귀 시 재표시 needed 없음.
+                val drawerHasToggle = page.evaluate(
+                    "document.querySelector('.drawer > #menu-toggle-button') !== null"
                 ).toString()
-                railHasToggle shouldBe "true"
+                drawerHasToggle shouldBe "true"
                 val hidden = page.evaluate(
-                    "getComputedStyle(document.querySelector('.menu-rail > #menu-toggle-button')).display"
+                    "getComputedStyle(document.querySelector('.drawer > #menu-toggle-button')).display"
                 ).toString()
                 hidden shouldBe "none"
             }

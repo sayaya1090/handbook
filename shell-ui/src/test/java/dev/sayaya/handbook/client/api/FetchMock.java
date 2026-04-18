@@ -21,6 +21,9 @@ public class FetchMock implements FetchApi {
 
     @Override
     public Promise<Response> request(String url, RequestInit param) {
+        if (url != null && url.contains("workspaces")) {
+            return Promise.resolve(createWorkspacesResponse());
+        }
         if (url != null && url.contains("user")) {
             return Promise.resolve(createUserResponse());
         }
@@ -38,15 +41,23 @@ public class FetchMock implements FetchApi {
         userObj.set("id", "test-user-id");
         userObj.set("name", "TestUser");
 
-        JsPropertyMap<Object> ws = JsPropertyMap.of();
-        ws.set("id", "ws-1");
-        ws.set("name", "TestWorkspace");
-        userObj.set("workspaces", new Object[] { ws });
-
         JsPropertyMap<Object> mock = JsPropertyMap.of();
         mock.set("status", 200);
         mock.set("statusText", "OK");
         mock.set("json", (JsonSupplier) () -> Promise.resolve(userObj));
+        return Js.cast(mock);
+    }
+
+    private static Response createWorkspacesResponse() {
+        JsPropertyMap<Object> ws = JsPropertyMap.of();
+        ws.set("id", "ws-1");
+        ws.set("name", "TestWorkspace");
+        Object[] arr = new Object[] { ws };
+
+        JsPropertyMap<Object> mock = JsPropertyMap.of();
+        mock.set("status", 200);
+        mock.set("statusText", "OK");
+        mock.set("json", (JsonSupplier) () -> Promise.resolve(arr));
         return Js.cast(mock);
     }
 

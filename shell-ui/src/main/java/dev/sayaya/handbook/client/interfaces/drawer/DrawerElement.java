@@ -23,10 +23,18 @@ import static org.jboss.elemento.Elements.nav;
  * {@code [open]/[hide]/[overlay]} 속성을 토글하고, 하단 MenuRail / ToolRail 을 자식으로 담는다.
  * OVERLAY 모드에서는 배경 스크림을 노출하며, 스크림 클릭으로 overlay 를 닫는다.</p>
  *
+ * <p><b>햄버거 토글 배치(2026-04-18 ~ MenuRail → Drawer 직속 이관):</b>
+ * {@link MenuToggleButton} 은 drawer flex-column 의 **첫 자식**(`.body` 컨테이너 앞)으로
+ * 마운트된다. 이유는 "MenuRail 이 HIDE(width:0 + overflow:hidden) 여도 drawer 자체가
+ * visible 인 동안에는 햄버거가 보여야" 하기 때문 — rail 의 자식이면 rail[hide] 에 걸려
+ * 함께 잘리므로 독립 배치. drawer[hide] / drawer[overlay] 에서만 CSS 로 숨긴다.
+ * 모바일에서는 `.drawer:has(.menu-rail[mobile])` 분기로 숨김 처리(MobileTabs 가 대체).</p>
+ *
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link DrawerMode} — Drawer 상태 구독</li>
  *   <li>{@link MenuRailElement} / {@link ToolRailElement} — rail 자식</li>
+ *   <li>{@link MenuToggleButton} — drawer 상단 햄버거 (rail 과 독립)</li>
  *   <li>{@link ShellStylesheet} — 생성자 주입으로 shell.css 로드 강제</li>
  * </ul></p>
  *
@@ -41,7 +49,8 @@ public class DrawerElement implements IsElement<HTMLElement> {
     @Delegate private final HTMLContainerBuilder<HTMLElement> _this = nav();
     private final HTMLDivElement scrim;
 
-    @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, ToolRailElement navTools, ShellStylesheet shellStylesheet) {
+    @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, ToolRailElement navTools,
+                          MenuToggleButton navToggle, ShellStylesheet shellStylesheet) {
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
         assert shellStylesheet != null;
@@ -50,8 +59,11 @@ public class DrawerElement implements IsElement<HTMLElement> {
 
         // AppBar / MobileTabs 는 viewport 최상단 fixed 요소로서 body 직속에 배치된다 —
         // {@link dev.sayaya.handbook.client.ShellInitializer} 가 Composition Root 에서
-        // 명시적 순서로 append. DrawerElement 는 rail 본체만 담당한다.
+        // 명시적 순서로 append. DrawerElement 는 rail 본체 + 햄버거 토글을 담당한다.
+        // 햄버거는 drawer 의 첫 자식으로 둬 rail[hide] 와 독립적으로 유지 — rail 이 width:0 으로
+        // 잘려도 drawer 자체가 visible 이면 햄버거는 노출되어야 하기 때문.
         _this.css("drawer")
+                .add(navToggle)
                 .add(div().css("body")
                         .add(navMenu).add(navTools));
         mode.subscribe(this::state);

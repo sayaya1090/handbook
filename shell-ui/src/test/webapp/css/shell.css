@@ -194,23 +194,26 @@ body,
     --md-list-item-label-text-color: var(--md-sys-color-primary);
     --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
 }
-/* ── MenuRail 상단 햄버거 토글 (2026-04 AppBar leading → Rail 상단 이관) ──
-   rail 은 flex-column 이고 햄버거는 MenuRailElement 가 rail 첫 자식으로 append.
+/* ── Drawer 상단 햄버거 토글 (2026-04-18: MenuRail → Drawer 직속 이관) ──
+   햄버거는 drawer flex-column 의 **첫 자식** 으로 마운트된다 (DrawerElement 생성자 참조).
+   이유: MenuRail 이 HIDE(width:0 + overflow:hidden) 상태여도 drawer 자체가 visible 인
+   동안에는 햄버거가 보여야 하기 때문. rail 의 자식이면 rail[hide] 에 걸려 함께 잘린다.
    collapse(3.5rem) ↔ expand(16rem) 전환 시 아이콘 x 좌표를 **고정**하기 위해
-   `align-self: flex-start` + `margin-left: 8px` 로 배치한다 — 40px 버튼의 center 가
-   항상 x=28px 에 오도록. `.item .collapse`(margin:4px 8px, 40px) 및 md-item start slot
-   (padding-inline-start:16px, 24px 아이콘) 과 동일한 정렬이며, 이 셋이 같은 수직선에
-   놓여 전환 시 좌우 흔들림이 사라진다. (`align-self: center` 는 rail 폭에 따라 x 가
-   바뀌어 시프트 원인이었음.) 모바일([mobile])은 MenuRail 이 display:none 이라 햄버거
-   실질 용도 없음. */
-.menu-rail > #menu-toggle-button {
+   `align-self: flex-start` + `margin-left: 8px` 로 배치 — 40px 버튼의 center 가 항상
+   x=28px 에 오도록. `.item .collapse`(margin:4px 8px, 40px) 및 md-item start slot
+   (padding-inline-start:16px, 24px 아이콘) 과 동일한 정렬. 모바일([mobile])은 MenuRail
+   이 display:none 이고 MobileTabs 가 네비 대체이므로 햄버거 실질 용도 없음 → 숨김.
+   drawer[hide]/[overlay] 시에도 숨김(drawer 자체가 비가시). */
+.drawer > #menu-toggle-button {
     flex-shrink: 0;
     align-self: flex-start;
     margin-left: 8px;
     margin-top: 4px;
     margin-bottom: 4px;
 }
-.menu-rail[mobile] > #menu-toggle-button {
+.drawer:has(.menu-rail[mobile]) > #menu-toggle-button,
+.drawer[hide] > #menu-toggle-button,
+.drawer[overlay] > #menu-toggle-button {
     display: none;
 }
 /* ── Rail 하단 컨트롤 (테마 토글 등) ── */
@@ -620,10 +623,12 @@ body:has(nav.drawer[overlay]) {
     overflow: hidden;
 }
 /* AppBar center 에 편입된 WorkspaceSelect 의 폭 조정 — 기존 .drawer .header .workspace 스타일
-   과 동등하게 max-width 제한과 텍스트 필드 레이블 높이 튜닝. */
+   과 동등하게 max-width 제한과 텍스트 필드 레이블 높이 튜닝.
+   2026-04-18: 워크스페이스명이 길어 16rem 에서 ellipsis 로 잘리는 피드백 → 24rem 으로 확장.
+   AppBar center 는 flex:1 min-width:0 이라 좁은 뷰포트에서도 자연 shrink 되므로 상한만 올린다. */
 .shell-app-bar-center .workspace {
     min-width: 0;
-    max-width: 16rem;
+    max-width: 24rem;
     width: 100%;
     --_text-field-label-text-line-height: 0.8rem;
     --_text-field-input-text-line-height: 0.8rem;
