@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.interfaces.authentication
 
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono
  */
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -51,7 +53,11 @@ class GlobalExceptionHandler {
     @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun handleGeneral(ex: Exception): Mono<ProblemDetail> {
-        val problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.")
+        // 운영 회귀 진단을 위해 stack trace 를 반드시 로깅. 상세 메시지는 ProblemDetail
+        // detail 에도 포함해 클라이언트가 1차 원인을 즉시 알 수 있게 한다.
+        log.error("Unhandled exception at controller", ex)
+        val detail = ex.message?.takeIf { it.isNotBlank() } ?: "${ex.javaClass.simpleName} (no message)"
+        val problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, detail)
         problem.title = "Internal Server Error"
         return Mono.just(problem)
     }
