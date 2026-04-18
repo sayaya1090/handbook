@@ -728,4 +728,75 @@ internal class DrawerTest: GwtTestSpec({
             Thread.sleep(200)
         }
     }
+
+    // ── Shell Frame 레이아웃 토큰 (docs/contracts/frame.md) ───────────────────────────────
+    // UI 모듈들이 WindowRenderBridge 로 mount 되는 Frame 의 여백·오프셋이 데스크톱/모바일
+    // 분기별로 올바른지 검증. .frame 엘리먼트 자체는 이 테스트 shell 에 없으므로
+    // :root CSS 커스텀 프로퍼티 값으로 확인. 토큰 정의는 shell-ui/src/main/webapp/css/shell.css.
+    Given("데스크톱 뷰포트(1280x720) 에서 shell 레이아웃 토큰은") {
+        page.setViewportSize(1280, 720)
+        page.navigate("file://${java.io.File("src/test/webapp/drawer.html").absolutePath}")
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+        Thread.sleep(400)
+
+        Then("--shell-app-bar-height 가 56px 이다") {
+            val v = page.evaluate(
+                "getComputedStyle(document.body).getPropertyValue('--shell-app-bar-height').trim()"
+            ).toString()
+            v shouldBe "56px"
+        }
+        Then("--shell-frame-left-offset 이 rail collapse 폭(3.5rem) 으로 고정된다") {
+            // rail EXPAND 는 본문 위 overlay 가 의도된 동작이므로 동적 --shell-drawer-width 와 구분
+            val v = page.evaluate(
+                "getComputedStyle(document.body).getPropertyValue('--shell-frame-left-offset').trim()"
+            ).toString()
+            v shouldBe "3.5rem"
+        }
+        Then("--shell-mobile-tabs-height 가 0px 이다 (데스크톱은 MobileTabs 숨김)") {
+            val v = page.evaluate(
+                "getComputedStyle(document.body).getPropertyValue('--shell-mobile-tabs-height').trim()"
+            ).toString()
+            v shouldBe "0px"
+        }
+    }
+
+    Given("모바일 뷰포트(375x800) 에서 shell 레이아웃 토큰은") {
+        page.setViewportSize(375, 800)
+        page.navigate("file://${java.io.File("src/test/webapp/drawer.html").absolutePath}")
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+        Thread.sleep(400)
+
+        Then("--shell-frame-left-offset 이 0px 으로 눌린다 (모바일은 rail 없음)") {
+            val v = page.evaluate(
+                "getComputedStyle(document.body).getPropertyValue('--shell-frame-left-offset').trim()"
+            ).toString()
+            v shouldBe "0px"
+        }
+        Then("--shell-mobile-tabs-height 가 49px 이다 (MobileTabs 노출 시)") {
+            // .menu-tabs[hide] 가 붙으면 0px 으로 돌아감. 현재 이 Given 에선 도구 선택 상태가
+            // 아니고 메뉴가 있으므로 MobileTabs 가 표시되어 49px 유지.
+            val hasHide = page.evaluate(
+                "document.querySelector('.menu-tabs')?.hasAttribute('hide') ?? false"
+            ).toString()
+            hasHide shouldBe "false"
+            val v = page.evaluate(
+                "getComputedStyle(document.body).getPropertyValue('--shell-mobile-tabs-height').trim()"
+            ).toString()
+            v shouldBe "49px"
+        }
+        Then(".menu-tabs[hide] 상태가 되면 --shell-mobile-tabs-height 가 0px 로 눌린다") {
+            // body:has(.menu-tabs[hide]) selector 분기 검증
+            page.evaluate("document.querySelector('.menu-tabs')?.setAttribute('hide', '')")
+            Thread.sleep(50)
+            val v = page.evaluate(
+                "getComputedStyle(document.body).getPropertyValue('--shell-mobile-tabs-height').trim()"
+            ).toString()
+            v shouldBe "0px"
+            // 원복
+            page.evaluate("document.querySelector('.menu-tabs')?.removeAttribute('hide')")
+        }
+        // 원복
+        page.setViewportSize(1280, 720)
+        Thread.sleep(200)
+    }
 })

@@ -259,9 +259,11 @@ Active Item  → corner-full (pill)
 └────────┴─────────────────────────────────────────────────────┘
 ```
 
-**정석 배치 (2026-04 재구조):** Drawer 가 `fixed top:0 bottom:0 left:0` 로 viewport 전체 세로를 차지하고, AppBar 는 `left: var(--shell-drawer-width)` 로 Drawer 오른쪽만. Frame 은 viewport 전역(`left:0 top:appbar-height`) 에 깔려 Drawer 반투명 배경 뒤로 비쳐 보인다 (Standard Navigation Drawer + translucent surface). AppBar scroll 상태는 `window.scrollY>0` 시 `[scrolled]` 속성 자동 토글 — 기본 Surface / scrolled 시 Surface-container + elevation 2 로 전환(MD3 Small Top App Bar 스펙 준수).
+**정석 배치 (2026-04 재구조):** Drawer 가 `fixed top:0 bottom:0 left:0` 로 viewport 전체 세로를 차지하고, AppBar 는 `left: var(--shell-drawer-width)` 로 Drawer 오른쪽만. Frame 은 `left: var(--shell-frame-left-offset) + 16px, top: appbar + mobile-tabs + 16px, right:16px, bottom:16px` 로 **rail 의 collapse 폭 고정 오프셋** + 상하좌우 16px 여백 안에 배치된다. AppBar scroll 상태는 `window.scrollY>0` 시 `[scrolled]` 속성 자동 토글 — 기본 Surface / scrolled 시 Surface-container + elevation 2 로 전환(MD3 Small Top App Bar 스펙 준수).
 
-**CSS 토큰 공유:** `:root` 에 `--shell-drawer-width` 를 두고 `body:has(nav.drawer[open/hide/overlay])` 셀렉터로 동적 재지정 — AppBar left / Drawer width 가 한 토큰을 공유해 transition 동기.
+> **Rail EXPAND = 본문 overlay 의도**: Frame left 는 `--shell-drawer-width` (동적, rail 상태에 따라 확장) 가 아니라 `--shell-frame-left-offset` (collapse 폭 고정) 을 쓴다. 사용자가 rail 을 EXPAND 하면 rail 이 본문 위로 overlay 되는 것이 MD3 Standard Navigation Drawer 의 의도된 동작이므로, 본문은 rail collapse 만큼의 오프셋을 유지하고 rail EXPAND 는 반투명 surface 로 본문 위로 슬라이드 된다.
+
+**CSS 토큰 공유:** `:root` 에 `--shell-drawer-width` (AppBar/MobileTabs 용, 동적) + `--shell-frame-left-offset` (Frame 용, 고정) + `--shell-mobile-tabs-height` (Frame 상단 오프셋, 모바일 전용) + `--shell-app-bar-height` 네 개를 두고 `body:has(...)` 셀렉터로 상태 전이에 따라 재지정. 상세는 [`docs/contracts/frame.md`](contracts/frame.md).
 
 ### 전체 레이아웃 (모바일, ≤ 768px)
 
@@ -297,7 +299,8 @@ Active Item  → corner-full (pill)
 | Navigation Rail (Collapse) | 56px 너비 | 아이콘만 표시 |
 | Navigation Rail (Expand) | 256px (16rem) 너비 | 아이콘 + 라벨 |
 | Tool Rail (Expand) | 256px 너비 | 도구 목록 표시 |
-| Frame 영역 | `left: 56px, right: 0, top: 4px, bottom: 0` | 콘텐츠 렌더링 |
+| Frame 영역 (desktop) | `left: calc(3.5rem + 16px), right: 16px, top: calc(56px + 16px), bottom: 16px` | rail collapse 오프셋 + 16px 여백. rail EXPAND 는 본문 위 overlay (의도) |
+| Frame 영역 (mobile) | `left: 16px, right: 16px, top: calc(56px + 49px + 16px), bottom: 16px` | AppBar + MobileTabs 높이 합산 + 16px 여백 |
 | Agent Input | `max-width: 720px`, 하단 중앙 | 에이전트 명령 입력 |
 | Toast Container | 우측 상단 `top: 60px, right: 20px` | 최대 400px 너비 |
 

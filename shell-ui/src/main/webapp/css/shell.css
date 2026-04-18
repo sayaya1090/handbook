@@ -40,11 +40,15 @@ body,
     width: var(--shell-drawer-width);
     z-index: 1000;
     flex-direction: column;
-    /* drawer 자체 레이아웃 트랜지션은 별도 — 색 트랜지션과 분리해 더 짧게 */
+    /* drawer 자체 레이아웃 트랜지션은 별도 — 색 트랜지션과 분리해 더 짧게.
+       width 는 반드시 .rail 의 width transition (400ms, cubic-bezier(.2,0,0,1)) 과 동일하게
+       유지한다. 과거에 600ms 였던 탓에 tool-rail 이 16rem 로 먼저 자라는 동안 drawer 는
+       아직 확장 중이라, flex-shrink:1 기본값으로 menu-rail 이 순간 압축됐다가 drawer 가
+       32rem 에 도달하면 복귀하는 jitter 가 있었다. */
     transition-property: background-color, color, width, border-color, box-shadow, fill,
                          stroke, border-top-right-radius, border-bottom-right-radius;
-    transition-duration: 600ms, 600ms, 600ms, 300ms, 600ms, 600ms, 300ms, 300ms;
-    transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+    transition-duration: 600ms, 600ms, 400ms, 300ms, 600ms, 600ms, 300ms, 300ms;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1), cubic-bezier(.4, 0, .2, 1), cubic-bezier(.2, 0, 0, 1), cubic-bezier(.4, 0, .2, 1), cubic-bezier(.4, 0, .2, 1), cubic-bezier(.4, 0, .2, 1), cubic-bezier(.4, 0, .2, 1), cubic-bezier(.4, 0, .2, 1);
 }
 .drawer .body {
     display: flex;
@@ -68,6 +72,10 @@ body,
     width: 0px;
     overflow: hidden;
     white-space: pre;
+    /* flex-shrink:0 은 방어적 — 부모 drawer width transition 과 rail width transition 이
+       어긋날 때 flex 가 rail 을 압축해 menu-rail 이 순간 줄어들었다가 원복되는 jitter 방지.
+       drawer/rail transition 을 400ms 로 동기화했지만 페인트 타이밍 편차 대비 고정. */
+    flex-shrink: 0;
     transition: width 400ms cubic-bezier(.2,0,0,1), padding-left 400ms cubic-bezier(.2,0,0,1);
 }
 .rail[collapse] {

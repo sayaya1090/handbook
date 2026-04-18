@@ -39,6 +39,20 @@
 | Elevation | `--md-sys-elevation-*` | `--md-sys-elevation-level0` ~ `--md-sys-elevation-level5` |
 | Shape | `--md-sys-shape-*` | `--md-sys-shape-corner-small`, `--md-sys-shape-corner-extra-large` |
 | Motion | `--md-sys-motion-*` | `--md-sys-motion-easing-standard`, `--md-sys-motion-duration-medium2` |
+| Shell 레이아웃 | `--shell-*` | `--shell-app-bar-height`, `--shell-mobile-tabs-height`, `--shell-drawer-width`, `--shell-frame-left-offset` |
+
+### Shell 레이아웃 토큰 (shell-ui 전용)
+
+`shell-ui/src/main/webapp/css/shell.css` 에서 정의·관리. 자식 UI 모듈은 이 토큰을
+직접 읽지 않는다 — Frame mount 시 shell 의 `.frame` 이 여백·오프셋을 적용해준다
+([`frame.md`](frame.md)).
+
+| 토큰 | 기본 (Desktop) | Mobile | 소비자 | 용도 |
+|------|--------------|--------|-------|------|
+| `--shell-app-bar-height` | 56px | 56px | `.frame`, `.shell-app-bar`, `.menu-tabs` | Top App Bar 점유 영역 |
+| `--shell-mobile-tabs-height` | 0 | 49px (`.menu-tabs[hide]` → 0) | `.frame` | MobileTabs 점유 영역 (Frame top 오프셋 합산) |
+| `--shell-frame-left-offset` | 3.5rem (rail collapse 고정) | 0 | `.frame` | Frame 좌측 rail 영역 확보. rail EXPAND 는 overlay 의도 |
+| `--shell-drawer-width` | 3.5 ~ 32rem (rail 상태 조합, 동적) | 0 | `.shell-app-bar`, `.menu-tabs` | AppBar/MobileTabs 좌측 시작점 (Frame 은 미사용) |
 
 ## Tooltip 규약
 
