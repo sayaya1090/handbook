@@ -11,6 +11,8 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.jboss.elemento.EventType;
+
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
@@ -37,9 +39,10 @@ public class ArtifactSummaryPanel implements IsElement<HTMLDivElement> {
     ArtifactSummaryPanel(AgentCommandDispatcher dispatcher, LabelProvider labelProvider) {
         contentArea = div().css("agent-artifact-content").element();
 
-        HTMLElement closeBtn = span().css("agent-artifact-close", "material-symbols-outlined").element();
+        HTMLElement closeBtn = span().css("agent-artifact-close", "material-symbols-outlined")
+                .on(EventType.click, e -> hide())
+                .element();
         closeBtn.textContent = "close";
-        closeBtn.addEventListener("click", e -> hide());
 
         titleEl = span().css("agent-artifact-title").element();
         HTMLDivElement header = div().css("agent-artifact-header")

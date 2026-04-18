@@ -11,6 +11,7 @@ import dev.sayaya.ui.elements.IconElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -54,16 +55,16 @@ public class AgentInputElement implements IsElement<HTMLDivElement> {
                 .text("")
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-paper-plane-top"))
                 .css("agent-input-send")
+                .on(EventType.click, e -> send())
                 .element();
-        sendBtn.addEventListener("click", e -> send());
 
         abortBtn = ButtonElementBuilder.button().outlined()
                 .text("")
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-stop"))
                 .css("agent-input-abort")
+                .on(EventType.click, e -> abort())
                 .element();
         abortBtn.style.set("display", "none");
-        abortBtn.addEventListener("click", e -> abort());
 
         HTMLDivElement inputWrapper = div().css("agent-input-wrapper")
                 .add(textField)
@@ -75,7 +76,7 @@ public class AgentInputElement implements IsElement<HTMLDivElement> {
                 .add(inputWrapper)
                 .element();
 
-        textField.element().addEventListener("keydown", e -> {
+        textField.on(EventType.keydown, e -> {
             if ("Enter".equals(((elemental2.dom.KeyboardEvent) e).key)) send();
         });
 
