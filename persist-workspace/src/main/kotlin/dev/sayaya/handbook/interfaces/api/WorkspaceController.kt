@@ -1,13 +1,13 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Workspace
+import dev.sayaya.handbook.interfaces.authentication.UserAuthentication
 import dev.sayaya.handbook.usecase.WorkspaceService
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
-import java.security.Principal
 import java.util.*
 
 /**
@@ -20,6 +20,9 @@ import java.util.*
  *
  * **의존관계:**
  * - [WorkspaceService] -- 워크스페이스 도메인 로직
+ * - [UserAuthentication] -- JWT 인증 객체. 컨트롤러 레이어에서만 참조하고 service/repository
+ *   레이어로는 `java.security.Principal` 업캐스트로 전달하여 authentication 모듈이 usecase
+ *   레이어에 침투하지 않도록 한다.
  *
  * **주의:** 프론트엔드(SubmitButton)에도 동일한 정규식 검증이 있다.
  * 보안 목적의 최종 검증은 이 컨트롤러에서 수행한다.
@@ -39,7 +42,7 @@ class WorkspaceController(private val svc: WorkspaceService) {
     )
     @ResponseStatus(HttpStatus.OK)
     fun create(
-        @AuthenticationPrincipal principal: Principal,
+        @AuthenticationPrincipal principal: UserAuthentication,
         @RequestBody param: CreateWorkspaceRequest,
     ): Mono<Workspace> {
         validateName(param.name)
@@ -75,7 +78,7 @@ class WorkspaceController(private val svc: WorkspaceService) {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun join(
         @PathVariable id: UUID,
-        @AuthenticationPrincipal principal: Principal?,
+        @AuthenticationPrincipal principal: UserAuthentication?,
     ): Mono<Void> = svc.join(id, principal)
 
     private fun validateName(name: String) {

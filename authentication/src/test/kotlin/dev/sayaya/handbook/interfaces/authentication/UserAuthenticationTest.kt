@@ -3,6 +3,7 @@ package dev.sayaya.handbook.interfaces.authentication
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import java.time.LocalDateTime
 
 internal class UserAuthenticationTest : DescribeSpec({
@@ -30,7 +31,9 @@ internal class UserAuthenticationTest : DescribeSpec({
 
             it("Spring Security의 Principal, Credentials를 올바르게 반환한다") {
                 auth.name shouldBe "test-user"
-                auth.principal shouldBe "test-user"
+                // principal 은 자기 자신 (컨트롤러에서 @AuthenticationPrincipal UserAuthentication 주입용).
+                // equals 는 identity 비교이므로 shouldBe 대신 identity 매처 사용.
+                auth.principal shouldBeSameInstanceAs auth
                 auth.credentials shouldBe "sample.jwt.token"
             }
 

@@ -16,7 +16,8 @@ sequenceDiagram
 
     Client->>GW: POST /workspace
     Note over Client,GW: Content-Type: application/vnd.sayaya.handbook.v1+json
-    GW->>Ctrl: @RequestBody CreateWorkspaceRequest, @AuthenticationPrincipal
+    GW->>Ctrl: @RequestBody CreateWorkspaceRequest, @AuthenticationPrincipal UserAuthentication
+    Note over Ctrl: UserAuthentication.getPrincipal()=this 여야<br/>@AuthenticationPrincipal UserAuthentication 이 주입됨
     Ctrl->>Svc: create(principal, name, description)
     Svc->>Svc: Workspace(UUID.randomUUID(), name, description)
     Svc->>WRepo: save(workspace)

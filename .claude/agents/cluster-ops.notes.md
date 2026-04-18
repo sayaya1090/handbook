@@ -6,6 +6,8 @@
 
 ## 요청 로그
 
+- 2026-04-18: login Google OAuth 외부호출 → ServiceEntry 추가 (ambient mesh Unknown 해소)
+- 2026-04-18: 3건 커밋 dev 배포 상태 + persist-document CM + orphan DB 조사
 - 2026-04-18: persist-workspace 500 로그 수집 → POST /workspace 예외 스택 추출
 
 ## 탐색 패턴

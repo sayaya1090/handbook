@@ -52,12 +52,15 @@ class R2dbcGroupRepositoryAdapter(
     /**
      * Principal 에서 사용자 UUID 를 추출한다.
      *
-     * 운영 경로: `UserAuthentication.getName()` 은 JWT `name` 클레임(사람이 읽는 표시명,
-     * 예: "Sangjay Bien") 을 반환하므로 `UUID.fromString(principal.name)` 은 실패.
-     * UUID 는 `UserAuthentication.id` (JWT `jti`) 에 들어있으므로 다운캐스트해서 읽는다.
+     * 운영 경로: 컨트롤러가 `@AuthenticationPrincipal UserAuthentication` 으로 주입받은
+     * 객체를 `Principal` 로 업캐스트해 넘긴다. `UserAuthentication.getName()` 은 JWT
+     * `name` 클레임(사람이 읽는 표시명, 예: "Sangjay Bien") 을 반환하므로
+     * `UUID.fromString(principal.name)` 은 실패. UUID 는 `UserAuthentication.id`
+     * (JWT `jti`) 에 들어있으므로 다운캐스트해서 읽는다.
      *
-     * 테스트 경로: `Principal { UUID.randomUUID().toString() }` 람다로 name 에 UUID 문자열을
-     * 직접 넣는 패턴이 인테그레이션 테스트에 존재 — 이 경우 그대로 `principal.name` 을 파싱.
+     * 테스트 경로: `Principal { UUID.randomUUID().toString() }` 람다로 name 에 UUID
+     * 문자열을 직접 넣는 패턴이 integration 테스트에 존재 — 이 경우 그대로
+     * `principal.name` 을 파싱. (`R2dbcWorkspaceCascadeIntegrationTest` 가 대표 사례)
      */
     private fun userUuid(principal: Principal): UUID = when (principal) {
         is UserAuthentication -> UUID.fromString(principal.id ?: error("UserAuthentication.id (JWT jti) is null"))

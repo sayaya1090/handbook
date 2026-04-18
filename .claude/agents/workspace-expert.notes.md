@@ -8,6 +8,7 @@
 
 - 2026-04-18: 워크스페이스 생성 UI 리디자인 → handbook-old JoinApplication 기반 stepper/list 이식
 - 2026-04-18: POST /workspace 500 조사 → @AuthenticationPrincipal Principal 타입 바인딩 실패 의심 (UserAuthentication.getPrincipal()=String)
+- 2026-04-18: auth-expert 권고 적용 → UserAuthentication.getPrincipal()=this + WorkspaceController principal 선언 UserAuthentication 으로 통일 + create 테스트 추가 (workspace-expert 는 Bash 없음 → gradle 실행·커밋은 메인 Claude 에서)
 
 ## 탐색 패턴
 
