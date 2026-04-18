@@ -11,6 +11,7 @@
 
 ## 요청 로그
 
+- 2026-04-18: GET /user 에 workspace 없음 → UserController 는 JWT claim 만 반환, workspace 조회 미구현 (가설 A).
 - 2026-04-18: POST /workspace 500 원인 → @AuthenticationPrincipal 는 getPrincipal() 값 주입, 현재 String username → 어댑터 `is UserAuthentication` 분기 영구 miss.
 
 ## 탐색 패턴
