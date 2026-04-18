@@ -31,7 +31,7 @@ client/
 │   ├── UrlBasedMenuResolver            # URL 정규식 매칭 → 메뉴 자동 선택
 │   ├── ToolBasedMenuResolver           # 도구 선택 → 부모 메뉴 역추적
 │   ├── WorkspaceList                   # 사용자의 워크스페이스 목록
-│   ├── SessionManager                  # JWT 만료 감시, 자동 갱신, 만료 경고/리다이렉트
+│   ├── SessionPollingService                  # JWT 만료 감시, 자동 갱신, 만료 경고/리다이렉트
 │   └── ModuleScriptManager             # 메뉴 선택 시 모듈 스크립트 동적 주입
 │
 ├── interfaces/                          # 인터페이스 (UI 어댑터)
@@ -49,7 +49,7 @@ client/
 │       ├── MobileTabsElement          # 모바일 상단 Scrollable Tabs (md-tabs + ResponsiveOverflow 3단계 폴백)
 │       │                              #   상단정렬(order asc) leading + 하단정렬(order desc) trailing 병합
 │       ├── NavEntryFactory           # 도메인(Menu/Tool) → 네비 엔트리 DOM 매핑 팩토리 (얇은 매핑; 조립은 MenuTabBuilder)
-│       ├── MenuTabBuilder          # md-primary-tab / md-menu-item 공통 시각 구조(아이콘/라벨/툴팁/하이라이트) 데코레이터
+│       ├── MenuTabBuilder          # md-primary-tab / md-menu-item 공통 시각 구조(아이콘/라벨/툴팁/하이라이트) 정적 조립 유틸
 │       ├── OverflowMenuView     # MobileTabs 의 md-icon-button(…) + md-menu 팝업 제어 (open/close/hidden)
 │       ├── DrawerElement              # 드로어 본체 (.body > .menu-rail + .tool-rail)
 │       │                              #   AppBar/MobileTabs/Drawer 는 ShellInitializer 가 body 직속 조립
@@ -206,7 +206,7 @@ stateDiagram-v2
 | `Menu.appBarSlot` 으로 AppBar 승격 선언 | 세션 액션성 메뉴(login 등)를 네비게이션 축에서 뺀다. O/C — slot 이름 → HTMLElement 매핑을 Map 으로 관리해 "leading"/"center"/"trailing" 3종 모두 확장 대응 가능 |
 | HighlightEffect 공통화 (observe + apply) | `.ui-highlight` 감지용 MutationObserver 를 `HighlightEffect.observe` 로 캡슐화. MenuRailItem / MobileTabs 의 md-primary-tab / ShellAppBar 의 `.shell-app-bar-action` 이 동일 추상에만 의존 (Dependency Inversion) |
 | MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuView` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
-| NavEntryFactory + MenuTabBuilder 분리 | 도메인 → 엔트리 매핑(NavEntryFactory)과 엔트리 시각 구조 조립(MenuTabBuilder)을 책임 단위로 분리. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중, Factory 는 Menu/Tool 매핑만, Decorator 는 호스트(md-primary-tab / md-menu-item)별 조립만 |
+| NavEntryFactory + MenuTabBuilder 분리 | 도메인 → 엔트리 매핑(NavEntryFactory)과 엔트리 시각 구조 조립(MenuTabBuilder)을 책임 단위로 분리. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중, Factory 는 Menu/Tool 매핑만, Builder 는 호스트(md-primary-tab / md-menu-item)별 조립 정적 팩토리만 |
 
 ## 테스트
 

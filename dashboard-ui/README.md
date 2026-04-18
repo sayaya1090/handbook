@@ -1,7 +1,7 @@
 # Dashboard-UI 모듈
 
 워크스페이스 현황 대시보드 (GWT). 통계 카드, 데이터 품질 이슈, 에이전트 활동 로그를 실시간으로 표시한다.
-Shell이 `ModuleScriptManager`로 `js/dashboard.nocache.js`를 동적 로딩하여 실행한다.
+Shell이 `ModuleScriptManager`로 `js/dashboard/dashboard.nocache.js`를 동적 로딩하여 실행한다.
 
 ---
 

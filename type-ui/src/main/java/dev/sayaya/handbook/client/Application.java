@@ -8,7 +8,7 @@ import static org.jboss.elemento.Elements.div;
 
 /**
  * Type-UI 엔트리포인트.
- * Shell의 ModuleScriptManager가 type/type.nocache.js를 로딩하면 실행된다.
+ * Shell의 ModuleScriptManager가 js/type/type.nocache.js를 로딩하면 실행된다.
  * Canvas + Controller를 Render로 shell 프레임에 전달한다.
  */
 public class Application implements EntryPoint {

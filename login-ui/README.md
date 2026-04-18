@@ -37,6 +37,7 @@
 | `js/brands.min.js` | FontAwesome brands 스크립트 |
 | `wav/beep.mp3` | 버튼 포커스 사운드 |
 | `wav/start.mp3` | 버튼 클릭(로그인 시작) 사운드 |
+| `src/main/i18n/language.{ko,en}.json` | login.sign_in / login.sign_out 라벨. 빌드 시 app 의 mergeI18nProd 가 다른 모듈과 합쳐 `app/webapp/js/language.{locale}.json` 로 서빙 (shell-ui 의 LabelProvider 가 fetch) |
 
 ## 로그인 흐름
 

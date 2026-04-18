@@ -25,7 +25,7 @@ sequenceDiagram
     UR->>MS: 매칭된 메뉴 선택
     MS-->>MSM: 메뉴 변경 감지
     MSM->>MSM: <script> 동적 주입
-    Note over MSM: type/type.nocache.js 등
+    Note over MSM: js/type/type.nocache.js 등
 ```
 
 ## 메뉴 클릭 → 모듈 로딩 시퀀스
@@ -351,7 +351,7 @@ sequenceDiagram
 | **선행조건** | 사용자 인증 완료 |
 | **정상 흐름** | 1. 토큰 만료 전 refresh token을 사용하여 자동 갱신한다.<br>2. 비활성 타임아웃 5분 전 경고 알림을 표시한다.<br>3. 세션 만료 시 로그인 페이지로 리다이렉트하고 알림을 표시한다. |
 | **요구사항** | 6.11 세션 관리 |
-| **상태** | 구현 완료 (SessionManager) |
+| **상태** | 구현 완료 (SessionPollingService) |
 
 ---
 
@@ -371,11 +371,11 @@ sequenceDiagram
 | UC-S10 (i18n) | i18n (다국어) | Frame+API | BrowserLanguageDetector, FetchLanguagePackRepository, LabelProvider | DrawerTest: 메뉴 아이템에 텍스트 라벨 존재 확인 |
 | UC-S11 (프레임전환) | — (단순) | Frame+API | FrameUpdater, FrameFactory, FrameElement, ContentElement | FrameTest: 컨테이너 존재, 초기 프레임 0개, 렌더러1 → 프레임 1개 + 텍스트 "Hello, World!!", 렌더러2 → 교체 + "2nd Renderer rendered", 재전환 → 프레임 1개 유지 |
 | UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ProgressTest: 컨테이너/라벨 존재, 초기 opacity=0, indeterminate → opacity=1 + 라벨 숨김, 30% → "처리 중" + "3/10", 70% → "거의 완료" + "7/10", 100% → "완료" + "10/10", hide → opacity=0, 재표시 검증 |
-| UC-S13 (모바일) | 모바일 드릴인/드릴백 | Drawer UI | ViewportObserver(isMobile → `[mobile]` 속성), MenuRailMode/ToolRailMode(EXPAND/HIDE 드릴인 스왑), CloseToolRailButton, MenuRailElement, ToolRailElement | DrawerModeTest: 드릴인/드릴백 상태 전이 + 상호 배타성 검증 / DrawerTest: 초기 모바일 로드, [mobile] 속성 부여, 드릴인(MenuRail HIDE, ToolRail EXPAND), 드릴백(원복) 검증 |
+| UC-S13 (모바일) | 모바일 드릴인/드릴백 | Drawer UI | ViewportObserver(isMobile → `[mobile]` 속성), MobileTabsElement, MobileTabsPresenter, NavEntryFactory, MenuTabBuilder, OverflowMenuView, ResponsiveOverflow, ShellAppBarElement, MenuRailMode/ToolRailMode, CloseToolRailButton | DrawerModeTest: 드릴인/드릴백 상태 전이 + 상호 배타성 검증 / DrawerTest: 모바일 MobileTabs 렌더·메뉴↔도구 모드 전환·overflow 팝업·탭 배경 투명화 / ResponsiveOverflowTest: 3단계 폴백 경계값 |
 | UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspace/{id}/messages, 이벤트 타입별 UI 갱신 | UrlBasedMenuResolverTest: SSE 이벤트 기반 메뉴 갱신 검증 |
 | UC-S15 (언어/테마) | — | Drawer UI | UserPreferences (activity), ThemeToggle (NavigationRailItemElement 상속, `.rail-bottom` 하단 고정, i18n headline, theme-changing 500ms 애니메이션 트리거), BrowserLanguageDetector, LabelProvider | DrawerTest: `.rail .rail-bottom.item` 존재, `.collapse` SVG 와 `md-item` start slot SVG 동시 렌더, 초기 color-theme light/dark, 클릭 시 토글 + theme-changing 클래스 일시 부착, expand 시 `.collapse` 숨김 / `md-item` 표시, bottom-menu 가 rail-bottom 아래 순서 |
 | UC-S16 (설정패널) | — | Drawer UI | ThemeToggle (DrawerElement 내 통합), UserPreferences | ❌ 테스트 미작성 (ThemeToggle 구현 완료, 설정 패널 UI 미완) |
-| UC-S17 (세션관리) | — | Frame+API | SessionManager, FetchApi, ToastContainer, LabelProvider | ❌ 테스트 미작성 (SessionManager 구현 완료) |
+| UC-S17 (세션관리) | — | Frame+API | SessionPollingService, FetchApi, ToastContainer, LabelProvider | ❌ 테스트 미작성 (SessionPollingService 구현 완료) |
 | UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, WindowProgressBridge, WindowUriBridge, WindowLabelBridge | ❌ 테스트 미작성 (구현 완료) |

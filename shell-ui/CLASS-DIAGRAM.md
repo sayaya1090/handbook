@@ -351,10 +351,10 @@ classDiagram
         -ModuleScriptManager
         -ProgressElement
         -ContentElement
-        -SessionManager
+        -SessionPollingService
         +initialize()
     }
-    class SessionManager {
+    class SessionPollingService {
         <<@Singleton>>
         -FetchApi fetchApi
         -ToastContainer toastContainer
@@ -381,7 +381,7 @@ classDiagram
         -createThemeSvg(): SVGElement
     }
     NavigationRailItemElement <|-- ThemeToggle
-    ShellInitializer --> SessionManager
+    ShellInitializer --> SessionPollingService
     class HostSharedModule {
         <<@Module>>
         +uri(): BehaviorSubject~String~$

@@ -1,7 +1,7 @@
 # Type-UI 모듈
 
 캔버스 기반 타입 스키마 편집기 (GWT). 타입을 드래그 가능한 카드로 시각화하고, 속성 추가/편집, 참조 관계 시각화, Undo/Redo를 지원한다.
-Shell이 `ModuleScriptManager`로 `type/type.nocache.js`를 동적 로딩하여 실행한다.
+Shell이 `ModuleScriptManager`로 `js/type/type.nocache.js`를 동적 로딩하여 실행한다.
 
 ---
 

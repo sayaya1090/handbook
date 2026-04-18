@@ -8,7 +8,7 @@ import static org.jboss.elemento.Elements.body;
 
 /**
  * Dashboard-UI 엔트리포인트.
- * Shell의 ModuleScriptManager가 js/dashboard.nocache.js를 로딩하면 실행된다.
+ * Shell의 ModuleScriptManager가 js/dashboard/dashboard.nocache.js를 로딩하면 실행된다.
  */
 public class Application implements EntryPoint {
     @Override

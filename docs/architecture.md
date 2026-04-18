@@ -1001,7 +1001,7 @@ client/
 | BehaviorSubject 상태 관리 | 최신 값 보존 + 새 구독자에게 즉시 전달 |
 | DashboardRepository 포트 인터페이스 | FetchApi 기반 구현을 분리하여 테스트 용이 |
 | DashboardElement 조합 패턴 | StatsCard, QualityPanel, ActivityLog를 하나의 컨테이너로 조합 |
-| Shell과 독립 모듈 | 런타임 스크립트 로딩 (js/dashboard.nocache.js) |
+| Shell과 독립 모듈 | 런타임 스크립트 로딩 (js/dashboard/dashboard.nocache.js) |
 | Native JsType 도메인 | 서버 JSON 응답을 그대로 매핑 (JsInterop) |
 
 **의존성:** activity (FetchApi, Menu), ui-components, sayaya-web (GWT, Elemento, Dagger, RxJS)
