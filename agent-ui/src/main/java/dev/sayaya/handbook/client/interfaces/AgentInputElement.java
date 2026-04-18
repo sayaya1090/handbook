@@ -16,6 +16,7 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.EnumMap;
 
 import static org.jboss.elemento.Elements.div;
 
@@ -135,34 +136,42 @@ public class AgentInputElement implements IsElement<HTMLDivElement> {
 
     private void onStateChange(AgentSessionState state) {
         this.currentState = state;
-        switch (state) {
-            case IDLE:
-            case COMPLETED:
-            case ABORTED:
-                textField.disabled(false);
-                textField.label(labels.getOrDefault("agent.label.idle", "How can I help you?"));
-                textField.placeholder(labels.getOrDefault("agent.placeholder", "Ask in natural language"));
-                sendBtn.style.set("display", "inline-flex");
-                abortBtn.style.set("display", "none");
-                break;
-            case PLANNING:
-                textField.disabled(true);
-                textField.label(labels.getOrDefault("agent.label.planning", "Analyzing your request..."));
-                sendBtn.style.set("display", "none");
-                abortBtn.style.set("display", "inline-flex");
-                break;
-            case EXECUTING:
-                textField.disabled(true);
-                textField.label(labels.getOrDefault("agent.label.executing", "Executing..."));
-                sendBtn.style.set("display", "none");
-                abortBtn.style.set("display", "inline-flex");
-                break;
-            case AWAITING_CONFIRM:
-                textField.disabled(true);
-                textField.label(labels.getOrDefault("agent.label.confirming", "Waiting for confirmation..."));
-                sendBtn.style.set("display", "none");
-                abortBtn.style.set("display", "inline-flex");
-                break;
+        var p = PRESENTATIONS.get(state);
+        if (p == null) return;
+        textField.disabled(p.disabled);
+        textField.label(labels.getOrDefault(p.labelKey, ""));
+        if (p.placeholderKey != null) {
+            textField.placeholder(labels.getOrDefault(p.placeholderKey, ""));
+        }
+        sendBtn.style.set("display", p.showSend ? "inline-flex" : "none");
+        abortBtn.style.set("display", p.showSend ? "none" : "inline-flex");
+    }
+
+    /** state 별 UI 표현 맵. 새 state 추가 시 switch 수정 대신 map 엔트리만 추가하면 된다. */
+    private static final EnumMap<AgentSessionState, Presentation> PRESENTATIONS = buildPresentations();
+
+    private static EnumMap<AgentSessionState, Presentation> buildPresentations() {
+        var map = new EnumMap<AgentSessionState, Presentation>(AgentSessionState.class);
+        var idle = new Presentation(false, "agent.label.idle", "agent.placeholder", true);
+        map.put(AgentSessionState.IDLE, idle);
+        map.put(AgentSessionState.COMPLETED, idle);
+        map.put(AgentSessionState.ABORTED, idle);
+        map.put(AgentSessionState.PLANNING, new Presentation(true, "agent.label.planning", null, false));
+        map.put(AgentSessionState.EXECUTING, new Presentation(true, "agent.label.executing", null, false));
+        map.put(AgentSessionState.AWAITING_CONFIRM, new Presentation(true, "agent.label.confirming", null, false));
+        return map;
+    }
+
+    private static final class Presentation {
+        final boolean disabled;
+        final String labelKey;
+        final String placeholderKey;
+        final boolean showSend;
+        Presentation(boolean disabled, String labelKey, String placeholderKey, boolean showSend) {
+            this.disabled = disabled;
+            this.labelKey = labelKey;
+            this.placeholderKey = placeholderKey;
+            this.showSend = showSend;
         }
     }
 
