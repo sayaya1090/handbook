@@ -7,6 +7,14 @@ kind: ConfigMap
 metadata:
   name: schema-migration-sql
   namespace: {{ .Release.Namespace }}
+  # Job 은 argocd hook 으로 sync phase 에서 우선 apply 되는데, ConfigMap 이 일반
+  # 리소스면 이보다 늦게 apply 되어 Job pod 가 FailedMount 로 CrashLoop 에 빠진다.
+  # 같은 hook 으로 지정하되 sync-wave 를 Job(-5) 보다 작은 -6 으로 두어 ConfigMap
+  # 이 먼저 생성되도록 보장한다.
+  annotations:
+    argocd.argoproj.io/sync-wave: "-6"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
   labels:
     app.kubernetes.io/name: schema-migration
     app.kubernetes.io/part-of: handbook
