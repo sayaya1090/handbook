@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to="onboarding">
+	<inherits name="com.google.gwt.user.User"/>
+	<inherits name="org.jboss.elemento.Core"/>
+	<inherits name="dagger.Dagger" />
+	<inherits name="dev.sayaya.Ui"/>
+	<inherits name="dev.sayaya.Rx" />
+	<inherits name="dev.sayaya.handbook.Activity" />
+	<inherits name="dev.sayaya.handbook.UiComponents" />
+	<entry-point class="dev.sayaya.handbook.client.onboarding.Application"/>
+	<source path="client"/>
+</module>

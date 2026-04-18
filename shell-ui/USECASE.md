@@ -379,7 +379,7 @@ sequenceDiagram
 | UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, WindowProgressBridge, WindowUriBridge, WindowLabelBridge | ❌ 테스트 미작성 (구현 완료) |
-| UC-S21 (빈 워크스페이스 온보딩, UC-12) | 빈 WorkspaceList → 가상 Menu push → workspace-ui 로드 | 유스케이스 | WorkspaceOnboardingBootstrapper, WorkspaceList, MenuSelected, ModuleScriptManager, ShellInitializer | ❌ 테스트 미작성 — `BehaviorSubject`/`Menu` 가 `@JsType(isNative=true)` 라 순수 JVM Kotest 불가. GWT Playwright 테스트 엔트리포인트 신설 필요 (예정 케이스: empty → push 1회 + Menu 필드 검증, non-empty → push 없음, empty↔non-empty 반복 → 최초 1회만) |
+| UC-S21 (빈 워크스페이스 온보딩, UC-12) | 빈 WorkspaceList → 가상 Menu push → workspace-ui 로드 | 유스케이스 | WorkspaceOnboardingBootstrapper, WorkspaceList, MenuSelected, ModuleScriptManager, ShellInitializer | WorkspaceOnboardingTest (GWT Playwright): 초기 empty → push 1회 + Menu 필드(title=workspace.onboarding, script=js/workspace/workspace.nocache.js, icon=fa-circle-plus, iconType=solid, order=0) 검증, non-empty User push → 재발화 없음, empty→non-empty→empty 순회 후에도 push-count=1 |
 
 ---
 
