@@ -114,20 +114,53 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         elemental2.dom.DomGlobal.requestAnimationFrame(ts -> recomputeLayoutToolMode());
     }
 
-    /** 선택된 메뉴/도구에 따라 active 상태 동기화. Presenter 가 mode 에 맞는 값만 넘기도록 관리. */
+    /**
+     * 선택된 메뉴에 따라 활성 탭을 동기화한다. md-tabs 의 {@code activeTabIndex} property 로
+     * 위임하여 click 경로와 URL-resolver 경로를 md-tabs 내부 상태 머신에 수렴시킨다 —
+     * 직접 {@code setAttribute("active")} 는 md-tabs 내부 상태와 race 해 indicator 이동
+     * 애니메이션을 끊는 회귀가 있어 사용하지 않는다. overflow 팝업의 md-menu-item 은
+     * md-tabs 밖이라 {@code selected} 속성을 별도로 수동 관리.
+     */
     public void setActive(Menu menu) {
         if (mode != Mode.MENU) return;
-        for (TabEntry e : topEntries) applyActive(e, menu);
-        for (TabEntry e : bottomEntries) applyActive(e, menu);
+        int idx = findVisibleTabIndex(menu);
+        if (idx >= 0) tabs.activeTabIndex(idx);
+        for (TabEntry e : bottomEntries) {
+            if (e.menuItem == null) continue;
+            boolean shouldSelected = e.menu.equals(menu);
+            boolean isSelected = e.menuItem.hasAttribute("selected");
+            if (shouldSelected && !isSelected) e.menuItem.setAttribute("selected", true);
+            else if (!shouldSelected && isSelected) e.menuItem.removeAttribute("selected");
+        }
     }
 
     public void setActiveTool(Tool tool) {
         if (mode != Mode.TOOL) return;
-        for (ToolEntry e : toolEntries) {
-            boolean active = e.tool.equals(tool);
-            if (active) e.tab.setAttribute("active", true);
-            else e.tab.removeAttribute("active");
+        int idx = -1;
+        for (int i = 0; i < toolEntries.size(); i++) {
+            if (toolEntries.get(i).tool.equals(tool)) { idx = i; break; }
         }
+        if (idx >= 0) tabs.activeTabIndex(idx);
+    }
+
+    /**
+     * 현재 md-tabs 의 children 중 {@code menu} 와 연결된 탭의 시각적 index.
+     * overflow 로 빠진 탭은 md-tabs 의 children 에 없어 자동 제외된다.
+     */
+    private int findVisibleTabIndex(Menu menu) {
+        elemental2.dom.Element cur = tabs.element().firstElementChild;
+        int i = 0;
+        while (cur != null) {
+            for (TabEntry e : topEntries) {
+                if (e.tab == cur && e.menu.equals(menu)) return i;
+            }
+            for (TabEntry e : bottomEntries) {
+                if (e.tab == cur && e.menu.equals(menu)) return i;
+            }
+            cur = cur.nextElementSibling;
+            i++;
+        }
+        return -1;
     }
 
     public void setMobile(boolean mobile) {
@@ -244,16 +277,6 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
                 if (e.menuItem != null) overflow.removeItem(e.menuItem);
                 tabs.element().appendChild(e.tab);
             }
-        }
-    }
-
-    private void applyActive(TabEntry e, Menu selectedMenu) {
-        boolean active = e.menu.equals(selectedMenu);
-        if (active) e.tab.setAttribute("active", true);
-        else e.tab.removeAttribute("active");
-        if (e.menuItem != null) {
-            if (active) e.menuItem.setAttribute("selected", true);
-            else e.menuItem.removeAttribute("selected");
         }
     }
 
