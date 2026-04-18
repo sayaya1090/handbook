@@ -1,10 +1,10 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import dev.sayaya.handbook.domain.Render;
+import dev.sayaya.handbook.usecase.WindowRenderBridge;
 
 import java.util.Arrays;
-
-import static org.jboss.elemento.Elements.body;
 
 /**
  * Dashboard-UI 엔트리포인트.
@@ -31,7 +31,10 @@ public class Application implements EntryPoint {
             if (activities != null) component.agentActivityList().next(Arrays.asList(activities));
         });
 
-        body().add(component.dashboard());
+        // shell FrameUpdater 에 Render 를 전달 — body 직접 append 는 body{position:fixed;inset:0}
+        // + shell #content(100dvh) 뒤에 스택되어 뷰포트 밖으로 밀려나는 회귀를 유발한다.
+        Render render = frame -> { frame.append(component.dashboard().element()); return true; };
+        WindowRenderBridge.next(render);
     }
 
     /**

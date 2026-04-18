@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import dev.sayaya.handbook.domain.Render;
+import dev.sayaya.handbook.usecase.WindowRenderBridge;
 import dev.sayaya.handbook.usecase.WindowStateProviderBridge;
 import dev.sayaya.handbook.usecase.WindowSearchProviderBridge;
 
@@ -35,7 +37,10 @@ public class Application implements EntryPoint {
                 .add(component.canvas())
                 .add(component.attributeEditor())
                 .element();
-        org.jboss.elemento.Elements.body().add(container);
+        // shell FrameUpdater 에 Render 를 전달 — body 직접 append 는 body{position:fixed;inset:0}
+        // + shell #content(100dvh) 뒤에 스택되어 뷰포트 밖으로 밀려나는 회귀를 유발한다.
+        Render render = frame -> { frame.append(container); return true; };
+        WindowRenderBridge.next(render);
     }
 
     /** 지정된 CSS 파일을 &lt;link&gt; 요소로 document.head에 추가한다. */
