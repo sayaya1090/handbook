@@ -1669,6 +1669,151 @@ AI 에이전트가 function calling / tool use 로 Handbook REST API 를 호출�
 - **MCP 서버는 DB 직접 접근 금지** — 내부 `assistant` 와 동일하게 Gateway API 를 경유한다 (권한 검증 일관성).
 - **`/openapi.json` 에 내부 전용 엔드포인트 노출 금지** — `/actuator/**` 등은 별도 스펙 또는 필터링.
 
+### 3.24 사용자 상태 모델 및 메뉴 가시성
+
+메뉴/기능의 가시·활성 여부를 **하드코딩된 분기(`if principal == null`, `if workspace != null`)** 로 결정하지 않고, 공급자(`MenuSupplier`)가 자기 기능이 **노출될 세션 상태 집합** 을 선언하면, Shell 이 **현재 사용자 상태(SessionState)** 를 평가해 자동으로 가시/활성/Call-To-Action 을 결정한다. 의도: 온보딩(UC-12) · 로그인 유도 · 권한 기반 비활성화 로직이 메뉴마다 흩어지는 문제를 단일 상태 머신으로 수렴.
+
+#### 3.24.1 사용자 상태 축 (전체 레퍼런스)
+
+사용자의 전역 상태는 다음 6개 축의 **직교 조합** 으로 표현될 수 있다. 본 릴리스(Phase 1)에서는 A·C 만 구현하며 나머지는 후속 Phase 로 이월한다.
+
+| 축 | 값 | Phase | 비고 |
+|----|----|-------|------|
+| A. 인증 수명 | Anonymous / Authenticated | **Phase 1** | 쿠키·JWT 유효성 |
+| B. 계정 상태 | ACTIVE / INACTIVATED / SUSPENDED | Phase 2 | `user.state` 필드. 전역 차단 오버레이 (`AccountStatusGuard`) 필요 |
+| C. 워크스페이스 멤버십 | NoWorkspace / InWorkspace / InWorkspaceAsAdmin | **Phase 1** (Admin 제외) | `workspaces` 리스트 + 선택 컨텍스트 |
+| D. 연결 상태 | Online / Offline / Reconnecting | Phase 2 | service-worker 기반 오프라인 감지 · AppBar 배너 + 쓰기 액션 disabled |
+| E. 법적 상태 | TermsAccepted / TermsPending / EmailUnverified | Phase 2 | 전역 모달 게이트 (약관·이메일 확인) |
+| F. 과금/구독 | Tier(Free/Team/Enterprise…) + FeatureFlags + CreditBalance | Phase 2 | 플랜별 접근권 + 크레딧 잔액 (가변 비용 action 차감) |
+
+**Phase 2 이후 — requirements-only 기록 (코드 변경 없음):**
+- B. `AccountStatusGuard` 도입 시 `INACTIVATED` 상태는 모든 메뉴를 disabled 로 강제.
+- D. 연결 상태는 `SessionState` 의 외부에 **직교 축** 으로 병렬 유지 (인증·멤버십과 독립).
+- E. 법적 상태는 `Authenticated` 도달 직후·모든 메뉴 클릭 전 평가되는 gate.
+- **`IN_WORKSPACE_AS_ADMIN` 등 새 `SessionStateKind` 값** 은 Role 세분화(§3.3) 가 `workspace:admin` 권한을 제공하기 시작하면 enum 에 추가.
+- **B/D/E 축 확장** 은 `Menu` 에 새 필드(`allowedAccountStates`, `allowedConnections`, `requiredConsents`) 를 **각 축 독립 선언** 으로 추가하고 평가 함수에 **AND 절을 한 줄씩 늘리는** 방식으로 대응. 기존 `allowedSessionStates` 의 의미는 변하지 않는다.
+
+**F. 과금/구독 축 (미구현, 복합 구조 확정):**
+- **설계 방향**: **티어(주) + 크레딧(보조)** 복합 구조. 월 구독 플랜(Free/Team/Enterprise 등) 이 기능 접근권·워크스페이스 상한·rate-limit·CS 등급을 결정하고, 플랜당 월 크레딧이 포함되며 초과분은 pay-as-you-go 로 추가 구매. 근거: Anthropic/OpenAI 모델 벤치마킹.
+- **메뉴 가시성 측면**: `Menu` 에 `allowedSubscriptionTiers: Set<Tier>?` (플랜별 접근권) · `requiredFeatureFlags: Set<FeatureFlag>?` (베타/프리미엄 기능) 두 필드 추가. B/D/E 와 동일하게 **각 축 독립 선언** · AND 절 확장.
+- **액션 과금 측면**: 메뉴 가시성과 **별개 레이어**. 컨트롤러 진입 시점 crediting decorator (예: `@RequiresCredits(amount)`) 가 잔액 확인 + post-action 차감. AI 생성 토큰·임포트 용량 등 가변 비용 action 전용. 메뉴 필드로 섞지 않음. 과금 요구사항 본편은 별도 Phase RFC 에서 구체화.
+
+#### 3.24.2 Phase 1 상태 모델 (sealed class + kind enum)
+
+Phase 1 은 A + C 를 **sealed class `SessionState`** 로 모델링하고, 메뉴 가시성 판정은 여기서 파생되는 **kind enum (`SessionStateKind`)** 집합에 대한 멤버십으로 수행한다. 계층 추론은 하지 않는다.
+
+```kotlin
+sealed class SessionState {
+    object Anonymous : SessionState()                           // 인증 없음 (쿠키 무효/부재)
+    data class Authenticated(
+        val user: User,
+        val workspaces: List<WorkspaceSummary>,
+    ) : SessionState()                                          // 인증 성공, 활성 워크스페이스 미선택
+    data class InWorkspace(
+        val user: User,
+        val workspaces: List<WorkspaceSummary>,
+        val workspace: Workspace,
+        val memberships: List<Membership>,
+    ) : SessionState()                                          // 인증 + 활성 워크스페이스 선택
+}
+
+enum class SessionStateKind {
+    ANONYMOUS,          // SessionState.Anonymous
+    AUTHENTICATED,      // SessionState.Authenticated (워크스페이스 선택 전)
+    IN_WORKSPACE,       // SessionState.InWorkspace
+    // IN_WORKSPACE_AS_ADMIN — Phase 2 (role 세분화 후 추가)
+}
+
+val SessionState.kind: SessionStateKind get() = when (this) {
+    is SessionState.Anonymous     -> SessionStateKind.ANONYMOUS
+    is SessionState.Authenticated -> SessionStateKind.AUTHENTICATED
+    is SessionState.InWorkspace   -> SessionStateKind.IN_WORKSPACE
+}
+```
+
+- 상태 전이: `Anonymous → Authenticated` (로그인 성공), `Authenticated ↔ InWorkspace` (워크스페이스 선택/해제), `* → Anonymous` (로그아웃·세션 만료).
+- `SessionStateKind` 값은 **집합 멤버십 비교의 원자 단위** 이다. 상위·하위 관계는 정의되지 않으며, 평가 함수는 이를 암묵 추론하지 않는다.
+
+#### 3.24.3 `Menu.allowedSessionStates` (Phase 1)
+
+각 메뉴는 자신이 **어떤 세션 상태에서 보여야 하는지를 집합으로 열거** 한다. 계약 상세는 `docs/contracts/menus.md` 의 "allowedSessionStates" 섹션.
+
+```kotlin
+data class Menu(
+    // ... title, order, icon, script, bottom, appBarSlot, urlRegex, ...
+    val allowedSessionStates: Set<SessionStateKind>? = null,
+    // Phase 2 확장 예정 (현재 필드 없음, 추가 시 각 축 독립):
+    //   val allowedAccountStates: Set<AccountState>? = null,
+    //   val allowedConnections:   Set<Connection>?   = null,
+    //   val requiredConsents:     Set<Consent>?      = null,
+)
+```
+
+- **null (기본값)** ⇒ **모든 상태에서 상시 보임 (무제약)**. 공급자가 필드를 누락하면 이 의미가 된다.
+- 값은 `SessionStateKind` 값의 **집합 (Set)**. 비어 있지 않은 집합을 넣는다.
+- **계층 추론 없음**: `{AUTHENTICATED}` 만 선언하면 `IN_WORKSPACE` 사용자는 **제외** 된다. "로그인 이후 모두에게 보이는" 메뉴는 `{AUTHENTICATED, IN_WORKSPACE}` 처럼 **명시 열거** 해야 한다.
+
+> **공급자 주의 박스 — 보안적 영향**
+> null default 는 "모두에게 보임" 이다. 인증 필요 메뉴가 공급자 쪽에서 필드를 빼먹으면 **익명 사용자에게도 노출** 된다. 서버 측 권한 체크가 최종 방어선이지만, UI 노출만으로도 정보 유출 소지가 있으므로 공급자 **필드 기입을 체크리스트 항목으로** 강제한다 (`docs/contracts/menus.md` 참조).
+
+#### 3.24.4 평가 알고리즘
+
+**Phase 1 (단일 축):**
+```
+visible(menu, state) =
+    menu.allowedSessionStates == null
+    OR state.kind ∈ menu.allowedSessionStates
+```
+
+**Phase 2 확장 시 (AND 절 확장):**
+```
+visible(menu, state) =
+      (menu.allowedSessionStates == null OR state.kind           ∈ menu.allowedSessionStates)
+  AND (menu.allowedAccountStates == null OR state.accountStatus  ∈ menu.allowedAccountStates)
+  AND (menu.allowedConnections   == null OR state.connection     ∈ menu.allowedConnections)
+  AND (menu.requiredConsents     == null OR menu.requiredConsents ⊆ state.acceptedConsents)
+```
+
+각 축은 **독립 선언** 이며, 미선언(null) ⇒ 해당 축 무제약, AND 결합. Phase 2 신규 필드가 추가되어도 **Phase 1 공급자의 기존 선언 의미는 불변** (기존 축만 평가).
+
+> **주의 — 메뉴 가시성 ≠ 액션 실행 권한**
+> 가시성은 축별 `Set<T>?` 필드로 AND 결합해 "보일지" 만 결정한다. 액션 실행 비용(크레딧 차감, rate-limit 등) 은 **별도 decorator/aspect 레이어** 에서 메뉴와 독립적으로 관리. 예: 플랜상 접근권은 있지만 크레딧이 부족한 상태 → 메뉴는 보이되 실행 시점에 decorator 가 거절. 이 분리를 지키지 않으면 가시성 필드가 과금 로직을 흡수해 `Menu` 가 비대해진다.
+
+**CTA 규칙:**
+- `visible` 판정이 `false` 여도 **메뉴는 hide 하지 않고 disabled 로 렌더** 한다 (불투명도 + 자물쇠 힌트). 상태 집합에서 "현재 상태 → 허용 상태" 로 넘어가는 가장 짧은 경로를 CTA 로 제시:
+  - 현재 `ANONYMOUS` + 허용 집합이 `AUTHENTICATED`/`IN_WORKSPACE` 포함 → **Sign In** CTA.
+  - 현재 `AUTHENTICATED` + 허용 집합이 `IN_WORKSPACE` 만 포함 → **Create/Join Workspace** CTA.
+- **예외**: `appBarSlot = "trailing"` 인 세션 액션(Sign In/Sign Out) 은 공급자 내부에서 인증 상태별로 **하나만 emit** 한다. 이 분기는 `allowedSessionStates` 로도 표현 가능하지만(각각 `{ANONYMOUS}`, `{AUTHENTICATED, IN_WORKSPACE}`) 현재 login 공급자 동작 호환을 위해 내부 분기를 유지한다.
+
+#### 3.24.5 공급자 선언 예시
+
+| 메뉴 | `allowedSessionStates` | 효과 |
+|------|-----------------------|------|
+| 랜딩/소개 | `null` | 모든 상태에서 상시 보임 |
+| Sign In | `{ANONYMOUS}` | 로그인 안 한 사람만 |
+| Sign Out | `{AUTHENTICATED, IN_WORKSPACE}` | 로그인한 사람만 (두 상태 **명시 열거**) |
+| 워크스페이스 생성/참여 | `{AUTHENTICATED, IN_WORKSPACE}` | 로그인 사용자 — 워크스페이스 보유자도 추가 생성 가능 |
+| 타입/문서/워크스페이스 관리 | `{IN_WORKSPACE}` | 워크스페이스 소속자만 |
+
+#### 3.24.6 `WorkspaceOnboardingBootstrapper` 와의 관계
+
+기존 shell-ui `WorkspaceOnboardingBootstrapper` 는 `WorkspaceList` 가 empty 일 때 workspace-ui 스크립트를 client-side synthetic 메뉴로 주입해 "빈 워크스페이스 자동 온보딩" (UC-12) 을 수행한다. Phase 1 `allowedSessionStates` 도입 이후:
+
+- `search-workspace` 의 워크스페이스 관리 메뉴는 `allowedSessionStates = {IN_WORKSPACE}` 로 공급.
+- 워크스페이스 생성/참여 엔트리를 **별도 공급자** 가 `{AUTHENTICATED, IN_WORKSPACE}` 로 공급하면, `AUTHENTICATED` 상태 사용자에게도 enabled 로 노출 → 클릭 시 Create/Join 화면으로 자연 라우팅.
+- **onboarding bootstrapper 단순화 또는 제거 가능** — synthetic 메뉴 대신 상시 공급 + 상태 집합 선언이 동일 역할 수행. 구체 제거 시점은 `ui-platform-expert` 판단.
+
+#### 3.24.7 구현 책임
+
+- **Shell (shell-ui)**: `SessionState` observable 공급(인증·워크스페이스 컨텍스트 관찰) · `allowedSessionStates` 기반 가시/활성 결정 · CTA 라우팅.
+- **각 공급자 (MenuSupplier)**: 자기 메뉴의 `allowedSessionStates` 명시. 누락 시 default `null` (= 무제약 노출) 이므로 **인증 필요 메뉴는 반드시 명시**.
+- **계약 문서**: `docs/contracts/menus.md` — `allowedSessionStates` 필드 스펙, 하위 호환(additive, `application/vnd.sayaya.handbook.v1+json` 유지).
+
+#### 3.24.8 대응 UC
+
+- **UC-73 (예약)** — 메뉴 가시성 평가 및 상태 기반 CTA. 본문은 후속 작업에서 `ui-platform-expert` / `auth-expert` / `workspace-expert` 가 작성.
+- 연관: UC-04 (홈 화면 진입), UC-12 (빈 워크스페이스 자동 온보딩), UC-70 (메뉴 선택), UC-72 (URL 라우팅).
+
 ## 5. 비기능 요구사항
 
 ### 5.1 기술 스택

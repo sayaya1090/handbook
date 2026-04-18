@@ -41,6 +41,7 @@
 | Menu 도메인 필드 추가 | 모든 공급자 응답 스키마, shell-ui 렌더링 로직, `application/vnd.sayaya.handbook.v1+json` 미디어 타입 버저닝 |
 | URL 정규식 변경 | `UrlBasedMenuResolverTest` + 실제 라우팅 동작 |
 | 메뉴 정렬 기준 변경 | `MenuService.sort` 로직 + 각 공급자의 `order` 값 |
+| `allowedSessionStates` 추가/변경 | 공급자: 각 메뉴에 노출 허용 `SessionStateKind` 집합 명시 (누락 ⇒ 무제약 노출). 소비자: shell-ui 가시성 평가 알고리즘 (§3.24.4) 재검증. 미디어타입은 **additive 라 v1 유지** |
 
 ---
 
@@ -56,6 +57,7 @@ interface Menu {
     boolean bottom();     // 하단 고정 여부 (MenuRail/MobileTabs 내 정렬 힌트)
     String appBarSlot();  // null | "leading" | "center" | "trailing"  ← AppBar 승격 slot
     List<String> urlRegex(); // 이 메뉴가 자동 선택될 URL 정규식 목록
+    Set<SessionStateKind> allowedSessionStates(); // null/누락 ⇒ 모든 상태 노출 (무제약). 요구사항 §3.24
     // 향후 href 필드 추가 검토 (SEO 랜딩 정적 링크용 — landing.md 참조)
 }
 ```
@@ -88,6 +90,48 @@ interface Menu {
 - `appBarSlot != null` 메뉴는 MenuRail·MobileTabs 렌더에서 제외된다 (네비게이션 축 오염 방지).
 - AppBar 승격 메뉴는 아이콘 버튼 형태로 렌더되고, 클릭 시 일반 `MenuSelected` 이벤트가 발행되어 기존 모듈 로딩 경로(`script` 실행)와 수렴한다.
 - 인증 상태 분기(예: login 은 principal null 여부에 따라 SIGN_IN/SIGN_OUT 만 emit)는 공급자 책임이며, UI 는 MenuList 에 존재하는 엔트리만 렌더한다.
+
+### `allowedSessionStates` 규약 (Phase 1)
+
+공급자는 자기 메뉴가 **보여야 하는 세션 상태 집합** (요구사항 §3.24) 을 `allowedSessionStates` 로 선언한다. shell-ui 가 현재 `SessionState.kind` 가 집합에 포함되는지 비교해 가시/활성/CTA 를 결정한다.
+
+```
+enum SessionStateKind {
+  ANONYMOUS           // 인증 없음 (쿠키 무효/부재)
+  AUTHENTICATED       // 로그인 + 활성 워크스페이스 미선택
+  IN_WORKSPACE        // 로그인 + 활성 워크스페이스 선택
+  // IN_WORKSPACE_AS_ADMIN  // Phase 2 예약 (role 세분화 후)
+}
+```
+
+**JSON wire 표현**
+- 직렬화 이름: `allowed_session_states` (snake_case).
+- 값은 `SessionStateKind` 이름의 UPPER_SNAKE_CASE 문자열 **배열** (예: `["AUTHENTICATED", "IN_WORKSPACE"]`).
+- **optional / nullable** — 누락 또는 null 이면 소비자는 **모든 상태에서 노출 (무제약)** 으로 간주.
+- 빈 배열 `[]` 은 "어떤 상태에서도 노출 금지" 의미 (공급자가 의도적으로 메뉴를 꺼두고 싶을 때). null 과 구분된다.
+- v1 미디어타입 유지 (`application/vnd.sayaya.handbook.v1+json`) — additive 필드이므로 구 공급자/소비자와 호환.
+
+> **공급자 주의 — 계층 추론 없음, 명시 열거 필수**
+>
+> 평가는 **집합 멤버십** (`currentKind ∈ allowedSet`) 만 수행한다. 상위 상태가 하위 상태를 **자동 포함하지 않는다**.
+>
+> - `{AUTHENTICATED}` 만 선언한 메뉴는 `IN_WORKSPACE` 사용자에게 **보이지 않는다**.
+> - "로그인 이후 모두에게 보여야 하는" 메뉴는 반드시 `{AUTHENTICATED, IN_WORKSPACE}` 로 **두 값 모두 열거**.
+> - default null ⇒ **모두에게 보임** 이다. 인증 필요 메뉴에서 필드를 빼먹으면 익명 사용자에게도 노출되는 실수가 조용히 발생하므로, 공급자 리뷰 체크리스트에 "필드 기입 여부" 포함을 권장.
+
+**공급자 책임**
+- 자기 메뉴의 `allowedSessionStates` 명시. 누락 시 default "무제약" 으로 폴백되므로 인증 필요 메뉴의 누락은 보안적 위험.
+- 인증 상태 분기(로그인 공급자의 Sign In/Out 중 하나만 emit 하는 기존 동작, 워크스페이스 공급자의 멤버십 필터링)는 공급자 내부에서 유지 가능. `allowedSessionStates` 는 "이 메뉴가 어떤 상태에서 보여야 하는가" 선언이지 "언제 emit 할지" 를 제어하지 않는다.
+
+**소비자 책임 (shell-ui)**
+- 현재 `SessionState` (sealed class) 와 그 `kind` 값을 관찰.
+- 평가 알고리즘 (요구사항 §3.24.4) 에 따라 각 메뉴를 enabled / disabled + CTA 로 렌더.
+- disabled 메뉴 클릭 시 허용 집합과 현재 상태의 gap 에 맞는 CTA 라우팅 (Sign In · Create/Join Workspace).
+
+**기본값 규칙 요약**
+| 필드 | 공급자 누락/null 시 | 빈 배열 `[]` 시 | 비고 |
+|------|---------------------|-----------------|------|
+| `allowed_session_states` | **무제약 (모든 상태 노출)** | 어떤 상태에서도 숨김 | 기존 4개 공급자 (login · search-type · search-document · search-workspace) 는 마이그레이션 전까지 null default 로 상시 노출. Phase 1 마이그레이션 완료 목표는 §3.24.5 예시 표 참조 |
 
 ## `MenuSupplier` 인터페이스
 
@@ -132,13 +176,15 @@ Accept: application/vnd.sayaya.handbook.v1+json
 
 ## 공급자별 현황
 
-| Supplier | 엔트리 | 인증 분기 | 비고 |
-|----------|-------|----------|------|
-| login | Sign In / Sign Out | principal null 여부 | Z order (최하단) |
-| landing-menu (신규) | 앱 내부 "소개" | 항상 공급 (로그인 동일) | 이름/URL 미정 |
-| search-type | 타입 목록 | 인증 필요 | 워크스페이스 컨텍스트 필요 |
-| search-document | 문서 목록 | 인증 필요 | 워크스페이스 컨텍스트 필요 |
-| search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | Drawer 하단 고정 (order=S, bottom=true) |
+| Supplier | 엔트리 | 인증 분기 | Phase 1 목표 `allowedSessionStates` | 비고 |
+|----------|-------|----------|--------------------------------------|------|
+| login | Sign In | principal null 여부 | `{ANONYMOUS}` | 공급자 내부에서 익명일 때만 emit. 선언값도 익명 전용으로 일치 |
+| login | Sign Out | principal 존재 여부 | `{AUTHENTICATED, IN_WORKSPACE}` | 공급자 내부에서 로그인 시만 emit. **두 값 명시 열거** (계층 추론 없음) |
+| landing-menu (신규) | 앱 내부 "소개" | 항상 공급 | `null` (무제약) | 모든 상태에서 상시 노출. 이름/URL 미정 |
+| search-type | 타입 목록 | 인증 필요 | `{IN_WORKSPACE}` | 워크스페이스 컨텍스트 필요 |
+| search-document | 문서 목록 | 인증 필요 | `{IN_WORKSPACE}` | 워크스페이스 컨텍스트 필요 |
+| search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | `{IN_WORKSPACE}` | Drawer 하단 고정 (order=S, bottom=true) |
+| workspace-onboarding (신규 / search-workspace 내) | 워크스페이스 생성/참여 | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | `AUTHENTICATED` 에 enabled 로 노출되어 `WorkspaceOnboardingBootstrapper` synthetic 메뉴를 대체 |
 
 ## shell-ui `UrlBasedMenuResolver` 동작
 

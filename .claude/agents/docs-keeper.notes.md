@@ -6,13 +6,18 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: §3.24.1 F 과금/구독 축 추가 → 표 1행 + 이월 기록 3항목 · 주의 박스(가시성 ≠ 실행)
+- 2026-04-18: §3.24 재작성 (scope→allowedSessionStates 집합) → requirements.md + contracts/menus.md 전면 교체, 계층 추론 제거
+- 2026-04-18: SessionState+MenuScope 초안 → requirements §3.26, contracts/menus.md scope 추가, 공급자 6개 매핑
 
 ## 탐색 패턴
 
 - **UC 추출**: `grep -nE "^### UC-[0-9]+" docs/usecases.md`
 - **테스트에서 UC 참조**: `grep -rE "UC-[0-9]+" **/src/test/ */src/test/`
 - **계약 소비자 검증**: `grep -rl "<ClassName>" **/src/main/`
+- **MenuSupplier 공급자 전수 조사**: `grep -l "MenuSupplier" **/*.kt` (gateway 집계자 + 각 서비스 MenuController)
+- **Menu 도메인 필드 정의 위치**: `activity/src/main/java/dev/sayaya/handbook/domain/Menu.java` (모든 공급자 응답 스키마와 shell-ui 역직렬화 대상. scope 같은 필드 추가 시 이 파일이 touch 대상)
+- **requirements.md 섹션 번호**: 현재 §3.23 다음 §5 로 점프. §3.24 이후 자리가 비어 있으므로 새 "사용자 상태" 류 요구사항 삽입 지점으로 자연스러움
 
 ## 반복 함정
 
@@ -29,7 +34,7 @@
 
 ## 과거 실수
 
-(미확보)
+- **초안 시 계층 포함 `satisfiedBy` 모델 채택** — 사용자가 "집합 멤버십 + AND 축 독립" 으로 재설계 지시. 앞으로 상태 기반 필터는 기본 "명시 열거" 를 제안하고 계층 암묵 포함은 사용자 확인 후에만.
 
 ## 원칙 갱신 제안
 
