@@ -140,6 +140,29 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 | 외부 에이전트 / 스크립트 | API Key / Bearer Token (PAT) |
 | OpenAPI 스펙 조회 | 인증 불필요 (공개) |
 
+## JWT 클레임 구조 (Phase 1a — 2026-04-18)
+
+발급된 JWT 는 다음 클레임을 포함한다. **소비자는 반드시 `sub` 를 사용자 식별자로 사용**해야 하며 `jti` 를 그 용도로 사용하면 토큰 재발행 시 격리가 깨진다.
+
+| 클레임 | 의미 | 안정성 |
+|--------|------|--------|
+| `sub` | 내부 사용자 UUID (`user.id`) | **영구** — 재발급 시에도 불변. 서비스 간 `user_id` 참조의 유일한 원천. |
+| `jti` | 토큰 고유 ID (`UUID.randomUUID()`) | 매 토큰마다 고유. 감사/블랙리스트/중복 탐지 용도. |
+| `iss` | 발행자 (`JWT_PUBLISHER`, 기본 `handbook`) | 고정 |
+| `iat` / `nbf` / `exp` | 발행·유효시작·만료 시각 (UTC epoch) | 토큰별 |
+| `name` | 표시명 (OAuth provider 가 준 사람이 읽는 이름) | 사용자가 바꿀 수 있음 — 식별 용도 금지 |
+| `authorities` | 역할 목록 (예: `["USER"]`, `["ADMIN","USER"]`) | 세션별 스냅샷 |
+
+### 소비자 계약
+
+- `UserAuthentication.sub` : 내부 사용자 UUID (Phase 1a 기준 nullable — 레거시 호환. Phase 1b 에서 non-null 로 강화)
+- `UserAuthentication.id`  : `jti`. 신규 코드에서 사용자 식별 용도 사용 금지
+- `@AuthenticationPrincipal UserAuthentication` 으로 주입받아 `.sub` 로 `user_id` 추출
+
+### 레거시 호환 기간
+
+Phase 1a 배포 전에 발급된 토큰은 `sub` 없이 `jti` 에 사용자 UUID 가 심어진 형태다. `UserController` `/auth/refresh` `TokenPublisher.validateRefreshToken` 은 `sub ?: id` 폴백 정책으로 양 포맷을 수용한다. 소비자 전환(Phase 1b persist-workspace, 2a/2b search-*·shell-ui) 완료 후 폴백을 제거한다.
+
 ## Rate Limiting
 
 - 인증 엔드포인트: 10회/분

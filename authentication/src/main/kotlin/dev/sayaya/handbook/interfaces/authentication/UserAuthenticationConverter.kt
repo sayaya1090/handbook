@@ -21,7 +21,8 @@ class UserAuthenticationConverter : ClaimsAuthenticationConverter {
         issuedDateTime = claims.issuedAt.toLocalDateTime(),
         notBeforeDateTime = claims.notBefore.toLocalDateTime(),
         expireDateTime = claims.expiration.toLocalDateTime(),
-        token = token
+        token = token,
+        sub = claims.subject,
     )
     companion object {
         private fun Date.toLocalDateTime() = this.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()

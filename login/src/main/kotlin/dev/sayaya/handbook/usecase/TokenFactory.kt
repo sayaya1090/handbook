@@ -36,10 +36,20 @@ class TokenFactory(
 ) {
     private val privateKey: PrivateKey = pemToPrivateKey(config.secret)
 
+    /**
+     * JWT 발행.
+     *
+     * - `sub` 클레임 = 사용자 UUID (영구 식별자, 재발행 시 불변)
+     * - `jti` 클레임 = 매 호출마다 `UUID.randomUUID()` 로 새로 생성된 토큰 고유 ID
+     *
+     * 과거(~2026-04-17) 에 sub 을 세팅하지 않고 jti 에 사용자 UUID 를 심었던 탓에
+     * 소비자가 jti 를 사용자 ID 로 오용해 토큰 재발급 격리가 깨지는 회귀가 발생했다.
+     */
     fun publish(user: User): String {
         val now = Instant.now()
         val exp = now.plusSeconds(config.duration)
-        val token = user.toToken(nbf = now, exp = exp, iss = config.publisher, iat = now)
+        val jti = UUID.randomUUID()
+        val token = user.toToken(nbf = now, exp = exp, iss = config.publisher, iat = now, jti = jti)
         return sign(token)
     }
 
@@ -50,6 +60,7 @@ class TokenFactory(
         )
         return Jwts.builder()
             .id(token.id)
+            .subject(token.sub)
             .issuer(token.iss)
             .issuedAt(Date.from(token.iat))
             .notBefore(Date.from(token.nbf))

@@ -15,7 +15,19 @@ import java.time.LocalDateTime
  * 자체가 `UserAuthentication` 이어야 한다. 이전에는 `username` (String) 을 반환해
  * 타입 불일치로 null 이 주입되던 회귀가 있었다.
  *
- * @property id 사용자 고유 식별자 (JWT의 jti 클레임)
+ * ### sub 와 id(jti) 의 역할 구분 (Phase 1a — 2026-04-18)
+ * - [sub] : **사용자 식별자** (내부 `user.id` UUID). 재발급 시에도 불변.
+ *   소비자(persist-workspace 등)는 항상 이 값으로 `user_id` 를 참조한다.
+ * - [id] : **토큰 식별자** (JWT `jti`). 매 토큰 발행마다 고유. 감사/블랙리스트용.
+ *
+ * Phase 1a 는 additive 변경 — [id] 필드를 남겨 둠으로써 기존 소비자가 깨지지 않도록
+ * 하되, 다음 Phase 에서 소비자들이 [sub] 로 전환된 뒤 [id] 는 순수하게 토큰 ID 의미만
+ * 갖도록 deprecation 예정.
+ *
+ * @property sub 사용자 UUID (JWT의 sub 클레임 — 영구 식별자, 재발급 불변). Phase 1a 에서
+ *   backward compat 을 위해 nullable. 소비자가 전환되면 non-null 로 강화 예정.
+ * @property id JWT jti 클레임. Phase 1a 이전 토큰에서는 사용자 UUID 가 담겨 있고, 이후
+ *   토큰은 매 발행 고유 토큰 ID 가 담긴다. 신규 코드는 [sub] 사용 권장.
  * @property username 사용자 이름 (JWT의 name 클레임)
  * @property issuer 토큰 발급자 (JWT의 iss 클레임)
  * @property issuedDateTime 토큰 발급 일시 (JWT의 iat 클레임)
@@ -31,6 +43,7 @@ class UserAuthentication(
     val notBeforeDateTime: LocalDateTime,
     val expireDateTime: LocalDateTime,
     private val token: String,
+    val sub: String? = null,
 ) : AbstractAuthenticationToken(emptySet()) {
     override fun getName(): String = username
     override fun getCredentials(): String = token

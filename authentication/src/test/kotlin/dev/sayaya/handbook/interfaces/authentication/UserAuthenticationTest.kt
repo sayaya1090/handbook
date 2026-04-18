@@ -11,22 +11,38 @@ internal class UserAuthenticationTest : DescribeSpec({
         context("생성되었을 때") {
             val now = LocalDateTime.now()
             val auth = UserAuthentication(
-                id = "user-id-123",
+                id = "jti-token-abc",
                 username = "test-user",
                 issuer = "test-issuer",
                 issuedDateTime = now,
                 notBeforeDateTime = now,
                 expireDateTime = now.plusHours(1),
-                token = "sample.jwt.token"
+                token = "sample.jwt.token",
+                sub = "user-uuid-123",
             )
 
             it("모든 프로퍼티를 올바르게 가지고 있다") {
-                auth.id shouldBe "user-id-123"
+                auth.id shouldBe "jti-token-abc"
+                auth.sub shouldBe "user-uuid-123"
                 auth.username shouldBe "test-user"
                 auth.issuer shouldBe "test-issuer"
                 auth.issuedDateTime shouldBe now
                 auth.notBeforeDateTime shouldBe now
                 auth.expireDateTime shouldBe now.plusHours(1)
+            }
+
+            it("sub 필드는 기본값이 null 이어서 backward compat 을 지원한다") {
+                val legacy = UserAuthentication(
+                    id = "jti-only",
+                    username = "legacy-user",
+                    issuer = "issuer",
+                    issuedDateTime = now,
+                    notBeforeDateTime = now,
+                    expireDateTime = now.plusHours(1),
+                    token = "legacy-token",
+                )
+                legacy.sub shouldBe null
+                legacy.id shouldBe "jti-only"
             }
 
             it("Spring Security의 Principal, Credentials를 올바르게 반환한다") {

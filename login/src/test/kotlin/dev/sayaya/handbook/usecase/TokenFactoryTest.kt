@@ -55,11 +55,31 @@ class TokenFactoryTest : BehaviorSpec({
                     .payload
 
                 claims.issuer shouldBe "test-handbook"
-                claims.id shouldBe user.id.toString()
+                // sub = 내부 사용자 UUID (영구 식별자, Phase 1a 도입).
+                claims.subject shouldBe user.id.toString()
+                // jti = 매 발행 고유 UUID. 사용자 UUID 와 달라야 한다 (토큰별 고유값).
+                claims.id shouldNotBe null
+                claims.id shouldNotBe user.id.toString()
+                // jti 는 UUID 형식이어야 한다 (publish 가 UUID.randomUUID() 로 생성).
+                UUID.fromString(claims.id) // throws if not UUID
                 claims["name"] shouldBe "Test User"
                 @Suppress("UNCHECKED_CAST")
                 val authorities = claims["authorities"] as List<String>
                 authorities shouldContain "USER"
+            }
+
+            Then("동일 사용자에 대해 publish 를 두 번 호출하면 jti 는 다르고 sub 는 동일하다") {
+                val t1 = factory.publish(user)
+                val t2 = factory.publish(user)
+                val parser = Jwts.parser()
+                    .clockSkewSeconds(86400)
+                    .verifyWith(keyPair.public as java.security.interfaces.RSAPublicKey)
+                    .build()
+                val c1 = parser.parseSignedClaims(t1).payload
+                val c2 = parser.parseSignedClaims(t2).payload
+                c1.subject shouldBe c2.subject
+                c1.subject shouldBe user.id.toString()
+                c1.id shouldNotBe c2.id
             }
 
             Then("만료 시간이 설정되어 있다") {

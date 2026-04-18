@@ -36,9 +36,17 @@ class TokenPublisher(
             .map { user -> factory.publish(user) }
     }
 
+    /**
+     * 토큰 갱신.
+     *
+     * Phase 1a(2026-04-18) 이후 토큰은 사용자 UUID 를 `sub` 클레임에 담는다. 이전 토큰
+     * 과의 호환을 위해 `sub` 가 있으면 그것을 우선하고, 없으면 `id`(JWT jti) 를 폴백으로
+     * 사용한다. 소비자 전환(Phase 1b/2a) 후 jti 폴백은 제거 예정.
+     */
     fun validateRefreshToken(authentication: UserAuthentication): Mono<String> {
-        val id = authentication.id?.let { UUID.fromString(it) }
+        val idString = authentication.sub ?: authentication.id
             ?: return Mono.error(IllegalArgumentException("User ID is missing"))
+        val id = UUID.fromString(idString)
         return userRepository.findUserById(id)
             .map { user -> factory.publish(user) }
     }

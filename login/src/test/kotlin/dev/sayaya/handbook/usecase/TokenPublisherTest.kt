@@ -95,7 +95,42 @@ class TokenPublisherTest : BehaviorSpec({
         }
     }
 
-    Given("인증된 사용자가 토큰을 갱신할 때") {
+    Given("Phase 1a 이후 토큰(sub 포함)으로 갱신할 때") {
+        val userId = UUID.randomUUID()
+        val jti = UUID.randomUUID()
+        val user = User(
+            id = userId,
+            provider = "google",
+            account = "oauth-id-123",
+            name = "Test User",
+            roles = mutableListOf(SystemRole.USER),
+        )
+        val authentication = UserAuthentication(
+            id = jti.toString(),
+            username = "Test User",
+            issuer = "handbook",
+            issuedDateTime = LocalDateTime.now(),
+            notBeforeDateTime = LocalDateTime.now(),
+            expireDateTime = LocalDateTime.now().plusHours(1),
+            token = "old-token",
+            sub = userId.toString(),
+        )
+        every { userRepository.findUserById(userId) } returns Mono.just(user)
+        every { tokenFactory.publish(user) } returns "refreshed-jwt-token"
+
+        When("validateRefreshToken을 호출하면") {
+            val result = publisher.validateRefreshToken(authentication)
+
+            Then("sub 클레임의 UUID 로 사용자를 조회하여 새 JWT 토큰이 반환된다") {
+                StepVerifier.create(result)
+                    .expectNext("refreshed-jwt-token")
+                    .verifyComplete()
+                verify { userRepository.findUserById(userId) }
+            }
+        }
+    }
+
+    Given("레거시 토큰(sub 없음, jti 에 사용자 UUID)으로 갱신할 때") {
         val userId = UUID.randomUUID()
         val user = User(
             id = userId,
@@ -105,23 +140,24 @@ class TokenPublisherTest : BehaviorSpec({
             roles = mutableListOf(SystemRole.USER),
         )
         val authentication = UserAuthentication(
-            id = userId.toString(),
+            id = userId.toString(), // jti 에 사용자 UUID 가 심어진 레거시 케이스
             username = "Test User",
             issuer = "handbook",
             issuedDateTime = LocalDateTime.now(),
             notBeforeDateTime = LocalDateTime.now(),
             expireDateTime = LocalDateTime.now().plusHours(1),
-            token = "old-token",
+            token = "legacy-token",
+            sub = null,
         )
         every { userRepository.findUserById(userId) } returns Mono.just(user)
-        every { tokenFactory.publish(user) } returns "refreshed-jwt-token"
+        every { tokenFactory.publish(user) } returns "refreshed-legacy-token"
 
         When("validateRefreshToken을 호출하면") {
             val result = publisher.validateRefreshToken(authentication)
 
-            Then("새 JWT 토큰이 반환된다") {
+            Then("jti 로 폴백하여 새 토큰을 발급한다 (backward compat)") {
                 StepVerifier.create(result)
-                    .expectNext("refreshed-jwt-token")
+                    .expectNext("refreshed-legacy-token")
                     .verifyComplete()
             }
         }

@@ -11,6 +11,8 @@
 
 ## 요청 로그
 
+- 2026-04-18: Phase 1a 구현 점검 → 코드·테스트·API 문서 모두 반영 완료, DDL 003_login.sql 생성만 남음
+- 2026-04-18: Phase 1a 내부 UUID 도입 → user 테이블/lookup-create/JWT sub=UUID 설계
 - 2026-04-18: GET /user 에 workspace 없음 → UserController 는 JWT claim 만 반환, workspace 조회 미구현 (가설 A).
 - 2026-04-18: POST /workspace 500 원인 → @AuthenticationPrincipal 는 getPrincipal() 값 주입, 현재 String username → 어댑터 `is UserAuthentication` 분기 영구 miss.
 
@@ -21,6 +23,7 @@
 ## 반복 함정
 
 - `@AuthenticationPrincipal` 의 주입 대상은 `Authentication` 자체가 아닌 `Authentication.getPrincipal()` 반환값. `UserAuthentication.getPrincipal()` 이 `String username` 을 반환하면 컨트롤러에서 `UserAuthentication`/`Principal` 타입으로 선언해도 실제 주입 타입은 String → 런타임 ClassCastException 또는 분기 miss. 컨벤션: `getPrincipal() = this` 로 바꾸거나 컨트롤러 선언을 `String` 으로 통일.
+- JWT `jti` 를 사용자 식별자로 사용 금지. `jti` 는 토큰 고유 ID 여야 하므로 매 발행마다 바뀌어야 한다. 사용자 식별자는 `sub` 에 영구 내부 UUID 를 심는다. 과거 (~2026-04-17) 소비자 (`R2dbcGroupRepositoryAdapter`) 가 `UserAuthentication.id` (= jti) 를 `group_member.member` 에 저장해 토큰 재발행 시마다 다른 멤버 row 가 생기는 회귀가 있었다. Phase 1a (2026-04-18) 에서 `sub = user.id` 세팅 + `jti = UUID.randomUUID()` 분리로 근본 수정.
 
 ## 내부 체크리스트
 

@@ -17,7 +17,8 @@ internal class UserAuthenticationConverterTest : StringSpec({
         // Arrange
         val now = Instant.now()
         val claims = Jwts.claims()
-            .id("user-id-123")
+            .id("jti-abc")
+            .subject("user-uuid-123")
             .issuer("test-issuer")
             .issuedAt(Date.from(now))
             .notBefore(Date.from(now))
@@ -33,7 +34,8 @@ internal class UserAuthenticationConverterTest : StringSpec({
         result.shouldBeInstanceOf<UserAuthentication>()
 
         val auth = result as UserAuthentication
-        auth.id shouldBe "user-id-123"
+        auth.id shouldBe "jti-abc"
+        auth.sub shouldBe "user-uuid-123"
         auth.username shouldBe "test-user"
         auth.issuer shouldBe "test-issuer"
         auth.credentials shouldBe token
@@ -43,5 +45,21 @@ internal class UserAuthenticationConverterTest : StringSpec({
         auth.issuedDateTime shouldBe truncatedNow.atZone(systemZone).toLocalDateTime()
         auth.notBeforeDateTime shouldBe truncatedNow.atZone(systemZone).toLocalDateTime()
         auth.expireDateTime shouldBe truncatedNow.plusSeconds(3600).atZone(systemZone).toLocalDateTime()
+    }
+
+    "sub 클레임이 없는 레거시 토큰도 변환할 수 있다 (backward compat)" {
+        val now = Instant.now()
+        val claims = Jwts.claims()
+            .id("legacy-user-uuid")
+            .issuer("test-issuer")
+            .issuedAt(Date.from(now))
+            .notBefore(Date.from(now))
+            .expiration(Date.from(now.plusSeconds(3600)))
+            .add("name", "legacy-user")
+            .build()
+
+        val result = converter.convert(claims, "legacy.token") as UserAuthentication
+        result.id shouldBe "legacy-user-uuid"
+        result.sub shouldBe null
     }
 })

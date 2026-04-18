@@ -23,13 +23,20 @@ data class User(
     val roles: MutableList<Role> = mutableListOf(),
     val lastLoginDateTime: LocalDateTime? = null,
 ) {
-    fun toToken(nbf: Instant, exp: Instant, iss: String, iat: Instant) = Token(
+    /**
+     * 도메인 [User] → JWT 서명용 [Token] 변환.
+     *
+     * - `sub` = 내부 사용자 UUID (영구 식별자)
+     * - `id`(jti) = 매 토큰 고유 UUID (호출자가 주입) — 재발행 시에도 사용자 식별자는 불변
+     */
+    fun toToken(nbf: Instant, exp: Instant, iss: String, iat: Instant, jti: UUID) = Token(
         nbf = nbf,
         exp = exp,
         iss = iss,
         iat = iat,
         authorities = roles.map { it.name },
         name = name,
-        id = id.toString(),
+        sub = id.toString(),
+        id = jti.toString(),
     )
 }
