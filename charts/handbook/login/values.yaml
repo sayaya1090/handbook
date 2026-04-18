@@ -29,3 +29,15 @@ jvmBackend:
       value: "https://{{ .Values.host }}/"
     - name: LOGOUT_REDIRECT_URI
       value: "https://{{ .Values.host }}/"
+
+# Google OAuth2 외부 호출을 Istio ambient mesh 에 등록해 Kiali/트래픽 그래프에서
+# "Unknown" 으로 뜨지 않게 한다. login 백엔드는 Spring Security OAuth2 client 로
+# accounts.google.com (redirect) / oauth2.googleapis.com (토큰) /
+# openidconnect.googleapis.com (userinfo) / www.googleapis.com (JWKS) 을 호출.
+googleOAuth:
+  enabled: true
+  hosts:
+    - accounts.google.com
+    - oauth2.googleapis.com
+    - openidconnect.googleapis.com
+    - www.googleapis.com

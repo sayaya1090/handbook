@@ -1,0 +1,18 @@
+{{- if .Values.googleOAuth.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: google-oauth
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    {{- range .Values.googleOAuth.hosts }}
+    - {{ . | quote }}
+    {{- end }}
+  location: MESH_EXTERNAL
+  resolution: DNS
+  ports:
+    - name: https
+      number: 443
+      protocol: HTTPS
+{{- end }}
