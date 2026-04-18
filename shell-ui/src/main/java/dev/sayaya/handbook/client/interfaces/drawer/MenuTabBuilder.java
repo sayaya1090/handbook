@@ -37,8 +37,8 @@ import static org.jboss.elemento.Elements.span;
  * 되어 있어야 한다 (sayaya-ui {@code tab()} 시맨틱). 이 유틸은 호스트에 자식 DOM 추가 +
  * 이벤트 연결만 수행하며 부모에 마운트하지 않는다.</p>
  */
-final class MenuTabDecorator {
-    private MenuTabDecorator() {
+final class MenuTabBuilder {
+    private MenuTabBuilder() {
         // 유틸 클래스 — 인스턴스화 금지.
     }
 

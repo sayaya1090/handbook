@@ -55,7 +55,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     private final TabsElementBuilder.TabsPrimaryElementBuilder tabs = TabsElementBuilder.tabs().primary();
 
     private final NavEntryFactory entries;
-    private final OverflowMenuController overflow;
+    private final OverflowMenuView overflow;
     /** menu mode 상단정렬 탭. */
     private final List<TabEntry> topEntries = new LinkedList<>();
     /** menu mode 하단정렬 탭 (overflow 수렴 가능). */
@@ -69,7 +69,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     private Runnable pendingOnBack;
 
     @Inject
-    MobileTabsElement(NavEntryFactory entries, OverflowMenuController overflow) {
+    MobileTabsElement(NavEntryFactory entries, OverflowMenuView overflow) {
         this.entries = entries;
         this.overflow = overflow;
         tabs.element().classList.add("menu-tabs-bar");

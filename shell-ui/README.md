@@ -48,9 +48,9 @@ client/
 │       │                              #   AppBar 가 자기 slot 을 SRP 로 채움 (MenuToggleButton/WorkspaceSelect/ThemeToggle 주입)
 │       ├── MobileTabsElement          # 모바일 상단 Scrollable Tabs (md-tabs + ResponsiveOverflow 3단계 폴백)
 │       │                              #   상단정렬(order asc) leading + 하단정렬(order desc) trailing 병합
-│       ├── NavEntryFactory           # 도메인(Menu/Tool) → 네비 엔트리 DOM 매핑 팩토리 (얇은 매핑; 조립은 MenuTabDecorator)
-│       ├── MenuTabDecorator          # md-primary-tab / md-menu-item 공통 시각 구조(아이콘/라벨/툴팁/하이라이트) 데코레이터
-│       ├── OverflowMenuController     # MobileTabs 의 md-icon-button(…) + md-menu 팝업 제어 (open/close/hidden)
+│       ├── NavEntryFactory           # 도메인(Menu/Tool) → 네비 엔트리 DOM 매핑 팩토리 (얇은 매핑; 조립은 MenuTabBuilder)
+│       ├── MenuTabBuilder          # md-primary-tab / md-menu-item 공통 시각 구조(아이콘/라벨/툴팁/하이라이트) 데코레이터
+│       ├── OverflowMenuView     # MobileTabs 의 md-icon-button(…) + md-menu 팝업 제어 (open/close/hidden)
 │       ├── DrawerElement              # 드로어 본체 (.body > .menu-rail + .tool-rail)
 │       │                              #   AppBar/MobileTabs/Drawer 는 ShellInitializer 가 body 직속 조립
 │       ├── NavigationRailElement      # 레일 공통 인터페이스 (expand/collapse/hide)
@@ -205,8 +205,8 @@ stateDiagram-v2
 | ShellAppBar 가 자기 slot 을 SRP 로 채움 | AppBar 가 MenuToggleButton/WorkspaceSelect/ThemeToggle 을 직접 주입받아 leading/center/trailing 에 배치. DrawerElement 는 AppBar 내부 구조를 몰라도 됨 |
 | `Menu.appBarSlot` 으로 AppBar 승격 선언 | 세션 액션성 메뉴(login 등)를 네비게이션 축에서 뺀다. O/C — slot 이름 → HTMLElement 매핑을 Map 으로 관리해 "leading"/"center"/"trailing" 3종 모두 확장 대응 가능 |
 | HighlightEffect 공통화 (observe + apply) | `.ui-highlight` 감지용 MutationObserver 를 `HighlightEffect.observe` 로 캡슐화. MenuRailItem / MobileTabs 의 md-primary-tab / ShellAppBar 의 `.shell-app-bar-action` 이 동일 추상에만 의존 (Dependency Inversion) |
-| MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuController` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
-| NavEntryFactory + MenuTabDecorator 분리 | 도메인 → 엔트리 매핑(NavEntryFactory)과 엔트리 시각 구조 조립(MenuTabDecorator)을 책임 단위로 분리. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중, Factory 는 Menu/Tool 매핑만, Decorator 는 호스트(md-primary-tab / md-menu-item)별 조립만 |
+| MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuView` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
+| NavEntryFactory + MenuTabBuilder 분리 | 도메인 → 엔트리 매핑(NavEntryFactory)과 엔트리 시각 구조 조립(MenuTabBuilder)을 책임 단위로 분리. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중, Factory 는 Menu/Tool 매핑만, Decorator 는 호스트(md-primary-tab / md-menu-item)별 조립만 |
 
 ## 테스트
 

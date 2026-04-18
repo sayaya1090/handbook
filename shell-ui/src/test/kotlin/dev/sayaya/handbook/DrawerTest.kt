@@ -616,7 +616,7 @@ internal class DrawerTest: GwtTestSpec({
     }
 
     // Task #27 — 신규 컴포넌트 단위 검증 (P2.3)
-    //   NavEntryFactory / MenuTabDecorator / OverflowMenuController / HighlightEffect.observe 는 GWT 런타임
+    //   NavEntryFactory / MenuTabBuilder / OverflowMenuView / HighlightEffect.observe 는 GWT 런타임
     //   필요한 DOM/MutationObserver 를 쓰므로 JVM pure 단위 테스트 불가. Playwright 페이지
     //   위에서 실제 렌더 결과를 직접 검증한다.
     Given("데스크톱 뷰포트로 페이지 재로드") {
@@ -668,7 +668,7 @@ internal class DrawerTest: GwtTestSpec({
             visibleAfter shouldBe visibleBefore
         }
 
-        // ── NavEntryFactory + MenuTabDecorator (모바일 viewport 에서 렌더된 탭 구조 검증) ─────────
+        // ── NavEntryFactory + MenuTabBuilder (모바일 viewport 에서 렌더된 탭 구조 검증) ─────────
         When("모바일 viewport 로 전환하여 MobileTabs 렌더를 유도") {
             page.setViewportSize(375, 800)
             Thread.sleep(400)
@@ -698,14 +698,14 @@ internal class DrawerTest: GwtTestSpec({
                 labels shouldBeGreaterThan 0
             }
 
-            // ── OverflowMenuController ───────────────────────────────────
-            Then("OverflowMenuController: overflow 버튼의 aria-label=\"More\" 설정") {
+            // ── OverflowMenuView ───────────────────────────────────
+            Then("OverflowMenuView: overflow 버튼의 aria-label=\"More\" 설정") {
                 val ariaLabel = page.evaluate(
                     "document.querySelector('.menu-tabs-overflow-btn').getAttribute('aria-label')"
                 ).toString()
                 ariaLabel shouldBe "More"
             }
-            Then("OverflowMenuController: md-menu 의 anchorElement property 가 overflow 버튼 element 를 참조한다") {
+            Then("OverflowMenuView: md-menu 의 anchorElement property 가 overflow 버튼 element 를 참조한다") {
                 // sayaya-ui MenuElementBuilder.anchorElement(HTMLElement) 는 JS property 경로로
                 // anchor 를 연결 + click 리스너까지 자동 등록. attribute 대신 property 기반 검증.
                 val linked = page.evaluate(

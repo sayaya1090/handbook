@@ -40,7 +40,7 @@ import static org.jboss.elemento.Elements.div;
  * 자동 등록하므로 별도 click 바인딩 불필요.</p>
  */
 @Singleton
-public class OverflowMenuController implements IsElement<HTMLElement> {
+public class OverflowMenuView implements IsElement<HTMLElement> {
 
     private static final String BTN_ID = "menu-tabs-overflow-btn";
 
@@ -57,7 +57,7 @@ public class OverflowMenuController implements IsElement<HTMLElement> {
                     .anchorElement(button.element());
 
     @Inject
-    OverflowMenuController() {
+    OverflowMenuView() {
         // md-menu 의 close-menu 이벤트(md-menu-item 선택 or 외부 클릭) 는 웹컴포넌트 커스텀
         // 이벤트라 EventType enum 에 없음 — 직접 리스너로 open 속성 제거. sayaya-ui 가 이
         // 커스텀 이벤트를 typed API 로 노출하면 교체. anchorElement(button) 가 click 에

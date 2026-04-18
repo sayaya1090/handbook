@@ -17,9 +17,9 @@ import static org.jboss.elemento.Elements.htmlContainer;
 /**
  * 도메인 객체({@link Menu} / {@link Tool}) → 네비게이션 엔트리 DOM 변환 **팩토리**.
  *
- * <p><b>책임 (얇은 매핑 전용):</b> 도메인 필드(title/icon 등)를 {@link MenuTabDecorator} 의 정적
+ * <p><b>책임 (얇은 매핑 전용):</b> 도메인 필드(title/icon 등)를 {@link MenuTabBuilder} 의 정적
  * 팩토리 파라미터에 1:1 대응시키는 매핑만 수행한다. DOM 조립·아이콘 슬롯·라벨 i18n·click
- * 바인딩·tooltip/highlight 같은 **시각/동작 구조는 전부 {@link MenuTabDecorator} 가 담당**한다.
+ * 바인딩·tooltip/highlight 같은 **시각/동작 구조는 전부 {@link MenuTabBuilder} 가 담당**한다.
  * 여기서는 "어떤 Subject 로 발행할지"(MenuSelected vs ToolSelected), "어떤 data-* 키를 붙일지"
  * (menuTitle vs toolTitle), "어떤 호스트 종류를 쓸지"(primary-tab vs overflow menu-item) 만
  * 도메인 용어로 선언적으로 표현.</p>
@@ -29,7 +29,7 @@ import static org.jboss.elemento.Elements.htmlContainer;
  *   <li>{@link MenuSelected} / {@link ToolSelected} — click 시 선택 발행 (Subject 구독자들이
  *       script 주입·active 토글 등 사이드 이펙트 처리)</li>
  *   <li>{@link LabelProvider} — i18n 라벨 구독</li>
- *   <li>{@link MenuTabDecorator} — 실제 시각 구조 조립 정적 유틸</li>
+ *   <li>{@link MenuTabBuilder} — 실제 시각 구조 조립 정적 유틸</li>
  * </ul></p>
  */
 @Singleton
@@ -52,7 +52,7 @@ public class NavEntryFactory {
      * 시맨틱). click 시 {@link MenuSelected} 발행.
      */
     public HTMLElement populateMenuTab(PrimaryTabElementBuilder tb, Menu menu) {
-        return MenuTabDecorator.primaryTab(tb, menu.icon(), "menuTitle", menu.title(),
+        return MenuTabBuilder.primaryTab(tb, menu.icon(), "menuTitle", menu.title(),
                 labelProvider, () -> selected.next(menu));
     }
 
@@ -62,7 +62,7 @@ public class NavEntryFactory {
      */
     public HTMLElement renderMenuItem(Menu menu, Runnable afterSelect) {
         HTMLContainerBuilder<HTMLElement> mi = htmlContainer("md-menu-item", HTMLElement.class);
-        return MenuTabDecorator.overflowMenuItem(mi, menu.icon(), "menuTitle", menu.title(),
+        return MenuTabBuilder.overflowMenuItem(mi, menu.icon(), "menuTitle", menu.title(),
                 labelProvider, () -> {
                     selected.next(menu);
                     if (afterSelect != null) afterSelect.run();
@@ -74,7 +74,7 @@ public class NavEntryFactory {
      * 조립한다 — MobileTabs 가 도구 모드일 때 사용. click 시 {@link ToolSelected} 발행.
      */
     public HTMLElement populateToolTab(PrimaryTabElementBuilder tb, Tool tool) {
-        return MenuTabDecorator.primaryTab(tb, tool.icon(), "toolTitle", tool.title(),
+        return MenuTabBuilder.primaryTab(tb, tool.icon(), "toolTitle", tool.title(),
                 labelProvider, () -> toolSelected.next(tool), "tool-tab");
     }
 }

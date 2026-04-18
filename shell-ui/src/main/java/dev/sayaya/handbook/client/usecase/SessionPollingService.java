@@ -29,7 +29,7 @@ import javax.inject.Singleton;
  * 쿠키에서 JWT exp 클레임을 읽어 만료 시각을 판단한다.</p>
  */
 @Singleton
-public class SessionManager {
+public class SessionPollingService {
     private static final int CHECK_INTERVAL_MS = 60_000;
     private static final int WARNING_BEFORE_EXPIRY_MS = 5 * 60 * 1000;
     private static final double REFRESH_THRESHOLD = 0.8;
@@ -43,7 +43,7 @@ public class SessionManager {
     private double timerHandle = -1;
 
     @Inject
-    SessionManager(FetchApi fetchApi, ToastContainer toastContainer, LabelProvider labelProvider) {
+    SessionPollingService(FetchApi fetchApi, ToastContainer toastContainer, LabelProvider labelProvider) {
         this.fetchApi = fetchApi;
         this.toastContainer = toastContainer;
         this.labelProvider = labelProvider;
@@ -59,7 +59,7 @@ public class SessionManager {
      * 예정. 호출 지점은 그대로 유지해 롤백 용이성 확보.</p>
      */
     public void initialize() {
-        GWT.log("SessionManager: auto session polling disabled (2026-04 temporary).");
+        GWT.log("SessionPollingService: auto session polling disabled (2026-04 temporary).");
     }
 
     private void checkSession() {
@@ -101,14 +101,14 @@ public class SessionManager {
             .then(response -> {
                 if (response.ok) {
                     warningShown = false;
-                    GWT.log("SessionManager: token refreshed");
+                    GWT.log("SessionPollingService: token refreshed");
                 } else if (response.status == 401) {
                     redirectToLogin();
                 }
                 return null;
             })
             .catch_(error -> {
-                GWT.log("SessionManager: refresh failed - " + error);
+                GWT.log("SessionPollingService: refresh failed - " + error);
                 return null;
             });
     }
