@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-04-18: WS 없을 때 메뉴 비활성화 설계안 → 3안 제시(백엔드 requiresWorkspace / 프론트 정책 / 메뉴 hide), 권장=2안(프론트 정책, workspace-ui만 활성)
 - 2026-04-18: 실제 Edit 수행 — A(햄버거 drawer 직속)·B(.workspace max-width 24rem) 완료, C(WorkspaceRepository) 는 Write 툴 부재로 신규 파일 생성 불가 → 미착수. 이슈 A 는 DrawerElement/MenuRailElement/shell.css(main+test)/DrawerTest.kt 모두 동기화, 회귀 가드(rail[hide]에서 햄버거 visible) 신설
 - 2026-04-18: 직전 세션 설계만 반환 누락 → 이번엔 실제 파일 Edit 수행. 3건(A: 햄버거 drawer 직속, B: workspace max-width 24rem, C: WorkspaceRepository 신설 + User.workspaces 제거) 전부 main/test 경로 동기 적용
 - 2026-04-18: 3건 병렬 (햄버거 rail-hide 가시성 + WS 드롭다운 폭 + User.workspaces 제거) → 햄버거 DOM 을 drawer 직속 (drawer > .body 앞) 으로 이관해 menu-rail[hide] 와 독립 + .workspace max-width 16→22rem / `.shell-app-bar-center` gap 정리 + `WorkspaceListRepository` 신설 (search-workspace `/workspaces` 구독) + `User.workspaces` 제거

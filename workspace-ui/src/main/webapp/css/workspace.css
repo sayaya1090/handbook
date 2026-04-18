@@ -163,17 +163,25 @@
 }
 
 /* ── Mobile (< 768px) ── */
+/* 컨테이너가 스크롤을 담당하고 다이얼로그는 내용만큼만 늘어난다.
+ * `min-height:100dvh` 로 다이얼로그를 강제로 키우면 뷰포트를 넘긴 하단(CREATE/JOIN/Submit)
+ * 이 잘려서 안 보이는 회귀가 발생 — `height:auto` + 컨테이너 `overflow-y:auto` 조합이 정석. */
 @media (max-width: 768px) {
     .ws-content {
         padding: 0;
         align-items: stretch;
+        justify-content: flex-start;
         border-radius: 0;
         background: var(--md-sys-color-surface, #fff);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
     .ws-dialog {
         width: 100%;
-        min-height: 100dvh;
-        padding: 24px 20px;
+        min-height: 0;
+        height: auto;
+        padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
         border-radius: 0;
         border: none;
         box-shadow: none;
@@ -188,6 +196,6 @@
         min-height: 24px;
     }
     .ws-submit {
-        margin-top: auto;
+        margin-top: 8px;
     }
 }
