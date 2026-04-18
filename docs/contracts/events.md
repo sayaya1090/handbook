@@ -133,6 +133,24 @@ spring.cloud.stream.kafka.bindings.event-in-0.consumer:
   dlqName: handbook-events-dlq
 ```
 
+## Producer Serializer 규약
+
+발행 패턴에 따라 Kafka producer serializer 가 달라진다. **발행 코드와 ConfigMap serializer 가 짝이 맞지 않으면 `ClassCastException: [B cannot be cast to String` 발생.**
+
+| 패턴 | 예시 서비스 | key.serializer | value.serializer | 이유 |
+|------|-----------|----------------|------------------|------|
+| `KafkaTemplate<String, String>` + ObjectMapper pre-serialize | persist-document, persist-type, assistant | StringSerializer | StringSerializer | 애플리케이션이 문자열 JSON 을 직접 넣음 |
+| `StreamBridge` / `@Bean Function` (Spring Cloud Stream) | persist-workspace | StringSerializer | **ByteArraySerializer** | MessageConverter(application/json) 가 이미 byte[] 로 직렬화 |
+
+StreamBridge 쪽에서 StringSerializer 를 쓰려면 `useNativeEncoding: true` + 커스텀 Serializer 구성이 필요하지만 채택하지 않는다 (기본 MessageConverter 체인 유지가 단순).
+
+Spring Cloud Stream binder 지정 방법:
+```yaml
+spring.cloud.stream.kafka.binder.configuration:
+  value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+  key.serializer: org.apache.kafka.common.serialization.StringSerializer
+```
+
 ## Correlation ID 전파
 
 | 구간 | 방식 |

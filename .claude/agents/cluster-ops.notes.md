@@ -6,7 +6,7 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: persist-workspace 500 로그 수집 → POST /workspace 예외 스택 추출
 
 ## 탐색 패턴
 

@@ -11,7 +11,7 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: POST /workspace 500 원인 → @AuthenticationPrincipal 는 getPrincipal() 값 주입, 현재 String username → 어댑터 `is UserAuthentication` 분기 영구 miss.
 
 ## 탐색 패턴
 
@@ -19,7 +19,7 @@
 
 ## 반복 함정
 
-(미확보)
+- `@AuthenticationPrincipal` 의 주입 대상은 `Authentication` 자체가 아닌 `Authentication.getPrincipal()` 반환값. `UserAuthentication.getPrincipal()` 이 `String username` 을 반환하면 컨트롤러에서 `UserAuthentication`/`Principal` 타입으로 선언해도 실제 주입 타입은 String → 런타임 ClassCastException 또는 분기 miss. 컨벤션: `getPrincipal() = this` 로 바꾸거나 컨트롤러 선언을 `String` 으로 통일.
 
 ## 내부 체크리스트
 

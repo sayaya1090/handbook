@@ -35,13 +35,22 @@ data:
         stream:
           bindings:
             workspace-out-0:
-              destination: handbook-events
+              # docs/contracts/events.md — WORKSPACE_* 는 별개 토픽 workspace-events 로 발행
+              destination: workspace-events
           kafka:
             binder:
               brokers: ${KAFKA_BROKERS}
+              # StreamBridge 는 MessageConverter(application/json) 로 이미 payload 를 byte[] 로
+              # 직렬화해 binder 에 전달하므로 producer value serializer 는 byte[] 를 그대로 통과시키는
+              # ByteArraySerializer 여야 한다. StringSerializer 로 두면 `byte[] cannot be cast to String`
+              # ClassCastException 발생 (persist-document / persist-type 은 KafkaTemplate<String,String>
+              # 에 pre-serialize 한 문자열을 직접 넣는 다른 패턴이라 StringSerializer 로도 정상).
+              configuration:
+                value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+                key.serializer: org.apache.kafka.common.serialization.StringSerializer
       kafka:
         bootstrap-servers: ${KAFKA_BROKERS}
         producer:
           key-serializer: org.apache.kafka.common.serialization.StringSerializer
-          value-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
     # management / logging / metrics 는 observability fragment 에서 import 됨

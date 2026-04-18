@@ -15,10 +15,16 @@ spring:
     stream:
       bindings:
         workspace-out-0:
+          # docs/contracts/events.md — WORKSPACE_* 는 handbook-events 와 별개 토픽.
           destination: workspace-events
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:localhost:9092}
+          # StreamBridge → MessageConverter(application/json) 는 payload 를 byte[] 로 만들어
+          # binder 에 넘기므로 producer value serializer 는 ByteArraySerializer 여야 한다.
+          configuration:
+            value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+            key.serializer: org.apache.kafka.common.serialization.StringSerializer
 management:
   endpoints:
     web:

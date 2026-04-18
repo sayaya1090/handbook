@@ -6,7 +6,7 @@
 
 ## 요청 로그
 
-(아직 기록 없음)
+- 2026-04-18: persist-workspace Kafka 500 → StringSerializer→ByteArraySerializer 교체
 
 ## 탐색 패턴
 
@@ -15,6 +15,7 @@
 ## 반복 함정
 
 - **Jackson `event_type` null**: 이벤트 구현 클래스에 `@JsonProperty("event_type")` 명시 필요.
+- **StreamBridge + StringSerializer ClassCastException**: Spring Cloud Stream 은 MessageConverter(application/json) 가 byte[] 로 직렬화하므로 binder producer value-serializer 는 `ByteArraySerializer` 여야 한다. `KafkaTemplate<String,String>` 직접 사용 서비스(persist-document/persist-type)는 StringSerializer 유지. 발행 패턴과 serializer 짝 규약은 `docs/contracts/events.md` "Producer Serializer 규약" 표.
 
 ## 내부 체크리스트
 
