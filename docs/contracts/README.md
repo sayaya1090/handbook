@@ -21,6 +21,7 @@
 | 낙관적 잠금 / 버전 전파 | [versioning.md](versioning.md) | `@Version rev` 필드의 도메인→API→프론트엔드 전파 규약 |
 | SSE 스트림 시맨틱스 | [sse.md](sse.md) | `/workspace/{id}/messages` 이벤트 포맷, keep-alive, 재연결 |
 | MD3 디자인 토큰 | [design-tokens.md](design-tokens.md) | 색상·타이포·엘리베이션·셰이프·모션 공용 토큰 |
+| Shell Frame Mount | [frame.md](frame.md) | 자식 GWT 모듈이 `WindowRenderBridge` 로 shell FrameUpdater 에 컨텐츠 위임 — body 직접 append 금지 |
 
 ---
 
@@ -33,17 +34,17 @@
 - **W** — 감시자 (구조·일관성 검증)
 
 ```
-              Menu  Event  Command  Permission  API  Audit  Version  SSE  Design
-auth           .      .      .        OWNER      .     O      .        .     .
-schema         .      O      .        O          O     .      O        .     .
-document       .      O      .        O          O     .      O        .     .
-workspace      O      O      .        O          O     .      O        .     .
-assistant      .      O      OWNER    O          O     OWNER  .        .     .
-landing        O      .      .        .          O     O      .        .     O
-events         .      OWNER  .        .          .     .      .        OWNER .
-ui-platform    O      .      O        O          O     O      .        O     OWNER
-cluster-ops    .      .      .        .          .     .      .        .     .
-docs-keeper    W      W      W        W          W     W      W        W     W
+              Menu  Event  Command  Permission  API  Audit  Version  SSE  Design  Frame
+auth           .      .      .        OWNER      .     O      .        .     .      .
+schema         .      O      .        O          O     .      O        .     .      O
+document       .      O      .        O          O     .      O        .     .      O
+workspace      O      O      .        O          O     .      O        .     .      O
+assistant      .      O      OWNER    O          O     OWNER  .        .     .      .
+landing        O      .      .        .          O     O      .        .     O      O
+events         .      OWNER  .        .          .     .      .        OWNER .      .
+ui-platform    O      .      O        O          O     O      .        O     OWNER  OWNER
+cluster-ops    .      .      .        .          .     .      .        .     .      .
+docs-keeper    W      W      W        W          W     W      W        W     W      W
 ```
 
 ---

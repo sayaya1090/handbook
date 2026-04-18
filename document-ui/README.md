@@ -4,6 +4,12 @@
 GWT 모듈명은 `rename-to="data"`로 설정되어 있다.
 Shell이 `ModuleScriptManager`로 `js/data/data.nocache.js`를 동적 로딩하여 실행한다.
 
+## Mount 패턴
+
+`Application.onModuleLoad()` 은 `WindowRenderBridge.next(render)` 로 shell
+`FrameUpdater` 에 Render 위임. body 직접 append 금지 —
+[`docs/contracts/frame.md`](../../docs/contracts/frame.md).
+
 ---
 
 ## 스프레드시트 (SpreadsheetElement)

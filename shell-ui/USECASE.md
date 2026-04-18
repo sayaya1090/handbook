@@ -240,7 +240,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 시스템 (메뉴 선택 시 자동) |
 | **선행조건** | 메뉴 선택으로 모듈 스크립트가 주입됨 |
-| **정상 흐름** | 1. 로딩된 모듈이 `Observer<Render>`에 렌더 콜백을 발행한다.<br>2. `FrameUpdater`가 `FrameFactory`로 새 `FrameElement`를 생성한다.<br>3. 이전 프레임에 fadeOut 적용 (100ms) 후 DOM에서 제거.<br>4. 새 프레임에 fadeIn 적용하여 `ContentElement`에 추가. |
+| **정상 흐름** | 1. 로딩된 모듈이 `WindowRenderBridge.next(render)` 로 Render 콜백(`HTMLElement frame -> boolean`)을 발행한다 — 자기 컨테이너를 body 에 직접 append 하지 않는다 (`docs/contracts/frame.md`).<br>2. shell 의 `ShellInitializer` 에서 `WindowRenderBridge.register` 로 등록된 Observer 가 Render 를 `FrameUpdater` 에 전달.<br>3. `FrameUpdater`가 `FrameFactory`로 새 `FrameElement` 를 생성 → Render 의 `onInvoke(frame.element())` 호출 → 모듈이 frame 내부에 DOM append.<br>4. 이전 프레임에 fadeOut 적용 (100ms) 후 DOM에서 제거.<br>5. 새 프레임에 fadeIn 적용하여 `ContentElement` 에 추가. `.frame` 은 AppBar / MobileTabs / rail collapse 오프셋을 고려한 여백 내부에 배치됨. |
 
 ## UC-S12: 진행률 표시
 

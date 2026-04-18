@@ -3,6 +3,13 @@
 워크스페이스 현황 대시보드 (GWT). 통계 카드, 데이터 품질 이슈, 에이전트 활동 로그를 실시간으로 표시한다.
 Shell이 `ModuleScriptManager`로 `js/dashboard/dashboard.nocache.js`를 동적 로딩하여 실행한다.
 
+## Mount 패턴
+
+`Application.onModuleLoad()` 은 `WindowRenderBridge.next(render)` 로 shell
+`FrameUpdater` 에 Render 위임. body 직접 append 금지 —
+[`docs/contracts/frame.md`](../docs/contracts/frame.md). `:agent-bridge` 의존
+필요 (build.gradle.kts + `Dashboard.gwt.xml` 의 `AgentBridge` inherits).
+
 ---
 
 ## 통계 카드 (StatsCardElement)

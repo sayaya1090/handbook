@@ -85,6 +85,7 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 - **Java record 사용 가능** (GWT 2.12+). 단, 다중 생성자 금지 → static 팩토리 메서드(`of()`)로 대체.
 - Dagger `@Module`에 새 의존성 추가 시 `@Provides` 누락 주의
 - 테스트 Mock에서 인터페이스 메서드 추가 시 구현도 함께 추가
+- **UI 모듈 `Application.onModuleLoad()` 는 `body().add()` 금지 — `WindowRenderBridge.next(render)` 경유 필수.** 전역 CSS `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 뷰포트 밖으로 밀려나 보이지 않는 회귀가 반복적으로 발생. shell `FrameUpdater` 가 Frame 엘리먼트를 배치·여백 관리하고 모듈은 `frame.append(container)` 로 Frame 내부에만 mount. 계약은 `docs/contracts/frame.md`. 예외: login-ui 의 `LogoutApplication` 처럼 전면 리다이렉트 페이지만 허용.
 
 ### 테스트
 - 백엔드: Kotest BehaviorSpec + MockK / Testcontainers PostgreSQL
@@ -135,6 +136,7 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | Kargo warehouse 가 새 이미지 감지 못 함 | `strictSemvers: true` + jib `latest` 태그만 push | `strictSemvers: false` + jib 에 commit SHA 태그 추가 (`-Djib.to.tags=$SHORT_SHA`) |
 | `aws s3 sync` 가 같은 크기 파일 스킵 | Gradle 재현가능 빌드의 mtime 고정 + 동일 사이즈 | `aws s3 cp --recursive` 로 무조건 업로드. helm vendored tgz 갱신 필요 |
 | Gateway 라우트 0개 로딩 | 1) `spring.cloud.gateway.routes` (구 경로) 사용 — Spring Cloud Gateway 5.0부터 `spring.cloud.gateway.server.webflux.routes` 로 변경됨. 2) servlet classpath 오염 — activity 의존에서 `gwt-servlet-jakarta` 미제외 시 reactive auto-config 실패 | 프로퍼티 경로를 `spring.cloud.gateway.server.webflux.routes` 로 변경. activity 의존에 `exclude(group = "org.gwtproject", module = "gwt-servlet-jakarta")` 추가 |
+| UI 모듈 렌더 안 됨 / 뷰포트 밖으로 밀림 | `Application.onModuleLoad()` 에서 `body().add(container)` 직접 호출. 전역 `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 y=100dvh 위치에 렌더됨 | `WindowRenderBridge.next(render)` 경유로 shell FrameUpdater 에 Render 전달 → Frame 엘리먼트 내부에 mount. 계약 상세는 `docs/contracts/frame.md` |
 
 상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.
 

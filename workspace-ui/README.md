@@ -2,6 +2,18 @@
 
 워크스페이스 생성/참여 프론트엔드 (GWT). Shell이 ModuleScriptManager로 동적 로딩한다.
 
+## Mount 패턴
+
+`Application.onModuleLoad()` 은 `WindowRenderBridge.next(render)` 로 shell 의
+`FrameUpdater` 에 Render 를 위임한다. body 직접 append 금지 — 계약은
+[`docs/contracts/frame.md`](../docs/contracts/frame.md).
+
+## 에이전트 연동
+
+UI 전용 모듈로 백엔드 API 공급 없음. 에이전트는 shell 의 `AGENT_COMMAND navigate`
+(URL 기반) 또는 MenuSelected 스트림(UC-12 빈 워크스페이스 온보딩) 으로 이 화면을
+진입시킨다. mutate/highlight 는 후속.
+
 ## 계층 구조
 
 ```
