@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 import dev.sayaya.handbook.client.usecase.ResponsiveOverflow;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.Tool;
+import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import dev.sayaya.ui.elements.TabsElementBuilder;
 import elemental2.dom.HTMLDivElement;
@@ -18,7 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.htmlContainer;
 
 /**
  * 모바일 뷰포트 전용 상단 Scrollable Tabs — <b>뷰 컴포넌트</b>.
@@ -230,14 +230,16 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
 
     private void ensureBackButton() {
         if (backButton == null) {
-            HTMLContainerBuilder<HTMLElement> btn = htmlContainer("md-icon-button", HTMLElement.class)
-                    .css("menu-tabs-back-btn");
-            btn.add(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrow-left"));
-            btn.element().setAttribute("aria-label", "Back");
-            btn.on(EventType.click, evt -> {
-                if (pendingOnBack != null) pendingOnBack.run();
-            });
-            backButton = btn.element();
+            // sayaya-ui IconButtonElementBuilder 로 md-icon-button 감싼다 — htmlContainer 직접
+            // 생성 대신 빌더 패턴 일관성 + HasAriaLabel.ariaLabel() + ElementEventMethods.on() 체이닝.
+            backButton = new IconButtonElementBuilder.PlainIconButtonElementBuilder()
+                    .css("menu-tabs-back-btn")
+                    .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrow-left"))
+                    .ariaLabel("Back")
+                    .on(EventType.click, evt -> {
+                        if (pendingOnBack != null) pendingOnBack.run();
+                    })
+                    .element();
         }
         if (backButton.parentNode == null) {
             _this.element().insertBefore(backButton, tabs.element());

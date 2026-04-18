@@ -6,6 +6,7 @@ import dev.sayaya.handbook.client.usecase.MenuList;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -160,26 +161,26 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
      * 에 발행 — 기존 네비게이션 경로(MenuRailItemElement)와 동일한 선택 이벤트로 수렴된다.
      */
     private MenuActionEntry createActionButton(Menu menu) {
-        HTMLContainerBuilder<HTMLElement> btn = htmlContainer("md-icon-button", HTMLElement.class)
-                .css("shell-app-bar-action");
-        HTMLElement icon = IconElementBuilder.icon()
-                .css("fa-sharp", "fa-solid", menu.icon()).element();
-        btn.add(icon);
+        // sayaya-ui IconButtonElementBuilder — HasIconSlot.icon() + ariaLabel() + on(click) 체이닝.
+        var btn = new IconButtonElementBuilder.PlainIconButtonElementBuilder()
+                .css("shell-app-bar-action")
+                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon()))
+                .on(EventType.click, evt -> selected.next(menu));
+        HTMLElement el = btn.element();
         // agent-command highlight 수신 시 TooltipCard 로 라벨 강조. hover 는 md-icon-button 의
         // 기본 aria/title 이 담당하므로 tooltip 은 highlight 전용 (enabled=false).
-        final TooltipCard tooltip = TooltipCard.anchor(btn.element()).position("bottom").enabled(false);
-        HighlightEffect.observe(btn.element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
+        final TooltipCard tooltip = TooltipCard.anchor(el).position("bottom").enabled(false);
+        HighlightEffect.observe(el, () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
         if (menu.title() != null) {
-            btn.element().dataset.set("menuTitle", menu.title());
+            el.dataset.set("menuTitle", menu.title());
             labelProvider.subscribe(labels -> {
                 String title = labels.getOrDefault(menu.title(), menu.title());
-                btn.element().setAttribute("aria-label", title);
-                btn.element().setAttribute("title", title);
+                btn.ariaLabel(title);
+                el.setAttribute("title", title);
                 tooltip.content(title, null);
             });
         }
-        btn.on(EventType.click, evt -> selected.next(menu));
-        return new MenuActionEntry(menu, btn.element());
+        return new MenuActionEntry(menu, el);
     }
 
     /** leading slot — DrawerElement 가 햄버거를 여기로 이동한다. */
