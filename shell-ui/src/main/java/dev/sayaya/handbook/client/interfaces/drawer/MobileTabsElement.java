@@ -126,11 +126,11 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         int idx = findVisibleTabIndex(menu);
         if (idx >= 0) tabs.activeTabIndex(idx);
         for (TabEntry e : bottomEntries) {
-            if (e.menuItem == null) continue;
-            boolean shouldSelected = e.menu.equals(menu);
-            boolean isSelected = e.menuItem.hasAttribute("selected");
-            if (shouldSelected && !isSelected) e.menuItem.setAttribute("selected", true);
-            else if (!shouldSelected && isSelected) e.menuItem.removeAttribute("selected");
+            if (e.menuItem() == null) continue;
+            boolean shouldSelected = e.menu().equals(menu);
+            boolean isSelected = e.menuItem().hasAttribute("selected");
+            if (shouldSelected && !isSelected) e.menuItem().setAttribute("selected", true);
+            else if (!shouldSelected && isSelected) e.menuItem().removeAttribute("selected");
         }
     }
 
@@ -138,7 +138,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         if (mode != Mode.TOOL) return;
         int idx = -1;
         for (int i = 0; i < toolEntries.size(); i++) {
-            if (toolEntries.get(i).tool.equals(tool)) { idx = i; break; }
+            if (toolEntries.get(i).tool().equals(tool)) { idx = i; break; }
         }
         if (idx >= 0) tabs.activeTabIndex(idx);
     }
@@ -152,10 +152,10 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         int i = 0;
         while (cur != null) {
             for (TabEntry e : topEntries) {
-                if (e.tab == cur && e.menu.equals(menu)) return i;
+                if (e.tab() == cur && e.menu().equals(menu)) return i;
             }
             for (TabEntry e : bottomEntries) {
-                if (e.tab == cur && e.menu.equals(menu)) return i;
+                if (e.tab() == cur && e.menu().equals(menu)) return i;
             }
             cur = cur.nextElementSibling;
             i++;
@@ -180,8 +180,8 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         }
         double container = element().clientWidth;
         if (container <= 0) return;
-        double topWidth = sumWidth(topEntries.stream().map(e -> e.tab).toList());
-        double bottomWidth = sumWidth(bottomEntries.stream().map(e -> e.tab).toList());
+        double topWidth = sumWidth(topEntries.stream().map(TabEntry::tab).toList());
+        double bottomWidth = sumWidth(bottomEntries.stream().map(TabEntry::tab).toList());
         ResponsiveOverflow.Result r = ResponsiveOverflow.compute(container, topWidth, bottomWidth, RESERVE_PX);
         setPartitioned(r.showOverflow);
         if (r.scrollable) tabs.element().setAttribute("scrollable", true);
@@ -194,7 +194,7 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         if (element().hasAttribute("hide")) return;
         double container = element().clientWidth;
         if (container <= 0) return;
-        double total = sumWidth(toolEntries.stream().map(e -> e.tab).toList());
+        double total = sumWidth(toolEntries.stream().map(ToolEntry::tab).toList());
         if (total > container + 1) tabs.element().setAttribute("scrollable", true);
         else tabs.element().removeAttribute("scrollable");
     }
@@ -208,17 +208,17 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
     }
 
     private void clearAll() {
-        for (TabEntry e : topEntries) detach(e.tab);
+        for (TabEntry e : topEntries) detach(e.tab());
         for (TabEntry e : bottomEntries) {
-            detach(e.tab);
-            if (e.menuItem != null) detach(e.menuItem);
+            detach(e.tab());
+            if (e.menuItem() != null) detach(e.menuItem());
         }
         topEntries.clear();
         bottomEntries.clear();
     }
 
     private void clearTools() {
-        for (ToolEntry e : toolEntries) detach(e.tab);
+        for (ToolEntry e : toolEntries) detach(e.tab());
         toolEntries.clear();
     }
 
@@ -269,13 +269,13 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
         partitioned = on;
         if (on) {
             for (TabEntry e : bottomEntries) {
-                detach(e.tab);
-                if (e.menuItem != null) overflow.addItem(e.menuItem);
+                detach(e.tab());
+                if (e.menuItem() != null) overflow.addItem(e.menuItem());
             }
         } else {
             for (TabEntry e : bottomEntries) {
-                if (e.menuItem != null) overflow.removeItem(e.menuItem);
-                tabs.element().appendChild(e.tab);
+                if (e.menuItem() != null) overflow.removeItem(e.menuItem());
+                tabs.element().appendChild(e.tab());
             }
         }
     }
@@ -285,23 +285,9 @@ public class MobileTabsElement implements IsElement<HTMLElement> {
 
     private enum Mode { MENU, TOOL }
 
-    private static class TabEntry {
-        final Menu menu;
-        final HTMLElement tab;
-        final HTMLElement menuItem;
-        TabEntry(Menu menu, HTMLElement tab, HTMLElement menuItem) {
-            this.menu = menu;
-            this.tab = tab;
-            this.menuItem = menuItem;
-        }
-    }
+    /** menu 모드 탭 엔트리 — md-primary-tab (tab) 과 overflow 팝업 md-menu-item (menuItem) 의 쌍. */
+    private record TabEntry(Menu menu, HTMLElement tab, HTMLElement menuItem) {}
 
-    private static class ToolEntry {
-        final Tool tool;
-        final HTMLElement tab;
-        ToolEntry(Tool tool, HTMLElement tab) {
-            this.tool = tool;
-            this.tab = tab;
-        }
-    }
+    /** tool 모드 탭 엔트리 — overflow 분할이 없으므로 menuItem 불필요. */
+    private record ToolEntry(Tool tool, HTMLElement tab) {}
 }
