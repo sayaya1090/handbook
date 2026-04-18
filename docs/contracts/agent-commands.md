@@ -75,11 +75,11 @@ MCP 클라이언트 모두 이 표를 기준으로 selector 를 생성해야 한
 | 모바일 상단 탭 | `.menu-tabs md-primary-tab.menu-tab` (+ `[data-menu-title]`) | `MobileTabsElement`. overflow 분리 시 일부만 노출 |
 | 모바일 overflow 메뉴 항목 | `.menu-tabs md-menu md-menu-item.menu-tab-menu-item` (+ `[data-menu-title]`) | overflow 팝업 내. 팝업 닫힘 상태에서는 타겟팅 전 `.menu-tabs-overflow-btn` 클릭 필요 |
 | 모바일 overflow 버튼 | `.menu-tabs-overflow-btn` | 조건부 표시 (`[hidden]`) |
-| AppBar 햄버거 | `#menu-toggle-button` (`.shell-app-bar-leading` 내부) | `MenuToggleButton` |
+| 햄버거 토글 | `.menu-rail > #menu-toggle-button` | `MenuToggleButton`. 2026-04 AppBar leading → MenuRail 상단 이관 (rail expand 시 우측 밀림 회귀 해결) |
 | AppBar 워크스페이스 셀렉터 | `.shell-app-bar-center .workspace` | 이전 `.drawer-header .workspace` 에서 이동 (2026-04) |
 | AppBar 테마 토글 | `.shell-app-bar-trailing .item.rail-bottom` | `ThemeToggle`. 이전 `.rail .item.rail-bottom` 에서 이동 (2026-04) |
 | AppBar 세션 액션 (Sign In/Out 등) | `.shell-app-bar-trailing .shell-app-bar-action` (+ `[data-menu-title]`) | `appBarSlot="trailing"` Menu 가 승격됨 (`menus.md` 참조) |
-| Drawer overlay (모바일 햄버거) | `nav.drawer[overlay]` | 사용자 햄버거 열기 전까지는 `[hide]` |
+| Drawer overlay (모바일 진입 상태) | `nav.drawer[overlay]` | 모바일에서 rail 이 overlay 될 때 부여. 현재 모바일 네비는 MobileTabs 가 대체하므로 실질 드라이버 없음 |
 
 **규칙**
 - `[data-menu-title="<Menu.title()>"]` 속성으로 특정 엔트리 지정 권장. `title()` 은 i18n key 원본값 (번역 전 문자열).

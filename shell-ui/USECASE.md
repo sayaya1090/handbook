@@ -303,12 +303,12 @@ sequenceDiagram
 | **선행조건** | 뷰포트 너비 ≤ 768px |
 | **레이아웃 모델** | 2026-04 재정의. 상단 AppBar + 상단 Scrollable Tabs + 하단 ToolRail(드릴인) + 하단 Agent input dock 의 4단 수직 스택. MenuRail 은 모바일에서 `display:none` 이고 네비게이션은 `MobileTabsElement` 가 대체한다. AppBar/MobileTabs 는 `body` 직속 fixed 로 배치되어 Drawer 의 backdrop-filter containing block 에 영향을 받지 않는다. |
 | **DOM 구조** | `body > header.shell-app-bar + div.menu-tabs + div.progress-container + div#content(nav.drawer > .body > .menu-rail + .tool-rail) + .agent-input-container`. 조립 순서는 Composition Root(`ShellInitializer`) 가 명시. |
-| **AppBar (데스크톱·모바일 공통)** | leading=햄버거(모바일은 CSS `display:none`) / center=WorkspaceSelect / trailing=ThemeToggle + appBarSlot="trailing" 메뉴(Sign In/Out). 모두 `ShellAppBarElement` 가 자기 slot 을 SRP 경계에서 채움. |
+| **AppBar (데스크톱·모바일 공통)** | leading=예비(appBarSlot="leading" 동적 메뉴만) / center=WorkspaceSelect / trailing=ThemeToggle + appBarSlot="trailing" 메뉴(Sign In/Out). 햄버거는 MenuRail 상단으로 이관 (2026-04, rail expand 시 우측 밀림 회귀 해결). `ShellAppBarElement` 가 자기 slot 을 SRP 경계에서 채움. |
 | **상단 Tabs (모바일 전용)** | `MobileTabsElement` 가 `MenuList` 구독 → `appBarSlot==null` 메뉴만 렌더. 상단정렬(`bottom=false`) 은 `order` 오름차순 leading, 하단정렬(`bottom=true`) 은 `order` 내림차순 trailing. `ResponsiveOverflow` 3단계 폴백: 평면 → hidden overflow 버튼 / 공간 부족 → 하단정렬 md-menu 팝업 수렴 / 상단정렬까지 넘침 → `md-tabs[scrollable]` 가로 스크롤 + sticky trailing overflow 버튼. |
 | **하단 드릴인 (ToolRail)** | 사용자가 도구가 2개 이상인 탭을 선택하면 `ToolList` 채워져 `ToolRailMode=EXPAND` → 하단 바 자리 차지 (slide-up). `MenuRailMode=HIDE` 는 여전히 동작하나 모바일에선 MenuRail 자체가 `display:none` 이라 가시 전환 없음. 드릴백은 `CloseToolRailButton` 탭으로 `MenuSelected.next(null)` → 도구 비움 → `ToolRailMode=HIDE` 로 복귀 (MobileTabs 가 다시 유일한 상단 네비). |
 | **하단 agent dock** | `agent-ui` 의 `.agent-input-container` 가 모바일에서도 `bottom:0` dock (2026-04 복귀). Fitts 원칙상 가장 빈번한 입력은 엄지 도달 최적인 하단. ToolRail 드릴인 시 `.agent-mutate-log` / `.agent-artifact-panel` 은 input dock 높이(~80px) 위로 offset. |
-| **전환(리사이즈)** | `ViewportObserver` 의 matchMedia(768px) 전환 시 `.menu-rail[mobile] → display:none`, `.menu-tabs[hide]` 제거, `.shell-app-bar-leading` CSS `display:none` 적용. 모든 전환은 DOM 이동 없이 속성/CSS 토글만으로 처리되어 flash 없음. |
-| **특이사항** | (1) 모바일에서 Drawer overlay 햄버거는 제거 — MenuRail 이 숨겨져 있고 네비가 Tabs 로 이전되어 실질 용도 없음. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만, 모바일 여부는 `[mobile]` 속성으로 직교 표현. (3) `appBarSlot` 이 지정된 메뉴는 네비(Tabs/Rail) 에서 제외되고 AppBar slot 으로 승격 — semantic 분리(네비 vs 세션/전역 액션). |
+| **전환(리사이즈)** | `ViewportObserver` 의 matchMedia(768px) 전환 시 `.menu-rail[mobile] → display:none`, `.menu-tabs[hide]` 제거, `.menu-rail[mobile] > #menu-toggle-button { display:none }` 로 햄버거 숨김. 모든 전환은 DOM 이동 없이 속성/CSS 토글만으로 처리되어 flash 없음. |
+| **특이사항** | (1) 모바일에서 햄버거는 MenuRail 상단에 DOM 으로 존재하되 CSS 로 숨김 — MenuRail 이 display:none 이고 네비가 Tabs 로 이전되어 실질 용도 없음. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만, 모바일 여부는 `[mobile]` 속성으로 직교 표현. (3) `appBarSlot` 이 지정된 메뉴는 네비(Tabs/Rail) 에서 제외되고 AppBar slot 으로 승격 — semantic 분리(네비 vs 세션/전역 액션). |
 | **터치 지원** | (이전 edge-swipe 로 Drawer overlay 열기는 MenuRail 모바일 비활성화로 의미 소실 — 후속 작업에서 swipe 제스처 모바일 비활성화 검토.) |
 
 ## UC-S20: 브릿지 게시 (모듈 간 통신 초기화)

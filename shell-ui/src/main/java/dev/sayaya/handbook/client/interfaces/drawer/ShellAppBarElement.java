@@ -29,24 +29,26 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlContainer;
 
 /**
- * 모바일 뷰포트 전용 상단 AppBar.
+ * 데스크톱/모바일 공통 상단 AppBar.
  *
  * <p><b>책임:</b> MD3 Top App Bar (Small variant) semantic 으로 컨텍스트 정보 + 전역 액션
- * (햄버거 / 워크스페이스 셀렉터 / 테마 토글 등) 을 상단에 집약한다. {@link MobileTabsElement}
- * 는 이 AppBar 바로 아래에 stack 되어 네비게이션 축(탭)과 전역 액션 축(AppBar) 이 MD3
- * 관용대로 분리된다.</p>
+ * (워크스페이스 셀렉터 / 테마 토글 / appBarSlot 승격 메뉴 등) 을 상단에 집약한다.
+ * {@link MobileTabsElement} 는 이 AppBar 바로 아래에 stack 되어 네비게이션 축(탭)과
+ * 전역 액션 축(AppBar) 이 MD3 관용대로 분리된다.</p>
  *
  * <p><b>구조 (3 slot):</b>
  * <ul>
- *   <li>{@code .shell-app-bar-leading} — {@link MenuToggleButton} 등 네비게이션 아이콘</li>
+ *   <li>{@code .shell-app-bar-leading} — 좌측 예비 슬롯 (현재 정적 엔트리 없음; 동적 메뉴가
+ *       {@code appBarSlot="leading"} 으로 승격 가능). 햄버거 토글은 MenuRail 상단으로
+ *       이동되었다 — {@link MenuRailElement} 참조.</li>
  *   <li>{@code .shell-app-bar-center} — 워크스페이스 셀렉터 / 현재 컨텍스트 제목 등</li>
  *   <li>{@code .shell-app-bar-trailing} — {@link ThemeToggle} / 세션 액션 / overflow 등</li>
- * </ul>
- * 실제 element 이동(mount/unmount) 은 {@link DrawerElement} 가 {@link dev.sayaya.handbook.usecase.ViewportObserver}
- * 구독으로 처리한다. ShellAppBarElement 자체는 slot 제공자 역할만 한다.</p>
+ * </ul></p>
  *
- * <p><b>주의:</b> 데스크톱에서는 DrawerElement 가 {@code [hide]} 속성을 걸어 숨긴다
- * (CSS 에서 추가 2차 방어). 데스크톱 AppBar 로의 확장(agent input center 편입) 은 후속 커밋.</p>
+ * <p><b>햄버거 위치 이력(2026-04):</b> AppBar 도입 초기엔 햄버거를 leading 에 두었으나
+ * AppBar 가 {@code left: var(--shell-drawer-width)} 로 Drawer 오른쪽부터 시작하는 탓에
+ * rail expand 상태에서 햄버거가 시각적으로 우측으로 밀리는 증상이 발생. MD3 Navigation
+ * Rail 정석(레일 상단 toggle)으로 복귀해 햄버거를 {@link MenuRailElement} 상단에 mount 한다.</p>
  */
 @Singleton
 public class ShellAppBarElement implements IsElement<HTMLElement> {
@@ -70,7 +72,7 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
 
     @Inject
     ShellAppBarElement(MenuList list, MenuSelected selected, LabelProvider labelProvider,
-                       MenuToggleButton navToggle, WorkspaceSelectElement workspace, ThemeToggle themeToggle) {
+                       WorkspaceSelectElement workspace, ThemeToggle themeToggle) {
         this.selected = selected;
         this.labelProvider = labelProvider;
         _this.add(leading).add(center).add(trailing);
@@ -79,7 +81,7 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         slots.put(SLOT_TRAILING, trailing.element());
         // AppBar 는 데스크톱/모바일 공통 상시 표시 — 별도 초기 [hide] 속성 불필요.
         // SRP — AppBar 가 자기 정적 slot 을 스스로 채운다. DrawerElement 는 슬롯 지식 없음.
-        leading.element().appendChild(navToggle.element());
+        // 햄버거(MenuToggleButton)는 MenuRail 상단에 mount — AppBar left 오프셋 회귀 회피.
         center.element().appendChild(workspace.css("workspace").element());
         // 정적 엔트리에도 data-order 를 부여해 동적 메뉴와 단일 정렬 기준(order 오름차순,
         // 우선순위 높을수록 우측) 으로 통합 정렬된다. 테마 토글은 중간 우선순위("M") —
@@ -183,7 +185,7 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
         return new MenuActionEntry(menu, el);
     }
 
-    /** leading slot — DrawerElement 가 햄버거를 여기로 이동한다. */
+    /** leading slot — 현재 정적 엔트리 없음. appBarSlot="leading" 으로 승격된 동적 메뉴 수용. */
     public HTMLElement leadingSlot() { return leading.element(); }
 
     /** center slot — DrawerElement 가 WorkspaceSelect 등을 여기로 이동한다. */

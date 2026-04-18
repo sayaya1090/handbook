@@ -28,12 +28,18 @@ import static org.jboss.elemento.Elements.div;
  * 모바일 여부는 직교하는 {@code [mobile]} 속성으로 관리되며, 해당 속성이 걸리면 CSS 가
  * rail 을 하단 고정 바 레이아웃으로 전환한다.</p>
  *
+ * <p><b>햄버거 토글:</b> {@link MenuToggleButton} 을 rail 최상단 고정 자식으로 mount 한다
+ * (MD3 Navigation Rail 정석). 메뉴 아이템은 그 아래로 append 되며, {@link #clear()} 는
+ * 햄버거를 건드리지 않고 동적 자식({@link MenuRailItemElement}) 만 제거한다. 모바일
+ * ([mobile]) 에서는 CSS 로 햄버거를 숨긴다 — MobileTabs 가 네비를 대체해 실질 용도 없음.</p>
+ *
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link MenuList} — 메뉴 목록 구독</li>
  *   <li>{@link MenuRailMode} — 레일 가시성 상태 구독</li>
  *   <li>{@link ViewportObserver} — 모바일/데스크톱 뷰포트 구독</li>
  *   <li>{@link MenuRailItemFactory} — 메뉴 아이템 생성</li>
+ *   <li>{@link MenuToggleButton} — 상단 햄버거 토글</li>
  * </ul></p>
  */
 @Singleton
@@ -41,13 +47,16 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail", "menu-rail");
     private final MenuRailItemFactory factory;
     private final List<MenuRailItemElement> children = new LinkedList<>();
-    @Inject MenuRailElement(MenuList list, MenuRailMode mode, MenuRailItemFactory factory, ViewportObserver viewport) {
+    @Inject MenuRailElement(MenuList list, MenuRailMode mode, MenuRailItemFactory factory,
+                            ViewportObserver viewport, MenuToggleButton navToggle) {
         this.factory = factory;
         // 초기 가시성은 HIDE. [mobile] 을 mode 구독보다 먼저 설정하지 않으면 BehaviorSubject
         // 의 즉시 emit 으로 expand() 가 호출되어 한 프레임 동안 desktop [expand] 레이아웃
         // (좌측 컬럼) 이 노출된 뒤 [mobile] 이 붙어 하단 바로 점프하는 flash 가 생긴다.
         element().setAttribute("hide", true);
         if (viewport.isMobileNow()) element().setAttribute("mobile", true);
+        // 햄버거 토글을 rail 최상단에 고정. clear() 는 이 요소를 건드리지 않고 동적 메뉴만 제거.
+        element().appendChild(navToggle.element());
         list.distinctUntilChanged().subscribe(this::update);
         mode.distinctUntilChanged().subscribe(this::mode);
         viewport.isMobile().subscribe(this::setMobile);

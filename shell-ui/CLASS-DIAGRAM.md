@@ -169,7 +169,7 @@ classDiagram
     class DrawerElement {
         <<@Singleton>>
         +IsElement~HTMLElement~
-        +DrawerElement(DrawerMode, MenuToggleButton, MenuRailElement, ToolRailElement, WorkspaceSelectElement)
+        +DrawerElement(DrawerMode, MenuRailElement, ToolRailElement, ShellStylesheet)
         -state(state: DrawerState)
     }
     class NavigationRailElement~E~ {
@@ -192,7 +192,7 @@ classDiagram
         <<@Singleton>>
         -MenuRailItemFactory factory
         -List~MenuRailItemElement~ children
-        +MenuRailElement(MenuList, MenuRailMode, factory)
+        +MenuRailElement(MenuList, MenuRailMode, factory, ViewportObserver, MenuToggleButton)
         -update(menus: List~Menu~)
         -mode(state: MenuRailState)
     }
@@ -249,8 +249,7 @@ classDiagram
     ContentElement --> DrawerElement
     DrawerElement --> MenuRailElement
     DrawerElement --> ToolRailElement
-    DrawerElement --> MenuToggleButton
-    DrawerElement --> WorkspaceSelectElement
+    MenuRailElement --> MenuToggleButton
     NavigationRailElement <|.. MenuRailElement
     NavigationRailElement <|.. ToolRailElement
     NavigationRailItemElement <|-- MenuRailItemElement

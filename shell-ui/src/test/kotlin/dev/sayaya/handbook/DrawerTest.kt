@@ -31,10 +31,14 @@ internal class DrawerTest: GwtTestSpec({
             ).toString()
             hasHide shouldBe "false"
         }
-        Then("메뉴 토글 버튼은 AppBar leading 안에 위치한다") {
-            // AppBar 도입 후 햄버거 토글은 Drawer header 가 아닌 .shell-app-bar-leading 에 배치.
+        Then("메뉴 토글 버튼은 MenuRail 상단 직속 자식이다") {
+            // 2026-04: 햄버거 토글을 AppBar leading → MenuRail 상단으로 이관 (MD3 Navigation
+            // Rail 정석). AppBar `left: var(--shell-drawer-width)` 로 인해 rail expand 시
+            // 우측으로 밀리는 회귀 해결.
+            val railToggle = page.querySelector(".menu-rail > #menu-toggle-button")
+            railToggle shouldNotBe null
             val leadingToggle = page.querySelector(".shell-app-bar-leading #menu-toggle-button")
-            leadingToggle shouldNotBe null
+            leadingToggle shouldBe null
         }
         Then("WorkspaceSelectElement 는 AppBar center 안에 위치한다") {
             // 기존 .drawer-header 에 있던 WorkspaceSelect 를 AppBar center 로 이동.
@@ -297,11 +301,17 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "false"
             }
-            Then("AppBar leading 에 MenuToggleButton 이 이동되어 있다") {
-                val leadingHasToggle = page.evaluate(
-                    "document.querySelector('.shell-app-bar-leading #menu-toggle-button') !== null"
+            Then("모바일에서도 MenuToggleButton 은 MenuRail 상단에 DOM 으로 존재한다 (CSS 로 숨김)") {
+                // MenuRail[mobile] > #menu-toggle-button { display:none } 로 숨겨지나 DOM
+                // 자체는 유지 — 데스크톱 복귀 시 재표시 needed 없음.
+                val railHasToggle = page.evaluate(
+                    "document.querySelector('.menu-rail > #menu-toggle-button') !== null"
                 ).toString()
-                leadingHasToggle shouldBe "true"
+                railHasToggle shouldBe "true"
+                val hidden = page.evaluate(
+                    "getComputedStyle(document.querySelector('.menu-rail > #menu-toggle-button')).display"
+                ).toString()
+                hidden shouldBe "none"
             }
             Then("AppBar trailing 에 ThemeToggle 이 이동되어 있다") {
                 val trailingHasTheme = page.evaluate(

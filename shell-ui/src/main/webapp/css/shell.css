@@ -65,7 +65,8 @@ body,
     background-color: transparent;
 }
 /* `.drawer .header` 블록은 AppBar 도입(2026-04) 으로 Drawer 에서 header DOM 이 제거되어 dead
-   regulation 이 되었다. WorkspaceSelect / 햄버거 는 `.shell-app-bar-*` 로 이관. */
+   regulation 이 되었다. WorkspaceSelect 는 `.shell-app-bar-center` 로, 햄버거는 MenuRail
+   상단으로 이관 (MD3 Navigation Rail 정석 — AppBar left offset 회귀 회피). */
 .rail {
     display: flex;
     flex-direction: column;
@@ -173,6 +174,19 @@ body,
 .rail .item[selected] .expand {
     --md-list-item-label-text-color: var(--md-sys-color-primary);
     --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
+}
+/* ── MenuRail 상단 햄버거 토글 (2026-04 AppBar leading → Rail 상단 이관) ──
+   rail 은 flex-column 이고 햄버거는 MenuRailElement 가 rail 첫 자식으로 append.
+   rail[collapse] 3.5rem 에서 중앙 정렬, rail[expand] 16rem 에서는 좌측 여유로 자연 배치.
+   모바일([mobile])은 MenuRail 이 display:none 또는 bottom-bar 형태라 햄버거 실질 용도 없음. */
+.menu-rail > #menu-toggle-button {
+    flex-shrink: 0;
+    align-self: center;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+.menu-rail[mobile] > #menu-toggle-button {
+    display: none;
 }
 /* ── Rail 하단 컨트롤 (테마 토글 등) ── */
 /* ThemeToggle 은 NavigationRailItemElement 를 상속해 자기 자신이 .item 구조다.
@@ -444,7 +458,7 @@ body,
 }
 
 /* ── Shell Top AppBar (desktop + mobile 공통) ── */
-/* MD3 Small Top App Bar — leading(햄버거) + center(WorkspaceSelect) + trailing(ThemeToggle 등)
+/* MD3 Small Top App Bar — leading(예비·appBarSlot=leading 동적 메뉴) + center(WorkspaceSelect) + trailing(ThemeToggle 등)
    을 상단에 집약. 데스크톱/모바일 모두 표시되며 viewport 분기는 CSS 내부에서 처리한다
    (공간 절약, 반응형 spacing 등). 본문(body) 은 --shell-app-bar-height 만큼 padding-top 을
    받아 AppBar 아래로 밀린다. */
@@ -568,13 +582,8 @@ body:has(nav.drawer[overlay]) {
     flex-shrink: 0;
     gap: 4px;
 }
-/* 모바일에서는 MenuRail 이 display:none 이고 네비게이션을 상단 MobileTabs 가 대체하므로
-   Drawer overlay 를 여는 햄버거 버튼은 실질 용도가 없다. leading slot 자체를 숨긴다. */
-@media (max-width: 768px) {
-    .shell-app-bar-leading {
-        display: none;
-    }
-}
+/* leading 슬롯은 현재 정적 엔트리 없음(햄버거는 MenuRail 상단으로 이관). appBarSlot="leading"
+   으로 승격된 동적 메뉴만 여기에 들어오며, 비어 있을 때는 flex 의 0-width 로 자연 제거된다. */
 .shell-app-bar-center {
     flex: 1;
     min-width: 0;

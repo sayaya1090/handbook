@@ -45,8 +45,8 @@ client/
 │   │   └── ApiModule                  # Dagger 바인딩 (Repository → Api)
 │   └── drawer/                         # 드로어 + AppBar 네비게이션 UI
 │       ├── ShellAppBarElement         # MD3 Top App Bar — leading/center/trailing 3 slot.
-│       │                              #   leading: 햄버거, center: Workspace, trailing: Theme + appBarSlot=trailing 메뉴
-│       │                              #   AppBar 가 자기 slot 을 SRP 로 채움 (MenuToggleButton/WorkspaceSelect/ThemeToggle 주입)
+│       │                              #   leading: 예비(appBarSlot=leading 동적 메뉴 승격), center: Workspace, trailing: Theme + appBarSlot=trailing 메뉴
+│       │                              #   AppBar 가 자기 slot 을 SRP 로 채움 (WorkspaceSelect/ThemeToggle 주입; 햄버거는 MenuRail 로 이관)
 │       ├── MobileTabsElement          # 모바일 상단 Scrollable Tabs (md-tabs + ResponsiveOverflow 3단계 폴백)
 │       │                              #   상단정렬(order asc) leading + 하단정렬(order desc) trailing 병합
 │       ├── NavEntryFactory           # 도메인(Menu/Tool) → 네비 엔트리 DOM 매핑 팩토리 (얇은 매핑; 조립은 MenuTabBuilder)
@@ -67,7 +67,7 @@ client/
 │       │                              #   .collapse + md-item slot=start 두 곳에 sun/moon SVG morph
 │       │                              #   headline 라벨은 i18n (theme.switch_to_dark / theme.switch_to_light)
 │       │                              #   AppBar trailing 으로 승격 (ShellAppBarElement 가 주입받아 append)
-│       ├── MenuToggleButton           # SVG 햄버거 토글 — AppBar leading (@media (max-width:768px) display:none)
+│       ├── MenuToggleButton           # SVG 햄버거 토글 — MenuRail 상단 mount (MD3 정석). 모바일 rail[mobile] 에선 CSS display:none
 │       ├── CloseToolRailButton        # 도구 레일 닫기 버튼
 │       ├── WorkspaceSelectElement     # 워크스페이스 셀렉트 드롭다운 (AppBar center)
 │       └── MenuHoverElementProvider   # 호버 메뉴 아이템 위치 추적
@@ -203,7 +203,7 @@ stateDiagram-v2
 | 선택 상태는 배경 채움이 아니라 outline→filled 아이콘 스왑 | MD3 nav rail 가이드("선택 시 filled, 미선택 시 outlined")를 따름. MenuRailItemElement/ToolRailItemElement 가 `fa-light`(`.icon-outline`) 와 `fa-solid`(`.icon-filled`) 두 아이콘을 동시 렌더하고, 셀렉터 `.rail .item[selected] .icon-outline { display:none }` / `.icon-filled { display:inline-flex }` 로 가시성을 토글. `.item[selected] .expand` 의 label 색은 `--md-sys-color-primary` 로 유지되어 배경 없이도 선택 신호가 유지된다 |
 | ShellStylesheet 가 css/shell.css 를 런타임에 head 주입 | shell-ui 모듈이 자기 스타일시트의 정본 소유자가 됨. app.html 이 shell.css 를 미리 link 할 필요 없고, 빌드/배포 차원에서 shell-ui 의 src/main/webapp 만이 정본을 가짐 |
 | AppBar/MobileTabs 는 body 직속 (Composition Root 조립) | Drawer `backdrop-filter` 가 fixed 자손의 containing block 을 오염시켜 `top:0` 이 viewport 가 아닌 drawer 기준이 되는 문제 회피. DOM 조립 순서를 `ShellInitializer` 한 곳에 집중해 예측 가능성 확보 |
-| ShellAppBar 가 자기 slot 을 SRP 로 채움 | AppBar 가 MenuToggleButton/WorkspaceSelect/ThemeToggle 을 직접 주입받아 leading/center/trailing 에 배치. DrawerElement 는 AppBar 내부 구조를 몰라도 됨 |
+| ShellAppBar 가 자기 slot 을 SRP 로 채움 | AppBar 가 WorkspaceSelect/ThemeToggle 을 직접 주입받아 center/trailing 에 배치. leading 은 appBarSlot 승격 전용 예비 슬롯. DrawerElement 는 AppBar 내부 구조를 몰라도 됨. 햄버거는 MenuRail 상단으로 이관 (rail expand 시 우측 밀림 회귀 해결, 2026-04) |
 | `Menu.appBarSlot` 으로 AppBar 승격 선언 | 세션 액션성 메뉴(login 등)를 네비게이션 축에서 뺀다. O/C — slot 이름 → HTMLElement 매핑을 Map 으로 관리해 "leading"/"center"/"trailing" 3종 모두 확장 대응 가능 |
 | HighlightEffect 공통화 (observe + apply) | `.ui-highlight` 감지용 MutationObserver 를 `HighlightEffect.observe` 로 캡슐화. MenuRailItem / MobileTabs 의 md-primary-tab / ShellAppBar 의 `.shell-app-bar-action` 이 동일 추상에만 의존 (Dependency Inversion) |
 | MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuView` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
@@ -275,7 +275,7 @@ tasks.jar {
   3. 스크롤 — 상단정렬도 넘치면 `md-tabs[scrollable]` 가로 스크롤 + sticky trailing overflow.
 - **드릴인**: 도구 2개 이상 탭 선택 → `ToolRailMode=EXPAND` → 하단 바 slide-up. 드릴백은 `CloseToolRailButton`.
 - **Agent input dock**: `.agent-input-container` 가 모바일에서도 `bottom:0` 고정. Fitts 원칙상 가장 빈번한 입력은 엄지 도달 최적 위치.
-- **햄버거 제거**: 모바일에선 `.shell-app-bar-leading { display:none }` — MenuRail 숨김 + MobileTabs 대체로 Drawer overlay 실질 용도 없음.
+- **햄버거 위치**: MenuRail 상단 `#menu-toggle-button` (MD3 Navigation Rail 정석). 모바일 `.menu-rail[mobile]` 에서는 CSS `display:none` — MenuRail 전체가 하단 바/display:none 으로 전환되고 MobileTabs 가 네비 대체.
 - **agent-command highlight**: `HighlightEffect.observe` 공통화로 MenuRailItem / `.menu-tab` / `.shell-app-bar-action` 모두 `.ui-highlight` 수신 시 TooltipCard 로 라벨 강조.
 - **최소 뷰포트**: 360px.
 

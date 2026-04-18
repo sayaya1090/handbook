@@ -289,7 +289,7 @@ Active Item  → corner-full (pill)
 
 모바일 핵심 변경:
 - MenuRail 은 `.menu-rail[mobile] { display:none }` — 네비는 상단 MobileTabs 가 전담.
-- 햄버거(Drawer overlay 트리거)는 `.shell-app-bar-leading` @media (max-width:768px) `display:none` — 모바일에서 Drawer overlay 가 실질 용도 없음.
+- 햄버거 토글은 `.menu-rail > #menu-toggle-button` (MD3 Navigation Rail 정석 위치). 모바일(`.menu-rail[mobile]`) 에서는 CSS `display:none` — 네비가 MobileTabs 로 이관되어 Drawer overlay 실질 용도 없음.
 - `MobileTabsElement` 3단계 폴백: 평면 → overflow 팝업 → 스크롤. `bottom=true` 메뉴는 overflow 로 먼저 수렴.
 
 ### 주요 영역 치수
