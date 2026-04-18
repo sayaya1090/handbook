@@ -34,3 +34,14 @@ data:
           max-idle-time: 30m
           validation-query: SELECT 1
     # management / logging / metrics 는 observability fragment 에서 import 됨
+    # 디버깅 임시 — /workspaces 500 원인 추적용. 원인 수정 후 되돌릴 것.
+    logging:
+      level:
+        dev.sayaya.handbook: DEBUG
+        org.springframework.web: DEBUG
+        org.springframework.data.r2dbc: DEBUG
+    server:
+      error:
+        include-message: always
+        include-stacktrace: always
+        include-exception: true

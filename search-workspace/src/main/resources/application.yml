@@ -25,3 +25,12 @@ management:
 logging:
   pattern:
     console: "%d{ISO8601} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    dev.sayaya.handbook: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+server:
+  error:
+    include-message: always
+    include-stacktrace: on_param
+    include-exception: true
