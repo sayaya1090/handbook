@@ -1,12 +1,17 @@
-@import url('https://fonts.googleapis.com/css?family=Major+Mono+Display|Montserrat|Noto+Sans+KR|IBM+Plex+Mono|Nanum+Gothic+Coding|Source+Serif+4|Material+Icons|Material+Symbols+Outlined&display=swap');
+/* Noto Sans Mono: variable wdth(62.5~100) + wght(400/500/700) 로 로딩.
+   font-stretch 75% 로 라틴을 condensed 표시. 한글(Nanum Gothic Coding) 은 CJK
+   정사각형이라 wdth 축 영향 없음 — 라틴만 narrow 되고 한글은 기본 폭 유지.
+   위계는 typescale 크기 차이(2rem→1rem→0.875rem→0.75rem)로 유지한다. */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wdth,wght@62.5..100,400;62.5..100,500;62.5..100,700&family=Nanum+Gothic+Coding&family=Material+Icons&family=Material+Symbols+Outlined&display=swap');
 :root {
-    --md-ref-typeface-plain:  'IBM Plex Mono', 'Nanum Gothic Coding', monospace;
-    --md-sys-typescale-headline-large-font: Montserrat, 'Noto Sans KR', serif;
-    --md-sys-typescale-headline-small-font: Montserrat, 'Noto Sans KR', serif;
-    --md-sys-typescale-label-large-font: Montserrat, 'Noto Sans KR', serif;
-    --md-sys-typescale-label-small-font: Montserrat, 'Noto Sans KR', serif;
-    --md-sys-typescale-body-large-font:  'IBM Plex Mono', 'Nanum Gothic Coding', monospace;
-    --md-sys-typescale-body-medium-font: 'IBM Plex Mono', 'Nanum Gothic Coding', monospace;
+    --md-ref-typeface-plain: 'Noto Sans Mono', 'Nanum Gothic Coding', monospace;
+    --md-sys-typescale-headline-large-font: var(--md-ref-typeface-plain);
+    --md-sys-typescale-headline-small-font: var(--md-ref-typeface-plain);
+    --md-sys-typescale-label-large-font: var(--md-ref-typeface-plain);
+    --md-sys-typescale-label-small-font: var(--md-ref-typeface-plain);
+    --md-sys-typescale-body-large-font: var(--md-ref-typeface-plain);
+    --md-sys-typescale-body-medium-font: var(--md-ref-typeface-plain);
+    font-stretch: 75%;
     --md-sys-typescale-body-large-size: 1rem;
     --md-sys-typescale-body-medium-size: 0.875rem;
     --md-sys-typescale-body-small-size: 0.6875rem;
