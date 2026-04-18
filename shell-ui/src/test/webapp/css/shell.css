@@ -194,6 +194,16 @@ body,
     --md-list-item-label-text-color: var(--md-sys-color-primary);
     --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
 }
+/* ── 비허용 메뉴 (SessionState 미충족) disabled 렌더 ──
+   MenuRailItemElement.applyVisibility 가 [disabled] 속성을 토글한다. 클릭 자체는
+   JS 핸들러가 막지 않고 CTA 폴백으로 라우팅 — pointer-events:none 은 사용하지 않는다. */
+.rail .item[disabled] {
+    opacity: 0.38;
+    cursor: pointer; /* CTA 폴백 클릭 가능 유지 */
+}
+.rail .item[disabled]:hover {
+    opacity: 0.5;
+}
 /* ── Drawer 상단 햄버거 토글 (2026-04-18: MenuRail → Drawer 직속 이관) ──
    햄버거는 drawer flex-column 의 **첫 자식** 으로 마운트된다 (DrawerElement 생성자 참조).
    이유: MenuRail 이 HIDE(width:0 + overflow:hidden) 상태여도 drawer 자체가 visible 인

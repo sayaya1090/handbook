@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-04-18: DB orphan+users drift 정리 실행 → workspace/group CASCADE, users DROP+재적용
 - 2026-04-18: 재인증 후 dev 배포+DB drift 실측 → d9ebfb7 전파확인, users 스키마 drift 7개, orphan created_by 13건
 - 2026-04-18: 3커밋 배포고착 재조사 → ARC split-brain 재확인 + users drift 컬럼diff
 - 2026-04-18: Phase1a/1b/2b 배포 검증 → GHA queued, infra rev 8561eb3, users drift 발견

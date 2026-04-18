@@ -12,7 +12,6 @@ import dev.sayaya.handbook.client.usecase.SessionPollingService;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
-import dev.sayaya.handbook.client.usecase.WorkspaceOnboardingBootstrapper;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.LabelProvider;
@@ -67,7 +66,6 @@ public class ShellInitializer {
     private final ContentElement contentElement;
     private final WorkspaceEventListener workspaceEventListener;
     private final SessionPollingService sessionManager;
-    private final WorkspaceOnboardingBootstrapper workspaceOnboarding;
     private final Observer<Progress> progressObserver;
     private final Observer<Render> renderObserver;
     private final Observer<String> uriObserver;
@@ -86,7 +84,6 @@ public class ShellInitializer {
             ContentElement contentElement,
             WorkspaceEventListener workspaceEventListener,
             SessionPollingService sessionManager,
-            WorkspaceOnboardingBootstrapper workspaceOnboarding,
             Observer<Progress> progressObserver,
             Observer<Render> renderObserver,
             Observer<String> uriObserver,
@@ -104,7 +101,6 @@ public class ShellInitializer {
         this.contentElement = contentElement;
         this.workspaceEventListener = workspaceEventListener;
         this.sessionManager = sessionManager;
-        this.workspaceOnboarding = workspaceOnboarding;
         this.progressObserver = progressObserver;
         this.renderObserver = renderObserver;
         this.uriObserver = uriObserver;
@@ -119,7 +115,9 @@ public class ShellInitializer {
         scriptManager.initialize();
         workspaceEventListener.initialize();
         sessionManager.initialize();
-        workspaceOnboarding.initialize();
+        // WorkspaceOnboardingBootstrapper 제거됨 (Phase C) — 세션 상태 기반
+        // MenuRailItemElement.applyVisibility + CTA 폴백이 빈 워크스페이스 사용자를
+        // 명시 클릭으로 workspace-ui 로 유도. synthetic push 불필요.
         // Composition Root — DOM 최상위 배치 순서를 한 곳에서 명시한다.
         // AppBar(최상단 고정) → MobileTabs(AppBar 바로 아래) → Progress(상단 indicator)
         // → Content(Drawer + 본문). Drawer 의 backdrop-filter 가 containing block 을
