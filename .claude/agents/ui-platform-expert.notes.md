@@ -6,6 +6,8 @@
 
 ## 요청 로그
 
+- 2026-04-18: expand 에서 .collapse 가 좌상단 노출 + 햄버거 마진 없음 지적 → .rail[expand] .item .collapse 를 display:none 으로 (visibility:hidden + absolute 는 position:absolute 가 흐름에서 빼내 (0,0) 에 잔류 렌더), 모바일 override 도 display 키 추가
+- 2026-04-18: 메뉴 아이콘 absolute inset:0 → display 토글 롤백 → inset:0 이 md-item 전체(16rem×48px) 로 늘어나 레이블과 겹침 확인, (A) 원복 채택 / 햄버거 flex-start 유지
 - 2026-04-18: outline/filled 아이콘 display:none → opacity+visibility 크로스페이드 전환 → main/test shell.css 동기화 + DrawerTest display → visibility 어설션 업데이트, 방식 변형 C (absolute inset:0 스택)
 - 2026-04-18: 햄버거 고정 재확인 + 메뉴 아이콘 2개 오버랩 → shell.css 에 `align-self:flex-start + margin-left:8px` 적용 확인, md-item start slot 단일 아이콘 구조 확인 (outlined/filled 2-icon 없음)
 - 2026-04-18: MenuRail collapse/expand 아이콘 시프트 → `.rail[expand] padding 0 0.6rem + align-items:flex-start` 제거 + 햄버거 `align-self:center → flex-start + margin-left:8px` 로 icon center x=28px 고정
@@ -23,7 +25,8 @@
 - **AppBar `left: var(--shell-drawer-width)` + 좌측 slot mount 조합 주의** — AppBar 가 drawer 우측부터 시작하는 MD3 Top App Bar + Navigation Rail 병치 디자인에서, AppBar leading slot 에 mount 된 요소는 drawer 상태에 따라 viewport 좌표가 같이 이동. drawer toggle 처럼 "drawer 에 소속된 것처럼" 보여야 하는 요소는 AppBar leading 금지, Rail 상단 mount 가 정답 (MD3 Navigation Rail 정석). (2026-04-18 햄버거 회귀)
 - **부분 봉합 회귀 주의** — 모바일 한정 `display:none` 으로 증상 봉합 시 데스크톱 경로는 그대로 남음. 증상이 "뷰포트 한쪽에서만 안 보인다" 인지 "양쪽 다 고친 거" 인지 커밋 메시지에 명시 (3440cfe 의 "모바일 햄버거 숨김" 이 사용자에겐 "햄버거 위치 정리" 로 인식된 사례).
 - **Rail collapse/expand 는 "폭만 변하고 아이콘 x 좌표는 고정"** 이 MD3 정석. `.item .collapse`(margin 8px, 40px 버튼) 과 `md-item` slot=start(padding-inline-start 16px, 24px 아이콘) 의 icon center 가 둘 다 x=28px 에 맞도록 설계됨. `.rail[expand]` 에 `padding-left` / `align-items:flex-start` 류의 오프셋을 추가하면 이 정렬이 깨져 아이콘이 전환 시 시프트된다. 햄버거도 `align-self:center` 대신 `align-self:flex-start + margin-left:8px` 로 icon center=28px 고정 필요. (2026-04-18)
-- **outline/filled 아이콘 토글은 display:none 금지 — absolute overlap + visibility 전환**. `display:none` 은 flex 재계산 → 1px 시프트 + MD3 fade-through 위배. 두 `<i>` 에 `position:absolute; inset:0` 로 bbox 공유 후 opacity/visibility 200ms emphasized-decelerate 크로스페이드. Playwright 검증은 `getComputedStyle(...).visibility` 로 "visible" / "hidden" 비교 (toBeVisible() 도 visibility:hidden 을 invisible 로 인식). md-icon-button host / md-item light DOM `<i>` 에만 CSS 걸면 되므로 shadow DOM 경계 회피. (2026-04-18)
+- **`visibility:hidden` + `position:absolute` 로 숨기면 여전히 (0,0) 에 배치되어 "딱 붙어 보인다"** (2026-04-18). `.rail[expand] .item .collapse` 를 `position:absolute; visibility:hidden` 로 숨겼더니 사용자 눈에 "SVG 아이콘이 탑/레프트 마진 없이 딱 붙어 있다"고 인식됨. 원인: position:absolute 는 containing block (`.item` = position:relative) 의 top-left (0,0) 에 그대로 배치되고, visibility:hidden 은 *색 없음* 정도만 적용되므로 버튼 host 영역 자체가 (0,0)-size40px 에 클릭/호버 영역까지 실재. shadow DOM 내부 state layer · focus ring 이 잔상으로 비칠 수도 있음. **해결: `display: none` 이 유일하게 안전**. 모바일 override (`.rail[mobile][expand] .item .collapse`) 에는 반드시 `display: flex` 를 명시해 데스크톱 규칙을 되돌린다. `visibility` 는 "레이아웃은 유지하면서 색만 숨김" 이라 이 맥락에선 적합하지 않다.
+- **outline/filled 아이콘 absolute inset:0 오버랩 금지 (2026-04-18 철회)**. `<i>` 의 positioning context 는 light DOM nearest positioned ancestor — `md-icon-button` host 의 shadow 내부 `.touch-target` 이나 `md-item` 의 shadow 내부 `.list-item` 은 light DOM `<i>` 의 containing block 이 **되지 않는다**. 실제로는 `.rail .item` (position:relative) 이 우선 매치 → `inset:0` 이 rail item 전체(16rem×64px) 로 아이콘을 늘려 expand 모드에서 레이블과 겹침. `md-item[slot=start]` 안의 light DOM 자식도 slot 의 `<slot>` element 가 아니라 host 의 light DOM tree 로 이어지므로 동일. 해결: `display:none` 토글이 정석. 1px 시프트는 수용 가능한 절충 — rail item 전체 붕괴보다 훨씬 낮은 리스크. 대안으로 wrapper `<span class="rail-icon-stack">` 를 IconElementBuilder 레벨에서 삽입할 수 있으나 여러 호출 지점(MenuRailItem/ToolRailItem/MenuTabBuilder) 전수 수정 필요하므로 별도 과제로 분리.
 
 ## 내부 체크리스트
 

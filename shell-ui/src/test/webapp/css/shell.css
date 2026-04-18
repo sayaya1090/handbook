@@ -146,10 +146,13 @@ body,
 }
 .rail[expand] .item .collapse {
     /* expand mode 에서는 md-item 의 slot="start" 아이콘이 메뉴 좌측에 따로 그려지므로
-       .collapse 의 아이콘 버튼은 visibility:hidden 으로 숨긴다. position:absolute 만으로는
-       흐름에서 빠질 뿐 여전히 렌더링되어 두 아이콘이 1픽셀 정도 겹쳐 ghost 처럼 보였음. */
-    position: absolute;
-    visibility: hidden;
+       .collapse 의 아이콘 버튼은 완전히 제거한다. `visibility:hidden + position:absolute`
+       조합은 버튼 host 를 `.item`(position:relative) 의 (0,0) 좌상단에 size=40px 로 유지한
+       채 "색만 숨김" 이라, 사용자 눈에는 "아이콘 버튼이 탑/레프트 마진 없이 딱 붙어 있다"
+       로 인식됐다 (shadow DOM state layer/focus ring 잔상 + 클릭 영역 실재). display:none
+       으로 전환해 흐름에서 완전히 제거. 모바일 하단 바에서는 반대로 이 규칙을 되돌려야
+       하므로 `.rail[mobile][expand] .item .collapse` override 에 `display: flex` 를 명시. */
+    display: none;
 }
 .rail[expand] .item .expand {
     display: flex;
@@ -166,46 +169,26 @@ body,
    동시 렌더하고 .icon-outline / .icon-filled 로 구분한다. ThemeToggle 의 sun/moon SVG
    는 이 클래스를 쓰지 않으므로 영향받지 않는다.
 
-   ── 2026-04-18 display:none 토글 → opacity + visibility 크로스페이드 ──
-   기존 `display:none` 은 미선택 아이콘을 레이아웃에서 완전히 제거 → selected 토글
-   시 flex 레이아웃이 재계산되어 아이콘 좌표가 1px 흔들리고, MD3 motion 가이드의
-   fade-through 가 아니라 하드 스왑이라 selection feedback 이 끊겨 보였다.
-   해결: 두 `<i>` 를 같은 bbox 에 stack — `<i>` 자체를 `position:absolute; inset:0`
-   로 부모 박스 전체에 겹쳐 두 아이콘이 동일 중심을 공유. 부모는 md-icon-button host
-   (`.collapse`, shadow 내부가 relative 제공) 와 md-item host (slot="start" 가 light DOM
-   자식으로 투영되며 slot 부모는 md-item 이 shadow 에서 flex 배치) 두 종류라
-   positioning context 는 두 케이스 모두 자연히 확보된다 (md-icon-button 의
-   `.touch-target` 이 relative, md-item 의 `.list-item` 이 relative).
-   토글은 `opacity` + `visibility` 200ms cubic-bezier(.2,0,0,1) (MD3
-   emphasized-decelerate). `visibility:hidden` 은 Playwright `toBeVisible()` 에서
-   invisible 로 인식되고 `getComputedStyle(...).visibility` 도 "hidden" 문자열로 검증
-   가능. */
-.rail .item .icon-outline,
+   ── 2026-04-18 absolute inset:0 오버랩 롤백 → display 토글 복귀 ──
+   시도: 두 `<i>` 를 `position:absolute; inset:0` 로 bbox 공유시켜 크로스페이드.
+   문제: `<i>` 의 containing block 은 light DOM nearest positioned ancestor —
+   md-icon-button host 나 md-item host 의 shadow 내부 `.touch-target` / `.list-item`
+   은 light DOM 자식의 positioning context 가 되지 않는다. 실제로는 `.rail .item`
+   (position:relative) 이 매치되어 아이콘이 rail item 전체(16rem × 64px) 에 늘어나고
+   expand 모드에서 레이블과 겹쳐 "레일 아이템이 이상" 한 상태가 됨.
+   복귀: `.icon-filled` 는 기본 `display:none`, [selected] 일 때만 표시. 반대로
+   `.icon-outline` 은 기본 표시, [selected] 일 때 숨김. 1px 시프트는 수용 절충.
+   (MD3 fade-through 를 원하면 wrapper `<span class="rail-icon-stack">` 를 Java 측
+   IconElementBuilder 에 넣어 진짜 positioning context 를 만드는 것이 정석이나,
+   호출 지점 전수 수정 필요하므로 별도 과제.) */
 .rail .item .icon-filled {
-    position: absolute;
-    inset: 0;
-    display: inline-flex;
-    place-items: center;
-    place-content: center;
-    transition-property: opacity, visibility;
-    transition-duration: var(--md-sys-motion-duration-medium2, 200ms);
-    transition-timing-function: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(.2, 0, 0, 1));
-}
-.rail .item .icon-outline {
-    opacity: 1;
-    visibility: visible;
-}
-.rail .item .icon-filled {
-    opacity: 0;
-    visibility: hidden;
+    display: none;
 }
 .rail .item[selected] .icon-outline {
-    opacity: 0;
-    visibility: hidden;
+    display: none;
 }
 .rail .item[selected] .icon-filled {
-    opacity: 1;
-    visibility: visible;
+    display: inline-block;
 }
 .rail .item[selected] .expand {
     --md-list-item-label-text-color: var(--md-sys-color-primary);
@@ -482,8 +465,11 @@ body,
 }
 /* 데스크톱 [expand] 모드에선 md-item (`.expand` slot) 을 쓰므로 `.collapse` 를 숨기지만,
    모바일 하단 바에선 반대로 `.collapse` 아이콘 버튼이 유일한 시각 표현이다. 데스크톱
-   규칙을 되돌려 `.collapse` 를 노출시키고 `.expand` 를 숨긴다. */
+   규칙 (.rail[expand] .item .collapse { display:none }) 을 되돌려 `.collapse` 를 노출
+   시키고 `.expand` 를 숨긴다. display 키를 반드시 명시할 것 — 데스크톱 규칙을 visibility
+   에서 display 로 바꿨기 때문에 여기서도 display 를 복원해야 한다. */
 .rail[mobile][expand] .item .collapse {
+    display: flex;
     position: static;
     visibility: visible;
 }

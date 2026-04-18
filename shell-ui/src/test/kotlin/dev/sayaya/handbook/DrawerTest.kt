@@ -163,17 +163,16 @@ internal class DrawerTest: GwtTestSpec({
 
         Then("미선택 아이템은 .icon-outline 이 보이고 .icon-filled 는 숨겨진다") {
             // 초기 상태: 아직 아무 메뉴도 선택되지 않은 아이템 기준.
-            // 2026-04-18 display:none 토글 → opacity+visibility 크로스페이드로 변경되어
-            // 두 아이콘 모두 항상 레이아웃에 존재한다 (bbox 공유). 가시성은 visibility
-            // 속성으로 검증한다. shell.css 의 `.icon-outline` / `.icon-filled` 규칙 참조.
-            val outlineVisibility = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).visibility"
+            // 2026-04-18 absolute inset:0 오버랩 롤백 (레일 아이템 붕괴 회귀) → display 토글 복귀.
+            // .icon-outline 은 기본 inline-block, .icon-filled 는 display:none. [selected] 에서 반전.
+            val outlineDisplay = page.evaluate(
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).display"
             ).toString()
-            val filledVisibility = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-filled')).visibility"
+            val filledDisplay = page.evaluate(
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-filled')).display"
             ).toString()
-            filledVisibility shouldBe "hidden"
-            outlineVisibility shouldBe "visible"
+            filledDisplay shouldBe "none"
+            outlineDisplay shouldNotBe "none"
         }
         Then("모든 네비게이션 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
             // 각 네비 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 렌더 → navCount * 2.
@@ -208,16 +207,15 @@ internal class DrawerTest: GwtTestSpec({
                 selected.count() shouldBe 1
             }
             Then("선택 아이템은 .icon-filled 가 보이고 .icon-outline 은 숨겨진다") {
-                // 2026-04-18: display 토글 → visibility 크로스페이드로 변경. 두 아이콘이
-                // 항상 레이아웃에 존재하므로 가시성은 visibility 로 검증.
-                val outlineVisibility = page.evaluate(
-                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-outline')).visibility"
+                // 2026-04-18: absolute inset:0 오버랩 롤백 → display 토글 복귀.
+                val outlineDisplay = page.evaluate(
+                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-outline')).display"
                 ).toString()
-                val filledVisibility = page.evaluate(
-                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-filled')).visibility"
+                val filledDisplay = page.evaluate(
+                    "getComputedStyle(document.querySelector('.menu-rail .item[selected] .icon-filled')).display"
                 ).toString()
-                outlineVisibility shouldBe "hidden"
-                filledVisibility shouldBe "visible"
+                outlineDisplay shouldBe "none"
+                filledDisplay shouldNotBe "none"
             }
         }
 
@@ -432,14 +430,18 @@ internal class DrawerTest: GwtTestSpec({
             hasExpand shouldBe "true"
         }
         Then("모바일 [expand] 에서도 .item .collapse (아이콘 버튼) 이 visible 이어야 한다") {
-            // Regression guard: 데스크톱 .rail[expand] .item .collapse { visibility: hidden } 규칙이
+            // Regression guard: 데스크톱 .rail[expand] .item .collapse { display: none } 규칙이
             // 모바일 [mobile][expand] 에도 매칭되면 하단 바의 아이콘이 모두 사라져 빈 버튼만 남는다.
-            // 모바일 전용 override (.rail[mobile][expand] .item .collapse { visibility: visible }) 가
-            // 필요하다.
+            // 모바일 전용 override (.rail[mobile][expand] .item .collapse { display:flex; visibility:visible })
+            // 가 필요하다. display + visibility 양쪽 검증.
             val vis = page.evaluate(
                 "getComputedStyle(document.querySelector('.menu-rail .item .collapse')).visibility"
             ).toString()
             vis shouldBe "visible"
+            val disp = page.evaluate(
+                "getComputedStyle(document.querySelector('.menu-rail .item .collapse')).display"
+            ).toString()
+            disp shouldNotBe "none"
         }
         Then("MobileTabs md-primary-tab 의 가시 크기가 0 보다 크다 (아이콘 + 라벨 렌더 보장)") {
             // 모바일에서는 MenuRail 이 아닌 MobileTabsElement 가 메뉴를 노출한다.
