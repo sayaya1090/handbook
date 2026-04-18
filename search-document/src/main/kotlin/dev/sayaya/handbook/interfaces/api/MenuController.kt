@@ -17,7 +17,7 @@ class MenuController {
             .order("A")
             .icon("fa-database")
             .iconType("sharp")
-            .script("js/data.nocache.js")
+            .script("js/data/data.nocache.js")
             .tools(
                 Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
             ).url("^documents")

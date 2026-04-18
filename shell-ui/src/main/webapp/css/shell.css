@@ -608,6 +608,12 @@ body[data-scrolled] .menu-tabs {
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
+    /* md-tabs/md-primary-tab 컨테이너 색을 투명으로 눌러 상위 .menu-tabs 의 glass 배경이
+       그대로 비치도록 한다. Material Web 기본값은 surface 계열 solid 라 테마 전환 시
+       상위 glass 와 전환 타이밍이 어긋나 튀어 보인다. */
+    --md-primary-tab-container-color: transparent;
+    --md-secondary-tab-container-color: transparent;
+    background-color: transparent;
 }
 .menu-tabs-bar[scrollable] {
     /* 3단계 폴백 시각 힌트 — 스크롤 가능 상태에서만 엣지 페이드 처리할 여지 */
@@ -616,6 +622,8 @@ body[data-scrolled] .menu-tabs {
 .menu-tab {
     min-width: 64px;
     max-width: 96px;
+    --md-primary-tab-container-color: transparent;
+    --md-secondary-tab-container-color: transparent;
 }
 .menu-tab-label {
     font-family: var(--md-sys-typescale-label-medium-font, 'Roboto', sans-serif);

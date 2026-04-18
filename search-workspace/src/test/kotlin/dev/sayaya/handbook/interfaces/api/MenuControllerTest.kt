@@ -38,7 +38,7 @@ class MenuControllerTest : BehaviorSpec({
                 menu.title() shouldBe "workspaces"
                 menu.order() shouldBe "S"
                 menu.bottom() shouldBe true
-                menu.script() shouldBe "js/workspace.nocache.js"
+                menu.script() shouldBe "js/workspace/workspace.nocache.js"
             }
             Then("tools 목록은 'workspace info', 'groups', 'permissions' 순서로 3개다") {
                 val toolTitles = MenuController.MENU.tools().map { it.title() }
