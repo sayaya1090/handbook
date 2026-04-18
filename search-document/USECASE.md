@@ -56,7 +56,7 @@ sequenceDiagram
     participant Shell as Shell-UI
 
     GW->>MC: GET /menus
-    MC-->>GW: Menu(title="documents", icon="fa-database", script="js/data.nocache.js")
+    MC-->>GW: Menu(title="documents", icon="fa-database", script="js/data/data.nocache.js")
     GW->>GW: 다른 서비스의 메뉴와 합산
     GW-->>Shell: 전체 메뉴 목록
     Shell->>Shell: 사이드바에 "documents" 메뉴 렌더링
@@ -89,7 +89,7 @@ sequenceDiagram
 |------|------|
 | **액터** | Gateway (시스템) |
 | **선행조건** | search-document 서비스 실행 중 |
-| **정상 흐름** | 1. Gateway가 `GET /menus`를 호출한다.<br>2. `MenuController`가 documents 메뉴 정보를 반환한다.<br>3. title="documents", icon="fa-database", order="A", script="js/data.nocache.js".<br>4. Gateway가 다른 서비스의 메뉴와 합산하여 Shell에 전달한다. |
+| **정상 흐름** | 1. Gateway가 `GET /menus`를 호출한다.<br>2. `MenuController`가 documents 메뉴 정보를 반환한다.<br>3. title="documents", icon="fa-database", order="A", script="js/data/data.nocache.js".<br>4. Gateway가 다른 서비스의 메뉴와 합산하여 Shell에 전달한다. |
 
 ## UC-SD4: 전문 검색
 

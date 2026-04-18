@@ -69,7 +69,7 @@ sequenceDiagram
     GW->>Ctrl: GET /menus (WebClient)
     Note over Ctrl: 정적 Menu 객체 반환
     Ctrl-->>GW: 200 OK + workspaces 메뉴
-    Note over Ctrl: title="workspaces", order="S",<br/>icon="fa-briefcase", script="js/workspace.nocache.js",<br/>tools: workspace info, groups, permissions
+    Note over Ctrl: title="workspaces", order="S",<br/>icon="fa-briefcase", script="js/workspace/workspace.nocache.js",<br/>tools: workspace info, groups, permissions
 ```
 
 ---

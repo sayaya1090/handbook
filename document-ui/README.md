@@ -2,7 +2,7 @@
 
 스프레드시트 기반 문서 편집기 (GWT). Handsontable을 사용하여 타입별 문서를 테이블 형태로 편집한다.
 GWT 모듈명은 `rename-to="data"`로 설정되어 있다.
-Shell이 `ModuleScriptManager`로 `js/data.nocache.js`를 동적 로딩하여 실행한다.
+Shell이 `ModuleScriptManager`로 `js/data/data.nocache.js`를 동적 로딩하여 실행한다.
 
 ---
 

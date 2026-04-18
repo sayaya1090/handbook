@@ -14,7 +14,7 @@ sequenceDiagram
     participant CF as ColumnFactory
     participant Sheet as SpreadsheetElement
 
-    Shell->>App: js/data.nocache.js 로딩
+    Shell->>App: js/data/data.nocache.js 로딩
     App->>App: DaggerComponent.create()
     App->>App: WindowStateProviderBridge.register()
     App->>TA: list()
@@ -143,7 +143,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 워크스페이스 선택 완료, Shell이 document-ui 모듈을 로딩 |
-| **정상 흐름** | 1. Shell이 `js/data.nocache.js`를 동적 로딩한다.<br>2. TypeApi로 타입 목록을 가져와 탭으로 표시한다.<br>3. 첫 번째 타입이 자동 선택되고 `ColumnFactory`가 속성 기반으로 컬럼을 생성한다.<br>4. DocumentApi로 해당 타입의 문서를 검색하여 스프레드시트에 렌더링한다. |
+| **정상 흐름** | 1. Shell이 `js/data/data.nocache.js`를 동적 로딩한다.<br>2. TypeApi로 타입 목록을 가져와 탭으로 표시한다.<br>3. 첫 번째 타입이 자동 선택되고 `ColumnFactory`가 속성 기반으로 컬럼을 생성한다.<br>4. DocumentApi로 해당 타입의 문서를 검색하여 스프레드시트에 렌더링한다. |
 | **결과** | Handsontable 스프레드시트에 문서가 테이블 형태로 표시된다. |
 
 ## UC-D2: 문서 생성

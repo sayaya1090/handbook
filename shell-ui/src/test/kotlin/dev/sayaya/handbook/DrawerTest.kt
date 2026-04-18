@@ -715,6 +715,14 @@ internal class DrawerTest: GwtTestSpec({
                 )
                 linked shouldBe true
             }
+            Then("md-primary-tab 의 container-color 가 transparent 여서 AppBar glass 배경이 비친다") {
+                // Material Web 기본 surface 색이 상위 glass 를 덮으면 테마 전환 시 튀어 보이는 회귀 방지.
+                val tabBg = page.evaluate(
+                    "(() => { var t = document.querySelector('.menu-tabs md-primary-tab'); " +
+                    "return t ? getComputedStyle(t).getPropertyValue('--md-primary-tab-container-color').trim() : null; })()"
+                )?.toString()
+                tabBg shouldBe "transparent"
+            }
             // 원복
             page.setViewportSize(1280, 720)
             Thread.sleep(200)

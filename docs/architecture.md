@@ -778,7 +778,7 @@ client/
 
 ### 19. Document-UI 모듈
 
-**역할:** 스프레드시트 기반 문서 편집기 (GWT). Handsontable JS 라이브러리를 JsInterop으로 래핑하여, 타입별 문서를 테이블 형태로 편집한다. Shell이 `js/data.nocache.js`를 동적 로딩한다.
+**역할:** 스프레드시트 기반 문서 편집기 (GWT). Handsontable JS 라이브러리를 JsInterop으로 래핑하여, 타입별 문서를 테이블 형태로 편집한다. Shell이 `js/data/data.nocache.js`를 동적 로딩한다.
 
 **계층 구조:**
 

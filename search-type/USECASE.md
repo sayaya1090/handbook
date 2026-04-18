@@ -61,7 +61,7 @@ sequenceDiagram
     GW->>Ctrl: GET /menus (WebClient)
     Note over Ctrl: 정적 Menu 객체 반환
     Ctrl-->>GW: 200 OK + types 메뉴
-    Note over Ctrl: title="types", order="B",<br/>icon="fa-cubes", script="js/type.nocache.js",<br/>tool: "View as Graph"
+    Note over Ctrl: title="types", order="B",<br/>icon="fa-cubes", script="js/type/type.nocache.js",<br/>tool: "View as Graph"
 ```
 
 ---
@@ -90,7 +90,7 @@ sequenceDiagram
 |------|------|
 | **액터** | Gateway (MenuService) |
 | **선행조건** | search-type 서비스 구동 중 |
-| **정상 흐름** | 1. Gateway의 `MenuService`가 `GET /menus`를 호출한다.<br>2. `MenuController`가 정적으로 정의된 `types` 메뉴를 반환한다.<br>3. 메뉴에는 title("types"), order("B"), icon("fa-cubes"), script("js/type.nocache.js"), tool("View as Graph"), URL 패턴("^types")이 포함된다. |
+| **정상 흐름** | 1. Gateway의 `MenuService`가 `GET /menus`를 호출한다.<br>2. `MenuController`가 정적으로 정의된 `types` 메뉴를 반환한다.<br>3. 메뉴에는 title("types"), order("B"), icon("fa-cubes"), script("js/type/type.nocache.js"), tool("View as Graph"), URL 패턴("^types")이 포함된다. |
 | **결과** | 200 OK + types 메뉴 (Gateway에서 다른 서비스 메뉴와 병합) |
 
 ## UC-ST4: 타입 버전 히스토리 조회
