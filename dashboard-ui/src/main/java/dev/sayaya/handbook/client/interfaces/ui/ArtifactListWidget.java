@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.usecase.ArtifactList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import lombok.experimental.Delegate;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
@@ -79,20 +80,17 @@ public class ArtifactListWidget implements IsElement<elemental2.dom.HTMLElement>
                 }
             }
 
-            var row = div().css("dash-artifact-row")
+            var rowBuilder = div().css("dash-artifact-row")
                     .add(summary)
                     .add(changes)
                     .add(time)
-                    .add(details)
-                    .element();
-            row.addEventListener("click", e -> {
+                    .add(details);
+            var row = rowBuilder.element();
+            rowBuilder.on(EventType.click, e -> {
                 boolean hidden = "none".equals(details.style.get("display"));
                 details.style.set("display", hidden ? "block" : "none");
-                if (hidden) {
-                    row.classList.add("dash-artifact-row-expanded");
-                } else {
-                    row.classList.remove("dash-artifact-row-expanded");
-                }
+                if (hidden) row.classList.add("dash-artifact-row-expanded");
+                else row.classList.remove("dash-artifact-row-expanded");
             });
             listContainer.appendChild(row);
         }

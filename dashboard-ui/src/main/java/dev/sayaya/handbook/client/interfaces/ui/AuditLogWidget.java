@@ -5,7 +5,9 @@ import dev.sayaya.handbook.client.usecase.AgentActivityList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import lombok.experimental.Delegate;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
+import org.jboss.elemento.InputType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -50,22 +52,22 @@ public class AuditLogWidget implements IsElement<elemental2.dom.HTMLElement> {
             header.textContent = l.getOrDefault("dashboard.audit.title", "Audit Log");
         });
 
-        // 필터 컨트롤: 날짜 범위
-        dateFromInput = (elemental2.dom.HTMLInputElement) elemental2.dom.DomGlobal.document.createElement("input");
-        dateFromInput.type = "date";
-        dateFromInput.classList.add("dash-audit-filter-input");
-        dateFromInput.addEventListener("change", e -> applyFilters());
+        // 필터 컨트롤 — elemento input(InputType) 빌더 경유해 elemental2 직접 조립을 회피.
+        // type/class/이벤트 모두 빌더 체인으로 기술.
+        dateFromInput = input(InputType.date)
+                .css("dash-audit-filter-input")
+                .on(EventType.change, e -> applyFilters())
+                .element();
 
-        dateToInput = (elemental2.dom.HTMLInputElement) elemental2.dom.DomGlobal.document.createElement("input");
-        dateToInput.type = "date";
-        dateToInput.classList.add("dash-audit-filter-input");
-        dateToInput.addEventListener("change", e -> applyFilters());
+        dateToInput = input(InputType.date)
+                .css("dash-audit-filter-input")
+                .on(EventType.change, e -> applyFilters())
+                .element();
 
-        // 필터 컨트롤: 사용자 필터
-        userFilterInput = (elemental2.dom.HTMLInputElement) elemental2.dom.DomGlobal.document.createElement("input");
-        userFilterInput.type = "text";
-        userFilterInput.classList.add("dash-audit-filter-input");
-        userFilterInput.addEventListener("input", e -> applyFilters());
+        userFilterInput = input(InputType.text)
+                .css("dash-audit-filter-input")
+                .on(EventType.input, e -> applyFilters())
+                .element();
 
         var dateFromLabel = span().css("dash-audit-filter-label").element();
         var dateToLabel = span().css("dash-audit-filter-label").element();
