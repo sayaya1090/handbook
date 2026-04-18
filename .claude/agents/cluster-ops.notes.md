@@ -1,6 +1,12 @@
 # cluster-ops Operational Notes
 
+매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
+
 ---
+
+## 요청 로그
+
+(아직 기록 없음)
 
 ## 탐색 패턴
 
@@ -39,6 +45,10 @@
 ## 원칙 갱신 제안
 
 - **services 단일 출처 원칙 강화**: 백엔드 관련 리소스(ImageStream / ApplicationSet / RBAC) 는 모두 `values.services` 를 range 하도록 통일. 신규 서비스 추가 시 values.yaml 수정만으로 모든 리소스가 따라오게.
+
+## 아카이브 요약
+
+(없음)
 
 ---
 
