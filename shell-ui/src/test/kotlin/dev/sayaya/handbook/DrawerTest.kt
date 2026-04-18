@@ -705,11 +705,15 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 ariaLabel shouldBe "More"
             }
-            Then("OverflowMenuController: md-menu 의 anchor 가 overflow 버튼 id 를 가리킨다") {
-                val anchor = page.evaluate(
-                    "document.querySelector('.menu-tabs md-menu').getAttribute('anchor')"
-                ).toString()
-                anchor shouldBe "menu-tabs-overflow-btn"
+            Then("OverflowMenuController: md-menu 의 anchorElement property 가 overflow 버튼 element 를 참조한다") {
+                // sayaya-ui MenuElementBuilder.anchorElement(HTMLElement) 는 JS property 경로로
+                // anchor 를 연결 + click 리스너까지 자동 등록. attribute 대신 property 기반 검증.
+                val linked = page.evaluate(
+                    "(() => { var m = document.querySelector('.menu-tabs md-menu'); " +
+                    "var b = document.querySelector('.menu-tabs-overflow-btn'); " +
+                    "return !!(m && b && m.anchorElement === b); })()"
+                )
+                linked shouldBe true
             }
             // 원복
             page.setViewportSize(1280, 720)

@@ -8,6 +8,7 @@ import elemental2.dom.HTMLElement;
 import elemental2.dom.KeyboardEvent;
 import elemental2.dom.NodeList;
 import jsinterop.base.Js;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import java.util.function.Consumer;
@@ -46,14 +47,15 @@ public class ConfirmDialog implements IsElement<HTMLDivElement> {
                 .actions(actionsContainer);
 
         for (String option : options) {
+            // sayaya-ui ButtonElementBuilder 체인에 click 핸들러를 on() 으로 직접 바인딩.
             HTMLElement btn = ButtonElementBuilder.button().text()
                     .text(option)
                     .css("ui-confirm-option")
+                    .on(EventType.click, e -> {
+                        dialogBuilder.open(false);
+                        if (onSelect != null) onSelect.accept(option);
+                    })
                     .element();
-            btn.addEventListener("click", e -> {
-                dialogBuilder.open(false);
-                if (onSelect != null) onSelect.accept(option);
-            });
             actionsContainer.appendChild(btn);
         }
 

@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.components;
 import dev.sayaya.handbook.domain.ToastLevel;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import static org.jboss.elemento.Elements.div;
@@ -25,9 +26,10 @@ public class ToastContainer implements IsElement<HTMLDivElement> {
         HTMLDivElement toast = div().css("ui-toast", "ui-toast-" + level.name().toLowerCase()).element();
         toast.textContent = message;
 
-        HTMLDivElement closeBtn = div().css("ui-toast-close").element();
+        HTMLDivElement closeBtn = div().css("ui-toast-close")
+                .on(EventType.click, e -> toast.remove())
+                .element();
         closeBtn.textContent = "\u00D7";
-        closeBtn.addEventListener("click", e -> toast.remove());
         toast.appendChild(closeBtn);
 
         root.appendChild(toast);
@@ -45,9 +47,10 @@ public class ToastContainer implements IsElement<HTMLDivElement> {
         HTMLDivElement toast = div().css("ui-toast", "ui-toast-" + level.name().toLowerCase()).element();
         toast.textContent = message;
 
-        HTMLDivElement closeBtn = div().css("ui-toast-close").element();
+        HTMLDivElement closeBtn = div().css("ui-toast-close")
+                .on(EventType.click, e -> toast.remove())
+                .element();
         closeBtn.textContent = "\u00D7";
-        closeBtn.addEventListener("click", e -> toast.remove());
         toast.appendChild(closeBtn);
 
         root.appendChild(toast);

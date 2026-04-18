@@ -51,20 +51,17 @@ public class OverflowMenuController implements IsElement<HTMLElement> {
                     .attr("id", BTN_ID)
                     .ariaLabel("More")
                     .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-ellipsis"));
-    // anchor 는 HTML attribute 로 명시(md-menu 의 anchor 속성 테스트 기대치). sayaya-ui 의
-    // anchor(id) 는 JS property 만 세팅하므로 attribute 가 필요한 이 경우엔 attr() 사용.
     private final MenuElementBuilder.TopMenuElementBuilder menu =
             MenuElementBuilder.menu()
                     .css("menu-tabs-overflow-menu")
-                    .attr("anchor", BTN_ID);
+                    .anchorElement(button.element());
 
     @Inject
     OverflowMenuController() {
-        // button click → menu toggle. 필드 상호참조 때문에 생성자에서 바인딩.
-        button.on(org.jboss.elemento.EventType.click, evt -> menu.toggle());
         // md-menu 의 close-menu 이벤트(md-menu-item 선택 or 외부 클릭) 는 웹컴포넌트 커스텀
         // 이벤트라 EventType enum 에 없음 — 직접 리스너로 open 속성 제거. sayaya-ui 가 이
-        // 커스텀 이벤트를 typed API 로 노출하면 교체.
+        // 커스텀 이벤트를 typed API 로 노출하면 교체. anchorElement(button) 가 click 에
+        // toggle 리스너를 자동 등록하므로 별도 click 바인딩은 없다.
         menu.element().addEventListener("close-menu", e -> menu.close());
         _this.add(button).add(menu);
         setHidden(true);
