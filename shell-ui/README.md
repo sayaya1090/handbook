@@ -311,7 +311,7 @@ body:has(nav.drawer[overlay]) { --shell-drawer-width: 0; }
 - **Drawer**: `position:fixed; top:0; left:0; bottom:0; width:var(--shell-drawer-width); z-index:1000;` + 반투명 배경(`color-mix(surface-container-high 60%, transparent)`).
 - **AppBar**: `left:var(--shell-drawer-width); z-index:950;` — Drawer 오른쪽부터 시작. `[scrolled]` 속성 토글로 Surface ↔ Surface-container + elevation 2 전환.
 - **Frame**: `left:0; top:var(--shell-app-bar-height);` — viewport 전역에 깔려 Drawer 반투명 너머로 비쳐 보임.
-- **WorkspaceSelect**: AppBar center 에 상시 노출 (MenuRailMode 종속 숨김 로직 제거, 2026-04). `body` 의 `padding-top` 은 Drawer 가 fixed 라 불필요해 제거.
+- **WorkspaceSelect**: AppBar center 에 상시 노출 (MenuRailMode 종속 숨김 로직 제거, 2026-04). `justify-content: center` 로 시각적 중앙 정렬을 보장하며, 긴 이름 가독성을 위해 `max-width: 24rem` 을, 찌그러짐 방지를 위해 `min-width: 12rem` 을 유지한다. `body` 의 `padding-top` 은 Drawer 가 fixed 라 불필요해 제거.
 
 > 과거(2026-03 이전) 의 "단일 하단 바 드릴인" 모델은 Section 7 (docs/design.md) 에 아카이브.
 

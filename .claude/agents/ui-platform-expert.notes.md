@@ -18,6 +18,8 @@
 - 2026-04-18: MenuRail collapse/expand 아이콘 시프트 → `.rail[expand] padding 0 0.6rem + align-items:flex-start` 제거 + 햄버거 `align-self:center → flex-start + margin-left:8px` 로 icon center x=28px 고정
 - 2026-04-18: 햄버거 드로어 우측 밀림 회귀 진단 → AppBar leading mount + AppBar `left:var(--drawer-width)` 조합 원인, MenuRail 상단 이관 권고 (사용자 승인 후 수정 완료)
 
+- 2026-04-21: GraalVM 25 + `c:\proxy.crt` 환경에서 `shell-ui` GWT 컴파일 및 165개 테스트 전수 통과 확인. 포트 충돌(`Address already in use`) 발생 시 자바 프로세스 정리(`taskkill`) 필수.
+
 ## 탐색 패턴
 
 (미확보)

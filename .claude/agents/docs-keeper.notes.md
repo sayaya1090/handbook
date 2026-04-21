@@ -10,6 +10,8 @@
 - 2026-04-18: §3.24 재작성 (scope→allowedSessionStates 집합) → requirements.md + contracts/menus.md 전면 교체, 계층 추론 제거
 - 2026-04-18: SessionState+MenuScope 초안 → requirements §3.26, contracts/menus.md scope 추가, 공급자 6개 매핑
 
+- 2026-04-21: 레이아웃 수정(Workspace 선택창 찌그러짐 해결) 및 문서 정합성 점검 수행.
+
 ## 탐색 패턴
 
 - **UC 추출**: `grep -nE "^### UC-[0-9]+" docs/usecases.md`
@@ -38,7 +40,7 @@
 
 ## 원칙 갱신 제안
 
-(미확보)
+- **AppBar 센터 슬롯 보호**: `flex: 1`인 슬롯 내 핵심 요소는 뷰포트 축소 시 찌그러짐 방지를 위해 `min-width`를 확보하고, `justify-content: center`로 시각적 균형을 유지해야 한다. (2026-04-21)
 
 ## 아카이브 요약
 

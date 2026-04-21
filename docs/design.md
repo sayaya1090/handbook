@@ -427,7 +427,7 @@ stateDiagram-v2
 | 전환 | `background-color, box-shadow, border-radius 300ms ease-in-out` |
 | 라이트 모드 그림자 | `var(--md-sys-elevation-level3)` (열린 상태) |
 | 다크 모드 그림자 | 없음 (배경색으로 구분) |
-| 헤더 워크스페이스 | 최대 256px (`16rem`), outlined text field |
+| 헤더 워크스페이스 | 최대 384px (`24rem`), outlined select, **중앙 정렬** (`justify-content: center`) |
 
 ### 스프레드시트 (Document-UI)
 
