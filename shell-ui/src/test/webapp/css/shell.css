@@ -520,6 +520,7 @@ body,
         --shell-frame-left-offset: 0px;
     }
 }
+:root {
     /* Drawer 의 현재 width 를 토큰으로 노출해 AppBar/MobileTabs/Content 등이 동적으로
        참조. Drawer 폭은 **내부 두 rail(.menu-rail / .tool-rail) 의 현재 상태 조합**으로
        결정된다 — body-level :has 셀렉터가 rail 상태별로 calc 합을 재지정.
@@ -581,6 +582,7 @@ body:has(nav.drawer[overlay]) {
        바뀌며 AppBar 도 자동으로 왼쪽 경계 이동. transition 은 .drawer 의 width 와 동일. */
     left: var(--shell-drawer-width);
     right: 0;
+    width: auto;
     padding: 0 8px;
     padding-top: env(safe-area-inset-top, 0px);
     height: calc(var(--shell-app-bar-height) + env(safe-area-inset-top, 0px));
@@ -630,6 +632,7 @@ body:has(nav.drawer[overlay]) {
     min-width: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
     overflow: hidden;
 }
 /* AppBar center 에 편입된 WorkspaceSelect 의 폭 조정 — 기존 .drawer .header .workspace 스타일
@@ -637,7 +640,7 @@ body:has(nav.drawer[overlay]) {
    2026-04-18: 워크스페이스명이 길어 16rem 에서 ellipsis 로 잘리는 피드백 → 24rem 으로 확장.
    AppBar center 는 flex:1 min-width:0 이라 좁은 뷰포트에서도 자연 shrink 되므로 상한만 올린다. */
 .shell-app-bar-center .workspace {
-    min-width: 0;
+    min-width: 12rem;
     max-width: 24rem;
     width: 100%;
     --_text-field-label-text-line-height: 0.8rem;

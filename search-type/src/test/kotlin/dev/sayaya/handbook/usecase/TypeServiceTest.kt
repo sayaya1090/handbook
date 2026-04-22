@@ -71,4 +71,19 @@ class TypeServiceTest : BehaviorSpec({
             }
         }
     }
+
+    Given("타입 버전 조회 요청이 주어졌을 때") {
+        val typeId = "customer"
+        every { repo.findVersions(workspace, typeId) } returns Flux.just(type)
+
+        When("findVersions를 호출하면") {
+            val result = service.findVersions(workspace, typeId)
+
+            Then("해당 타입의 모든 버전이 반환된다") {
+                StepVerifier.create(result)
+                    .assertNext { it.id shouldBe "customer" }
+                    .verifyComplete()
+            }
+        }
+    }
 })

@@ -24,10 +24,12 @@ class R2dbcLayoutSearchRepositoryAdapter(
 ) : LayoutSearchRepository {
 
     override fun findByWorkspace(workspace: UUID): Flux<TypeLayout> =
-        repository.findByWorkspace(workspace).map { entity ->
-            val positions: Map<String, TypeLayout.Position> = entity.positions?.let {
-                objectMapper.readValue(it)
-            } ?: emptyMap()
-            entity.toDomain(positions)
-        }
+        repository.findByWorkspace(workspace).map(::toDomain)
+
+    internal fun toDomain(entity: R2dbcLayoutEntity): TypeLayout {
+        val positions: Map<String, TypeLayout.Position> = entity.positions?.let {
+            objectMapper.readValue(it)
+        } ?: emptyMap()
+        return entity.toDomain(positions)
+    }
 }

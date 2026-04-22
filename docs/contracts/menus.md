@@ -183,7 +183,7 @@ Accept: application/vnd.sayaya.handbook.v1+json
 | landing-menu (신규) | 앱 내부 "소개" | 항상 공급 | `null` (무제약) | 모든 상태에서 상시 노출. 이름/URL 미정 |
 | search-type | 타입 목록 | 인증 필요 | `{IN_WORKSPACE}` | 워크스페이스 컨텍스트 필요 |
 | search-document | 문서 목록 | 인증 필요 | `{IN_WORKSPACE}` | 워크스페이스 컨텍스트 필요 |
-| search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | `{IN_WORKSPACE}` | Drawer 하단 고정 (order=S, bottom=true) |
+| search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | Drawer 하단 고정 (order=S, bottom=true) |
 | workspace-onboarding (신규 / search-workspace 내) | 워크스페이스 생성/참여 | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | `AUTHENTICATED` 에 enabled 로 노출되어 `WorkspaceOnboardingBootstrapper` synthetic 메뉴를 대체 |
 
 ## shell-ui `UrlBasedMenuResolver` 동작

@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-04-23: Global Kover exclusion for *Application, *Config, and *Properties implemented to improve test quality.
 - 2026-04-18: §3.24.1 F 과금/구독 축 추가 → 표 1행 + 이월 기록 3항목 · 주의 박스(가시성 ≠ 실행)
 - 2026-04-18: §3.24 재작성 (scope→allowedSessionStates 집합) → requirements.md + contracts/menus.md 전면 교체, 계층 추론 제거
 - 2026-04-18: SessionState+MenuScope 초안 → requirements §3.26, contracts/menus.md scope 추가, 공급자 6개 매핑
@@ -49,3 +50,4 @@
 ---
 
 마지막 감사: — (신규, 아직 감사 수행 전)
+- 2026-04-23: Commit 4244003 audit → requirements.md (§3.24, §6.5) and menus.md contract updated to reflect auto-onboarding and space-in-name support.

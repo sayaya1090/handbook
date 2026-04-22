@@ -1898,7 +1898,7 @@ sequenceDiagram
 | 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 |
 | 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 |
 | 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI |
-| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (workspace-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/하이픈/언더스코어, 최대 255자 |
+| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (workspace-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/공백/하이픈/언더스코어, 최대 255자 |
 | 6.6 접근성 (Accessibility) | 전체 UI UC | 전체 프론트엔드 모듈 | role 속성, aria-label, 키보드 네비게이션 (Tab/Enter/Escape) |
 | 6.7 파일 업로드 | UC-50 (문서 생성/편집) | UC-PD6 (persist-document) | File 속성 multipart/form-data 업로드 엔드포인트, S3/로컬 저장소 연동 |
 | 6.8 사용자 설정 | — | UC-S15, UC-S16 (shell-ui) | 언어/테마 퍼시스턴스, 설정 패널 UI |

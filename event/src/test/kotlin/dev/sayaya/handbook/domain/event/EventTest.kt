@@ -89,4 +89,22 @@ class EventTest : DescribeSpec({
             } shouldHaveMessage "Invalid event type for ValidationEvent: DOCUMENT_CREATED. Must be VALIDATION_REQUESTED"
         }
     }
+
+    describe("AgentCommandEvent는") {
+        it("AGENT_COMMAND 타입으로 생성된다") {
+            val payload = AgentCommandEvent.AgentCommandPayload(1, "navigate", mapOf("url" to "/workspaces"))
+            val event = AgentCommandEvent(UUID.randomUUID(), workspace, payload = payload)
+            event.eventType shouldBe Event.EventType.AGENT_COMMAND
+            event.payload.type shouldBe "navigate"
+        }
+    }
+
+    describe("PresenceEvent는") {
+        it("PRESENCE 타입으로 생성된다") {
+            val payload = PresencePayload("user-1", "Alice", "customer")
+            val event = PresenceEvent(workspace = workspace, payload = payload)
+            event.eventType shouldBe Event.EventType.PRESENCE
+            event.payload.user shouldBe "user-1"
+        }
+    }
 })

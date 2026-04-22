@@ -86,6 +86,15 @@ class WorkspaceControllerTest : BehaviorSpec({
             }
         }
 
+        When("공백이 포함된 유효한 이름으로 create 를 호출하면") {
+            val nameWithSpace = "테스트 워크스페이스"
+            val request = WorkspaceController.CreateWorkspaceRequest(nameWithSpace, null)
+            controller.create(testPrincipal, request).block()
+            Then("정규식 검증을 통과하고 서비스가 호출된다") {
+                nameSlot.captured shouldBe nameWithSpace
+            }
+        }
+
         When("정규식에 맞지 않는 이름으로 create 를 호출하면") {
             val request = WorkspaceController.CreateWorkspaceRequest("bad name!", null)
 
@@ -94,6 +103,25 @@ class WorkspaceControllerTest : BehaviorSpec({
                     controller.create(testPrincipal, request).block()
                 }
                 ex.statusCode shouldBe HttpStatus.BAD_REQUEST
+            }
+        }
+        
+        When("인증 객체에서 추출된 ID가 UUID 형식이 아닌 경우") {
+            val badPrincipal = UserAuthentication(
+                id = "not-a-uuid",
+                username = "Bad User",
+                issuer = "test",
+                issuedDateTime = LocalDateTime.now(),
+                notBeforeDateTime = LocalDateTime.now(),
+                expireDateTime = LocalDateTime.now().plusHours(1),
+                token = "dummy",
+            )
+            val request = WorkspaceController.CreateWorkspaceRequest("Test", null)
+            Then("401 Unauthorized 상태의 ResponseStatusException 이 던져진다 (500 에러 방지)") {
+                val ex = shouldThrow<ResponseStatusException> {
+                    controller.create(badPrincipal, request).block()
+                }
+                ex.statusCode shouldBe HttpStatus.UNAUTHORIZED
             }
         }
     }

@@ -520,6 +520,7 @@ body,
         --shell-frame-left-offset: 0px;
     }
 }
+:root {
     /* Drawer 의 현재 width 를 토큰으로 노출해 AppBar/MobileTabs/Content 등이 동적으로
        참조. Drawer 폭은 **내부 두 rail(.menu-rail / .tool-rail) 의 현재 상태 조합**으로
        결정된다 — body-level :has 셀렉터가 rail 상태별로 calc 합을 재지정.
@@ -581,6 +582,7 @@ body:has(nav.drawer[overlay]) {
        바뀌며 AppBar 도 자동으로 왼쪽 경계 이동. transition 은 .drawer 의 width 와 동일. */
     left: var(--shell-drawer-width);
     right: 0;
+    width: auto;
     padding: 0 8px;
     padding-top: env(safe-area-inset-top, 0px);
     height: calc(var(--shell-app-bar-height) + env(safe-area-inset-top, 0px));

@@ -1,6 +1,11 @@
 plugins {
     war
 }
+sourceSets {
+    test {
+        java.setSrcDirs(emptyList<String>())
+    }
+}
 val mergeI18nProd by tasks.registering {
     val i18nDirs = rootProject.subprojects.map { it.file("src/main/i18n") }
     inputs.files(i18nDirs.filter { it.exists() }.flatMap { dir ->

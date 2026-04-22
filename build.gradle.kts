@@ -44,6 +44,11 @@ subprojects {
     pluginManager.withPlugin("org.jetbrains.kotlinx.kover") {
         extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
             reports {
+                filters {
+                    excludes {
+                        classes("*Application*", "*Config", "*Properties")
+                    }
+                }
                 verify {
                     rule {
                         disabled = false

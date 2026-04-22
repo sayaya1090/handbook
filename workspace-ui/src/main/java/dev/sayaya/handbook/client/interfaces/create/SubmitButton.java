@@ -23,7 +23,7 @@ import javax.inject.Singleton;
  *
  * <p><b>역할:</b> 사용자가 입력한 워크스페이스 이름(또는 ID)을 검증하고 API를 호출한다.</p>
  *
- * <p><b>책임:</b> CREATE 모드에서는 워크스페이스 이름 정규식 검증(영문/한글/숫자/하이픈/언더스코어, 최대 255자)을
+ * <p><b>책임:</b> CREATE 모드에서는 워크스페이스 이름 정규식 검증(영문/한글/숫자/공백/하이픈/언더스코어, 최대 255자)을
  * 수행한 뒤 {@link WorkspaceRepository#create}를 호출하고, JOIN 모드에서는 {@link WorkspaceRepository#join}을 호출한다.
  * 검증 실패 시 {@link ErrorNotifier}로 사용자에게 알린다.</p>
  *
@@ -42,8 +42,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class SubmitButton implements IsElement<HTMLElement> {
-    /** 워크스페이스 이름 검증: 영문/한글/숫자/하이픈/언더스코어, 1~255자 */
-    private static final RegExp NAME_PATTERN = RegExp.compile("^[a-zA-Z0-9가-힣\\-_]{1,255}$");
+    /** 워크스페이스 이름 검증: 영문/한글/숫자/공백/하이픈/언더스코어, 1~255자 */
+    private static final RegExp NAME_PATTERN = RegExp.compile("^[a-zA-Z0-9가-힣\\-_\\s]{1,255}$");
 
     @Delegate private final ButtonElementBuilder.FilledButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();

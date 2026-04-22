@@ -51,8 +51,8 @@ class MenuControllerTest : BehaviorSpec({
             Then("IN_WORKSPACE 세션에서는 isAllowedFor == true") {
                 menu.isAllowedFor(SessionStateKind.IN_WORKSPACE) shouldBe true
             }
-            Then("AUTHENTICATED 세션에서는 isAllowedFor == false (계층 추론 없음)") {
-                menu.isAllowedFor(SessionStateKind.AUTHENTICATED) shouldBe false
+            Then("AUTHENTICATED 세션에서는 isAllowedFor == true (온보딩 유도)") {
+                menu.isAllowedFor(SessionStateKind.AUTHENTICATED) shouldBe true
             }
             Then("ANONYMOUS 세션에서는 isAllowedFor == false") {
                 menu.isAllowedFor(SessionStateKind.ANONYMOUS) shouldBe false

@@ -106,7 +106,7 @@ class R2dbcDocumentSearchRepository(
             .map { toDomain(it) }
     }
 
-    private fun createPageRequest(param: Search): PageRequest {
+    internal fun createPageRequest(param: Search): PageRequest {
         val sortBy = param.sortBy?.let(::property) ?: "serial"
         val sortOrder = param.asc?.let {
             if (it) Sort.Order.asc(sortBy) else Sort.Order.desc(sortBy)
@@ -114,12 +114,12 @@ class R2dbcDocumentSearchRepository(
         return PageRequest.of(param.page, param.limit, Sort.by(sortOrder))
     }
 
-    private fun buildCriteria(filters: List<Pair<String, Any?>>): Criteria {
+    internal fun buildCriteria(filters: List<Pair<String, Any?>>): Criteria {
         if (filters.isEmpty()) return Criteria.empty()
         return filters.map { (key, value) -> predicate(key, value) }.reduce(Criteria::and)
     }
 
-    private fun predicate(key: String, value: Any?): Criteria = when (key) {
+    internal fun predicate(key: String, value: Any?): Criteria = when (key) {
         "workspace" -> if (value is UUID) where("workspace").`is`(value) else Criteria.empty()
         "date" -> when (value) {
             is String -> try {
@@ -142,13 +142,13 @@ class R2dbcDocumentSearchRepository(
         }
     }
 
-    private fun property(name: String): String? = when (name) {
+    internal fun property(name: String): String? = when (name) {
         "serial" -> "serial"
         "type" -> "type"
         else -> null
     }
 
-    private fun toDomain(entity: R2dbcDocumentEntity): Document {
+    internal fun toDomain(entity: R2dbcDocumentEntity): Document {
         val dataMap: Map<String, String?> = objectMapper.readValue(entity.data)
         return Document(
             id = entity.id,

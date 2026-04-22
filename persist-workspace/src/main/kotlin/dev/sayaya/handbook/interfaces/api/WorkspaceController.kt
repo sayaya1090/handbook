@@ -32,8 +32,8 @@ import java.util.*
 class WorkspaceController(private val svc: WorkspaceService) {
 
     companion object {
-        /** 워크스페이스 이름 검증: 영문/한글/숫자/하이픈/언더스코어, 1~255자 */
-        private val NAME_PATTERN = Regex("^[a-zA-Z0-9가-힣\\-_]{1,255}$")
+        /** 워크스페이스 이름 검증: 영문/한글/숫자/하이픈/언더스코어/공백, 1~255자 */
+        private val NAME_PATTERN = Regex("^[a-zA-Z0-9가-힣\\-_\\s]{1,255}$")
     }
 
     @PostMapping(
@@ -100,11 +100,13 @@ class WorkspaceController(private val svc: WorkspaceService) {
      * `group_member.member` 가 일치한다.
      */
     private fun userUuid(principal: UserAuthentication): UUID {
-        val raw = principal.sub
-            ?: principal.id
-            ?: principal.name
+        val raw = principal.sub ?: principal.id ?: principal.name
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "principal has no sub/id/name")
-        return UUID.fromString(raw)
+        return try {
+            UUID.fromString(raw)
+        } catch (e: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid user UUID format: $raw")
+        }
     }
 
     data class CreateWorkspaceRequest(val name: String, val description: String? = null)

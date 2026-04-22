@@ -85,7 +85,7 @@ class R2dbcTypeSearchRepositoryAdapter(
     override fun findVersions(workspace: UUID, typeId: String): Flux<Type> =
         hydrate(workspace, typeRepo.findVersionsByWorkspaceAndId(workspace, typeId))
 
-    private fun hydrate(workspace: UUID, entities: Flux<R2dbcTypeEntity>): Flux<Type> =
+    internal fun hydrate(workspace: UUID, entities: Flux<R2dbcTypeEntity>): Flux<Type> =
         entities.collectList().flatMapMany { list ->
             if (list.isEmpty()) return@flatMapMany Flux.empty<Type>()
             val typeIds = list.map { it.id }.distinct()

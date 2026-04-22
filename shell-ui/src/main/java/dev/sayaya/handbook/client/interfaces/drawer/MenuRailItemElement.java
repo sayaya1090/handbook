@@ -145,6 +145,7 @@ public class MenuRailItemElement extends NavigationRailItemElement {
             selectedElement.next(this);
         });
         on(EventType.mouseover, evt -> {
+            if (element().hasAttribute("disabled")) return;
             // EXPAND 에서만 hover peek. COLLAPSE/모바일에선 TooltipCard 가 라벨만 표시.
             if (menuRailMode.getValue() != MenuRailState.EXPAND) return;
             if (hover.getValue() == menu) return;

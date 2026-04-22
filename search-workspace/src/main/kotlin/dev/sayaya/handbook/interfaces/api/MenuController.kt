@@ -61,7 +61,7 @@ class MenuController {
             // 워크스페이스 관리 메뉴는 활성 워크스페이스 선택 후에만 의미가 있음.
             // 계층 추론 없음 — AUTHENTICATED 만 선언하면 IN_WORKSPACE 에서 안 보이므로 두 값 다 필요하진 않지만,
             // 이 메뉴는 IN_WORKSPACE 전용이라 단일 선언으로 충분.
-            .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
+            .allowedSessionStates(SessionStateKind.AUTHENTICATED, SessionStateKind.IN_WORKSPACE)
             .build()
     }
 

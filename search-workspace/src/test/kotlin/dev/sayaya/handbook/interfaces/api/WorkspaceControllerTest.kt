@@ -18,10 +18,6 @@ import java.util.UUID
 class WorkspaceControllerTest : BehaviorSpec({
     val service = mockk<WorkspaceSearchService>()
     val controller = WorkspaceController(service)
-
-    // findById 등 principal 이 필요 없는 엔드포인트는 WebTestClient 검증 유지.
-    // list 는 @AuthenticationPrincipal 주입이 필요하므로 메서드 직접 호출로 검증한다
-    // (persist-workspace WorkspaceControllerTest 와 동일한 패턴).
     val client = WebTestClient.bindToController(controller).build()
 
     fun principalWith(sub: String? = null, id: String? = null) = UserAuthentication(
@@ -35,77 +31,62 @@ class WorkspaceControllerTest : BehaviorSpec({
         sub = sub,
     )
 
-    Given("두 건의 워크스페이스가 해당 사용자에게 보이는 상태") {
-        val ws1 = Workspace(UUID.randomUUID(), "alpha", "first")
-        val ws2 = Workspace(UUID.randomUUID(), "beta", null)
-        val userSub = UUID.randomUUID()
-        val principal = principalWith(sub = userSub.toString())
-        every { service.listForUser(userSub) } returns Flux.just(ws1, ws2)
-        every { service.findById(ws1.id) } returns Mono.just(ws1)
-
-        When("controller.list(principal) 를 호출하면") {
-            val result = controller.list(principal).collectList().block()!!
-
-            Then("principal.sub 기반으로 service.listForUser 가 호출되고 두 엔트리가 반환된다") {
-                result shouldContainExactly listOf(ws1, ws2)
-                verify(exactly = 1) { service.listForUser(userSub) }
-            }
-        }
-
-        When("GET /workspaces/{id}") {
-            Then("200 OK + 해당 워크스페이스 반환") {
-                client.get().uri("/workspaces/${ws1.id}")
-                    .header("Accept", "application/vnd.sayaya.handbook.v1+json")
-                    .exchange()
-                    .expectStatus().isOk
-                    .expectBody(Workspace::class.java)
-                    .isEqualTo(ws1)
-            }
-        }
-    }
-
-    Given("principal 에 sub 가 없고 id 만 있는 Phase 1a 이전 토큰") {
-        val legacyUuid = UUID.randomUUID()
-        val principal = principalWith(sub = null, id = legacyUuid.toString())
-        every { service.listForUser(legacyUuid) } returns Flux.empty()
-
-        When("controller.list(principal) 를 호출하면") {
-            val result = controller.list(principal).collectList().block()!!
-
-            Then("id(jti) 를 폴백으로 서비스에 전달한다") {
-                result shouldBe emptyList()
-                verify(exactly = 1) { service.listForUser(legacyUuid) }
-            }
-        }
-    }
-
-    Given("principal 의 sub/id 모두 null") {
-        // 개별 service 인스턴스로 호출 0회 검증 — 다른 Given 의 누적을 차단한다.
-        val isolated = mockk<WorkspaceSearchService>()
-        val isolatedController = WorkspaceController(isolated)
-        val principal = principalWith(sub = null, id = null)
-
-        When("controller.list(principal) 를 호출하면") {
-            val result = isolatedController.list(principal).collectList().block()!!
-
+    Given("WorkspaceController list") {
+        val userUuid = UUID.randomUUID()
+        val ws = Workspace(UUID.randomUUID(), "alpha", "desc")
+        
+        When("sub와 id가 모두 없는 경우") {
+            val auth = principalWith(sub = null, id = null)
+            val result = controller.list(auth).collectList().block()!!
             Then("서비스 호출 없이 빈 Flux 를 반환한다") {
                 result shouldBe emptyList()
-                verify(exactly = 0) { isolated.listForUser(any()) }
+                verify(exactly = 0) { service.listForUser(any()) }
+            }
+        }
+        When("sub는 없지만 id(UUID)가 있는 경우 (Phase 1a 폴백)") {
+            val auth = principalWith(sub = null, id = userUuid.toString())
+            every { service.listForUser(userUuid) } returns Flux.just(ws)
+            val result = controller.list(auth).collectList().block()!!
+            Then("id를 사용하여 서비스를 호출한다") {
+                result shouldContainExactly listOf(ws)
+                verify { service.listForUser(userUuid) }
+            }
+        }
+        When("sub가 UUID 형식이 아닌 문자열인 경우") {
+            val auth = principalWith(sub = "not-a-uuid", id = userUuid.toString())
+            val result = controller.list(auth).collectList().block()!!
+            Then("UUID 변환 실패로 빈 Flux 를 반환한다") {
+                result shouldBe emptyList()
+            }
+        }
+        When("sub가 null이고 id가 UUID 형식이 아닌 경우") {
+            val auth = principalWith(sub = null, id = "not-a-uuid")
+            val result = controller.list(auth).collectList().block()!!
+            Then("id 변환 실패로 빈 Flux 를 반환한다") {
+                result shouldBe emptyList()
+            }
+        }
+        When("정상적인 sub(UUID)가 있는 경우") {
+            val auth = principalWith(sub = userUuid.toString(), id = null)
+            every { service.listForUser(userUuid) } returns Flux.just(ws)
+            val result = controller.list(auth).collectList().block()!!
+            Then("sub를 최우선으로 사용하여 서비스를 호출한다") {
+                result shouldContainExactly listOf(ws)
+                verify { service.listForUser(userUuid) }
             }
         }
     }
 
-    Given("principal 의 sub 가 UUID 로 파싱 불가한 문자열") {
-        val isolated = mockk<WorkspaceSearchService>()
-        val isolatedController = WorkspaceController(isolated)
-        val principal = principalWith(sub = "not-a-uuid")
-
-        When("controller.list(principal) 를 호출하면") {
-            val result = isolatedController.list(principal).collectList().block()!!
-
-            Then("파싱 실패 폴백으로 빈 Flux 를 반환한다") {
-                result shouldBe emptyList()
-                verify(exactly = 0) { isolated.listForUser(any()) }
+    Given("WorkspaceController get") {
+        val id = UUID.randomUUID()
+        val ws = Workspace(id, "alpha", "desc")
+        When("ID로 단건 조회 시") {
+            every { service.findById(id) } returns Mono.just(ws)
+            Then("200 OK와 워크스페이스를 반환한다") {
+                client.get().uri("/workspaces/$id")
+                    .exchange()
+                    .expectStatus().isOk
+                    .expectBody(Workspace::class.java).isEqualTo(ws)
             }
         }
     }

@@ -1799,9 +1799,9 @@ visible(menu, state) =
 
 기존 shell-ui `WorkspaceOnboardingBootstrapper` 는 `WorkspaceList` 가 empty 일 때 workspace-ui 스크립트를 client-side synthetic 메뉴로 주입해 "빈 워크스페이스 자동 온보딩" (UC-12) 을 수행한다. Phase 1 `allowedSessionStates` 도입 이후:
 
-- `search-workspace` 의 워크스페이스 관리 메뉴는 `allowedSessionStates = {IN_WORKSPACE}` 로 공급.
+- `search-workspace` 의 워크스페이스 관리 메뉴는 `allowedSessionStates = {AUTHENTICATED, IN_WORKSPACE}` 로 공급.
 - 워크스페이스 생성/참여 엔트리를 **별도 공급자** 가 `{AUTHENTICATED, IN_WORKSPACE}` 로 공급하면, `AUTHENTICATED` 상태 사용자에게도 enabled 로 노출 → 클릭 시 Create/Join 화면으로 자연 라우팅.
-- **onboarding bootstrapper 단순화 또는 제거 가능** — synthetic 메뉴 대신 상시 공급 + 상태 집합 선언이 동일 역할 수행. 구체 제거 시점은 `ui-platform-expert` 판단.
+- **onboarding bootstrapper 유지 (2026-04-23)** — `allowedSessionStates` 기반의 명시적 CTA (클릭 유도) 가 가능하더라도, 워크스페이스가 없는 신규 사용자를 위한 자동 진입 로직은 UX 마찰을 줄이기 위해 유지한다.
 
 #### 3.24.7 구현 책임
 
@@ -1876,7 +1876,7 @@ visible(menu, state) =
 - 결과 없음 상태 UI.
 
 ### 6.5 입력 검증 강화
-- 워크스페이스 이름: 영숫자+한글+하이픈+언더스코어, 최대 255자.
+- 워크스페이스 이름: 영숫자+한글+공백+하이픈+언더스코어, 최대 255자.
 - 프론트엔드 클라이언트 사이드 검증 + 백엔드 서버 사이드 검증 이중화.
 
 ### 6.6 접근성 (Accessibility)
