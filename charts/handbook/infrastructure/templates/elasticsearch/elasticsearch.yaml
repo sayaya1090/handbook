@@ -33,8 +33,6 @@ spec:
               value: {{ .Values.elasticsearch.discovery.type | quote }}
             - name: xpack.security.enabled
               value: {{ .Values.elasticsearch.security.enabled | quote }}
-            - name: ES_JAVA_OPTS
-              value: "-Xms{{ .Values.elasticsearch.resources.requests.memory }} -Xmx{{ .Values.elasticsearch.resources.limits.memory }}"
           ports:
             - containerPort: 9200
               name: http
