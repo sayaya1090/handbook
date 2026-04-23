@@ -1,4 +1,10 @@
 {{- if .Values.elasticsearch.enabled -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: elasticsearch
+  namespace: {{ .Release.Namespace }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,6 +24,7 @@ spec:
       labels:
         app: elasticsearch
     spec:
+      serviceAccountName: elasticsearch
       containers:
         - name: elasticsearch
           image: {{ .Values.elasticsearch.image }}
