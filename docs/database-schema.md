@@ -163,6 +163,36 @@ erDiagram
 | active | Boolean | 활성 여부 (연속 실패 시 false) |
 | created_at | Instant | 등록 시각 |
 
+## Elasticsearch 인덱스 설계
+
+문서 전문 검색 및 고성능 조회를 위해 Elasticsearch를 사용한다.
+
+### 'documents' 인덱스 매핑
+
+| 필드명 | 타입 | 설명 |
+|--------|------|------|
+| id | keyword | 문서 UUID |
+| workspace | keyword | 워크스페이스 UUID |
+| type | keyword | 타입 식별자 |
+| serial | keyword | 문서 식별 번호 |
+| effect_date_time | date | 유효 시작 시각 |
+| expire_date_time | date | 유효 종료 시각 |
+| status | keyword | 문서 상태 (DRAFT/REVIEW/PUBLISHED) |
+| creator | keyword | 생성자 |
+| create_date_time | date | 생성 시각 |
+| data | object | 스키마리스 데이터 필드 (dynamic mapping) |
+| data.* | text | 전문 검색용 분석 필드 (Nori 한글 분석기 적용 가능) |
+| _full_text | text | 전체 필드 통합 검색용 필드 (copy_to) |
+
+### PostgreSQL → Elasticsearch 동기화 (CDC/Event 기반)
+
+CQRS 패턴에 따라 쓰기 작업은 PostgreSQL에서 수행되고, 변경 사항은 Kafka를 통해 Elasticsearch로 실시간 동기화된다.
+
+1. **발행**: `persist-document` 서비스가 DB 저장 후 `DOCUMENT_CREATED` 또는 `DOCUMENT_DELETED` 이벤트를 Kafka 토픽(`handbook-events`)으로 발행한다.
+2. **소비**: `search-document` 서비스의 `KafkaDocumentEventListener`가 해당 이벤트를 구독한다.
+3. **인덱싱**: 수신된 문서 데이터를 Elasticsearch `documents` 인덱스에 `upsert`하거나 `delete`한다.
+4. **최종 일관성**: 네트워크 지연이나 서비스 일시 장애로 인해 DB와 검색 엔진 간에 약간의 시간차가 발생할 수 있으나, Kafka의 재시도 메커니즘을 통해 데이터 무결성을 보장한다.
+
 ## 설계 결정
 
 | 결정 | 이유 |

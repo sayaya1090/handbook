@@ -192,3 +192,32 @@ type-ui의 속성 편집에서 Array/Map 타입의 서브 타입 에디터를 �
 | 모듈 | 사용 위치 |
 |------|----------|
 | **type-ui** | `AttributeEditorDialog` → `ValidatorEditorFactory` → `ArrayValidatorEditor` / `MapValidatorEditor` |
+
+---
+
+## CQRS with External Search Engine (PostgreSQL + ES)
+
+데이터의 원천 저장(Source of Truth)과 고성능 검색(Search)을 분리하는 CQRS 패턴을 구현한다.
+
+### 아키텍처 구조
+
+```mermaid
+flowchart LR
+    C["Command (Write)"] --> PG[("PostgreSQL<br/>(Source of Truth)")]
+    PG -->|Kafka Event| S["search-document<br/>(Indexer)"]
+    S --> ES[("Elasticsearch<br/>(Read Model)")]
+    Q["Query (Read)"] --> ES
+```
+
+### 핵심 원칙
+
+1. **데이터 저장 (Write)**: 모든 문서와 타입의 CUD 작업은 PostgreSQL을 통해 수행되며, 트랜잭션과 무결성을 보장한다.
+2. **이벤트 발행**: 변경 완료 시 Kafka를 통해 도메인 이벤트(`DOCUMENT_CREATED`, `DOCUMENT_DELETED` 등)를 발행한다.
+3. **데이터 동기화 (Sync)**: `search-document` 서비스가 이벤트를 수신하여 Elasticsearch 인덱스를 갱신한다. 이는 비동기로 처리되며 최종 일관성(Eventual Consistency)을 따른다.
+4. **검색 및 조회 (Read)**: 사용자의 검색 요청 및 대량 목록 조회는 Elasticsearch를 통해 처리한다. PostgreSQL은 단건 상세 조회 및 이력 추적용으로만 사용한다.
+
+### 장점
+
+- **성능**: 복합 필터링 및 전문 검색(Full-text Search) 성능을 극대화한다.
+- **확장성**: 읽기와 쓰기 부하를 독립적으로 분리하여 확장할 수 있다.
+- **유연성**: 검색 인덱스 구조를 도메인 모델과 다르게 최적화하여 구성할 수 있다.

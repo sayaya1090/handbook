@@ -21,6 +21,7 @@ docker-compose up -d
 | PostgreSQL | 5432 | 메인 데이터베이스 (DB: handbook, 사용자: handbook) |
 | Kafka | 9092 | 이벤트 브로커 |
 | Zookeeper | 2181 | Kafka 메타데이터 관리 |
+| Elasticsearch | 9200 | 검색 엔진 |
 
 인프라 중지:
 

@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-05-12: ES 전환 문서 감사 → 아키텍처/스키마 및 노트 정합성 업데이트
 - 2026-04-23: Global Kover exclusion for *Application, *Config, and *Properties implemented to improve test quality.
 - 2026-04-18: §3.24.1 F 과금/구독 축 추가 → 표 1행 + 이월 기록 3항목 · 주의 박스(가시성 ≠ 실행)
 - 2026-04-18: §3.24 재작성 (scope→allowedSessionStates 집합) → requirements.md + contracts/menus.md 전면 교체, 계층 추론 제거

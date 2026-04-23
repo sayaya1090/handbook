@@ -98,6 +98,15 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 
 ## 빌드 & 테스트
 
+### 로컬 인프라 구성
+로컬 개발을 위해 Docker Compose로 필수 인프라를 실행합니다.
+```bash
+docker-compose up -d     # PostgreSQL, Kafka, Zookeeper, Elasticsearch 실행
+docker-compose down      # 인프라 중지
+docker-compose down -v   # 데이터 초기화 포함 중지
+```
+
+### 빌드 및 실행 명령어
 ```bash
 ./gradlew test                    # 전체 테스트 (백엔드 + GWT Playwright, E2E 제외)
 ./gradlew test --parallel         # 전체 테스트 병렬 실행 (모듈별 고유 포트)

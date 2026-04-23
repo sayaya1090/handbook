@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-05-12: 문서 검색 엔진 전환 → Elasticsearch 도입으로 검색 성능 강화
 - 2026-04-18: search-document MenuController allowedSessionStates → IN_WORKSPACE 선언 + 테스트
 
 ## 탐색 패턴
@@ -29,7 +30,7 @@
 
 ## 원칙 갱신 제안
 
-(미확보)
+- **CQRS 검색 엔진 분리**: 복합 필터와 전문 검색이 필요한 도메인(문서)은 RDBMS JSONB 대신 검색 전문 엔진(Elasticsearch)을 Read Model로 사용한다. (2026-05-12)
 
 ## 아카이브 요약
 

@@ -79,6 +79,10 @@ dependencyResolutionManagement {
             library("bouncycastle-bcprov", "org.bouncycastle", "bcprov-jdk18on").versionRef("bouncycastle")
             bundle("jjwt-runtime", listOf("jjwt-impl", "jjwt-jackson"))
 
+            // Elasticsearch
+            version("elasticsearch", "9.3.3")
+            library("spring-elasticsearch", "org.springframework.boot", "spring-boot-starter-data-elasticsearch").withoutVersion()
+
             // Test - Core
             library("reactor-test", "io.projectreactor", "reactor-test").withoutVersion()
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").versionRef("kotest")

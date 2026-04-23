@@ -21,6 +21,7 @@ Kafka `handbook-events` 토픽을 통한 도메인 이벤트의 스키마·발�
   - `interfaces/event/EventMessageListener.kt`
 - **assistant** — `VALIDATION_REQUESTED` 수신하여 품질 검증 실행
   - `interfaces/event/ValidationEventListener.kt`
+- **search-document** — `DOCUMENT_CREATED`, `DOCUMENT_DELETED` 수신하여 ES 인덱스 동기화
 - **webhook-service** (신규) — 전체 이벤트 → 웹훅 필터 매칭 → HTTP POST
 
 ### 프론트엔드 (SSE 경유)

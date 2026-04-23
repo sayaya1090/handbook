@@ -48,6 +48,7 @@ graph TB
     subgraph "Infrastructure"
         Kafka["Kafka"]
         PostgreSQL["PostgreSQL"]
+        Elasticsearch["Elasticsearch"]
         LLM["LLM API"]
         K8s["Kubernetes"]
     end
@@ -110,7 +111,8 @@ graph TB
     SearchDoc --> Auth
     SearchDoc --> Document
     SearchDoc --> Activity
-    SearchDoc --> PostgreSQL
+    SearchDoc --> Elasticsearch
+    SearchDoc --> Kafka
     Event --> Document
     Event --> Schema
 ```
@@ -749,7 +751,7 @@ client/
 
 ### 18. Search-Document 모듈
 
-**역할:** 문서 읽기 전용 백엔드 서비스 (CQRS 읽기 측). Gateway에 "documents" 메뉴를 제공한다.
+**역할:** 문서 읽기 전용 백엔드 서비스 (CQRS 읽기 측). Elasticsearch를 기반으로 전문 검색(Full-text Search)과 필터링을 제공하며, Gateway에 "documents" 메뉴를 제공한다. Kafka를 통해 `persist-document`의 변경 이벤트를 수신하여 Elasticsearch 인덱스를 실시간 동기화한다.
 
 **계층 구조:**
 
@@ -758,7 +760,8 @@ client/
 ├── usecase/         DocumentSearchService, DocumentRepository
 └── interfaces/
     ├── api/         DocumentController (GET 검색/단건/전문검색/이력/diff), MenuController, SearchArgumentResolver
-    ├── database/    R2dbcDocumentEntity (EntityPageable), R2dbcDocumentRepository
+    ├── database/    ElasticsearchDocumentEntity, ElasticsearchDocumentRepository
+    ├── event/       KafkaDocumentEventListener (Kafka 소비자 → Elasticsearch 동기화)
     └── config/      SearchDocumentConfig (Bean 등록, WebFluxConfigurer)
 ```
 
@@ -767,12 +770,13 @@ client/
 | 결정 | 이유 |
 |------|------|
 | persist-document와 읽기/쓰기 분리 (CQRS) | 읽기 전용 서비스를 독립 스케일링 가능 |
+| Elasticsearch 도입 | PostgreSQL JSONB ILIKE의 성능 한계 극복 + 형태소 분석 기반 전문 검색 지원 |
+| Kafka 기반 실시간 동기화 | 쓰기 서비스(persist-document)의 부하를 분리하고 최종 일관성(Eventual Consistency) 모델로 검색 인덱스 갱신 |
 | SearchArgumentResolver | 쿼리 파라미터를 Search 객체로 자동 변환 |
-| R2dbcEntityTemplate 동적 쿼리 | 필터 조합에 따라 Criteria 동적 생성 |
-| window function count(*) OVER() | 단일 쿼리로 데이터 + 총 개수 동시 조회 |
-| 다양한 날짜 포맷 지원 | ISO-8601, yyyyMMdd, yyyy.MM.dd 등 파싱 |
+| Elasticsearch Criteria 쿼리 | 복합 필터와 전문 검색 쿼리를 동적으로 조합 |
+| window function count(*) OVER() | (PostgreSQL 병행 사용 시) 단일 쿼리로 데이터 + 총 개수 동시 조회 |
 
-**의존성:** document (Document), activity (Menu, Tool), authentication, R2DBC PostgreSQL
+**의존성:** document (Document), activity (Menu, Tool), authentication, Elasticsearch, Kafka
 
 ---
 

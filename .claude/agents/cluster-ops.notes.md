@@ -6,6 +6,7 @@
 
 ## 요청 로그
 
+- 2026-05-12: Elasticsearch 추가 → 인프라 확장 및 검색 동기화 설정
 - 2026-04-23: ArgoCD synchronization of 'handbook-operator' and 'runner-set' verified; GRADLE_OPTS memory-limit fix applied.
 - 2026-04-18: DB orphan+users drift 정리 실행 → workspace/group CASCADE, users DROP+재적용
 - 2026-04-18: 재인증 후 dev 배포+DB drift 실측 → d9ebfb7 전파확인, users 스키마 drift 7개, orphan created_by 13건

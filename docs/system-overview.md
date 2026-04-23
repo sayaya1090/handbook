@@ -83,7 +83,7 @@ flowchart TB
 | login | 8081 | OAuth2(Google) + JWT 발급 | PostgreSQL |
 | search-type | 8082 | 타입 조회 (CQRS Read) | PostgreSQL |
 | persist-type | 8083 | 타입 CUD + 이벤트 발행 | PostgreSQL, Kafka |
-| search-document | 8084 | 문서 조회 (CQRS Read) | PostgreSQL |
+| search-document | 8084 | 문서 조회 (CQRS Read) | Elasticsearch |
 | persist-document | 8085 | 문서 CUD + 이벤트 발행 | PostgreSQL, Kafka |
 | persist-workspace | 8086 | 워크스페이스 CUD + 이벤트 발행 | PostgreSQL, Kafka |
 | assistant | 8087 | AI 에이전트 (OpenAI) — optional | Kafka |
@@ -235,3 +235,5 @@ JVM 백엔드와 동일한 Release Train 흐름을 따르되, deploy 액션은 A
 | `handbook-kafka` | `classpath:kafka.yaml` | `infrastructure/templates/kafka/kafka.yaml` | persist-\*, event-broadcaster, assistant |
 | `handbook-authentication` | `classpath:authentication.yaml` | `infrastructure/templates/authentication/authentication.yaml` | gateway, event-broadcaster, persist-\*, search-\* |
 | `observability` | `classpath:observability.yaml` | `infrastructure/templates/observability/configmap.yaml` | 모든 Spring 서비스 (management/health probes/metrics tags/prometheus exposure/console 로깅 패턴 — correlationId 포함) |
+tionId 포함) |
+posure/console 로깅 패턴 — correlationId 포함) |
