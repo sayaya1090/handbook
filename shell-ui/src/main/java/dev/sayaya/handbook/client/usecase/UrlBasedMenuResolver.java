@@ -48,6 +48,7 @@ public class UrlBasedMenuResolver {
     }
     private void onUriChanged(String newUri) {
         if(newUri.startsWith(BASE_URL)) newUri = newUri.substring(BASE_URL.length());
+        if(!newUri.startsWith("/")) newUri = "/" + newUri;
         lastKnownUri = newUri;
         if(!map.isEmpty()) resolve(newUri);
     }

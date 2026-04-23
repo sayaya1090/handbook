@@ -1,8 +1,13 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.SessionState;
+import dev.sayaya.handbook.client.domain.Workspace;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.SessionStateKind;
+import dev.sayaya.rx.subject.BehaviorSubject;
+import elemental2.core.JsArray;
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,27 +23,33 @@ import static elemental2.dom.DomGlobal.window;
 @Singleton
 public class WorkspaceOnboardingBootstrapper {
     private final SessionStateProvider sessionStateProvider;
+    private final WorkspaceList workspaceList;
     private final MenuList menuList;
     private final MenuSelected menuSelected;
+    private final BehaviorSubject<String> uri;
     private boolean loaded = false;
 
     @Inject
     public WorkspaceOnboardingBootstrapper(SessionStateProvider sessionStateProvider,
+                                         WorkspaceList workspaceList,
                                          MenuList menuList,
-                                         MenuSelected menuSelected) {
+                                         MenuSelected menuSelected,
+                                         BehaviorSubject<String> uri) {
         this.sessionStateProvider = sessionStateProvider;
+        this.workspaceList = workspaceList;
         this.menuList = menuList;
         this.menuSelected = menuSelected;
+        this.uri = uri;
     }
 
     public void initialize() {
         sessionStateProvider.subscribe(state -> recompute());
+        workspaceList.subscribe(workspaces -> recompute());
         menuList.subscribe(menus -> recompute());
     }
 
     private void recompute() {
         SessionState state = sessionStateProvider.getValue();
-        // [Issue 3] AUTHENTICATED 가 아닌 상태가 되면 loaded 플래그를 리셋하여 SPA 상태 누수 방지
         if (state == null || state.kind() != SessionStateKind.AUTHENTICATED) {
             loaded = false;
         }
@@ -48,21 +59,22 @@ public class WorkspaceOnboardingBootstrapper {
         if (state != null && state.kind() == SessionStateKind.AUTHENTICATED && menus != null && !menus.isEmpty()) {
             menus.stream()
                  .filter(menu -> {
-                     // [Issue 1] 제목 매칭 대신 URL 패턴 기반으로 검색 (다국어/계층 대응)
-                     if (menu.urlRegex() == null) return false;
-                     for (String regex : menu.urlRegex()) {
-                         if (regex != null && regex.contains("/workspaces")) return true;
+                     if (menu.title() != null && menu.title().toLowerCase().contains("workspace")) return true;
+                     JsPropertyMap<Object> map = Js.cast(menu);
+                     Object raw = map.get("url_regex");
+                     if (raw instanceof JsArray) {
+                         JsArray<String> regexes = Js.cast(raw);
+                         for (int i = 0; i < regexes.length; i++) {
+                             String regex = regexes.getAt(i);
+                             if (regex != null && regex.contains("/workspaces")) return true;
+                         }
                      }
                      return false;
                  })
                  .findFirst()
                  .ifPresent(menu -> {
-                     String currentHash = window.location.hash;
-                     if ("#workspaces".equalsIgnoreCase(currentHash) || "workspaces".equalsIgnoreCase(currentHash)) {
-                         menuSelected.next(menu);
-                     } else {
-                         window.location.hash = "workspaces";
-                     }
+                     // 해시 대신 시스템 공식 URI 스트림을 사용하여 클린 URL 네비게이션 수행
+                     uri.next("/workspaces");
                      loaded = true;
                  });
         }
