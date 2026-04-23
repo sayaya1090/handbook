@@ -13,8 +13,7 @@ import static elemental2.dom.DomGlobal.window;
 /**
  * 온보딩 부트스트래퍼.
  * <p>사용자가 인증되었으나 워크스페이스가 없는 상태(AUTHENTICATED)에서,
- * 메뉴 목록이 로드되면 "workspaces" 메뉴를 자동으로 선택하여
- * 워크스페이스 생성/참여 화면으로 유도한다.</p>
+ * 워크스페이스 관리 기능이 있는 메뉴가 감지되면 해당 화면으로 자동 유도한다.</p>
  */
 @Singleton
 public class WorkspaceOnboardingBootstrapper {
@@ -38,17 +37,28 @@ public class WorkspaceOnboardingBootstrapper {
     }
 
     private void recompute() {
-        if (loaded) return;
         SessionState state = sessionStateProvider.getValue();
+        // [Issue 3] AUTHENTICATED 가 아닌 상태가 되면 loaded 플래그를 리셋하여 SPA 상태 누수 방지
+        if (state == null || state.kind() != SessionStateKind.AUTHENTICATED) {
+            loaded = false;
+        }
+        if (loaded) return;
+        
         List<Menu> menus = menuList.getValue();
         if (state != null && state.kind() == SessionStateKind.AUTHENTICATED && menus != null && !menus.isEmpty()) {
             menus.stream()
-                 .filter(menu -> "workspaces".equalsIgnoreCase(menu.title()))
+                 .filter(menu -> {
+                     // [Issue 1] 제목 매칭 대신 URL 패턴 기반으로 검색 (다국어/계층 대응)
+                     if (menu.urlRegex() == null) return false;
+                     for (String regex : menu.urlRegex()) {
+                         if (regex != null && regex.contains("/workspaces")) return true;
+                     }
+                     return false;
+                 })
                  .findFirst()
                  .ifPresent(menu -> {
                      String currentHash = window.location.hash;
                      if ("#workspaces".equalsIgnoreCase(currentHash) || "workspaces".equalsIgnoreCase(currentHash)) {
-                         // 이미 해시가 설정되어 있어 hashchange 가 안 일어날 경우를 대비해 직접 선택 트리거
                          menuSelected.next(menu);
                      } else {
                          window.location.hash = "workspaces";
