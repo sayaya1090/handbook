@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.interfaces.event
 
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.event.DocumentEvent
 import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.interfaces.database.ElasticsearchDocumentEntity
@@ -26,7 +25,7 @@ class DocumentEventListener(
     @KafkaListener(topics = ["handbook-events"], groupId = "search-document-es-sync")
     fun onEvent(message: String) {
         try {
-            val event: Event<*> = objectMapper.readValue(message)
+            val event = objectMapper.readValue(message, Event::class.java)
             if (event is DocumentEvent) {
                 sync(event).subscribe()
             }

@@ -1925,7 +1925,7 @@ visible(menu, state) =
 
 ### 7.2 성능 최적화
 - **DB 인덱스**: documents 테이블 (workspace, type, serial), (workspace, effect_date_time, expire_date_time) 복합 인덱스.
-- **Elasticsearch 전문 검색**: 대량의 문서 검색 및 복합 필터링 성능을 위해 Elasticsearch를 활용한다. PostgreSQL은 원천 데이터(Source of Truth)를 보관하고, 검색 쿼리는 ES 인덱스를 통해 처리한다.
+- **Elasticsearch 9.3.3 전문 검색**: 대량의 문서 검색 및 복합 필터링 성능을 위해 Elasticsearch 9.3.3을 활용한다. PostgreSQL은 원천 데이터(Source of Truth)를 보관하고, 검색 쿼리는 ES 인덱스를 통해 처리한다.
 - **검색 지연 시간**: 전문 검색 및 복합 필터링 시 평균 응답 시간 200ms 이하를 유지한다.
 - **데이터 동기화**: PostgreSQL 변경 사항은 Kafka 이벤트를 통해 비동기로 Elasticsearch에 반영되며, 동기화 지연 시간(Lag)은 평균 1초 이내로 관리한다.
 - **Export 스트리밍**: 대량 내보내기 시 chunked transfer encoding 사용. 메모리 일괄 적재 금지.

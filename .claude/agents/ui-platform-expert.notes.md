@@ -1,26 +1,15 @@
-# ui-platform-expert Operational Notes
+## 요청 로그
 
-매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
+- 2026-04-23: 온보딩 레이스 컨디션 수정 -> 메뉴 로딩이 워크스페이스 체크보다 선행되도록 보장
+- 2026-04-23: GWT 모듈 레이지 로딩 트리거 개선 -> Onboarding Bootstrapper 에서 window.location.hash 를 사용하여 workspace-ui 모듈이 정상적으로 로드되도록 수정
+- 2026-04-23: UI 정렬 수정 및 온보딩 복원 -> .shell-app-bar CSS 수정, Bootstrapper 복원, 메뉴 호버 방어 로직 추가
+- 2026-04-21: GWT 빌드 안정화 -> GraalVM 25 + proxy.crt 환경 전수 테스트 통과 확인 및 포트 충돌 자바 프로세스 정리 가이드 추가
 
 ---
 
-## 요청 로그
+# ui-platform-expert Operational Notes
 
-- 2026-04-23: GWT 모듈 레이지 로딩 트리거 개선 → Onboarding Bootstrapper 에서 window.location.hash 를 사용하여 workspace-ui 모듈이 정상적으로 로드되도록 수정
-- 2026-04-23: UI 정렬 수정 및 온보딩 복원 → .shell-app-bar CSS 수정, Bootstrapper 복원, 메뉴 호버 방어 로직 추가
-- 2026-04-18: Phase C shell-ui SessionState+가시성+Bootstrapper 단순화 → SessionState 계층·SessionStateProvider observable 설계, MenuRail disabled 렌더·CTA 폴백, Bootstrapper 제거 권고 구현안 반환
-- 2026-04-18: WS 없을 때 메뉴 비활성화 설계안 → 3안 제시(백엔드 requiresWorkspace / 프론트 정책 / 메뉴 hide), 권장=2안(프론트 정책, workspace-ui만 활성)
-- 2026-04-18: 실제 Edit 수행 — A(햄버거 drawer 직속)·B(.workspace max-width 24rem) 완료, C(WorkspaceRepository) 는 Write 툴 부재로 신규 파일 생성 불가 → 미착수. 이슈 A 는 DrawerElement/MenuRailElement/shell.css(main+test)/DrawerTest.kt 모두 동기화, 회귀 가드(rail[hide]에서 햄버거 visible) 신설
-- 2026-04-18: 직전 세션 설계만 반환 누락 → 이번엔 실제 파일 Edit 수행. 3건(A: 햄버거 drawer 직속, B: workspace max-width 24rem, C: WorkspaceRepository 신설 + User.workspaces 제거) 전부 main/test 경로 동기 적용
-- 2026-04-18: 3건 병렬 (햄버거 rail-hide 가시성 + WS 드롭다운 폭 + User.workspaces 제거) → 햄버거 DOM 을 drawer 직속 (drawer > .body 앞) 으로 이관해 menu-rail[hide] 와 독립 + .workspace max-width 16→22rem / `.shell-app-bar-center` gap 정리 + `WorkspaceListRepository` 신설 (search-workspace `/workspaces` 구독) + `User.workspaces` 제거
-- 2026-04-18: expand 에서 .collapse 가 좌상단 노출 + 햄버거 마진 없음 지적 → .rail[expand] .item .collapse 를 display:none 으로 (visibility:hidden + absolute 는 position:absolute 가 흐름에서 빼내 (0,0) 에 잔류 렌더), 모바일 override 도 display 키 추가
-- 2026-04-18: 메뉴 아이콘 absolute inset:0 → display 토글 롤백 → inset:0 이 md-item 전체(16rem×48px) 로 늘어나 레이블과 겹침 확인, (A) 원복 채택 / 햄버거 flex-start 유지
-- 2026-04-18: outline/filled 아이콘 display:none → opacity+visibility 크로스페이드 전환 → main/test shell.css 동기화 + DrawerTest display → visibility 어설션 업데이트, 방식 변형 C (absolute inset:0 스택)
-- 2026-04-18: 햄버거 고정 재확인 + 메뉴 아이콘 2개 오버랩 → shell.css 에 `align-self:flex-start + margin-left:8px` 적용 확인, md-item start slot 단일 아이콘 구조 확인 (outlined/filled 2-icon 없음)
-- 2026-04-18: MenuRail collapse/expand 아이콘 시프트 → `.rail[expand] padding 0 0.6rem + align-items:flex-start` 제거 + 햄버거 `align-self:center → flex-start + margin-left:8px` 로 icon center x=28px 고정
-- 2026-04-18: 햄버거 드로어 우측 밀림 회귀 진단 → AppBar leading mount + AppBar `left:var(--drawer-width)` 조합 원인, MenuRail 상단 이관 권고 (사용자 승인 후 수정 완료)
-
-- 2026-04-21: GraalVM 25 + `c:\proxy.crt` 환경에서 `shell-ui` GWT 컴파일 및 165개 테스트 전수 통과 확인. 포트 충돌(`Address already in use`) 발생 시 자바 프로세스 정리(`taskkill`) 필수.
+매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
 
 ## 탐색 패턴
 
@@ -58,7 +47,7 @@
 
 ## 아카이브 요약
 
-(없음)
+- 2026-04-18: Phase C Shell UI 고도화 — 햄버거 위치 Drawer 이관, 메뉴 아이콘 가시성 제어(display:none), SessionStateProvider observable 전환 등 레이아웃·상태 동기화 이슈 해결
 
 ---
 

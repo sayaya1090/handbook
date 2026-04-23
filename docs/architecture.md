@@ -48,7 +48,7 @@ graph TB
     subgraph "Infrastructure"
         Kafka["Kafka"]
         PostgreSQL["PostgreSQL"]
-        Elasticsearch["Elasticsearch"]
+        Elasticsearch["Elasticsearch 9.3.3"]
         LLM["LLM API"]
         K8s["Kubernetes"]
     end
@@ -162,6 +162,36 @@ graph LR
 - `domain`: 프레임워크 의존성 없음. 순수 비즈니스 규칙과 유효성 검증만 포함
 - `usecase`: 프레임워크 의존성 없음 (`@Service`, `@Component` 금지). 비즈니스 로직 조합
 - `interfaces`: Spring, Jackson 등 프레임워크 의존 허용. Bean 등록, 어댑터 구현
+
+### Shell-UI 초기화 및 온보딩 시퀀스
+
+워크스페이스가 없는 사용자의 자동 진입 흐름은 여러 비동기 데이터의 결합으로 이루어진다.
+
+```mermaid
+sequenceDiagram
+    participant B as WorkspaceOnboardingBootstrapper
+    participant S as SessionStateProvider
+    participant M as MenuList
+    participant H as HistoryManager
+
+    Note over B: initialize() 호출
+    par 데이터 로딩 (비동기)
+        Gateway->>S: /user (SessionState: AUTHENTICATED)
+        Gateway->>M: /menus (MenuList: Loaded)
+    end
+
+    S->>B: stateChanged (subscribe)
+    B->>B: recompute() - MenuList 가 비었으면 대기
+    
+    M->>B: menusChanged (subscribe)
+    B->>B: recompute() - 모든 조건 충족 확인
+
+    alt Hash Navigation 필요
+        B->>H: window.location.hash = "workspaces"
+    else 이미 Hash 가 설정된 경우
+        B->>B: MenuSelected.next(menu) 직접 호출 (지연 로딩 트리거)
+    end
+```
 
 ---
 

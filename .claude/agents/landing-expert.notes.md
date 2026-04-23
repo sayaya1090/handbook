@@ -1,12 +1,12 @@
-# landing-expert Operational Notes
-
-매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
-
----
-
 ## 요청 로그
 
 (아직 기록 없음)
+
+---
+
+# landing-expert Operational Notes
+
+매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
 
 ## 탐색 패턴
 
@@ -14,16 +14,12 @@
 
 ## 반복 함정
 
-- **cloaking 유혹**: "로그인 사용자만 앱으로 리다이렉트" 는 **쿠키 기반**이 필수.
-  User-Agent/Referrer 분기는 정책 위반.
-- **빌드 결정성 파괴**: 프리렌더 중 시간/난수/외부 API 호출 포함 시 빌드 재현 불가.
+(미확보)
 
 ## 내부 체크리스트
 
-- [ ] 랜딩 콘텐츠 변경 시 → landing-content 공통 원소스 수정 → SEO + 앱 내부 양쪽 자동 반영 확인
-- [ ] 새 언어 추가 시 → i18n 파일 + hreflang 양방향 + sitemap 엔트리
-- [ ] 새 OpenAPI 엔드포인트 공개 시 → llms.txt 에도 반영
-- [ ] `/app.html` noindex 메타는 절대 제거 금지 (thin content 색인 방지)
+- [ ] 프리렌더 결과물 확인 -> JS 의존성 없는 정적 HTML 생성 여부 검증
+- [ ] SEO 메타 태그 정합성 -> 언어별 hreflang 및 canonical URL 확인
 
 ## 과거 실수
 

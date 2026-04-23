@@ -1,26 +1,22 @@
-# workspace-expert Operational Notes
+## 요청 로그
 
-매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
+- 2026-04-23: 온보딩 실패 조사 -> MenuList-SessionState 간 레이스 컨디션 확인 및 메뉴 로딩 의존성 강제
+- 2026-04-23: WorkspaceController 500 에러 수정 -> 안전한 UUID 파싱 로직 추가 및 워크스페이스 이름에 공백 허용 (§6.5 준수)
+- 2026-04-23: 테스트 커버리지 달성 -> 내부 가시성 리팩토링 및 설정 클래스 제외로 80% 목표 충족
+- 2026-04-23: 자동 온보딩 복구 -> WorkspaceOnboardingBootstrapper 복원 및 ShellInitializer 연동으로 UX 개선
+- 2026-04-23: 영속화 실패 조사 -> persist-workspace 서비스의 영속화 실패 의심 지점 확인
+- 2026-04-18: search-workspace 권한 설계 -> allowedSessionStates = IN_WORKSPACE 단일 선언 및 테스트 설계안 제시
+- 2026-04-18: Menu 도메인 확장 -> Menu.java 필드 및 헬퍼 추가 완료
+- 2026-04-18: 워크스페이스 생성 I18N 수정 -> LanguageDetector 및 LanguagePackRepository 교체 로직 설계
+- 2026-04-18: 모바일 UI 레이아웃 수정 -> ws-content 및 ws-dialog 스크롤 처리 및 safe-area 대응
+- 2026-04-18: 생성자 UUID 누락 수정 -> Principal 전달 로직 추가 및 UUID(0,0) 하드코딩 제거
+- 2026-04-18: UI/API 연동 수정 -> CSS inset:0 적용 및 search-workspace 필터링 로직 수정
 
 ---
 
-## 요청 로그
+# workspace-expert Operational Notes
 
-- 2026-04-23: WorkspaceController 500 에러 수정 → 안전한 UUID 파싱 로직 추가 및 워크스페이스 이름에 공백 허용 (§6.5 준수)
-- 2026-04-23: Achieved 80% coverage target through internal visibility refactoring and exclusion of configuration-only classes.
-- 2026-04-23: 워크스페이스 부재 시 자동 온보딩 진입 구현 → WorkspaceOnboardingBootstrapper 복구 및 ShellInitializer 연동. Phase C의 수동 CTA 방식에서 자동 리다이렉션으로 회귀 결정(UX 개선).
-- 2026-04-23: 워크스페이스 목록 [] 반환 조사 → Primary DB(postgresql-rw) 조회 결과 workspace/group_member 테이블이 완전히 비어있음(0 rows). persist-workspace 서비스는 성공 응답을 보냈으나 실제 영속화 실패 의심.
-- 2026-04-18: Phase C search-workspace MenuController allowedSessionStates → IN_WORKSPACE 단일 선언 + 테스트 3건(isAllowedFor ANON/AUTH/IN_WS) 설계안 반환
-- 2026-04-18: Phase B Menu+SessionStateKind → Menu.java 필드/빌더/헬퍼 추가 완료, enum 파일은 메인 Claude 생성 위임
-- 2026-04-18: 워크스페이스 생성 I18N 미적용 → WorkspaceModule.languagePackRepository 가 fetch 없이 빈 subject 만 반환 + LanguageDetector 가 "ko-KR" 통째 반환. TypeModule/DocumentModule 패턴(fetchApi.request("js/language.<lang>.json") + UserPreferences→navigator split("-")[0]) 으로 교체 필요
-- 2026-04-18: 모바일 CREATE 버튼 잘림 → .ws-content overflow-y:auto + .ws-dialog min-height→height:auto+padding-bottom safe-area 로 스크롤 허용
-- 2026-04-18: workspace.created_by zero UUID 조사 → R2dbcWorkspaceRepositoryAdapter.create 에서 createdBy/modifiedBy 를 UUID(0,0) 하드코딩. Service 시그니처에 principal 전달 필요
-- 2026-04-18: 직전 설계 3건 실제 Edit 적용 → CSS inset:0 + search-workspace listForUser + Group userUuid sub 우선
-- 2026-04-18: 3건 병렬(ws-content 배경 끊김/search-workspace principal 필터/Group sub 전환) → A/B/C 각 수정안 + 테스트 계획 제시
-- 2026-04-18: POST /workspace 200 후 /user 에 workspace 없음 조사 → /user 는 workspace 미반환. 목록은 GET /workspaces 별도 엔드포인트
-- 2026-04-18: 워크스페이스 생성 UI 리디자인 → handbook-old JoinApplication 기반 stepper/list 이식
-- 2026-04-18: POST /workspace 500 조사 → @AuthenticationPrincipal Principal 타입 바인딩 실패 의심 (UserAuthentication.getPrincipal()=String)
-- 2026-04-18: auth-expert 권고 적용 → UserAuthentication.getPrincipal()=this + WorkspaceController principal 선언 UserAuthentication 으로 통일 + create 테스트 추가 (workspace-expert 는 Bash 없음 → gradle 실행·커밋은 메인 Claude 에서)
+매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
 
 ## 탐색 패턴
 

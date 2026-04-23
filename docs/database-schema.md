@@ -163,9 +163,9 @@ erDiagram
 | active | Boolean | 활성 여부 (연속 실패 시 false) |
 | created_at | Instant | 등록 시각 |
 
-## Elasticsearch 인덱스 설계
+## Elasticsearch 9.3.3 인덱스 설계
 
-문서 전문 검색 및 고성능 조회를 위해 Elasticsearch를 사용한다.
+문서 전문 검색 및 고성능 조회를 위해 Elasticsearch 9.3.3을 사용한다.
 
 ### 'documents' 인덱스 매핑
 

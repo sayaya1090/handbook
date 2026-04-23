@@ -1,13 +1,13 @@
-# document-expert Operational Notes
+## 요청 로그
 
-매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
+- 2026-05-12: 문서 검색 엔진 전환 -> Elasticsearch 9.3.3 도입으로 검색 성능 강화
+- 2026-04-18: search-document MenuController allowedSessionStates -> IN_WORKSPACE 선언 + 테스트
 
 ---
 
-## 요청 로그
+# document-expert Operational Notes
 
-- 2026-05-12: 문서 검색 엔진 전환 → Elasticsearch 도입으로 검색 성능 강화
-- 2026-04-18: search-document MenuController allowedSessionStates → IN_WORKSPACE 선언 + 테스트
+매 호출마다 `## 요청 로그` 최상단에 한 줄 추가. 30개 초과 시 압축 (정의 파일 "## 노트 갱신" 참조).
 
 ## 탐색 패턴
 
@@ -30,7 +30,7 @@
 
 ## 원칙 갱신 제안
 
-- **CQRS 검색 엔진 분리**: 복합 필터와 전문 검색이 필요한 도메인(문서)은 RDBMS JSONB 대신 검색 전문 엔진(Elasticsearch)을 Read Model로 사용한다. (2026-05-12)
+- **CQRS 검색 엔진 분리**: 복합 필터와 전문 검색이 필요한 도메인(문서)은 RDBMS JSONB 대신 검색 전문 엔진(Elasticsearch 9.3.3)을 Read Model로 사용한다. (2026-05-12)
 
 ## 아카이브 요약
 

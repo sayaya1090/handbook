@@ -33,10 +33,10 @@ data class ElasticsearchDocumentEntity(
     val expireDateTime: Instant,
     
     @Field(type = FieldType.Date)
-    val createDateTime: Instant,
+    val createDateTime: Instant?,
     
     @Field(type = FieldType.Keyword)
-    val creator: String,
+    val creator: String?,
     
     @Field(type = FieldType.Object)
     val data: Map<String, Any?>,
@@ -61,7 +61,7 @@ data class ElasticsearchDocumentEntity(
 
     companion object {
         fun fromDomain(workspace: UUID, doc: dev.sayaya.handbook.domain.Document) = ElasticsearchDocumentEntity(
-            id = doc.id,
+            id = doc.id ?: UUID.randomUUID(), // id 가 없는 경우 생성 (onboarding/import 상황 고려)
             workspace = workspace,
             type = doc.type,
             serial = doc.serial,
@@ -71,7 +71,7 @@ data class ElasticsearchDocumentEntity(
             creator = doc.creator,
             data = doc.data,
             status = doc.status,
-            rev = doc.rev
+            rev = doc.rev ?: 0L
         )
     }
 }

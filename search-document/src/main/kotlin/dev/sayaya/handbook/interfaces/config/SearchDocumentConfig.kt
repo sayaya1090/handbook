@@ -10,7 +10,6 @@ import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.interfaces.api.SearchArgumentResolver
-import dev.sayaya.handbook.interfaces.database.R2dbcDocumentSearchRepository
 import dev.sayaya.handbook.interfaces.database.R2dbcStatsRepository
 import dev.sayaya.handbook.usecase.DocumentSearchService
 import dev.sayaya.handbook.usecase.StatsService
@@ -34,11 +33,11 @@ class SearchDocumentConfig : WebFluxConfigurer {
         .build()
 
     @Bean
-    fun documentSearchRepository(template: R2dbcEntityTemplate, objectMapper: ObjectMapper) =
-        R2dbcDocumentSearchRepository(template, objectMapper)
+    fun documentSearchRepository(operations: org.springframework.data.elasticsearch.core.ReactiveElasticsearchOperations) =
+        dev.sayaya.handbook.interfaces.database.ElasticsearchDocumentSearchRepository(operations)
 
     @Bean
-    fun documentSearchService(repo: R2dbcDocumentSearchRepository) = DocumentSearchService(repo)
+    fun documentSearchService(repo: dev.sayaya.handbook.usecase.DocumentSearchRepository) = DocumentSearchService(repo)
 
     @Bean
     fun statsRepository(databaseClient: DatabaseClient) = R2dbcStatsRepository(databaseClient)

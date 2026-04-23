@@ -9,11 +9,12 @@ plugins {
 }
 dependencies {
     implementation(project(":document"))
+    implementation(project(":event"))
     implementation(project(":search"))
     implementation(project(":activity"))
     implementation(project(":authentication"))
     implementation(libs.bundles.spring.client)
-    implementation(libs.bundles.kotlin-webflux)
+    implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)
     implementation(libs.spring.elasticsearch)
     implementation(libs.spring.kafka)

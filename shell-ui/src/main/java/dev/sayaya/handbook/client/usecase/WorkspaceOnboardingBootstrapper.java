@@ -20,13 +20,16 @@ import static elemental2.dom.DomGlobal.window;
 public class WorkspaceOnboardingBootstrapper {
     private final SessionStateProvider sessionStateProvider;
     private final MenuList menuList;
+    private final MenuSelected menuSelected;
     private boolean loaded = false;
 
     @Inject
     public WorkspaceOnboardingBootstrapper(SessionStateProvider sessionStateProvider,
-                                         MenuList menuList) {
+                                         MenuList menuList,
+                                         MenuSelected menuSelected) {
         this.sessionStateProvider = sessionStateProvider;
         this.menuList = menuList;
+        this.menuSelected = menuSelected;
     }
 
     public void initialize() {
@@ -43,7 +46,13 @@ public class WorkspaceOnboardingBootstrapper {
                  .filter(menu -> "workspaces".equalsIgnoreCase(menu.title()))
                  .findFirst()
                  .ifPresent(menu -> {
-                     window.location.hash = "workspaces";
+                     String currentHash = window.location.hash;
+                     if ("#workspaces".equalsIgnoreCase(currentHash) || "workspaces".equalsIgnoreCase(currentHash)) {
+                         // 이미 해시가 설정되어 있어 hashchange 가 안 일어날 경우를 대비해 직접 선택 트리거
+                         menuSelected.next(menu);
+                     } else {
+                         window.location.hash = "workspaces";
+                     }
                      loaded = true;
                  });
         }
