@@ -31,7 +31,6 @@ client/
 │   ├── UrlBasedMenuResolver            # URL 정규식 매칭 → 메뉴 자동 선택
 │   ├── ToolBasedMenuResolver           # 도구 선택 → 부모 메뉴 역추적
 │   ├── WorkspaceList                   # 사용자의 워크스페이스 목록
-│   ├── WorkspaceOnboardingBootstrapper # 빈 WorkspaceList 감지 시 가상 onboarding Menu 를 MenuSelected 에 1회 push (UC-12)
 │   ├── SessionPollingService                  # JWT 만료 감시, 자동 갱신, 만료 경고/리다이렉트
 │   └── ModuleScriptManager             # 메뉴 선택 시 모듈 스크립트 동적 주입
 │

@@ -1,0 +1,5 @@
+<module rename-to="historytest">
+    <inherits name="dev.sayaya.handbook.Shell"/>
+    <entry-point class="dev.sayaya.handbook.client.history.TestApplication"/>
+    <source path="client"/>
+</module>

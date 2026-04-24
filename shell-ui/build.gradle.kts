@@ -31,7 +31,7 @@ tasks {
         sourceLevel = "auto"
         modules = listOf("dev.sayaya.handbook.Shell")
         devMode {
-            modules = listOf("dev.sayaya.handbook.Shell", "dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.OnboardingTest")
+            modules = listOf("dev.sayaya.handbook.Shell", "dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.HistoryTest")
             war = file("src/test/webapp")
         }
         generateJsInteropExports = true
