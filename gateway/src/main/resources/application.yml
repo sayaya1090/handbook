@@ -11,6 +11,7 @@ spring:
           uri: ${gateway.routes.login:http://localhost:8081}
           predicates:
             - Path=/auth/**,/oauth2/**,/login/**,/user
+          order: 1
         # 실시간 이벤트 (SSE) — search-document보다 먼저 매칭해야 한다
         - id: event-broadcaster
           uri: ${gateway.routes.event-broadcaster:http://localhost:8088}
@@ -22,45 +23,50 @@ spring:
               args:
                 name: eventBroadcasterCB
                 fallbackUri: forward:/fallback/empty
+          order: 2
         # 타입 조회
         - id: search-type
           uri: ${gateway.routes.search-type:http://localhost:8082}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=GET
+          order: 3
         # 타입 저장
         - id: persist-type
           uri: ${gateway.routes.persist-type:http://localhost:8083}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=PUT,DELETE
+          order: 4
         # 문서 조회 + 대시보드 통계
         - id: search-document
           uri: ${gateway.routes.search-document:http://localhost:8084}
           predicates:
             - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
             - Method=GET
+          order: 5
         # 문서 저장
         - id: persist-document
           uri: ${gateway.routes.persist-document:http://localhost:8085}
           predicates:
             - Path=/workspace/*/documents/**
             - Method=PUT,DELETE
+          order: 6
         # 워크스페이스 조회 (read-only, AI 에이전트 디스커버리 타겟)
         - id: search-workspace
           uri: ${gateway.routes.search-workspace:http://localhost:8089}
           predicates:
             - Path=/workspaces,/workspaces/**
             - Method=GET
+          order: 7
         # 워크스페이스
         - id: persist-workspace
           uri: ${gateway.routes.persist-workspace:http://localhost:8086}
           predicates:
             - Path=/workspace,/workspace/**
             - Method=POST,PUT,DELETE
-        # 실시간 이벤트 — 장애 시 빈 응답 (선택 서비스)
-        # CircuitBreaker 필터는 event-broadcaster, assistant에 적용
-        # 에이전트 (선택 서비스 — 장애 시 빈 응답)
+          order: 8
+        # 에이전트
         - id: assistant
           uri: ${gateway.routes.assistant:http://localhost:8087}
           predicates:
@@ -70,12 +76,22 @@ spring:
               args:
                 name: assistantCB
                 fallbackUri: forward:/fallback/empty
-        # 메뉴 (여러 서비스에서 합산 — MenuService에서 처리)
+          order: 9
         # 정적 리소스
         - id: static
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
-            - Path=/js/**,/css/**,/icons/**
+            - Path=/js/**,/css/**,/icons/**,/manifest.json,/service-worker.js,/wav/**,/favicon.ico
+          order: 10
+        # SPA Fallback: API나 정적 파일이 아닌 모든 HTML 요청을 app.html로 연결
+        - id: ui-fallback
+          uri: ${gateway.routes.static:http://localhost:8080}
+          predicates:
+            - Path=/**
+            - Header=Accept, .*text/html.*
+          filters:
+            - SetPath=/app.html
+          order: 1000
 server:
   port: ${SERVER_PORT:8080}
 cors:

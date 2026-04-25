@@ -3,8 +3,7 @@ package dev.sayaya.handbook
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
-
-@GwtHtml("src/test/webapp/historytest.html")
+@GwtHtml("historytest.html")
 internal class HistoryTest: GwtTestSpec({
 
     Given("HistoryManager가 초기화됨") {
@@ -46,6 +45,18 @@ internal class HistoryTest: GwtTestSpec({
             Then("uri 스트림의 현재 값이 '/direct-path'로 업데이트되어야 한다") {
                 // 노출된 프리미티브 값(current_uri) 확인
                 page.evaluate("window.current_uri") shouldBe "/direct-path"
+            }
+        }
+
+        When("포트 번호가 포함된 전체 URL 'http://localhost:18080/workspaces'가 입력되면") {
+            page.evaluate("""
+                window.test_uri_next('http://localhost:18080/workspaces');
+            """)
+            Thread.sleep(500)
+
+            Then("HistoryManager는 이를 '/workspaces'로 정규화하여 주소창에 반영해야 한다") {
+                // 버그: 현재 로직은 전체 URL을 그대로 pathname에 넣으려 시도함
+                page.evaluate("window.location.pathname") shouldBe "/workspaces"
             }
         }
     }

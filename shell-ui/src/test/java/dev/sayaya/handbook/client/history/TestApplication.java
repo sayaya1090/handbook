@@ -27,8 +27,13 @@ public class TestApplication implements EntryPoint {
     private void publishToWindow() {
         JsPropertyMap<Object> win = Js.asPropertyMap(window);
         // Java -> JS: URI 스트림의 현재 값을 문자열로 노출
+
         uri.subscribe(v -> win.set("current_uri", v));
-        
+        menuSelected.subscribe(m -> {
+            if (m == null) win.set("selected_menu", null);
+            else win.set("selected_menu", m.title());
+        });
+
         // JS -> Java: URI 스트림에 값을 입력하는 브릿지 함수
         win.set("test_uri_next", (Arg1<String>) (val) -> uri.next(val));
         

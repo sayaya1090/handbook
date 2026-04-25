@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Singleton
 public class UrlBasedMenuResolver {
-    private static final String BASE_URL = baseUrl();
     private final Map<JsRegExp, Menu> map = new ConcurrentHashMap<>();
     private final MenuList menu;
     private final Observable<String> uri;
@@ -47,10 +46,21 @@ public class UrlBasedMenuResolver {
         }
     }
     private void onUriChanged(String newUri) {
-        if(newUri.startsWith(BASE_URL)) newUri = newUri.substring(BASE_URL.length());
-        if(!newUri.startsWith("/")) newUri = "/" + newUri;
+        if (newUri == null) return;
+        // 1. 전체 URL이 들어온 경우 origin 제거
+        String origin = DomGlobal.window.location.origin;
+        if (newUri.startsWith(origin)) newUri = newUri.substring(origin.length());
+        
+        // 2. 프로토콜 포함 여부 재검사 (다른 origin이거나 예외 케이스)
+        if (newUri.contains("://")) {
+            int pathStart = newUri.indexOf("/", newUri.indexOf("://") + 3);
+            if (pathStart != -1) newUri = newUri.substring(pathStart);
+        }
+        
+        // 3. 선행 슬래시 보장
+        if (!newUri.startsWith("/")) newUri = "/" + newUri;
         lastKnownUri = newUri;
-        if(!map.isEmpty()) resolve(newUri);
+        if (!map.isEmpty()) resolve(newUri);
     }
     private void resolve(String uri) {
         if(map.isEmpty() || uri == null) return;
@@ -63,9 +73,5 @@ public class UrlBasedMenuResolver {
                 // URL 해석 결과로도 항상 HIDE 로 남겨 bottom-nav 만 노출한다.
                 drawer.next(drawer.isMobile() ? DrawerState.HIDE : DrawerState.COLLAPSE);
             });
-    }
-    private static String baseUrl() {
-        var location = DomGlobal.window.location;
-        return location.protocol + "//" + location.hostname + "/";
     }
 }

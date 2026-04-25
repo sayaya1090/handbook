@@ -22,7 +22,7 @@ public abstract class HostSharedModule {
         return new ViewportObserver();
     }
     @Provides @Singleton static BehaviorSubject<String> uri() {
-        return behavior(window.location.href);
+        return behavior(window.location.pathname);
     }
     @Provides @Singleton static BehaviorSubject<Render> render() {
         return behavior(null);

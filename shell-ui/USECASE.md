@@ -171,7 +171,7 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 (URL 직접 입력 또는 뒤로가기) |
-| **정상 흐름** | 1. 브라우저 URL이 변경된다 (직접 입력 또는 popstate 이벤트).<br>2. `UrlBasedMenuResolver`가 모든 메뉴의 `urlRegex` 패턴과 현재 URL을 매칭한다.<br>3. 매칭된 메뉴가 자동 선택된다.<br>4. UC-S2의 3~6단계가 실행된다. |
+| **정상 흐름** | 1. 브라우저 URL이 변경된다 (직접 입력 또는 popstate 이벤트).<br>2. `UrlBasedMenuResolver`가 모든 메뉴의 `urlRegex` 패턴과 현재 **pathname**(정규화된 경로)을 매칭한다.<br>3. 매칭된 메뉴가 자동 선택된다.<br>4. UC-S2의 3~6단계가 실행된다. |
 
 ## UC-S5: Drawer 토글
 
@@ -181,6 +181,7 @@ sequenceDiagram
 | **정상 흐름** | 1. 햄버거 버튼(MenuToggleButton)을 클릭한다.<br>2. `DrawerMode`가 EXPAND ↔ COLLAPSE를 토글한다.<br>3. Menu Rail이 반응: EXPAND(아이콘+텍스트) 또는 COLLAPSE(아이콘만).<br>4. Tool Rail이 반응: EXPAND → COLLAPSE, 또는 도구 개수/MenuRail 상태에 따라 HIDE. |
 | **대안 흐름 (모바일)** | 뷰포트 < 768px일 때 `DrawerMode`가 OVERLAY 상태로 전환된다. EXPAND/COLLAPSE 대신 OVERLAY ↔ HIDE를 토글하며, 메뉴 선택 시 자동으로 HIDE된다. 왼쪽 가장자리 스와이프로도 열 수 있다. |
 | **SVG 애니메이션** | 햄버거 아이콘이 EXPAND↔COLLAPSE 전환 시 부드럽게 변형된다. |
+
 
 ## UC-S6: 메뉴 호버 상태 기반 UX (2026-04-17 재정의)
 
@@ -362,7 +363,7 @@ sequenceDiagram
 | UC-S1 (인증) | 초기 로딩 → 메뉴 선택 | 유스케이스, Frame+API | Application, UserApi, UserProvider, MenuList, MenuApi, UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, WorkspaceList, DrawerMode | DrawerTest: 메뉴 초기화, Drawer DOM 존재, 메뉴 토글 버튼, 메뉴 레일 아이템 수 = 메뉴 수, 아이콘 수 = 아이템 수 |
 | UC-S2 (메뉴선택) | 메뉴 클릭 → 모듈 로딩 | 유스케이스, Drawer UI | MenuRailElement, MenuRailItemElement, MenuSelected, ToolSelected, ModuleScriptManager, HistoryManager, DrawerMode | DrawerTest: URL 버튼 클릭 → selected 아이템 정확히 1개, 다른 URL 클릭 → 이전 선택 해제 + 새 선택, 선택 아이템에서 `.icon-outline` 숨김·`.icon-filled` 표시, 미선택 아이템은 그 반대 |
 | UC-S3 (도구실행) | 메뉴 클릭 → 모듈 로딩 (alt) | 유스케이스, Drawer UI | ToolRailElement, ToolRailItemElement, ToolSelected, ToolExecutionManager | DrawerTest: 메뉴1 도구 ≤1, 메뉴2 도구 >1, 같은 메뉴 다른 Tool URL → 선택 아이템 유지 |
-| UC-S4 (딥링크) | 초기 로딩과 동일 경로 | 유스케이스 | UrlBasedMenuResolver, HistoryManager, MenuSelected | DrawerTest: URL hash 변경 → Drawer/레일 아이템 수 유지 |
+| UC-S4 (딥링크) | 초기 로딩과 동일 경로 | 유스케이스 | UrlBasedMenuResolver, HistoryManager, MenuSelected | DrawerTest: URL 변경 시 메뉴 자동 선택 검증 |
 | UC-S5 (Drawer토글) | Drawer 토글 | 유스케이스, Drawer UI | MenuToggleButton, DrawerMode, MenuRailMode, ToolRailMode, DrawerElement, MenuRailElement, ToolRailElement | DrawerModeTest: MenuRailState/ToolRailState 상태 전이 검증 |
 | UC-S6 (호버 상태 분기) | 상태 기반 hover 정책 | 유스케이스, Drawer UI, ui-components | MenuHover (EXPAND 전용), MenuSelectedElementProvider, ToolList, ToolRailElement, MenuRailMode, TooltipCard, MenuRailItemElement (MutationObserver) | DrawerTest: EXPAND hover 시 ToolRail peek 가 도구 목록 채움 |
 | UC-S7 (워크스페이스) | — (단순) | Drawer UI | WorkspaceSelectElement, WorkspaceList | DrawerTest: 워크스페이스 선택 요소(.workspace-select) 존재 확인 |

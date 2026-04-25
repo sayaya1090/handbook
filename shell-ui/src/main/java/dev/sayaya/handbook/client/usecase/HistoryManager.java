@@ -61,7 +61,17 @@ public class HistoryManager {
 
     private void updateHistory(String path) {
         if (path == null || path.isEmpty()) return;
-        // 해시(#) 제거 로직 포함: 클린 URL로 강제 전환
+        // 1. 전체 URL이 들어온 경우 origin 제거
+        String origin = DomGlobal.window.location.origin;
+        if (path.startsWith(origin)) path = path.substring(origin.length());
+        
+        // 2. 프로토콜 포함 여부 재검사 (다른 origin이거나 예외 케이스)
+        if (path.contains("://")) {
+            int pathStart = path.indexOf("/", path.indexOf("://") + 3);
+            if (pathStart != -1) path = path.substring(pathStart);
+        }
+
+        // 3. 해시(#) 제거 및 선행 슬래시 보장
         if (path.startsWith("#")) path = path.substring(1);
         if (!path.startsWith("/")) path = "/" + path;
 

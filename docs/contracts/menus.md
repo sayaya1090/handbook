@@ -30,8 +30,9 @@
 - **gateway** — `MenuService` 가 모든 공급자를 병렬 호출해 집계
   - `usecase/MenuService.kt`, `usecase/MenuSupplier.kt`
   - `interfaces/api/MenuController.kt` → `GET /menus`
-- **shell-ui** — `UrlBasedMenuResolver` 가 URL 정규식으로 매칭하여 자동 선택
+- **shell-ui** — `UrlBasedMenuResolver` 가 URL의 **정규화된 pathname**을 정규식으로 매칭하여 자동 선택
   - `client/usecase/UrlBasedMenuResolver.java`
+  - 정규화 로직: `origin`, `port`, `protocol` 을 제거한 순수 경로(예: `/workspace/123/types`) 만 남겨 매칭.
 
 ## 변경 시 체크 대상
 
@@ -186,9 +187,9 @@ Accept: application/vnd.sayaya.handbook.v1+json
 | search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | Drawer 하단 고정 (order=S, bottom=true) |
 | workspace-onboarding (신규 / search-workspace 내) | 워크스페이스 생성/참여 | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | `AUTHENTICATED` 에 enabled 로 노출되어 `WorkspaceOnboardingBootstrapper` synthetic 메뉴를 대체 |
 
-## shell-ui `UrlBasedMenuResolver` 동작
+## `urlRegex` 매칭 규약
 
-1. `MenuList` 구독 → 각 Menu 의 `urlRegex()` 를 `Map<JsRegExp, Menu>` 로 등록
-2. URI 변경 감지 → 정규식 순회 → 첫 매칭 메뉴 자동 선택
-3. `MenuSelected.next(menu)` → 해당 모듈 `script` 동적 로딩
-4. 데스크톱: drawer COLLAPSE, 모바일: drawer HIDE (하단 네비만 노출)
+- **정규화 기준**: `UrlBasedMenuResolver`는 매칭 전 브라우저 URI에서 `origin`(프로토콜+호스트+포트)을 제거하고, 해시(`#`)를 제거하며, 반드시 `/`로 시작하는 **pathname**으로 정규화한다.
+- **매칭 방식**: `new JsRegExp(regex).test(normalizedPath)`
+- **공급자 권장사항**: `urlRegex`는 반드시 `/`로 시작하는 정규식을 제공해야 하며, 전체 URL이 아닌 상대 경로(pathname)를 기준으로 작성해야 한다. (예: `^/workspaces$`)
+- **서버 연동**: 모든 `urlRegex` 경로에 대해 새로고침 시 SPA 진입점(`app.html`)이 반환되도록 Gateway 설정이 동기화되어야 한다.
