@@ -3,7 +3,7 @@ package dev.sayaya.handbook
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 
-@GwtHtml("src/test/webapp/activityTest.html")
+@GwtHtml("activityTest.html")
 internal class MenuTest: GwtTestSpec({
     Given("a") {
         When("b") {

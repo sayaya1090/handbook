@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-@GwtHtml("src/test/webapp/agent.html")
+@GwtHtml("agent.html")
 internal class AgentTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {
         Then("테스트 영역이 존재한다") {

@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("src/test/webapp/dashboardtest.html")
+@GwtHtml("dashboardtest.html")
 internal class DashboardAgentWidgetsTest: GwtTestSpec({
     Given("대시보드 에이전트 위젯이 초기화됨") {
         // === ActiveExecutionsWidget ===

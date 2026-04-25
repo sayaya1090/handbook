@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("src/test/webapp/logintest.html")
+@GwtHtml("logintest.html")
 internal class LoginTest : GwtTestSpec({
     Given("로그인 화면이 로드됨") {
         Then("콘텐츠 영역(login-content)이 DOM에 존재한다") {

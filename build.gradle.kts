@@ -5,20 +5,12 @@ plugins {
     id("org.springframework.boot") version "4.0.1" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
     id("com.google.cloud.tools.jib") version "3.5.2" apply false
-    id("dev.sayaya.gwt") version "2.2.7" apply false
+    id("dev.sayaya.gwt") version "2.2.9.5" apply false
     id("com.adarshr.test-logger") version "4.0.0" apply false
     id("org.jetbrains.kotlinx.kover") version "0.9.4" apply false
 }
 subprojects {
     repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/sayaya1090/maven")
-            credentials {
-                username = project.findProperty("github_username") as String? ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("github_password") as String? ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
         mavenCentral()
     }
     group = "dev.sayaya"
@@ -69,34 +61,6 @@ subprojects {
     // 테스트 공통: JUnit Platform
     tasks.withType<Test> {
         useJUnitPlatform()
-    }
-    // GWT UI 모듈 공통: 모듈별 고유 포트 할당
-    pluginManager.withPlugin("dev.sayaya.gwt") {
-        val portMap = mapOf(
-            "shell-ui" to 18080, "type-ui" to 18081, "document-ui" to 18082,
-            "agent-ui" to 18083, "dashboard-ui" to 18084, "workspace-ui" to 18085,
-            "login-ui" to 18086, "app" to 18087, "ui-components" to 18088,
-            "agent-bridge" to 18089, "activity" to 18090,
-        )
-        tasks.withType<Test> {
-            val targetPort = portMap[project.name] ?: 18099
-            extensions.configure<dev.sayaya.gwt.GwtTestTaskExtension>("gwt") {
-                webPort.set(targetPort)
-            }
-            // 플러그인 2.2.9.1-TEMP가 기본값(8080) 대신 
-            // 현재 할당된 포트를 사용하도록 시스템 프로퍼티 명시적 주입
-            systemProperty("gwt.junit.remoteUrl", "http://127.0.0.1:$targetPort/")
-        }
-        // 테스트 HTML 파일을 GWT WAR 디렉토리로 복사 (서버 서빙 경로 일치)
-        tasks.matching { it.name == "gwtTestCompile" }.configureEach {
-            doLast {
-                copy {
-                    from("${project.projectDir}/src/test/webapp")
-                    into("${project.layout.buildDirectory.get().asFile}/gwt/war")
-                    include("*", "*/**")
-                }
-            }
-        }
     }
     // GWT UI 모듈 공통: 테스트 리소스(JS/CSS) 자동 복사
     pluginManager.withPlugin("dev.sayaya.gwt") {

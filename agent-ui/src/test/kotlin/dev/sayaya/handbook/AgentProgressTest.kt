@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-@GwtHtml("src/test/webapp/agent.html")
+@GwtHtml("agent.html")
 internal class AgentProgressTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {
         // UC-A7: 그룹 레벨 진행률 표시

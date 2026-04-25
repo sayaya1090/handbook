@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/uicomponentstest.html")
+@GwtHtml("uicomponentstest.html")
 internal class ConfirmDialogTest: GwtTestSpec({
     Given("UI 컴포넌트가 초기화됨") {
         Then("확인 다이얼로그 래퍼가 존재한다") {

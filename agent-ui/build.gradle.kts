@@ -18,7 +18,6 @@ dependencies {
 tasks {
     war {
         dependsOn("gwtCompile")
-        from("build/gwt/war") { into("js") }
         archiveFileName.set("agent-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
@@ -31,10 +30,11 @@ tasks {
             war = file("src/test/webapp")
         }
         generateJsInteropExports = true
-        compiler {
-            strict = true
+        compiler { strict = true }
+        test {
+            webPort = 18083
         }
-    }
+        }
     test {
         useJUnitPlatform()
     }

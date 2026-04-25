@@ -20,9 +20,6 @@ tasks {
         // GWT 컴파일 출력(build/gwt/war/{login,logout}) 을 js/ 하위로 포함해
         // src/main/webapp/login.html, logout.html 이 참조하는 경로와 일치시킨다.
         dependsOn("gwtCompile")
-        from("build/gwt/war") {
-            into("js")
-        }
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
     gwt {
@@ -35,6 +32,9 @@ tasks {
         }
         generateJsInteropExports = true
         compiler { strict = true }
+        test {
+            webPort = 18086
+        }
     }
     test { useJUnitPlatform() }
 }

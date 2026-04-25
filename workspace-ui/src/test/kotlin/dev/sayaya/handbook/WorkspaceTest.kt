@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("src/test/webapp/workspacetest.html")
+@GwtHtml("workspacetest.html")
 internal class WorkspaceTest: GwtTestSpec({
     Given("워크스페이스 UI가 초기화됨") {
         Thread.sleep(3000) // GWT onModuleLoad + subscribe 완료 대기

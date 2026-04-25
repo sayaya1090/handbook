@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/uicomponentstest.html")
+@GwtHtml("uicomponentstest.html")
 internal class ScrollEffectTest: GwtTestSpec({
     Given("UI 컴포넌트가 초기화됨") {
         Then("스크롤 대상 요소가 존재한다") {

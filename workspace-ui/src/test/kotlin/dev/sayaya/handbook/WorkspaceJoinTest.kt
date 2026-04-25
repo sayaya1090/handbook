@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/workspacetest.html")
+@GwtHtml("workspacetest.html")
 internal class WorkspaceJoinTest: GwtTestSpec({
     Given("워크스페이스 JOIN UI가 초기화됨") {
         // UC-W2: JOIN 모드 전환

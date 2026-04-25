@@ -25,6 +25,9 @@ tasks {
         }
         generateJsInteropExports = true
         compiler { strict = true }
+        test {
+            webPort = 18082
+        }
     }
     test { useJUnitPlatform() }
 }

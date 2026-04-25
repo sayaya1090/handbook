@@ -26,6 +26,9 @@ gwt {
     }
     generateJsInteropExports = true
     compiler { strict = true }
+    test {
+        webPort = 18085
+    }
 }
 tasks.register<Copy>("copyTestResources") {
     from("src/main/webapp")
@@ -34,12 +37,7 @@ tasks.register<Copy>("copyTestResources") {
 }
 tasks.named("compileTestJava") { dependsOn("copyTestResources") }
 tasks.named("war", War::class) {
-    // GWT 컴파일 출력(build/gwt/war/workspace) 을 js/ 하위로 포함해
-    // shell 이 참조하는 /js/workspace/** 경로와 일치시킨다.
     dependsOn("gwtCompile")
-    from("build/gwt/war") {
-        into("js")
-    }
     archiveFileName.set("workspace-ui.war")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

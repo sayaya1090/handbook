@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/documenttest.html")
+@GwtHtml("documenttest.html")
 internal class DocumentEdgeCaseTest: GwtTestSpec({
     Given("문서 UI 엣지 케이스") {
         // 마지막 페이지에서 Next 클릭

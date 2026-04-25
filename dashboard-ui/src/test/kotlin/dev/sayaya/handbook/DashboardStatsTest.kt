@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("src/test/webapp/dashboardtest.html")
+@GwtHtml("dashboardtest.html")
 internal class DashboardStatsTest: GwtTestSpec({
     Given("대시보드 통계 카드가 초기화됨") {
         Then("통계 카드 행(dash-stats-row)이 DOM에 존재한다") {

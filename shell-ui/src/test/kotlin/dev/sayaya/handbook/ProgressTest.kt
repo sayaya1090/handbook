@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-@GwtHtml("src/test/webapp/progress.html")
+@GwtHtml("progress.html")
 internal class ProgressTest: GwtTestSpec({
     Given("프로그레스 바가 준비됨") {
         Then("프로그레스 컨테이너(.progress-container)가 DOM에 존재한다") {

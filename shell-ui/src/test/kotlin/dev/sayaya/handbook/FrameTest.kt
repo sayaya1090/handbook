@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/frame.html")
+@GwtHtml("frame.html")
 internal class FrameTest: GwtTestSpec({
     Given("렌더러가 준비됨") {
         Then("컨테이너(#container)가 DOM에 존재한다") {

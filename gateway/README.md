@@ -122,6 +122,11 @@ spring:
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
             - Path=/js/**,/css/**,/icons/**
+
+### SPA 클린 URL 지원 (Fallback)
+`shell-ui`의 클린 URL 내비게이션 지원을 위해, API 경로가 아닌 UI 경로 요청(예: `/workspace/123/types`) 시 SPA 진입점인 `app.html`을 반환하도록 설정해야 한다.
+- **방법**: Ingress/Gateway API 레벨에서 UI 경로 패턴을 `app.html`로 rewrite 하거나, Gateway 내부에 API 이외의 모든 HTML 요청을 `app.html`로 연결하는 Fallback 필터를 적용한다. 상세 설계는 `docs/architecture.md` 참조.
+
 ```
 
 ## 메뉴 수집 설정

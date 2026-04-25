@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/canvastest.html")
+@GwtHtml("canvastest.html")
 internal class AttributeEditorTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {
         // UC-T7: 속성 편집 (컨텍스트 메뉴)

@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-@GwtHtml("src/test/webapp/documenttest.html")
+@GwtHtml("documenttest.html")
 internal class DocumentTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {
         // UC-D1: 문서 조회

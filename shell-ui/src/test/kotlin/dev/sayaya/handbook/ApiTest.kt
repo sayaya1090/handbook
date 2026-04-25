@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/apitest.html")
+@GwtHtml("apitest.html")
 internal class ApiTest: GwtTestSpec({
     Given("FetchMock 기반 API가 초기화됨") {
         Thread.sleep(2000)

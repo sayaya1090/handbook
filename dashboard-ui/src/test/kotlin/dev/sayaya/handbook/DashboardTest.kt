@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("src/test/webapp/dashboardtest.html")
+@GwtHtml("dashboardtest.html")
 internal class DashboardTest: GwtTestSpec({
     Given("대시보드 UI가 초기화됨") {
         // 통계 카드 검증

@@ -8,7 +8,7 @@ import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/drawer.html")
+@GwtHtml("drawer.html")
 internal class DrawerTest: GwtTestSpec({
     Given("메뉴가 초기화됨") {
         Then("첫번째 메뉴는 Tool이 1개 이하이다") {

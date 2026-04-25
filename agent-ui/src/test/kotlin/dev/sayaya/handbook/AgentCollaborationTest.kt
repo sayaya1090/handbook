@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-@GwtHtml("src/test/webapp/agent.html")
+@GwtHtml("agent.html")
 internal class AgentCollaborationTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {
         // UC-A14: DELEGATE 커맨드 수신

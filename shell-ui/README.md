@@ -188,7 +188,7 @@ stateDiagram-v2
 | Drawer/MenuRail/ToolRail 3단 상태 | 반응형 UI — 메뉴·도구 개수에 따른 자동 레이아웃 조정 |
 | 도구가 1개뿐인 메뉴는 자동 선택 | 불필요한 클릭 제거 |
 | 도구 실행 100ms 재시도 | DOM 로딩 완료 전 실행 실패 대응 |
-| URL 정규식 매칭 | 딥링크 지원 + 브라우저 뒤로가기 대응 |
+| URL 정규식 매칭 | 딥링크 지원 + 브라우저 뒤로가기 대응. 해시(#)가 없는 클린 URL(Clean URL) 방식을 사용하며, `pathname` 정규화(origin/port/protocol 제거) 후 매칭한다. |
 | 모듈 스크립트 동적 주입 | activity 모듈을 lazy 로딩하여 초기 로딩 최소화 |
 | @AssistedInject 팩토리 패턴 | 메뉴/도구 아이템을 동적 생성하면서 DI 의존성 주입 유지 |
 | NavigationRailElement 인터페이스 | MenuRail, ToolRail의 expand/collapse/hide 동작 통일 |

@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("src/test/webapp/dashboardtest.html")
+@GwtHtml("dashboardtest.html")
 internal class DashboardActivityTest: GwtTestSpec({
     Given("대시보드 에이전트 활동 로그가 초기화됨") {
         Then("에이전트 활동 패널(dash-activity-panel)이 DOM에 존재한다") {

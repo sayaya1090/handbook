@@ -20,10 +20,11 @@ tasks {
         modules = listOf("dev.sayaya.handbook.AgentBridge")
         war = file("src/main/webapp")
         generateJsInteropExports = true
-        compiler {
-            strict = true
+        compiler { strict = true }
+        test {
+            webPort = 18089
         }
-    }
+        }
     test {
         useJUnitPlatform()
     }

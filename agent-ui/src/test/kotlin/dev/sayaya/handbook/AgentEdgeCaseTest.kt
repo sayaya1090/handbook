@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/agent.html")
+@GwtHtml("agent.html")
 internal class AgentEdgeCaseTest: GwtTestSpec({
     Given("에이전트 UI 엣지 케이스") {
         // 빈 진행률 이벤트 (0/0)

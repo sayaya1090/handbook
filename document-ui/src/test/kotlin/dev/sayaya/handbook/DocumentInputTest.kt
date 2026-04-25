@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/documenttest.html")
+@GwtHtml("documenttest.html")
 internal class DocumentInputTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {
         Thread.sleep(2000) // Handsontable 렌더링 대기

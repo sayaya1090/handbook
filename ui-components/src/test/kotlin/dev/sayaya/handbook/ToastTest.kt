@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("src/test/webapp/uicomponentstest.html")
+@GwtHtml("uicomponentstest.html")
 internal class ToastTest: GwtTestSpec({
     Given("UI 컴포넌트가 초기화됨") {
         Then("토스트 컨테이너가 존재한다") {

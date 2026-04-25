@@ -30,7 +30,7 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter
             version("junit5", "6.0.3")
             // https://mvnrepository.com/artifact/dev.sayaya/gwt-test
-            version("sayaya-test", "2.2.9.1-TEMP")
+            version("sayaya-test", "2.2.9.5")
 
             // Kotlin
             library("reflect", "org.jetbrains.kotlin", "kotlin-reflect").withoutVersion()
