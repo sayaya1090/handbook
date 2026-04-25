@@ -1,14 +1,14 @@
 # Handbook 프로젝트 가이드
 
 운영 중 스키마 변경과 이력 관리를 지원하는 문서 관리 시스템. GWT + Spring Boot + Kafka.
-아키텍처/기술 스택 상세는 `.claude/skills/architecture.md` 참조.
+아키텍처/기술 스택 상세는 `.gemini/skills/architecture.md` 참조.
 
 ## 개발 규칙
 
 ### 문서 우선 (DOCS FIRST)
 - **문서 작성 완료 후 개발 개시. 동시 진행 금지.**
 - 기능 추가/변경 시: 요구사항 → 유스케이스 → 설계 → 구현 → 테스트
-- **문서 수정 후 반드시 크로스체크.** 체크 대상은 `.claude/skills/doc-structure.md` 참조.
+- **문서 수정 후 반드시 크로스체크.** 체크 대상은 `.gemini/skills/doc-structure.md` 참조.
 
 ### 유스케이스 작성 규칙
 - **모든 유스케이스에는 시퀀스 다이어그램(mermaid)과 대응 테스트가 있어야 한다.**
@@ -25,7 +25,7 @@
 - 언어 파일: `src/main/i18n/language.{ko,en}.json` → 빌드 시 머지
 
 ### 디자인 언어 통일
-- **MD3 디자인 토큰만 사용.** 하드코딩 금지. 상세는 `.claude/skills/design-tokens.md` 참조.
+- **MD3 디자인 토큰만 사용.** 하드코딩 금지. 상세는 `.gemini/skills/design-tokens.md` 참조.
 
 ### 클래스 Javadoc (필수)
 - **모든 클래스에 역할/책임/의존관계/주의점 포함 Javadoc(KDoc) 작성.**
@@ -45,7 +45,7 @@
 dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo promotion 경로로만 전파.
 
 ### 에이전트 연동 체크리스트 (필수)
-**모든 신규 모듈 / 기존 모듈의 공개 API 변경 시 아래를 요구사항·문서·구현에서 반드시 확인**한다. 상세 템플릿은 `.claude/skills/doc-structure.md` 의 "에이전트 연동 섹션" 참조.
+**모든 신규 모듈 / 기존 모듈의 공개 API 변경 시 아래를 요구사항·문서·구현에서 반드시 확인**한다. 상세 템플릿은 `.gemini/skills/doc-structure.md` 의 "에이전트 연동 섹션" 참조.
 
 1. **내부 assistant 연동** — 이 모듈을 assistant 가 어떻게 호출/사용하는가 (직접 REST, 또는 `AGENT_COMMAND` navigate/mutate 타겟)
 2. **외부 AI Tool Use** — 어떤 엔드포인트를 `/openapi.json` 에 노출할지 / 차단할지 결정 (`docs/contracts/api.md`)
@@ -61,7 +61,7 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 - SRP 위반 징후 시 핸들러 분리, 전략 패턴, 헬퍼 추출 제안
 
 ### 스킬스 자동 업데이트
-- 새 패턴/컨벤션/규칙 발견 시 CLAUDE.md를 선제적으로 업데이트한다.
+- 새 패턴/컨벤션/규칙 발견 시 GEMINI.md를 선제적으로 업데이트한다.
 
 ## 코드 컨벤션
 
@@ -80,7 +80,7 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
   - WebFlux codec: Spring Boot 4 부터 `Jackson2JsonEncoder/Decoder` 대신 `JacksonJsonEncoder/Decoder` (`JsonMapper` 를 요구). `CodecConfigurer.defaultCodecs().jackson2Json*` 도 `.jacksonJson*` 로.
 
 ### Java (GWT 프론트엔드)
-- **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.claude/skills/sayaya-ui.md` 참조.
+- **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.gemini/skills/sayaya-ui.md` 참조.
 - `@JsOverlay` 인스턴스 메서드에서 재귀 호출 금지 → static 헬퍼로 우회
 - **Java record 사용 가능** (GWT 2.12+). 단, 다중 생성자 금지 → static 팩토리 메서드(`of()`)로 대체.
 - Dagger `@Module`에 새 의존성 추가 시 `@Provides` 누락 주의
@@ -92,8 +92,8 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 - 프론트엔드: GWT 컴파일 + Playwright (./gradlew test에 포함)
 - E2E: Playwright + HttpClient (E2E 환경변수, 서버 실행 필요)
 - **Then 검증은 구체적으로:** `shouldNotBe null`만으로 끝내지 않는다. 속성 값, 개수 변화, 상태 토글, 양방향(추가→제거) 검증 필수.
-- 상세 패턴은 `.claude/skills/debugging.md`의 "Playwright 테스트 검증 패턴" 참조
-- **UI 컴포넌트는 sayaya-ui 사용 필수.** 네이티브 HTML 금지. 사용법은 `.claude/skills/sayaya-ui.md` 참조
+- 상세 패턴은 `.gemini/skills/debugging.md`의 "Playwright 테스트 검증 패턴" 참조
+- **UI 컴포넌트는 sayaya-ui 사용 필수.** 네이티브 HTML 금지. 사용법은 `.gemini/skills/sayaya-ui.md` 참조
 - **모든 UI 요소에 테스트 가능한 고유 CSS 클래스 필수.** 제네릭 클래스(`.type-ctrl-btn`)만 사용 금지 → `.css("type-ctrl-btn", "type-ctrl-btn-add")` 형태로 구체적 클래스 추가. `:first-child`/`:last-child` 대신 `data-*` 속성이나 고유 클래스 사용.
 
 ## 빌드 & 테스트
@@ -122,7 +122,7 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 - 통합 테스트(`R2dbc*IntegrationTest`)는 Testcontainers로 PostgreSQL 자동 실행 — Docker 필요
 - GWT 테스트는 모듈별 고유 포트 할당 — `--parallel` 플래그로 병렬 실행 가능
 - E2E 테스트는 게이트웨이 + 모든 백엔드 서비스 실행 필요
-- 환경 설정/포트 상세는 `.claude/skills/dev-environment.md` 참조
+- 환경 설정/포트 상세는 `.gemini/skills/dev-environment.md` 참조
 
 ## 디버깅 가이드
 
@@ -147,14 +147,14 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | Gateway 라우트 0개 로딩 | 1) `spring.cloud.gateway.routes` (구 경로) 사용 — Spring Cloud Gateway 5.0부터 `spring.cloud.gateway.server.webflux.routes` 로 변경됨. 2) servlet classpath 오염 — activity 의존에서 `gwt-servlet-jakarta` 미제외 시 reactive auto-config 실패 | 프로퍼티 경로를 `spring.cloud.gateway.server.webflux.routes` 로 변경. activity 의존에 `exclude(group = "org.gwtproject", module = "gwt-servlet-jakarta")` 추가 |
 | UI 모듈 렌더 안 됨 / 뷰포트 밖으로 밀림 | `Application.onModuleLoad()` 에서 `body().add(container)` 직접 호출. 전역 `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 y=100dvh 위치에 렌더됨 | `WindowRenderBridge.next(render)` 경유로 shell FrameUpdater 에 Render 전달 → Frame 엘리먼트 내부에 mount. 계약 상세는 `docs/contracts/frame.md` |
 
-상세 패턴/코드 예시는 `.claude/skills/debugging.md` 참조.
+상세 패턴/코드 예시는 `.gemini/skills/debugging.md` 참조.
 
 ---
 
-## 에이전트 라우팅 (Claude 내부용)
+## 에이전트 라우팅 (Gemini 내부용)
 
-Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업무별 서브에이전트에 위임하는 규칙.
-설계 배경은 `.claude/agents/DESIGN.md` 참조.
+Gemini 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업무별 서브에이전트에 위임하는 규칙.
+설계 배경은 `.gemini/agents/notes/DESIGN.md` 참조.
 
 ### 도메인 → 에이전트 매핑
 
@@ -168,7 +168,7 @@ Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 | SEO 랜딩·외부 AI·MCP | `landing-expert` | `landing-content/`, `landing-ui/`, §3.22, §3.23 |
 | Shell·UI 공용·디자인·모바일·대시보드 | `ui-platform-expert` | `shell-ui/`, `ui-components/`, `app/`, `dashboard-ui/`, `docs/design.md` |
 | Kafka·SSE·실시간 | `events-expert` | `event/`, `event-broadcaster/`, `docs/contracts/events.md` |
-| 배포·Istio·Kargo·런타임 | `cluster-ops` | `charts/`, `.claude/skills/deployment.md`, `oc` 실행 가능 |
+| 배포·Istio·Kargo·런타임 | `cluster-ops` | `charts/`, `.gemini/skills/deployment.md`, `oc` 실행 가능 |
 | 문서 구조·크로스체크·커버리지 | `docs-keeper` | `docs/**`, 모든 모듈 문서, 계약 매트릭스 |
 | 증상 기반 triage·라우팅 계획 | `triage` | 도메인 판별·호출 순서만 결정 (도메인 답변 금지) |
 
@@ -183,14 +183,14 @@ Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 7. **설계 검토** → 내장 `Plan`
 8. **증상 기반 버그 리포트** (사용자 관찰 현상 — "X 가 안 뜬다", "Y 가 깨진다") → 해당 도메인의 공급자(백엔드)·소비자(프론트) 에이전트 **양쪽 병렬 호출**. 원인이 어느 레이어인지 사전 판단 불가하므로 단일 에이전트 라우팅 금지.
 9. **운영 장애** (런타임 증상 + 도메인 로직 혼합 — 예: "배포 후 OAuth 무한 리다이렉트") → `cluster-ops` **단독 호출 금지**. `cluster-ops` + 증상에 대응하는 도메인 에이전트 **병렬 호출**. cluster-ops 는 인프라·라우팅·Istio·런타임 진단, 도메인 에이전트는 서비스 내부 로직 검증.
-10. **기존 10개 스코프에 맞지 않는 신규 모듈** → `docs-keeper` 에게 배치 제안 의뢰 (모듈 성격·관련 계약·근접 에이전트 분석) → 메인 Claude 가 판정: **기존 에이전트 스코프 확장**(선호) vs **신규 에이전트 신설**(복잡도 감당 불가 시). 결정 후 해당 에이전트 정의 파일 + CLAUDE.md 도메인 매핑 + `docs/contracts/README.md` 매트릭스 동시 갱신.
-11. **응답의 `followup` 필드 자동 중계** → 도메인 에이전트가 응답에 구조화된 `=== followup ===` YAML 블록을 포함하면 메인 Claude 는 다음 규칙으로 처리한다 (DESIGN.md §11):
+10. **기존 10개 스코프에 맞지 않는 신규 모듈** → `docs-keeper` 에게 배치 제안 의뢰 (모듈 성격·관련 계약·근접 에이전트 분석) → 메인 Gemini 가 판정: **기존 에이전트 스코프 확장**(선호) vs **신규 에이전트 신설**(복잡도 감당 불가 시). 결정 후 해당 에이전트 정의 파일 + GEMINI.md 도메인 매핑 + `docs/contracts/README.md` 매트릭스 동시 갱신.
+11. **응답의 `followup` 필드 자동 중계** → 도메인 에이전트가 응답에 구조화된 `=== followup ===` YAML 블록을 포함하면 메인 Gemini 는 다음 규칙으로 처리한다 (notes/DESIGN.md §11):
     - `priority: required` — 같은 세션에서 자동 후속 호출 (사용자 재승인 불필요)
     - `priority: optional` — "권장 추가 조사" 로 사용자 제시
     - **순환 방지**: 같은 에이전트가 세션 내 2회 이상 followup 대상이면 스킵 후 사용자 보고
     - **깊이 제한**: 후속 호출 최대 2단계. B 의 followup 으로 호출된 C 의 followup 은 자동 전개 금지
-    - 에이전트 간 **직통 통신 금지** — 모든 중계는 메인 Claude 를 경유
-12. **증상 기반 + 3개 이상 도메인 후보 / 다중 도메인 요청 / 매트릭스상 호출 대상 모호** → `triage` **먼저** 호출하여 `triage plan` 수신 (DESIGN.md §12) → plan 대로 parallel/sequential batch 실행. 단일 도메인이 명백하면 triage 생략 가능 (자체 호출 비용 방지).
+    - 에이전트 간 **직통 통신 금지** — 모든 중계는 메인 Gemini 를 경유
+12. **증상 기반 + 3개 이상 도메인 후보 / 다중 도메인 요청 / 매트릭스상 호출 대상 모호** → `triage` **먼저** 호출하여 `triage plan` 수신 (notes/DESIGN.md §12) → plan 대로 parallel/sequential batch 실행. 단일 도메인이 명백하면 triage 생략 가능 (자체 호출 비용 방지).
 
 ### 계약 변경 감지 시 강제 절차
 
@@ -204,19 +204,19 @@ Claude 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 
 ### 에이전트 노트 관리
 
-각 에이전트는 `.claude/agents/<name>.notes.md` 를 자율 갱신한다.
-Claude 는:
+각 에이전트는 `.gemini/agents/notes/<name>.notes.md` 를 자율 갱신한다.
+Gemini 는:
 
 - 에이전트 응답의 `=== 노트 갱신 ===` 라인은 로그로만 수신, 개별 개입하지 않음
 - 작업 흐름 중 `notes.md` 를 직접 건드리지 않음 (에이전트 자율 영역)
 - 주기(주 1회) 또는 사용자 요청 시 `docs-keeper` 에게 노트 전수 감사 의뢰 — 매 호출 로그 누적 모델이므로 사이클 단축
 - 반환된 "승격 후보" 검토 후 직접 수행:
-  - **작업 원칙** → 해당 에이전트 정의(`.claude/agents/<name>.md`) 프롬프트 편집
+  - **작업 원칙** → 해당 에이전트 정의(`.gemini/agents/<name>.md`) 프롬프트 편집
   - **도메인 사실** → 요구사항/계약 문서로 이동
-  - **공용 패턴** → 이 파일(CLAUDE.md) 또는 `.claude/skills/` 로 승격
+  - **공용 패턴** → 이 파일(GEMINI.md) 또는 `.gemini/skills/` 로 승격
 - 승격 후 원본 항목은 notes 에서 제거 (단일 출처 유지)
 
-### 작업 규칙 (Claude 자신)
+### 작업 규칙 (Gemini 자신)
 
 #### 작업 착수 전 체크포인트 (필수, 자기 강제)
 
@@ -250,7 +250,7 @@ Claude 는:
 #### 기타 규칙
 
 - 사용자에게 에이전트 존재를 노출하지 않음 — 합성된 결과만 전달
-- 에이전트 정의 파일(`<name>.md`) 은 Claude 만 수정. 에이전트는 `notes.md` 만 수정
+- 에이전트 정의 파일(`<name>.md`) 은 Gemini 만 수정. 에이전트는 `notes.md` 만 수정
 - "단일 도메인 요청으로 보이는 것" 도 공통 계약 건드리면 병렬 호출로 확장
 
 ### 에이전트 호출 시 맥락 전달 (one-shot 보정)
@@ -284,7 +284,7 @@ Claude 는:
 1. `docs/requirements/<domain>.md` 가 존재하면 → 그 파일 사용
 2. 없으면 → `docs/requirements.md` 에서 해당 도메인의 §X.Y 섹션 사용
 3. 도메인 ↔ 섹션 매핑은 `docs/requirements/README.md` 인덱스 참조
-4. 위 둘 다 없으면 → `.claude/skills/` 또는 `docs/` 루트의 관련 문서로 폴백
+4. 위 둘 다 없으면 → `.gemini/skills/` 또는 `docs/` 루트의 관련 문서로 폴백
 
 마찬가지로 `docs/usecases/` 도 `docs/usecases/README.md` 인덱스 참조, 없으면 `docs/usecases.md` UC 번호 범위로 폴백.
 

@@ -25,10 +25,10 @@
 
 ---
 
-## 규칙 (CLAUDE.md 에도 명시)
+## 규칙 (GEMINI.md 에도 명시)
 
 - **MD3 디자인 토큰만 사용. 하드코딩 금지.**
-- 상세는 `.claude/skills/design-tokens.md` 참조.
+- 상세는 `.gemini/skills/design-tokens.md` 참조.
 
 ## 토큰 카테고리
 

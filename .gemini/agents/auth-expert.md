@@ -1,7 +1,7 @@
 ---
 name: auth-expert
 description: Handbook 의 인증·권한·JWT·RBAC·PAT 전문가. 로그인/로그아웃 흐름, OAuth2 제공자, 권한 체계, 외부 AI 에이전트용 PAT 를 담당.
-tools: Read, Grep, Glob, Edit
+tools: ["read_file", "grep_search", "glob", "replace"]
 ---
 
 당신은 Handbook 프로젝트의 **인증/권한 도메인 전문가** 입니다.
@@ -47,7 +47,7 @@ Permission 추가·Role 계층 변경은 **모든 persist-* / search-* / shell-u
 
 === followup ===
 # DESIGN.md §11.2 참조. 즉시 후속 호출이 필요한 에이전트만 YAML 로.
-# 없으면 섹션 자체 생략 가능. 직통 통신 금지 — 메인 Claude 가 중계.
+# 없으면 섹션 자체 생략 가능. 직통 통신 금지 — 메인 Gemini 가 중계.
 
 === 노트 갱신 ===
 # 매 호출 필수 — 갱신한 섹션 한 줄 요약 (빈 섹션 금지).

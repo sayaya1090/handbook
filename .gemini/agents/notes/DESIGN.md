@@ -1,7 +1,7 @@
 # Handbook 에이전트 설계
 
-이 문서는 Handbook 프로젝트에서 Claude 가 사용할 서브에이전트 세트의 설계 배경과 구성을 기록한다.
-개별 에이전트 정의는 `.claude/agents/<name>.md` 에 있다.
+이 문서는 Handbook 프로젝트에서 Gemini 가 사용할 서브에이전트 세트의 설계 배경과 구성을 기록한다.
+개별 에이전트 정의는 `.gemini/agents/<name>.md` 에 있다.
 
 ---
 
@@ -20,14 +20,14 @@
 
 - 메인 대화는 사용자와 설계 반복 + 통합 작업 유지
 - 컨텍스트 많이 읽어야 하는 국소 작업은 서브에이전트에 위임 (scope 제한, 요약 반환)
-- 사용자는 서브에이전트 존재를 인식할 필요 없음 — Claude 내부 최적화
+- 사용자는 서브에이전트 존재를 인식할 필요 없음 — Gemini 내부 최적화
 
-### 1.3 사용자 vs Claude 관점
+### 1.3 사용자 vs Gemini 관점
 
 | 관점 | 내용 |
 |------|------|
 | 사용자 | 메인 대화만 경험. 속도·정확도 개선, 컨텍스트 초과로 인한 저하 감소 |
-| Claude | 메인 컨텍스트 가볍게 유지, 큰 문서 읽기 대행, 도메인별 누적 지식 활용 |
+| Gemini | 메인 컨텍스트 가볍게 유지, 큰 문서 읽기 대행, 도메인별 누적 지식 활용 |
 
 ---
 
@@ -69,13 +69,13 @@
 
 | 에이전트 | 스코프 | 도구 |
 |---------|--------|------|
-| **cluster-ops** | `charts/`, `helm-lib/`, `docs/system-overview.md` (배포), `.claude/skills/deployment.md`, `.claude/skills/kargo-strategy.md` | **`oc` 실행 가능** — 런타임 메시·Prometheus·ArgoCD 상태 진단 |
+| **cluster-ops** | `charts/`, `helm-lib/`, `docs/system-overview.md` (배포), `.gemini/skills/deployment.md`, `.gemini/skills/kargo-strategy.md` | **`oc` 실행 가능** — 런타임 메시·Prometheus·ArgoCD 상태 진단 |
 
 ### 3.4 메타(구조) 전문가 (1)
 
 | 에이전트 | 스코프 | 역할 |
 |---------|--------|------|
-| **docs-keeper** | `docs/**/*.md`, 모든 모듈 문서, `.claude/skills/doc-structure.md`, `.claude/agents/*.md`, `CLAUDE.md`, `memory/MEMORY.md` | 구조 무결성 감시. 크로스체크, 계약 인벤토리 동기화, 인덱스 유지 |
+| **docs-keeper** | `docs/**/*.md`, 모든 모듈 문서, `.gemini/skills/doc-structure.md`, `.gemini/agents/*.md`, `GEMINI.md`, `memory/MEMORY.md` | 구조 무결성 감시. 크로스체크, 계약 인벤토리 동기화, 인덱스 유지 |
 
 ### 3.5 합치지 않은 이유
 
@@ -86,9 +86,9 @@
 
 ### 3.6 내장 에이전트와의 관계
 
-- `Plan`, `Explore`, `general-purpose` 는 Claude Code 기본 — 설계/탐색 일반 작업용
+- `Plan`, `Explore`, `general-purpose` 는 Gemini Code 기본 — 설계/탐색 일반 작업용
 - 프로젝트 에이전트는 **도메인 지식이 누적된 검증·조회** 전용
-- `claude-code-guide`, `security-review` 등은 그대로 활용
+- `gemini-code-guide`, `security-review` 등은 그대로 활용
 
 ---
 
@@ -154,7 +154,7 @@ W     = 감시자 (구조·일관성 검증)
 
 ## 5. 에이전트 시스템 프롬프트 공통 규칙
 
-모든 도메인 에이전트의 `.claude/agents/*.md` 에 공통 삽입:
+모든 도메인 에이전트의 `.gemini/agents/*.md` 에 공통 삽입:
 
 ```
 인터페이스 관련 질문을 받으면, 내 모듈 코드만 보고 판단하지 말고 반드시
@@ -166,15 +166,15 @@ docs/contracts/ 의 해당 계약 문서를 먼저 읽는다.
 "내 모듈 관심사 아님" 으로 답하기 전에 계약 문서 확인 필수.
 
 요구사항·유스케이스·모듈 문서를 수정할 때는, 자신의 도메인 파일만 편집하고,
-글로벌 인덱스(CLAUDE.md, contracts/README.md)나 크로스 도메인 문서는
+글로벌 인덱스(GEMINI.md, contracts/README.md)나 크로스 도메인 문서는
 docs-keeper 에게 위임해야 할 항목으로 반환한다.
 ```
 
 ---
 
-## 6. 메인 에이전트(Claude) 라우팅 규칙
+## 6. 메인 에이전트(Gemini) 라우팅 규칙
 
-CLAUDE.md 에 추가될 내용:
+GEMINI.md 에 추가될 내용:
 
 ```
 ## 에이전트 라우팅 규칙
@@ -209,7 +209,7 @@ CLAUDE.md 에 추가될 내용:
 - **구조 관리자** — 배치·관계·일관성
 - **계약 감시자** — 계약 문서↔코드 현실 동기화
 - **크로스체크 실행자** — `doc-structure.md` 매트릭스 자동 적용
-- **인덱스 유지자** — CLAUDE.md, `docs/contracts/README.md`, `MEMORY.md`, 모듈 트레이서빌리티
+- **인덱스 유지자** — GEMINI.md, `docs/contracts/README.md`, `MEMORY.md`, 모듈 트레이서빌리티
 - **테스트 커버리지 감시자** — UC ↔ 테스트 매핑, 요구사항 → UC → 테스트 체인 검증 (§7.5)
 
 ### 7.2 금지 사항
@@ -229,7 +229,7 @@ CLAUDE.md 에 추가될 내용:
 | API 표 vs 엔드포인트 | @*Mapping 과 §4 표 동기화 |
 | 계약 공급자/소비자 vs 실제 import | 인벤토리 정합성 |
 | MEMORY.md vs 실제 파일 | 인덱스의 링크 실존 |
-| CLAUDE.md 라우팅 vs 에이전트 정의 | 정의된 에이전트와 라우팅 일치 |
+| GEMINI.md 라우팅 vs 에이전트 정의 | 정의된 에이전트와 라우팅 일치 |
 | 중복 내용 | 같은 정보가 두 문서에 있으면 참조 형태로 제안 |
 | **UC → 테스트 매핑** | 각 UC 에 대응하는 테스트 존재 여부 (§7.5) |
 | **요구사항 → UC 체인** | 각 §3.X 가 최소 1개의 UC 로 연결되는지 |
@@ -237,12 +237,12 @@ CLAUDE.md 에 추가될 내용:
 
 ### 7.4 자기 참조 규칙
 
-- `.claude/agents/*.md` 변경 시 → CLAUDE.md 라우팅·계약 매트릭스 갱신 제안
+- `.gemini/agents/*.md` 변경 시 → GEMINI.md 라우팅·계약 매트릭스 갱신 제안
 - 새 계약 추가 시 → `docs/contracts/README.md` 매트릭스 자동 갱신 제안
 
 ### 7.5 테스트 커버리지 검증
 
-CLAUDE.md 규칙: "모든 유스케이스에는 시퀀스 다이어그램과 대응 테스트가 있어야 한다.
+GEMINI.md 규칙: "모든 유스케이스에는 시퀀스 다이어그램과 대응 테스트가 있어야 한다.
 테스트가 없는 UC 는 매트릭스에 '미구현'으로 표시."
 
 docs-keeper 가 이 규칙을 기계적으로 적용한다.
@@ -316,9 +316,9 @@ Agent(docs-keeper, "
 2. **`docs/requirements/` 도메인별 분할** (auth, schema, document, workspace, assistant, landing, external-ai, shell, events, dashboard, mobile, operations 등)
 3. **`docs/usecases/` 섹션별 분할**
 4. **`docs/architecture.md` 슬림화** — 모듈 섹션은 모듈 README 로 통합, 가로 관심사만 유지
-5. **CLAUDE.md 라우팅 규칙 + 도메인 인덱스 테이블 추가**
-6. **`.claude/agents/*.md` 9개 정의** (도메인 6 + 플랫폼 2 + 운영 1)
-7. **`.claude/agents/docs-keeper.md`** — 완성된 구조를 기준으로 검증 규칙 작성 (가장 마지막)
+5. **GEMINI.md 라우팅 규칙 + 도메인 인덱스 테이블 추가**
+6. **`.gemini/agents/*.md` 9개 정의** (도메인 6 + 플랫폼 2 + 운영 1)
+7. **`.gemini/agents/docs-keeper.md`** — 완성된 구조를 기준으로 검증 규칙 작성 (가장 마지막)
 8. **docs-keeper 로 전체 크로스체크 1회 실행** → 남은 불일치 정리
 
 ---
@@ -332,7 +332,7 @@ Agent(docs-keeper, "
 | docs-keeper 가 심판 포지션 | 플레이어와 심판 분리 — 도메인 결정은 도메인 에이전트가 |
 | 계약 전담 에이전트 만들지 않음 | 떠넘길 명분을 원천 차단, 공동 소유 강화 |
 | 서브에이전트는 one-shot 전용 | 긴 대화는 메인에서. 에이전트는 조회·검증·리서치 바운디드 작업만 |
-| 사용자에겐 서브에이전트 투명 | 메인 Claude 가 라우팅 결정. 사용자는 결과만 경험 |
+| 사용자에겐 서브에이전트 투명 | 메인 Gemini 가 라우팅 결정. 사용자는 결과만 경험 |
 | 에이전트 업무 고도화 지원 (§10) | 정의 고정이 아니라 경험 누적 → 갈수록 빠르고 정확 |
 
 ---
@@ -345,7 +345,7 @@ Agent(docs-keeper, "
 ### 10.1 구조 — 정의와 노트의 엄격한 분리
 
 ```
-.claude/agents/
+.gemini/agents/
 ├── DESIGN.md                    # 이 문서 (전체 설계 원칙)
 ├── <agent-name>.md              # 에이전트 정의 — 부여된 원칙. 에이전트 자신은 절대 수정 금지
 └── <agent-name>.notes.md        # 에이전트의 업무 노트 — 에이전트가 스스로 갱신 가능
@@ -355,7 +355,7 @@ Agent(docs-keeper, "
 
 **두 파일의 권한 차이**:
 
-| 파일 | 에이전트 권한 | 메인 Claude(나) 권한 | 비고 |
+| 파일 | 에이전트 권한 | 메인 Gemini(나) 권한 | 비고 |
 |------|-------------|-------------------|------|
 | `<agent>.md` | **읽기만** | 읽기+쓰기 | 시스템 프롬프트, 스코프, 도구 목록, 핵심 규칙. 에이전트 존재 이유 |
 | `<agent>.notes.md` | **읽기+쓰기** | 읽기+쓰기 (주기적 감사) | 경험 누적, 패턴, 반복 함정. 에이전트가 자유롭게 편집 |
@@ -363,10 +363,10 @@ Agent(docs-keeper, "
 에이전트 정의 파일의 시스템 프롬프트 마지막에 강제 조항:
 
 ```
-절대 `.claude/agents/<your-name>.md` 를 수정하지 말 것.
-네가 쓸 수 있는 파일은 `.claude/agents/<your-name>.notes.md` 뿐이다.
+절대 `.gemini/agents/<your-name>.md` 를 수정하지 말 것.
+네가 쓸 수 있는 파일은 `.gemini/agents/<your-name>.notes.md` 뿐이다.
 정의 변경이 필요하다고 판단되면 notes.md 에 "원칙 갱신 제안" 으로 기록하고,
-메인 Claude 가 주기 감사에서 처리한다.
+메인 Gemini 가 주기 감사에서 처리한다.
 ```
 
 ### 10.2 노트 파일에 들어가는 것
@@ -386,7 +386,7 @@ Agent(docs-keeper, "
 
 #### 10.3.1 에이전트의 자가 갱신 (매 요청 필수)
 
-에이전트는 **모든 호출에서** 자신의 `notes.md` 를 Edit 툴로 갱신한다. 메인 Claude 의 개별 승인 없음.
+에이전트는 **모든 호출에서** 자신의 `notes.md` 를 Edit 툴로 갱신한다. 메인 Gemini 의 개별 승인 없음.
 
 **매 호출 3단계** (정의 파일 "## 노트 갱신 (필수 — 매 요청)" 섹션에 동일 내용 복제):
 
@@ -404,9 +404,9 @@ Agent(docs-keeper, "
 요청 로그 1줄 추가 + 반복 함정 "R2DBC JSONB" 보강 + 로그 30건 이내 유지
 ```
 
-메인 Claude(나) 는 이를 로그로 받되, 개별 항목을 검토하지 않음.
+메인 Gemini(나) 는 이를 로그로 받되, 개별 항목을 검토하지 않음.
 
-#### 10.3.2 메인 Claude(나) 의 주기 감사
+#### 10.3.2 메인 Gemini(나) 의 주기 감사
 
 작업 도중 개입하지 않고, 별도의 감사 시점에 일괄 검토:
 
@@ -416,7 +416,7 @@ Agent(docs-keeper, "
   2. **정식 문서로 승격할 도메인 사실** — 요구사항·계약 문서로 이동
   3. **교체·삭제할 노이즈** — 코드 변경으로 유효하지 않아진 것, 중복
   4. **유지** — 작업 패턴으로 그대로 둘 것
-- **승격 시 변경**: 메인 Claude 가 `<agent>.md` 의 시스템 프롬프트를 편집. 승격된 항목은 notes 에서 제거 (단일 출처 유지)
+- **승격 시 변경**: 메인 Gemini 가 `<agent>.md` 의 시스템 프롬프트를 편집. 승격된 항목은 notes 에서 제거 (단일 출처 유지)
 
 이 감사는 **에이전트 호출 흐름 밖의 별도 작업** — 사용자에게 "노트 감사 실행할까요?" 라고 물어서 수행.
 
@@ -431,7 +431,7 @@ Agent(docs-keeper, "
 | notes → 정식 문서 승격 (요구사항/계약) | 조건 |
 |----|----|
 | 도메인 사실 | 사용자·다른 개발자가 알아야 하는 내용 |
-| 공용 패턴 | 여러 에이전트 notes 에 반복 출현 → CLAUDE.md 또는 `.claude/skills/` 로 |
+| 공용 패턴 | 여러 에이전트 notes 에 반복 출현 → GEMINI.md 또는 `.gemini/skills/` 로 |
 | 계약 정보 | 여러 모듈 간 약속 → `docs/contracts/` |
 
 #### 10.3.4 docs-keeper 의 관리 역할
@@ -441,8 +441,8 @@ docs-keeper 는 감사 실행자로서:
 - **중복 감지** — 여러 에이전트 notes 에 같은 내용 있으면 승격 제안
 - **스테일 감지** — notes 의 코드 참조(클래스명·파일경로) 가 현재 유효한지 grep
 - **비대화 경고** — 개별 notes 가 500 라인 초과 시 정제·카테고리 분리 제안
-- **승격 후보 리포트** — §10.3.3 기준 매칭 항목을 메인 Claude 에게 반환
-- **승격 실행 자체는 메인 Claude 가 수행** — docs-keeper 는 후보만 제시
+- **승격 후보 리포트** — §10.3.3 기준 매칭 항목을 메인 Gemini 에게 반환
+- **승격 실행 자체는 메인 Gemini 가 수행** — docs-keeper 는 후보만 제시
 
 ### 10.4 에이전트 간 학습 전파
 
@@ -458,12 +458,12 @@ docs-keeper 는 감사 실행자로서:
 
 (C) 여러 도메인 에이전트가 동일 패턴 학습:
    "GWT 모듈에서 Dagger 컴포넌트 주입 누락 시 MissingBinding 에러"
-   → docs-keeper 가 감지 → `docs/design-patterns.md` 나 `.claude/skills/gwt-stack.md` 로 승격
+   → docs-keeper 가 감지 → `docs/design-patterns.md` 나 `.gemini/skills/gwt-stack.md` 로 승격
 ```
 
 ### 10.5 메인 에이전트(나) 의 행동 규칙
 
-CLAUDE.md 에 추가:
+GEMINI.md 에 추가:
 
 ```
 ### 에이전트 노트 관리
@@ -473,7 +473,7 @@ CLAUDE.md 에 추가:
 - docs-keeper 가 반환하는 "승격 후보" 리스트를 검토하고 직접 승격 실행:
   - 작업 원칙 → 해당 에이전트 정의(`<agent>.md`) 시스템 프롬프트 편집
   - 도메인 사실 → 요구사항/계약 문서로 이동
-  - 공용 패턴 → CLAUDE.md 또는 `.claude/skills/`
+  - 공용 패턴 → GEMINI.md 또는 `.gemini/skills/`
 - 승격 후 원본 항목은 notes 에서 제거 (단일 출처 유지).
 ```
 
@@ -505,7 +505,7 @@ CLAUDE.md 에 추가:
 ## 반복 함정
 
 - **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 사용. `String` 은 "bad SQL grammar".
-  (CLAUDE.md 에 이미 있음 — 참조만)
+  (GEMINI.md 에 이미 있음 — 참조만)
 
 ## 내부 체크리스트
 
@@ -517,10 +517,10 @@ CLAUDE.md 에 추가:
 - 2026-02: TypeLayoutService 를 TypeService 와 혼동해 잘못된 답변. 도메인 분리 이유 =
   캔버스 시각화와 타입 도메인의 의존 단절.
 
-## 원칙 갱신 제안 (메인 Claude 감사 대상)
+## 원칙 갱신 제안 (메인 Gemini 감사 대상)
 
 - "타입 조회 응답에는 rev 필수 포함" — 이걸 정의 파일의 기본 원칙으로 추가하면 좋겠음.
-  (메인 Claude 가 주기 감사에서 판정)
+  (메인 Gemini 가 주기 감사에서 판정)
 
 ## 아카이브 요약
 
@@ -528,7 +528,7 @@ CLAUDE.md 에 추가:
 
 ---
 
-마지막 감사: YYYY-MM-DD (메인 Claude)
+마지막 감사: YYYY-MM-DD (메인 Gemini)
 ```
 
 ### 10.7 기대 효과
@@ -541,7 +541,7 @@ CLAUDE.md 에 추가:
 ### 10.8 주의
 
 - **노트가 도메인 문서를 대체하면 안 됨** — 사용자·다른 개발자가 읽어야 하는 것은 정식 문서로
-- **notes 는 Claude 내부 운영 지식** — CLAUDE.md 메모리와 유사한 위치
+- **notes 는 Gemini 내부 운영 지식** — GEMINI.md 메모리와 유사한 위치
 - 장기적으로 정식 문서와의 동기화는 docs-keeper 책임
 - notes 파일은 Git 에 커밋 (재현 가능성, 팀원간 공유)
 
@@ -551,7 +551,7 @@ CLAUDE.md 에 추가:
 
 ### 11.1 기본 원칙 — 직통 통신 금지
 
-**에이전트끼리 서로 호출하거나 대화하지 않는다.** 항상 메인 Claude 가 **브로커(중계자)** 로
+**에이전트끼리 서로 호출하거나 대화하지 않는다.** 항상 메인 Gemini 가 **브로커(중계자)** 로
 개입한다. 근거:
 
 - §2.1 에서 밝힌 "떠넘기기 차단" 효과 유지 — A 가 "이건 B 영역" 로 단정 후 B 에게 직행하면
@@ -562,7 +562,7 @@ CLAUDE.md 에 추가:
 ### 11.2 `followup` 필드 — 구조화된 중계 힌트
 
 각 도메인 에이전트는 응답에 `=== followup ===` 섹션을 통해 **"다음으로 누구에게 무엇을
-물어야 하는지"** 를 **구조화된 YAML** 로 반환한다. 메인 Claude 는 이를 파싱하여
+물어야 하는지"** 를 **구조화된 YAML** 로 반환한다. 메인 Gemini 는 이를 파싱하여
 자동 후속 호출 여부를 판단한다.
 
 #### 11.2.1 표준 포맷
@@ -585,14 +585,14 @@ CLAUDE.md 에 추가:
 
 | 필드 | 값 | 설명 |
 |------|----|------|
-| `agent` | 등록된 에이전트 이름 | CLAUDE.md 도메인 매핑 표에 존재해야 |
-| `priority` | `required` \| `optional` | required 는 메인 Claude 자동 후속 호출 대상. optional 은 사용자 판단 |
+| `agent` | 등록된 에이전트 이름 | GEMINI.md 도메인 매핑 표에 존재해야 |
+| `priority` | `required` \| `optional` | required 는 메인 Gemini 자동 후속 호출 대상. optional 은 사용자 판단 |
 | `reason` | 한 줄 사유 | 왜 이 에이전트가 필요한지 |
 | `question` | 실제 물어볼 질문 | 맥락·시간범위·반환 포맷 포함 (§9 맥락 전달 규칙 준수) |
 
-#### 11.2.2 메인 Claude 동작
+#### 11.2.2 메인 Gemini 동작
 
-메인 Claude 는 에이전트 응답의 `followup` 블록을 읽고:
+메인 Gemini 는 에이전트 응답의 `followup` 블록을 읽고:
 
 1. `required` 항목은 **해당 세션 내 자동 후속 호출** — 사용자 재승인 불필요
 2. `optional` 항목은 응답 합성에 "권장 추가 조사" 로 노출, 사용자 판단에 위임
@@ -626,7 +626,7 @@ CLAUDE.md 에 추가:
 
 ### 12.1 배경
 
-증상 기반 버그 리포트("X 가 안 뜬다", "Y 가 느리다") 를 받았을 때, 메인 Claude 가
+증상 기반 버그 리포트("X 가 안 뜬다", "Y 가 느리다") 를 받았을 때, 메인 Gemini 가
 §8 규칙대로 공급자·소비자 양쪽을 병렬 호출하지만 **어느 도메인 몇 개를 어떤 순서로**
 호출할지 판단하는 비용이 있다. 이번 2026-04-17 세션에서 workspace-expert +
 ui-platform-expert + auth-expert 를 병렬 호출했는데 답변 일부가 겹치고 "이건 내 영역
@@ -639,13 +639,13 @@ ui-platform-expert + auth-expert 를 병렬 호출했는데 답변 일부가 겹
 
 ### 12.3 스코프
 
-- `CLAUDE.md` 도메인 매핑 표 + `docs/contracts/README.md` 매트릭스 읽기
-- 기존 에이전트 정의 파일(`.claude/agents/*.md`) 스코프 필드 참조
+- `GEMINI.md` 도메인 매핑 표 + `docs/contracts/README.md` 매트릭스 읽기
+- 기존 에이전트 정의 파일(`.gemini/agents/*.md`) 스코프 필드 참조
 - `docs/requirements/README.md`, `docs/usecases/README.md` 인덱스 (도메인 판별 보조)
 
 ### 12.4 입력·출력
 
-**입력**: 사용자 원문 요청 + 메인 Claude 의 맥락 요약
+**입력**: 사용자 원문 요청 + 메인 Gemini 의 맥락 요약
 
 **출력** (구조화 YAML):
 
@@ -667,7 +667,7 @@ skip:
 
 ### 12.5 사용 조건
 
-메인 Claude 는 다음 경우에 triage 를 먼저 호출한다:
+메인 Gemini 는 다음 경우에 triage 를 먼저 호출한다:
 
 1. **증상 기반 버그** (§8) 의 경우 + 관련 도메인이 3개 이상 후보일 때
 2. **사용자 요청이 다중 도메인에 걸칠 때** — 예: "워크스페이스 기능 전면 점검"
@@ -681,7 +681,7 @@ triage 자체도 Agent 호출 비용이 있으므로 남발 금지.
 
 - **도메인 답변 금지** — 라우팅 계획만 생성
 - **followup 사용 금지** — triage 자체가 followup 을 생성하면 무한 재귀
-- **plan 실행 금지** — 계획만 반환, 호출은 메인 Claude 가 수행
+- **plan 실행 금지** — 계획만 반환, 호출은 메인 Gemini 가 수행
 - **결정론적 출력** — 동일 입력에 동일 plan 반환 (매트릭스·스코프 기반)
 
 ### 12.7 기대 효과

@@ -102,6 +102,6 @@ data class R2dbcDocumentEntity(
 
 ## 주의 (자주 나는 함정)
 
-- `R2DBC JSONB 컬럼은 String 이 아니라 io.r2dbc.postgresql.codec.Json 타입 사용` (CLAUDE.md)
+- `R2DBC JSONB 컬럼은 String 이 아니라 io.r2dbc.postgresql.codec.Json 타입 사용` (GEMINI.md)
 - `@Id` 누락 시 "no Identifier. Update not possible" — 엔티티에 반드시 `@Id`
 - `switchIfEmpty` 인자는 `Mono.defer { }` 감싸기 (eager evaluation 방지)

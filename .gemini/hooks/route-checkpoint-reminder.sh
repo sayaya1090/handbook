@@ -1,11 +1,11 @@
 #!/bin/bash
 # UserPromptSubmit hook — 서브에이전트 라우팅 체크포인트 리마인더
 #
-# CLAUDE.md "작업 착수 전 체크포인트" 를 Claude 가 잊지 않도록
+# GEMINI.md "작업 착수 전 체크포인트" 를 Gemini 가 잊지 않도록
 # 사용자 프롬프트에 규모있는 작업 키워드가 있으면 stdout 으로 리마인더를 뿜는다.
-# Claude Code 가 stdout 을 추가 컨텍스트로 대화에 주입한다.
+# Gemini Code 가 stdout 을 추가 컨텍스트로 대화에 주입한다.
 #
-# 2026-04-17 search-workspace 작업에서 Claude 본인이 §3/§9/§10 규칙을
+# 2026-04-17 search-workspace 작업에서 Gemini 본인이 §3/§9/§10 규칙을
 # 전부 무시한 사례 이후 도입.
 set -euo pipefail
 
@@ -27,7 +27,7 @@ PATTERN='구현|신설|신규|추가|배포|리팩|만들어|고쳐|변경|업�
 if echo "$PROMPT" | grep -qiE "$PATTERN"; then
   cat <<'EOF'
 [route-checkpoint] 이 요청은 도메인·계약·배포 범위 작업일 가능성이 있다.
-`CLAUDE.md` "작업 착수 전 체크포인트" 5개 평가 후 서브에이전트 위임 여부를
+`GEMINI.md` "작업 착수 전 체크포인트" 5개 평가 후 서브에이전트 위임 여부를
 결정한다. 스킵한다면 응답 앞부분에 이유를 한 줄 명시.
 
 - 도메인 수정         → `<domain>-expert`

@@ -32,7 +32,7 @@
 - **Test**: Kotest 6.1.3 + MockK, Testcontainers (PostgreSQL), Playwright 1.52, JUnit 5
 - **Deploy**: Helm + Kargo + ArgoCD, Istio ambient mesh, Kubernetes Gateway API
 
-기술 스택 전문은 [.claude/skills/architecture.md](.claude/skills/architecture.md) 참조.
+기술 스택 전문은 [.gemini/skills/architecture.md](.gemini/skills/architecture.md) 참조.
 
 ---
 
@@ -89,7 +89,7 @@ E2E=true ./gradlew :e2e:test      # E2E (서버 기동 필요)
 
 - 통합 테스트(`R2dbc*IntegrationTest`)는 Testcontainers 로 PostgreSQL 자동 기동 — Docker 필요
 - GWT 테스트는 모듈별 고유 포트를 할당받아 병렬 실행 가능
-- 환경 설정 / 포트 상세는 [.claude/skills/dev-environment.md](.claude/skills/dev-environment.md) 참조
+- 환경 설정 / 포트 상세는 [.gemini/skills/dev-environment.md](.gemini/skills/dev-environment.md) 참조
 
 ---
 
@@ -100,7 +100,7 @@ E2E=true ./gradlew :e2e:test      # E2E (서버 기동 필요)
 - 각 서비스는 Helm 서브차트(`charts/handbook/charts/<service>`) 로 배포되며,
   공통 템플릿은 라이브러리 차트 `charts/handbook-lib` 가 제공
 - Kargo Warehouse 는 jib 가 push 한 commit SHA 태그를 `strictSemvers: false` 로 구독
-- 배포 흐름과 Kargo Stage 구조는 [.claude/skills/deployment.md](.claude/skills/deployment.md) 및
+- 배포 흐름과 Kargo Stage 구조는 [.gemini/skills/deployment.md](.gemini/skills/deployment.md) 및
   [docs/system-overview.md](docs/system-overview.md) 참조
 
 ---
@@ -109,7 +109,7 @@ E2E=true ./gradlew :e2e:test      # E2E (서버 기동 필요)
 
 | 영역 | 진입점 |
 |------|-------|
-| 프로젝트 가이드 (규칙·컨벤션·디버깅) | [CLAUDE.md](CLAUDE.md) |
+| 프로젝트 가이드 (규칙·컨벤션·디버깅) | [GEMINI.md](GEMINI.md) |
 | 요구사항 (기능·비기능) | [docs/requirements.md](docs/requirements.md) · [docs/requirements/README.md](docs/requirements/README.md) |
 | 유스케이스 | [docs/usecases.md](docs/usecases.md) · [docs/usecases/README.md](docs/usecases/README.md) |
 | 시스템 아키텍처 | [docs/architecture.md](docs/architecture.md) · [docs/system-overview.md](docs/system-overview.md) |
@@ -127,21 +127,21 @@ E2E=true ./gradlew :e2e:test      # E2E (서버 기동 필요)
 ## 기여 / 규칙 요약
 
 - **문서 우선 (DOCS FIRST)**: 요구사항 → 유스케이스 → 설계 → 구현 → 테스트.
-  문서와 구현 동시 진행 금지. 상세 체크리스트는 [.claude/skills/doc-structure.md](.claude/skills/doc-structure.md).
+  문서와 구현 동시 진행 금지. 상세 체크리스트는 [.gemini/skills/doc-structure.md](.gemini/skills/doc-structure.md).
 - **유스케이스 ↔ 테스트**: 모든 UC 는 시퀀스 다이어그램과 대응 테스트를 가진다.
 - **I18N**: UI 텍스트는 `LabelProvider` 를 통하며 한국어 하드코딩 금지.
   언어 파일은 `src/main/i18n/language.{ko,en}.json` 에서 빌드 시 머지.
 - **디자인 토큰**: MD3 토큰만 사용 — 색·크기·타이포 하드코딩 금지
-  ([.claude/skills/design-tokens.md](.claude/skills/design-tokens.md)).
+  ([.gemini/skills/design-tokens.md](.gemini/skills/design-tokens.md)).
 - **UI 컴포넌트**: sayaya-ui 사용 필수, 네이티브 HTML 금지
-  ([.claude/skills/sayaya-ui.md](.claude/skills/sayaya-ui.md)).
+  ([.gemini/skills/sayaya-ui.md](.gemini/skills/sayaya-ui.md)).
 - **Javadoc/KDoc**: 모든 클래스에 역할·책임·의존관계·주의점 명시.
 - **커밋**:
   - Conventional Commits (`feat/fix/docs/refactor/chore/test`), 한국어 메시지
   - `Co-Authored-By` 태그 사용 금지
   - GWT 캐시 아티팩트(`*.cache.js`, `*.nocache.js`, `*.devmode.js`, `compilation-mappings.txt`, `clear.cache.gif`) 커밋 금지
 
-전체 규칙과 Kotlin/Java 컨벤션, 디버깅 체크리스트는 [CLAUDE.md](CLAUDE.md) 참조.
+전체 규칙과 Kotlin/Java 컨벤션, 디버깅 체크리스트는 [GEMINI.md](GEMINI.md) 참조.
 
 ---
 

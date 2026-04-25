@@ -49,7 +49,7 @@ docs-keeper    W      W      W        W          W     W      W        W     W  
 
 ---
 
-## 변경 절차 (에이전트 & 메인 Claude)
+## 변경 절차 (에이전트 & 메인 Gemini)
 
 ### 계약 변경을 요청받았을 때
 

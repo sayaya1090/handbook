@@ -189,7 +189,7 @@ spec:
 | `charts/handbook/infrastructure/templates/gateway/route.yaml` | `route.openshift.io/v1/Route` — `handbook-istio` Service 를 OpenShift Router 로 TLS edge 노출 (`.Values.host` 로) |
 | `charts/handbook/infrastructure/templates/gateway/http-route.yaml` | **catch-all** HTTPRoute (`name: gateway`) — 모든 `/` 요청을 Spring Cloud Gateway(`service-gateway:8080`) 로 포워딩 |
 | `charts/handbook/infrastructure/templates/gateway/ceph-rgw-service.yaml` | `Service/ceph-rgw` (`type: ExternalName`) — Ceph RGW 를 같은 네임스페이스 이름으로 프록시. Gateway API cross-namespace backendRef 회피용. Istio gateway controller 가 ReferenceGrant 를 올바르게 인식 못 하는 이슈가 있어 이 패턴으로 우회 |
-| `charts/handbook/shell-ui/templates/http-route.yaml` | 셸 UI 전용 HTTPRoute — **2 rule**: `/js/shell/**` PathPrefix + `ReplacePrefixMatch`, `/shell.html` Exact + `ReplaceFullPath`. 두 rule 이 필요한 이유는 Gateway API 가 `ReplacePrefixMatch` 사용 시 오직 하나의 `PathPrefix` match 만 허용하기 때문. 두 rule 모두 `backendRefs: [ceph-rgw]` (ExternalName Service) |
+| `charts/handbook/shell-ui/templates/http-route.yaml` | 셸 UI 전용 HTTPRoute — **2 rule**: `/js/shell/**` PathPrefix + `ReplacePrefixMatch`, `/app.html` Exact + `ReplaceFullPath`. 두 rule 이 필요한 이유는 Gateway API 가 `ReplacePrefixMatch` 사용 시 오직 하나의 `PathPrefix` match 만 허용하기 때문. 두 rule 모두 `backendRefs: [ceph-rgw]` (ExternalName Service) |
 
 ### 요청 흐름
 
@@ -238,8 +238,8 @@ Istio gateway 컨트롤러가 **`ReferenceGrant` 를 올바로 인식하지 못�
 
 ### 기대 URL (dev)
 
-- `https://handbook.apps.sayaya.cloud/` → Ceph RGW `GET /handbook-dev/static/shell.html` (root rewrite)
-- `https://handbook.apps.sayaya.cloud/shell.html` → Ceph RGW `GET /handbook-dev/static/shell.html`
+- `https://handbook.apps.sayaya.cloud/` → Ceph RGW `GET /handbook-dev/static/app.html` (root rewrite)
+- `https://handbook.apps.sayaya.cloud/app.html` → Ceph RGW `GET /handbook-dev/static/app.html`
 - `https://handbook.apps.sayaya.cloud/js/shell/shell.nocache.js` → `GET /handbook-dev/static/js/shell/shell.nocache.js`
 - `https://handbook.apps.sayaya.cloud/workspace/abc/types` → Spring Cloud Gateway → search-type
 - `https://handbook.apps.sayaya.cloud/auth/login` → Spring Cloud Gateway → login

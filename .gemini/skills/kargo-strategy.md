@@ -797,7 +797,7 @@ release-canary 실패 시 Kargo 가 `release-prod` 승격을 retrospectively "Un
 | `charts/handbook/templates/application-set.yaml` | preview ApplicationSet 추가 |
 | `charts/handbook/infrastructure/templates/s3/virtual-service.yaml` | subset 기반 canary routing 재구성 |
 | `charts/handbook/templates/namespace.yaml` (신규) | env 별 namespace + NetworkPolicy + ResourceQuota + LimitRange |
-| `.claude/skills/deployment.md` | 전략 확정 시 내용 갱신 |
+| `.gemini/skills/deployment.md` | 전략 확정 시 내용 갱신 |
 
 ## 11. 오픈 질문
 1. `e2e/` 디렉토리 시나리오가 실제로 있는지, dev 대상(`https://handbook-dev.sayaya.cloud`) 으로 실행 가능한 상태인지

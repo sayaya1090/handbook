@@ -34,7 +34,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | 파일 | 역할 |
 |------|------|
 | `Chart.yaml` | `gha-runner-scale-set` 차트를 alias `ubi10` 으로 의존 (alias 는 runtime values 키와 일치) |
-| `templates/actions-runner.yaml` | OpenShift `BuildConfig` + `ImageStream` — UBI10 기반 runner 이미지를 클러스터에서 직접 빌드 (`.claude/skills/dev-environment.md` GitHub Actions Runner 섹션 참조) |
+| `templates/actions-runner.yaml` | OpenShift `BuildConfig` + `ImageStream` — UBI10 기반 runner 이미지를 클러스터에서 직접 빌드 (`.gemini/skills/dev-environment.md` GitHub Actions Runner 섹션 참조) |
 | `templates/cache.yaml` | `.Values.ubi10.template.spec.volumes` 에서 cache PVC 이름을 읽어 10Gi PVC 생성. `_work`, `.gradle`, `gradle-installations/installs` 캐시 공유 |
 | `templates/docker-daemon-config.yaml` | dind 사이드카용 `daemon.json` ConfigMap — `storage-driver: fuse-overlayfs`, `mtu: 1350` |
 | `templates/job.yaml`, `rbac.yaml` | Runner 네임스페이스 초기화 Job · RBAC |
@@ -197,7 +197,7 @@ JDK 버전 / BASE_IMAGE / 러너 라벨 변경은 `_jvm-deploy.yaml` 또는 `_fr
 5. `helm dependency build` 로 Chart.lock/tgz 생성 후 커밋.
 6. `.github/workflows/<service>-deploy.yaml` 은 `_jvm-deploy.yaml` 을 `uses:` 하는 12줄 래퍼로 작성.
 7. 로컬 IDE 에서 jar 를 직접 실행할 때는 jar 의 `application.yml` 이 default 로 로드된다 — 별도 profile 활성화 불필요.
-8. 새 서비스의 gradle 모듈이 다른 서비스 모듈을 `implementation(project(":x"))` 로 참조하지 않는지 확인. 참조 시 그쪽의 `@Configuration` 이 딸려 올라와 Bean 충돌이 난다 (CLAUDE.md 디버깅 표 참조).
+8. 새 서비스의 gradle 모듈이 다른 서비스 모듈을 `implementation(project(":x"))` 로 참조하지 않는지 확인. 참조 시 그쪽의 `@Configuration` 이 딸려 올라와 Bean 충돌이 난다 (GEMINI.md 디버깅 표 참조).
 
 ## 운영 명령 치트시트
 ```bash

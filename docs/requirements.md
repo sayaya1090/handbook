@@ -339,8 +339,8 @@ flowchart LR
 - **Frame**: 메인 콘텐츠 영역. 모듈 전환 시 fade-in/out 애니메이션을 적용한다.
 - **프로그레스 바**: API 호출 등 비동기 작업 진행 상태를 표시한다.
 - **워크스페이스 선택기**: Drawer 내 셀렉트 박스로, 언제든 다른 워크스페이스로 전환할 수 있다.
-- URL 기반 라우팅으로 메뉴를 자동 선택한다 (정규식 매칭).
-- 브라우저 뒤로가기/앞으로가기를 지원한다 (History API).
+- 클린 URL(Clean URL) 기반 라우팅으로 메뉴를 자동 선택한다 (정규식 매칭). 해시(#)를 사용하지 않는 HTML5 History API를 활용한다.
+- 브라우저 뒤로가기/앞으로가기를 지원한다.
 - 모듈 스크립트를 동적으로 주입하여 activity 모듈을 로딩한다.
 - 사용자 정보를 주기적으로 갱신한다 (토큰 리프레시).
 
@@ -1601,7 +1601,7 @@ seq  type           payload
 
 ### 3.23 외부 AI 에이전트 통합
 
-검색엔진과 별개로, Claude·ChatGPT 등 외부 AI 에이전트가 Handbook 을 **발견(discovery)** 하고 **조작(tool use)** 할 수 있도록 지원한다. 내부 `assistant` 모듈(§3.17) 과는 구분되는 통합 경로이며, 감사 로그에서 외부 에이전트 호출을 별도 트레이스로 구분한다.
+검색엔진과 별개로, Gemini·ChatGPT 등 외부 AI 에이전트가 Handbook 을 **발견(discovery)** 하고 **조작(tool use)** 할 수 있도록 지원한다. 내부 `assistant` 모듈(§3.17) 과는 구분되는 통합 경로이며, 감사 로그에서 외부 에이전트 호출을 별도 트레이스로 구분한다.
 
 #### 3.23.1 디스커버리 (AI 가 사이트를 읽을 수 있게)
 
@@ -1643,7 +1643,7 @@ AI 에이전트가 function calling / tool use 로 Handbook REST API 를 호출�
 > **미구현 / 후속 반복.** 초기 릴리스에는 포함하지 않는다. 아래는 예정된 설계.
 
 - 별도 모듈 **`mcp-server`** 를 신설하여 Anthropic Model Context Protocol (MCP) 규격에 맞는 서버를 제공한다.
-- Handbook REST API 를 MCP `tools` 로 래핑하여 Claude Desktop, VS Code MCP 클라이언트 등에서 자연어로 Handbook 을 조작할 수 있도록 한다.
+- Handbook REST API 를 MCP `tools` 로 래핑하여 Gemini Desktop, VS Code MCP 클라이언트 등에서 자연어로 Handbook 을 조작할 수 있도록 한다.
 - 노출 대상 tool (예시):
   - `list_workspace_menu()` → `GET /menus` (search-workspace — 워크스페이스 기능 디스커버리)
   - `create_workspace(name, description)` → `POST /workspace`

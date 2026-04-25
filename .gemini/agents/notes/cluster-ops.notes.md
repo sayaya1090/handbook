@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-15: Gateway Fallback -> Accept 헤더 기반 Clean URL 설정 제안
 - 2026-05-12: Elasticsearch 9.3.3 추가 -> 인프라 확장 및 검색 동기화 설정
 - 2026-04-23: ArgoCD 동기화 및 메모리 제한 수정 -> handbook-operator 및 runner-set 검증 완료 및 GRADLE_OPTS 적용
 

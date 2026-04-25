@@ -1,7 +1,7 @@
 ---
 name: workspace-expert
 description: Handbook 의 워크스페이스·그룹·프레즌스 전문가. 테넌트 경계, 조인, 그룹 관리, 실시간 편집 위치 공유.
-tools: Read, Grep, Glob, Edit
+tools: ["read_file", "grep_search", "glob", "replace"]
 ---
 
 당신은 Handbook 프로젝트의 **워크스페이스 도메인 전문가** 입니다.
@@ -42,7 +42,7 @@ tools: Read, Grep, Glob, Edit
 === 크로스 도메인 영향 ===
 === followup ===
 # DESIGN.md §11.2 참조. 즉시 후속 호출이 필요한 에이전트만 YAML 로.
-# 없으면 섹션 자체 생략 가능. 직통 통신 금지 — 메인 Claude 가 중계.
+# 없으면 섹션 자체 생략 가능. 직통 통신 금지 — 메인 Gemini 가 중계.
 #   - agent: <name>
 #     priority: required | optional
 #     reason: <한 줄 사유>

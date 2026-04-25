@@ -186,12 +186,26 @@ sequenceDiagram
     M->>B: menusChanged (subscribe)
     B->>B: recompute() - 모든 조건 충족 확인
 
-    alt Hash Navigation 필요
-        B->>H: window.location.hash = "workspaces"
-    else 이미 Hash 가 설정된 경우
+    alt Clean URL Navigation 필요
+        B->>H: window.history.pushState(null, "", "/workspaces")
+    else 이미 URL 이 설정된 경우
         B->>B: MenuSelected.next(menu) 직접 호출 (지연 로딩 트리거)
     end
 ```
+
+## SPA 라우팅 및 클린 URL 지원
+
+`shell-ui`는 해시(#)를 사용하지 않는 **클린 URL(Clean URL)** 내비게이션을 수행한다. 이를 위해 서버(Gateway/Ingress) 측의 지원이 필요하다.
+
+### 1. 클라이언트 사이드 라우팅
+- `HistoryManager`: HTML5 History API(`pushState`, `popstate`)를 사용하여 URL을 관리한다.
+- `UrlBasedMenuResolver`: 브라우저의 `pathname`을 정규화(origin, port, protocol 제거)하여 메뉴 `urlRegex`와 매칭한다.
+
+### 2. 서버 사이드 지원 (Fallback)
+브라우저에서 `/workspace/123/types`와 같은 UI 경로로 직접 접속하거나 새로고침할 때, 서버는 해당 경로에 대한 리소스를 찾는 대신 SPA 진입점인 `app.html`을 반환해야 한다.
+
+- **Istio Gateway / Ingress**: API 경로(`/auth/**`, `/workspace/**` 등)가 아닌 요청 중 UI 경로에 해당하는 패턴은 정적 자산 서버의 `app.html`로 rewrite 하거나 포워딩한다.
+- **Spring Cloud Gateway**: `MenuSupplier`에서 제공하는 모든 `urlRegex` 패턴에 대해 `app.html`을 결과로 주는 라우트를 동적으로 유지하거나, API 이외의 모든 HTML 요청을 SPA 로 연결하는 Fallback 필터를 적용한다.
 
 ---
 
@@ -1182,7 +1196,7 @@ client/
 
 > **미구현 / 후속 반복.** 초기 릴리스에는 포함하지 않는다. 아래는 예정된 설계 스케치로, `docs/requirements.md` §3.23.2 "MCP 서버" 항목과 연동된다.
 
-**역할:** Claude Desktop 등 외부 MCP 클라이언트가 Handbook 을 툴로 사용할 수 있도록 Model Context Protocol 규격의 서버를 제공한다. 내부 `assistant` 모듈(§3.17)과는 별개 — assistant 는 Handbook 내부의 자연어 처리 UX, mcp-server 는 외부 에이전트 통합 진입점이다.
+**역할:** Gemini Desktop 등 외부 MCP 클라이언트가 Handbook 을 툴로 사용할 수 있도록 Model Context Protocol 규격의 서버를 제공한다. 내부 `assistant` 모듈(§3.17)과는 별개 — assistant 는 Handbook 내부의 자연어 처리 UX, mcp-server 는 외부 에이전트 통합 진입점이다.
 
 **예정 계층 구조:**
 

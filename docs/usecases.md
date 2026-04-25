@@ -27,7 +27,7 @@
 | **AI 에이전트(Assistant)** | 사용자의 자연어 요청을 해석하여 Gateway API를 통해 작업을 수행하는 내부 시스템 |
 | **비로그인 방문자(Anonymous Visitor)** | 로그인 없이 SEO 랜딩에 접근하는 사용자 (첫 방문자, 제품 탐색자) |
 | **검색엔진 크롤러(Crawler)** | Googlebot 등 검색엔진 인덱싱 봇. 쿠키 없이 방문하며 렌더링 엔진이 JS 를 실행할 수 있다 |
-| **외부 AI 에이전트(External Agent)** | Claude Desktop·ChatGPT 등 외부 AI 에이전트. API Key / MCP 로 Handbook 을 조작한다 |
+| **외부 AI 에이전트(External Agent)** | Gemini Desktop·ChatGPT 등 외부 AI 에이전트. API Key / MCP 로 Handbook 을 조작한다 |
 
 ## 유스케이스 개요
 
@@ -1472,7 +1472,7 @@ sequenceDiagram
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 외부 AI 에이전트 (Claude Desktop 등 MCP 클라이언트, 또는 OpenAPI function calling) |
+| **액터** | 외부 AI 에이전트 (Gemini Desktop 등 MCP 클라이언트, 또는 OpenAPI function calling) |
 | **선행 조건** | 사용자가 발급한 Personal Access Token (PAT) 이 에이전트에 주입되어 있다 |
 | **후행 조건** | 에이전트의 요청이 Handbook API 로 실행되고, 감사 로그에 `caller_type=external_agent` (또는 `mcp_client`) 로 기록된다 |
 

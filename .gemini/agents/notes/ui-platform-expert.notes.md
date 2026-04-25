@@ -21,7 +21,7 @@
 - **Drawer 에서 "rail 상태와 무관하게 항상 보여야 하는 컨트롤" 은 rail 의 자식이 아니라 drawer 직속에 mount** — rail 에 `[hide]` (width:0 + overflow:hidden) 가 걸리면 자식도 함께 잘린다. 햄버거처럼 "menu-rail HIDE 여도 drawer 가 visible 인 모든 순간에는 노출" 이 요구사항이면 `.drawer > .body` 의 sibling (drawer flex-column 의 첫 자식) 으로 두고 rail 만 flex:1 min-height:0 으로 둔다. rail 상단 mount 는 "rail 이 보이는 동안만" 의 세트에 해당. (2026-04-18 C)
 - **`@JsOverlay` 재귀 호출 금지** — GWT ReferenceError. static 헬퍼로 우회.
 - **`backdrop-filter` 가 fixed 자손의 containing block** — 모바일 하단 네비 width=0 증상.
-- **하드코딩 금지** — MD3 토큰만 사용 (CLAUDE.md).
+- **하드코딩 금지** — MD3 토큰만 사용 (GEMINI.md).
 - **AppBar `left: var(--shell-drawer-width)` + 좌측 slot mount 조합 주의** — AppBar 가 drawer 우측부터 시작하는 MD3 Top App Bar + Navigation Rail 병치 디자인에서, AppBar leading slot 에 mount 된 요소는 drawer 상태에 따라 viewport 좌표가 같이 이동. drawer toggle 처럼 "drawer 에 소속된 것처럼" 보여야 하는 요소는 AppBar leading 금지, Rail 상단 mount 가 정답 (MD3 Navigation Rail 정석). (2026-04-18 햄버거 회귀)
 - **부분 봉합 회귀 주의** — 모바일 한정 `display:none` 으로 증상 봉합 시 데스크톱 경로는 그대로 남음. 증상이 "뷰포트 한쪽에서만 안 보인다" 인지 "양쪽 다 고친 거" 인지 커밋 메시지에 명시 (3440cfe 의 "모바일 햄버거 숨김" 이 사용자에겐 "햄버거 위치 정리" 로 인식된 사례).
 - **Rail collapse/expand 는 "폭만 변하고 아이콘 x 좌표는 고정"** 이 MD3 정석. `.item .collapse`(margin 8px, 40px 버튼) 과 `md-item` slot=start(padding-inline-start 16px, 24px 아이콘) 의 icon center 가 둘 다 x=28px 에 맞도록 설계됨. `.rail[expand]` 에 `padding-left` / `align-items:flex-start` 류의 오프셋을 추가하면 이 정렬이 깨져 아이콘이 전환 시 시프트된다. 햄버거도 `align-self:center` 대신 `align-self:flex-start + margin-left:8px` 로 icon center=28px 고정 필요. (2026-04-18)
@@ -39,7 +39,7 @@
 
 ## 과거 실수
 
-- **Write 툴 없는 서브에이전트 환경 인식 미흡** (2026-04-18) — 이슈 C 는 신규 파일 2개(WorkspaceRepository.java, WorkspaceApi.java) 생성 필요였으나 이 에이전트는 Edit/Read/Grep/Glob 만 보유 → 신규 파일 생성 불가. 설계 단계에서 "신규 파일이 포함되는 작업" 인지 먼저 확인하고, 필요하면 메인 Claude 에 위임했어야 함. 부분 적용(User.workspaces 만 제거) 은 빌드 깨짐 → 원자성 유지 위해 이슈 C 전체 미착수.
+- **Write 툴 없는 서브에이전트 환경 인식 미흡** (2026-04-18) — 이슈 C 는 신규 파일 2개(WorkspaceRepository.java, WorkspaceApi.java) 생성 필요였으나 이 에이전트는 Edit/Read/Grep/Glob 만 보유 → 신규 파일 생성 불가. 설계 단계에서 "신규 파일이 포함되는 작업" 인지 먼저 확인하고, 필요하면 메인 Gemini 에 위임했어야 함. 부분 적용(User.workspaces 만 제거) 은 빌드 깨짐 → 원자성 유지 위해 이슈 C 전체 미착수.
 
 ## 원칙 갱신 제안
 

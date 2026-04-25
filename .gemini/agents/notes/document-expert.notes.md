@@ -15,7 +15,7 @@
 
 ## 반복 함정
 
-- **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 (공용, CLAUDE.md)
+- **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 (공용, GEMINI.md)
 - **`switchIfEmpty` eager**: `Mono.defer { }` 로 감쌀 것
 
 ## 내부 체크리스트

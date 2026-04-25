@@ -29,14 +29,14 @@
 | 디자인 토큰/시각 상태 변경 | docs/design.md, docs/design-patterns.md, 모듈/DESIGN.md |
 | API 엔드포인트 변경 | docs/requirements.md (4. API 엔드포인트), 모듈/README.md, **모듈/README.md#에이전트-연동**, docs/contracts/api.md |
 | 유스케이스 추가 | docs/usecases.md (글로벌 UC), 모듈/USECASE.md (트레이서빌리티 매트릭스) |
-| 신규 모듈 추가 | 위 4종 + `docs/contracts/README.md` 매트릭스 등록 + `.claude/agents/<expert>.md` 스코프 확장 + **에이전트 연동 섹션** 필수 |
+| 신규 모듈 추가 | 위 4종 + `docs/contracts/README.md` 매트릭스 등록 + `.gemini/agents/<expert>.md` 스코프 확장 + **에이전트 연동 섹션** 필수 |
 
 ---
 
 ## 에이전트 연동 섹션 (표준 템플릿)
 
 모든 모듈 `README.md` 와 `USECASE.md` 에 다음 섹션이 있어야 한다.
-체크리스트는 CLAUDE.md "에이전트 연동 체크리스트" 와 일치한다.
+체크리스트는 GEMINI.md "에이전트 연동 체크리스트" 와 일치한다.
 
 ### README.md#에이전트 연동 (필수)
 
