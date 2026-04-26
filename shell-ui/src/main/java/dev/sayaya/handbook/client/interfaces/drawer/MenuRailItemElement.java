@@ -132,6 +132,7 @@ public class MenuRailItemElement extends NavigationRailItemElement {
     private void initEventHandlers(Menu menu, MenuSelected selected, MenuHover hover,
                                    MenuSelectedElementProvider selectedElement) {
         on(EventType.click, evt -> {
+            elemental2.dom.DomGlobal.console.log("MenuRailItemElement: clicked title=" + menu.title() + ", url=" + menu.url(), menu);
             if (element().hasAttribute("disabled")) {
                 // 비허용 상태에서는 CTA 폴백이 있으면 그 쪽으로 라우팅 (Sign In / 워크스페이스 생성 등),
                 // 없으면 클릭 무시 — 2026-04-18 "WS 있을 때 강제 진입" 회귀 회피.

@@ -47,6 +47,7 @@ public class UrlBasedMenuResolver {
     }
     private void onUriChanged(String newUri) {
         if (newUri == null) return;
+        elemental2.dom.DomGlobal.console.log("UrlBasedMenuResolver.onUriChanged: newUri=" + newUri);
         // 1. 전체 URL이 들어온 경우 origin 제거
         String origin = DomGlobal.window.location.origin;
         if (newUri.startsWith(origin)) newUri = newUri.substring(origin.length());
@@ -59,15 +60,18 @@ public class UrlBasedMenuResolver {
         
         // 3. 선행 슬래시 보장
         if (!newUri.startsWith("/")) newUri = "/" + newUri;
+        elemental2.dom.DomGlobal.console.log("UrlBasedMenuResolver: normalizedUri=" + newUri);
         lastKnownUri = newUri;
         if (!map.isEmpty()) resolve(newUri);
     }
     private void resolve(String uri) {
         if(map.isEmpty() || uri == null) return;
+        elemental2.dom.DomGlobal.console.log("UrlBasedMenuResolver.resolve: uri=" + uri + ", map.size=" + map.size());
         map.keySet().stream()
             .filter(regex -> regex.test(uri))
             .findFirst().map(map::get)
             .ifPresent(t -> {
+                elemental2.dom.DomGlobal.console.log("UrlBasedMenuResolver: matched! menu=" + t.title());
                 select.next(t);
                 // 모바일에서는 drawer 가 primary nav 가 아니라 secondary 오버레이이므로
                 // URL 해석 결과로도 항상 HIDE 로 남겨 bottom-nav 만 노출한다.

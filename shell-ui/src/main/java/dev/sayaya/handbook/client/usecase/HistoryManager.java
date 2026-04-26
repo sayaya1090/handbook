@@ -53,16 +53,19 @@ public class HistoryManager {
     private void onMenuSelected(Menu menu) {
         if (menu == null) return;
         String targetUrl = menu.url();
+        elemental2.dom.DomGlobal.console.log("HistoryManager.onMenuSelected: title=" + menu.title() + ", targetUrl=" + targetUrl + ", currentUri=" + uri.getValue());
         if (targetUrl == null || targetUrl.isEmpty()) return;
 
         // 현재 URI와 다를 때만 업데이트하여 무한 루프 방지
         if (!targetUrl.equals(uri.getValue())) {
+            elemental2.dom.DomGlobal.console.log("HistoryManager: uri.next(" + targetUrl + ") calling...");
             uri.next(targetUrl);
         }
     }
 
     private void updateHistory(String path) {
         if (path == null || path.isEmpty()) return;
+        elemental2.dom.DomGlobal.console.log("HistoryManager.updateHistory: path=" + path + ", currentPathname=" + window.location.pathname);
         // 1. 전체 URL이 들어온 경우 origin 제거
         String origin = DomGlobal.window.location.origin;
         if (path.startsWith(origin)) path = path.substring(origin.length());
@@ -79,6 +82,7 @@ public class HistoryManager {
 
         if (!window.location.pathname.equals(path)) {
             logger.info("History.pushState(" + path + ")");
+            elemental2.dom.DomGlobal.console.log("HistoryManager: window.history.pushState(" + path + ")");
             window.history.pushState(null, DomGlobal.document.title, path);
         }
     }
