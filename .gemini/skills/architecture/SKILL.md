@@ -1,3 +1,8 @@
+---
+name: architecture
+description: Handbook 프로젝트 아키텍처 및 모듈 구조 지침
+---
+
 # 아키텍처 상세
 
 ## 프론트엔드 (GWT 2.13.0)

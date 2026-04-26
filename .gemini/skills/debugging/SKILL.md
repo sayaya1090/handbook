@@ -1,3 +1,8 @@
+---
+name: debugging
+description: 디버깅 패턴 및 문제 해결 가이드
+---
+
 # 디버깅 가이드
 
 ## 흔한 에러 패턴

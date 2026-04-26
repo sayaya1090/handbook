@@ -1,3 +1,8 @@
+---
+name: design-tokens
+description: MD3 디자인 토큰 사용 규칙
+---
+
 # MD3 디자인 토큰
 
 ## 색상

@@ -1,3 +1,8 @@
+---
+name: sayaya-ui
+description: sayaya-ui 컴포넌트 사용법 및 주의사항
+---
+
 # sayaya-ui 컴포넌트 사용법
 
 ## 의존성

@@ -1,3 +1,8 @@
+---
+name: gwt-stack
+description: GWT 기술 스택 및 프론트엔드 개발 가이드
+---
+
 # GWT 기술 스택 가이드
 
 > 참고 시리즈: https://medium.com/@sayaya1090

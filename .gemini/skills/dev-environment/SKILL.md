@@ -1,3 +1,8 @@
+---
+name: dev-environment
+description: 로컬 개발 환경 및 테스트 가이드
+---
+
 # 개발 환경 설정
 
 ## 인프라

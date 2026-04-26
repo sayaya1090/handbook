@@ -1,3 +1,8 @@
+---
+name: kargo-strategy
+description: Kargo를 이용한 프로모션 및 GitOps 전략
+---
+
 # 배포 전략 v2 — Preview + Kargo + Canary (검토용)
 
 > 상태: **제안 / 검토 대기**. v1 (과설계) 대체. 사용자 확정 사항: 단일 클러스터, 3 환경(dev/staging/prod), 태그 전략 TBD, AnalysisTemplate 신규 작성 필요, 옵션 D(Preview + Canary) 방향.

@@ -1,3 +1,8 @@
+---
+name: doc-structure
+description: 문서 구조 및 에이전트 연동 체크리스트
+---
+
 # 문서 구조
 
 ## 프로젝트 레벨 (docs/)

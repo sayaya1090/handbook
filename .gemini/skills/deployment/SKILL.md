@@ -1,3 +1,8 @@
+---
+name: deployment
+description: 배포 프로세스 및 Helm 차트 구조 지침
+---
+
 # 배포 · Helm 차트 구조
 
 OpenShift + ArgoCD + Kargo 기반의 2계층 GitOps. `charts/` 아래에 두 차트가 있으며, 계층과 역할이 명확히 분리된다.
