@@ -19,11 +19,12 @@ internal class HistoryTest: GwtTestSpec({
         }
 
         When("MenuSelected를 통해 새로운 메뉴를 입력하면") {
-            // 브릿지 함수 사용 (JsProperty name인 url_regex 사용)
+            // 브릿지 함수 사용 (명시적인 url 필드 사용)
             page.evaluate("""
                 var menu = {
                     title: 'Test Menu',
-                    url_regex: ['/menu-path']
+                    url: '/menu-path',
+                    url_regex: ['^/menu-path$']
                 };
                 window.test_menu_select(menu);
             """)
