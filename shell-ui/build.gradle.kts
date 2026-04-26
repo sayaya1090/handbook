@@ -19,6 +19,11 @@ dependencies {
 }
 
 tasks {
+    war {
+        dependsOn("gwtCompile")
+        archiveFileName.set("shell-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
     gwt {
         gwtVersion = "2.13.0"
         sourceLevel = "auto"

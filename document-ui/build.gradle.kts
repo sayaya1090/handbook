@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    war
     id("dev.sayaya.gwt")
 }
 dependencies {
@@ -16,6 +17,11 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 tasks {
+    war {
+        dependsOn("gwtCompile")
+        archiveFileName.set("document-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
     gwt {
         gwtVersion = "2.13.0"
         sourceLevel = "auto"

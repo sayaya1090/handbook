@@ -80,7 +80,7 @@ subprojects {
             from("${rootProject.projectDir}/shell-ui/src/test/webapp/css")
             into("${project.projectDir}/src/test/webapp/css")
             if (project.name != "shell-ui") {
-                dependsOn(":shell-ui:syncShellCssFromMain")
+                dependsOn(":shell-ui:syncShellCssFromMain", ":shell-ui:gwtGenerateTestHtml")
             }
         }
         // shell-ui 에 한해 main → test 의 shell.css 단방향 동기화 태스크를 추가해

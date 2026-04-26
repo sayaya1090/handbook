@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    war
     id("dev.sayaya.gwt")
     id("com.adarshr.test-logger")
 }
@@ -17,6 +18,11 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 tasks {
+    war {
+        dependsOn("gwtCompile")
+        archiveFileName.set("dashboard-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
     gwt {
         gwtVersion = "2.13.0"
         sourceLevel = "auto"
