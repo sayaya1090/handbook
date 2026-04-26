@@ -25,6 +25,15 @@ data:
       cloud:
         gateway.server.webflux:
           routes:
+            # Clean URL 지원: 브라우저에서 직접 접속 시 app.html 반환
+            - id: ui-clean-urls
+              uri: http://ceph-rgw:80/handbook-{{ .Values.stage | default "dev" }}/static
+              predicates:
+                - Path=/types,/documents,/workspaces,/dashboard,/workspace/*/**
+                - Header=Accept, .*text/html.*
+              filters:
+                - SetPath=/app.html
+              order: 0
             # 인증
             - id: login
               uri: ${gateway.routes.login}
@@ -87,11 +96,11 @@ data:
                   args:
                     name: assistantCB
                     fallbackUri: forward:/fallback/empty
-            # 정적 리소스 — gateway 자기 자신
+            # 정적 리소스 — S3(ceph-rgw)
             - id: static
-              uri: http://localhost:8080
+              uri: http://ceph-rgw:80/handbook-{{ .Values.stage | default "dev" }}/static
               predicates:
-                - Path=/js/**,/css/**,/icons/**
+                - Path=/js/**,/css/**,/icons/**,/manifest.json,/service-worker.js,/wav/**,/favicon.ico,/app.html
     server:
       port: 8080
     cors:
