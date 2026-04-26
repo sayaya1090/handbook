@@ -346,25 +346,26 @@ Agent(docs-keeper, "
 
 ```
 .gemini/agents/
-├── DESIGN.md                    # 이 문서 (전체 설계 원칙)
-├── <agent-name>.md              # 에이전트 정의 — 부여된 원칙. 에이전트 자신은 절대 수정 금지
-└── <agent-name>.notes.md        # 에이전트의 업무 노트 — 에이전트가 스스로 갱신 가능
+├── assistant-expert.md           # 에이전트 정의 — 부여된 원칙. 에이전트 자신은 절대 수정 금지
+└── notes/
+    ├── DESIGN.md                 # 이 문서 (전체 설계 원칙)
+    └── assistant-expert.notes.md # 에이전트의 업무 노트 — 에이전트가 스스로 갱신 가능
 ```
 
-예: `schema-expert.md` (읽기만) + `schema-expert.notes.md` (읽기+쓰기)
+예: `schema-expert.md` (읽기만) + `.gemini/agents/notes/schema-expert.notes.md` (읽기+쓰기)
 
 **두 파일의 권한 차이**:
 
 | 파일 | 에이전트 권한 | 메인 Gemini(나) 권한 | 비고 |
 |------|-------------|-------------------|------|
 | `<agent>.md` | **읽기만** | 읽기+쓰기 | 시스템 프롬프트, 스코프, 도구 목록, 핵심 규칙. 에이전트 존재 이유 |
-| `<agent>.notes.md` | **읽기+쓰기** | 읽기+쓰기 (주기적 감사) | 경험 누적, 패턴, 반복 함정. 에이전트가 자유롭게 편집 |
+| `.gemini/agents/notes/<agent>.notes.md` | **읽기+쓰기** | 읽기+쓰기 (주기적 감사) | 경험 누적, 패턴, 반복 함정. 에이전트가 자유롭게 편집 |
 
 에이전트 정의 파일의 시스템 프롬프트 마지막에 강제 조항:
 
 ```
 절대 `.gemini/agents/<your-name>.md` 를 수정하지 말 것.
-네가 쓸 수 있는 파일은 `.gemini/agents/<your-name>.notes.md` 뿐이다.
+네가 쓸 수 있는 파일은 `.gemini/agents/notes/<your-name>.notes.md` 뿐이다.
 정의 변경이 필요하다고 판단되면 notes.md 에 "원칙 갱신 제안" 으로 기록하고,
 메인 Gemini 가 주기 감사에서 처리한다.
 ```

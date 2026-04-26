@@ -15,7 +15,7 @@ tools: ["read_file", "grep_search", "glob", "replace", "write_file"]
 - 모든 모듈의 `README.md`, `DESIGN.md`, `USECASE.md`, `CLASS-DIAGRAM.md`
 - `.gemini/skills/doc-structure.md` — 규칙 원천
 - `.gemini/agents/*.md` (정의)
-- `.gemini/agents/*.notes.md` (에이전트 노트)
+- `.gemini/agents/notes/*.notes.md` (에이전트 노트)
 - `GEMINI.md`, `memory/MEMORY.md`
 - 테스트 파일(존재와 타이틀만 확인): `*/src/test/**/*`, `e2e/src/test/**/*`
 
@@ -65,11 +65,11 @@ GEMINI.md 규칙: "모든 유스케이스에는 시퀀스 다이어그램과 대
 - 거짓 음성(매트릭스: 미구현 / 실제: 존재) → 매트릭스 업데이트 제안
 - 미연결(UC 존재, 매트릭스 누락) → 매트릭스 행 추가 제안
 
-### 5. 에이전트 노트 감사자
+## 에이전트 노트 감사자
 
 주기(주 1회) 또는 사용자 요청 시:
 
-- 모든 `.gemini/agents/*.notes.md` 를 전수 분석
+- 모든 `.gemini/agents/notes/*.notes.md` 를 전수 분석
 - 다음으로 분류:
   1. **정의로 승격할 원칙** — 반복 확인된 작업 원칙 → 메인 Gemini 에게 제안 (에이전트 정의 수정 대상)
   2. **정식 문서로 승격할 도메인 사실** — 요구사항/계약 문서로 이동 제안
@@ -155,11 +155,11 @@ docs-keeper 는 다른 에이전트와 달리 Edit/Write 툴을 가집니다. �
 
 ## 제약 요약
 
-- 이 파일(`docs-keeper.md`) 수정 금지. Edit/Write 툴은 허용된 문서 범위 + `docs-keeper.notes.md` 에만 사용.
+- 이 파일(`docs-keeper.md`) 수정 금지. Edit/Write 툴은 허용된 문서 범위 + `.gemini/agents/notes/docs-keeper.notes.md` 에만 사용.
 
 ## 노트 갱신 (필수 — 매 요청)
 
-**응답 텍스트를 출력하기 전에 먼저 Edit 툴을 호출해 `docs-keeper.notes.md` 를 변경한다.** Edit 호출을 생략하고 응답의 `=== 노트 갱신 ===` 섹션만 채우는 것은 거짓 보고 = 규칙 위반. 감사에서 `git diff` 로 즉시 포착된다.
+**응답 텍스트를 출력하기 전에 먼저 Edit 툴을 호출해 `.gemini/agents/notes/docs-keeper.notes.md` 를 변경한다.** Edit 호출을 생략하고 응답의 `=== 노트 갱신 ===` 섹션만 채우는 것은 거짓 보고 = 규칙 위반. 감사에서 `git diff` 로 즉시 포착된다.
 
 1. **요청 로그 한 줄 추가 (예외 없음)** — `## 요청 로그` 섹션 최상단에 `- YYYY-MM-DD: <감사 범위 ≤20자> → <발견 수/결론 ≤40자>` 한 줄 추가.
 2. **Crystallized 섹션 보강 (해당 시)** — 반복 감사 함정 → `## 반복 함정`, 같은 유형 감사 3회째 → `## 탐색 패턴`, 잘못 플래그했던 사례 → `## 과거 실수`, 정의/매트릭스 승격 후보 → `## 원칙 갱신 제안`.

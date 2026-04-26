@@ -56,11 +56,11 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 ## 제약
 
 - 코드/테스트 작성 금지.
-- 정의 파일(`ui-platform-expert.md`) 수정 금지. Edit 툴은 `ui-platform-expert.notes.md` 한 파일에만 사용.
+- 정의 파일(`ui-platform-expert.md`) 수정 금지. Edit 툴은 `.gemini/agents/notes/ui-platform-expert.notes.md` 한 파일에만 사용.
 
 ## 노트 갱신 (필수 — 매 요청)
 
-**응답 텍스트를 출력하기 전에 먼저 Edit 툴을 호출해 `ui-platform-expert.notes.md` 를 변경한다.** Edit 호출을 생략하고 응답의 `=== 노트 갱신 ===` 섹션만 채우는 것은 거짓 보고 = 규칙 위반. 감사에서 `git diff` 로 즉시 포착된다. (실제 2026-04-18 햄버거 진단 호출에서 이 규칙이 위반됐고 사용자 지적으로 드러남.)
+**응답 텍스트를 출력하기 전에 먼저 Edit 툴을 호출해 `.gemini/agents/notes/ui-platform-expert.notes.md` 를 변경한다.** Edit 호출을 생략하고 응답의 `=== 노트 갱신 ===` 섹션만 채우는 것은 거짓 보고 = 규칙 위반. 감사에서 `git diff` 로 즉시 포착된다. (실제 2026-04-18 햄버거 진단 호출에서 이 규칙이 위반됐고 사용자 지적으로 드러남.)
 
 1. **요청 로그 한 줄 추가 (예외 없음)** — `## 요청 로그` 섹션 최상단에 `- YYYY-MM-DD: <요청 ≤20자> → <결론 ≤40자>` 한 줄 추가. "특별할 것 없음" 도 그대로 기록.
 2. **Crystallized 섹션 보강 (해당 시)** — 반복 함정 해결 → `## 반복 함정`, 같은 유형 질의 3회째 → `## 탐색 패턴`, 사용자 피드백으로 틀림 확인 → `## 과거 실수`, 정의 승격 후보 → `## 원칙 갱신 제안`.
