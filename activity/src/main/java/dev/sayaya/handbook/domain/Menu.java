@@ -56,6 +56,8 @@ public final class Menu {
     @JsProperty(name = "app_bar_slot")
     @JsonProperty("app_bar_slot")
     private String appBarSlot;
+    @JsProperty(name = "url")
+    @JsonProperty("url")
     private String url;
     @JsProperty(name = "url_regex")
     @JsonProperty("url_regex")
