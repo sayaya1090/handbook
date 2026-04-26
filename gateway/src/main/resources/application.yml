@@ -6,6 +6,15 @@ spring:
   cloud:
     gateway.server.webflux:
       routes:
+        # Clean URL 지원: 브라우저에서 직접 접속 시 app.html 반환
+        - id: ui-clean-urls
+          uri: ${gateway.routes.static:http://localhost:8080}
+          predicates:
+            - Path=/types,/documents,/workspaces,/dashboard,/workspace/*/**
+            - Header=Accept, .*text/html.*
+          filters:
+            - SetPath=/app.html
+          order: 0
         # 인증
         - id: login
           uri: ${gateway.routes.login:http://localhost:8081}

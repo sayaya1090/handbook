@@ -193,4 +193,4 @@ Accept: application/vnd.sayaya.handbook.v1+json
 - **정규화 기준**: `UrlBasedMenuResolver`는 매칭 전 브라우저 URI에서 `origin`(프로토콜+호스트+포트)을 제거하고, 해시(`#`)를 제거하며, 반드시 `/`로 시작하는 **pathname**으로 정규화한다.
 - **매칭 방식**: `new JsRegExp(regex).test(normalizedPath)`
 - **공급자 권장사항**: `urlRegex`는 반드시 `/`로 시작하는 정규식을 제공해야 하며, 전체 URL이 아닌 상대 경로(pathname)를 기준으로 작성해야 한다. (예: `^/workspaces$`)
-- **서버 연동**: 모든 `urlRegex` 경로에 대해 새로고침 시 SPA 진입점(`app.html`)이 반환되도록 Gateway 설정이 동기화되어야 한다.
+- **서버 연동**: 모든 `urlRegex` 경로에 대해 브라우저 직접 접속 시 SPA 진입점(`app.html`)이 반환되도록 Gateway 설정이 동기화되어야 한다. 현재 `gateway` 모듈의 `ui-clean-urls` 라우트가 이 역할을 수행한다. (주요 UI 경로 + `Accept: text/html` 매칭 시 `/app.html` 포워딩)

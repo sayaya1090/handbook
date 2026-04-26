@@ -201,11 +201,11 @@ sequenceDiagram
 - `HistoryManager`: HTML5 History API(`pushState`, `popstate`)를 사용하여 URL을 관리한다.
 - `UrlBasedMenuResolver`: 브라우저의 `pathname`을 정규화(origin, port, protocol 제거)하여 메뉴 `urlRegex`와 매칭한다.
 
-### 2. 서버 사이드 지원 (Fallback)
+### 2. 서버 사이드 지원 (Gateway 구현 완료)
 브라우저에서 `/workspace/123/types`와 같은 UI 경로로 직접 접속하거나 새로고침할 때, 서버는 해당 경로에 대한 리소스를 찾는 대신 SPA 진입점인 `app.html`을 반환해야 한다.
 
-- **Istio Gateway / Ingress**: API 경로(`/auth/**`, `/workspace/**` 등)가 아닌 요청 중 UI 경로에 해당하는 패턴은 정적 자산 서버의 `app.html`로 rewrite 하거나 포워딩한다.
-- **Spring Cloud Gateway**: `MenuSupplier`에서 제공하는 모든 `urlRegex` 패턴에 대해 `app.html`을 결과로 주는 라우트를 동적으로 유지하거나, API 이외의 모든 HTML 요청을 SPA 로 연결하는 Fallback 필터를 적용한다.
+- **Spring Cloud Gateway**: 가장 높은 우선순위(`order: 0`)로 `ui-clean-urls` 라우트를 설정하여 `/types`, `/documents`, `/workspaces`, `/dashboard` 등 UI 경로에 대한 `Accept: text/html` 요청을 가로채 `/app.html`로 포워딩한다.
+- **클라우드 환경**: S3(ceph-rgw) 등 정적 자산 서버는 `app.html`을 서빙하며, Gateway가 `SetPath=/app.html` 필터를 통해 실제 경로를 변환하여 요청한다.
 
 ---
 
