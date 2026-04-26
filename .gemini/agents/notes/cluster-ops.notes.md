@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-04-26: handbook-infra-dev Diff 확인 → 수동 싱크 필요성 및 ArgoCD Ghost Diff 가능성 파악
 - 2026-04-26: handbook-infra-dev Sync → elasticsearch node lock 에러 재발 및 설정 불일치 발견
 - 2026-04-26: ES 파드 장애 분석 -> PVC 권한 문제(UID 1000) 확인
 - 2026-05-15: Gateway Fallback -> Accept 헤더 기반 Clean URL 설정 제안
