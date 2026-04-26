@@ -51,8 +51,10 @@ public class HistoryManager {
     }
 
     private void onMenuSelected(Menu menu) {
-        if (menu == null || menu.urlRegex() == null || menu.urlRegex().length == 0) return;
-        String targetUrl = menu.urlRegex()[0];
+        if (menu == null) return;
+        String targetUrl = menu.url();
+        if (targetUrl == null || targetUrl.isEmpty()) return;
+
         // 현재 URI와 다를 때만 업데이트하여 무한 루프 방지
         if (!targetUrl.equals(uri.getValue())) {
             uri.next(targetUrl);

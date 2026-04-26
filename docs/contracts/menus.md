@@ -57,7 +57,8 @@ interface Menu {
     String script();      // GWT nocache.js 경로 (동적 로딩 대상)
     boolean bottom();     // 하단 고정 여부 (MenuRail/MobileTabs 내 정렬 힌트)
     String appBarSlot();  // null | "leading" | "center" | "trailing"  ← AppBar 승격 slot
-    List<String> urlRegex(); // 이 메뉴가 자동 선택될 URL 정규식 목록
+    String url();         // 클릭 시 브라우저 주소창에 반영될 대표 URL (Clean URL)
+    List<String> urlRegex(); // 브라우저 URL 기반으로 이 메뉴를 자동 선택(매칭)할 때 사용되는 정규식 목록
     Set<SessionStateKind> allowedSessionStates(); // null/누락 ⇒ 모든 상태 노출 (무제약). 요구사항 §3.24
     // 향후 href 필드 추가 검토 (SEO 랜딩 정적 링크용 — landing.md 참조)
 }

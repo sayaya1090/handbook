@@ -1740,15 +1740,14 @@ val SessionState.kind: SessionStateKind get() = when (this) {
 
 ```kotlin
 data class Menu(
-    // ... title, order, icon, script, bottom, appBarSlot, urlRegex, ...
+    // ... title, order, icon, script, bottom, appBarSlot, url, urlRegex, ...
     val allowedSessionStates: Set<SessionStateKind>? = null,
-    // Phase 2 확장 예정 (현재 필드 없음, 추가 시 각 축 독립):
-    //   val allowedAccountStates: Set<AccountState>? = null,
-    //   val allowedConnections:   Set<Connection>?   = null,
-    //   val requiredConsents:     Set<Consent>?      = null,
+    // ...
 )
 ```
 
+- **`url`**: 메뉴 선택 시 주소창에 반영할 대표 경로. 명시되지 않으면 주소창을 변경하지 않는다 (Pure SPA Navigation).
+- **`urlRegex`**: 브라우저 URL 기반 자동 메뉴 선택을 위한 패턴 목록.
 - **null (기본값)** ⇒ **모든 상태에서 상시 보임 (무제약)**. 공급자가 필드를 누락하면 이 의미가 된다.
 - 값은 `SessionStateKind` 값의 **집합 (Set)**. 비어 있지 않은 집합을 넣는다.
 - **계층 추론 없음**: `{AUTHENTICATED}` 만 선언하면 `IN_WORKSPACE` 사용자는 **제외** 된다. "로그인 이후 모두에게 보이는" 메뉴는 `{AUTHENTICATED, IN_WORKSPACE}` 처럼 **명시 열거** 해야 한다.

@@ -56,6 +56,7 @@ public final class Menu {
     @JsProperty(name = "app_bar_slot")
     @JsonProperty("app_bar_slot")
     private String appBarSlot;
+    private String url;
     @JsProperty(name = "url_regex")
     @JsonProperty("url_regex")
     private String[] urlRegex;
@@ -109,7 +110,7 @@ public final class Menu {
     public MenuBuilder toBuilder() {
         return new MenuBuilder().title(this.title).supportingText(this.supportingText).iconType(this.iconType).icon(this.icon)
                 .trailingText(this.trailingText).script(this.script).order(this.order).tools(this.tools).bottom(this.bottom)
-                .appBarSlot(this.appBarSlot).urls(this.urlRegex).allowedSessionStates(this.allowedSessionStates);
+                .appBarSlot(this.appBarSlot).url(this.url).urls(this.urlRegex).allowedSessionStates(this.allowedSessionStates);
     }
 
     /**
@@ -172,6 +173,7 @@ public final class Menu {
         private List<Tool> tools = new LinkedList<>();
         private Boolean bottom;
         private String appBarSlot;
+        private String url;
         private List<String> urlRegex = new LinkedList<>();
         private String[] allowedSessionStates; // null = 무제약, [] = 어떤 상태에서도 숨김
         private MenuBuilder() {}
@@ -227,7 +229,7 @@ public final class Menu {
             return tools(Arrays.asList(tools));
         }
         public MenuBuilder url(String url) {
-            this.urlRegex.add(url);
+            this.url = url;
             return this;
         }
         public MenuBuilder urls(Collection<String> urls) {
@@ -249,6 +251,7 @@ public final class Menu {
             menu.tools = this.tools.stream().toArray(Tool[]::new);
             menu.bottom = this.bottom;
             menu.appBarSlot = this.appBarSlot;
+            menu.url = this.url;
             menu.urlRegex = this.urlRegex.stream().toArray(String[]::new);
             menu.allowedSessionStates = this.allowedSessionStates; // null 유지가 기본 (무제약 default)
             return menu;

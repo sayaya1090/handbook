@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-04-18: 메뉴 클릭 URL 동기화 -> MenuSelected-HistoryManager 양방향 동기화 설계 확인
 - 2026-04-23: 온보딩 레이스 컨디션 수정 -> 메뉴 로딩이 워크스페이스 체크보다 선행되도록 보장
 - 2026-04-23: GWT 모듈 레이지 로딩 트리거 개선 -> Onboarding Bootstrapper 에서 window.location.hash 를 사용하여 workspace-ui 모듈이 정상적으로 로드되도록 수정
 - 2026-04-23: UI 정렬 수정 및 온보딩 복원 -> .shell-app-bar CSS 수정, Bootstrapper 복원, 메뉴 호버 방어 로직 추가

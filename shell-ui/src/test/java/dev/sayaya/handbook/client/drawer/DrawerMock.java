@@ -32,7 +32,8 @@ public class DrawerMock {
             .icon("fa-circle")
             .iconType("sharp")
             .script("js/scene1.js")
-            .url("menu1-tool1")
+            .url("/menu1-tool1")
+            .urls("menu1-tool1")
             .tool(Tool.builder().title("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").build())
             .build(),
         Menu.builder()
@@ -42,7 +43,8 @@ public class DrawerMock {
             .icon("fa-pen")
             .iconType("sharp")
             .script("js/scene2.js")
-            .url("menu2-tool1").url("menu2-tool2")
+            .url("/menu2-tool1")
+            .urls("menu2-tool1", "menu2-tool2")
             .tool(Tool.builder().title("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").build())
             .tool(Tool.builder().title("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").build())
             .build(),
@@ -52,7 +54,8 @@ public class DrawerMock {
             .icon("fa-left-from-bracket")
             .iconType("sharp")
             .bottom(true)
-            .url("menu3-tool1").url("menu3-tool2")
+            .url("/menu3-tool1")
+            .urls("menu3-tool1", "menu3-tool2")
             .tool(Tool.builder().title("menu3-tool1").order("1A").icon("fa-user").iconType("sharp").build())
             .tool(Tool.builder().title("menu3-tool2").order("1B").icon("fa-user").iconType("sharp").build())
             .build(),
@@ -61,7 +64,8 @@ public class DrawerMock {
             .order("0")
             .icon("fa-right-to-bracket")
             .iconType("sharp")
-            .url("menu4-tool1")
+            .url("/menu4-tool1")
+            .urls("menu4-tool1")
             .bottom(true)
             .tool(Tool.builder().title("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
             .build(),
