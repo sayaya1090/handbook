@@ -21,6 +21,9 @@ dependencies {
 tasks {
     war {
         dependsOn("gwtCompile")
+        from("build/gwt/war") {
+            into("js")
+        }
         archiveFileName.set("shell-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }

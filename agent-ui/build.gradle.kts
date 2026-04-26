@@ -19,6 +19,9 @@ dependencies {
 tasks {
     war {
         dependsOn("gwtCompile")
+        from("build/gwt/war") {
+            into("js")
+        }
         archiveFileName.set("agent-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }

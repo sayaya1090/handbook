@@ -39,6 +39,9 @@ tasks.register<Copy>("copyTestResources") {
 tasks.named("compileTestJava") { dependsOn("copyTestResources") }
 tasks.named("war", War::class) {
     dependsOn("gwtCompile")
+    from("build/gwt/war") {
+        into("js")
+    }
     archiveFileName.set("workspace-ui.war")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

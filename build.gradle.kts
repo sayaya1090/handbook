@@ -69,7 +69,7 @@ subprojects {
             into("${project.projectDir}/src/test/webapp/js")
             exclude("language.*.json")
             if (project.name != "shell-ui") {
-                dependsOn(":shell-ui:mergeI18n")
+                dependsOn(":shell-ui:mergeI18n", ":shell-ui:gwtGenerateTestHtml")
             }
         }
         // 다른 GWT UI 모듈은 shell-ui/src/test/webapp/css 에서 복사 (global/fontawesome 포함).

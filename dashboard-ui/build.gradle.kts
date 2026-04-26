@@ -20,6 +20,9 @@ dependencies {
 tasks {
     war {
         dependsOn("gwtCompile")
+        from("build/gwt/war") {
+            into("js")
+        }
         archiveFileName.set("dashboard-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }

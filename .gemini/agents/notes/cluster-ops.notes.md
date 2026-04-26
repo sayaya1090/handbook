@@ -1,5 +1,7 @@
 ## 요청 로그
 
+- 2026-04-26: shell-ui S3 점검 → JS 누락 확인 및 빌드 설정 결함 발견
+- 2026-04-23: S3 shell-ui 파일 목록 조회 → .cache.js 파일 리스트 확보
 - 2026-04-26: handbook-infra-dev Diff 확인 → 수동 싱크 필요성 및 ArgoCD Ghost Diff 가능성 파악
 - 2026-04-26: handbook-infra-dev Sync → elasticsearch node lock 에러 재발 및 설정 불일치 발견
 - 2026-04-26: ES 파드 장애 분석 -> PVC 권한 문제(UID 1000) 확인
@@ -22,7 +24,7 @@
 
 ## 반복 함정
 
-(미확보)
+- **GWT war 태스크 의존성**: `build.gradle.kts` 수정 시 `war { dependsOn("gwtCompile") }` 섹션이 누락되면 정적 자산(CSS/HTML)만 배포되고 JS 가 빠지는 현상이 발생함. `shell-ui` 가 최근 커밋(`d9d52702`)에서 이 설정이 제거되어 결함이 발생함.
 
 ## 내부 체크리스트
 
