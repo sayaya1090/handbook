@@ -13,7 +13,7 @@ public class TestApplication implements EntryPoint {
 
         // 초기 레이아웃 기간 설정
         double now = System.currentTimeMillis();
-        component.layoutProvider().next(LayoutPeriod.of(now, now + 86400000));
+        component.layoutProvider().replace(LayoutPeriod.of(now, now + 86400000));
         TypeValue customer = TypeValue.create("customer", "1.0", now, now + 86400000);
         customer.description = "고객";
         customer.attributes = new AttributeValue[] {

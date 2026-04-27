@@ -93,25 +93,40 @@ classDiagram
 
 ---
 
-## 반응형 상태 관리 (BehaviorSubject)
+## 단방향 데이터 흐름 (Unidirectional Data Flow)
 
-모든 상태는 RxJava `BehaviorSubject` 기반으로, 변경 시 구독자에게 자동 전파된다.
+상태 관리는 반응형 스트림(RxJava `BehaviorSubject`)을 기반으로 하되, 상태 변경의 주체와 경로를 통제하는 **단방향 데이터 흐름(UDF)** 원칙을 따른다.
+
+### 핵심 원칙
+
+1. **상태 은닉**: 상태 제공자(`Store`, `Provider`, `List` 등)는 내부적으로만 `BehaviorSubject`를 가지며, 외부에는 읽기 전용 `Observable<T>`과 `getValue()`(스냅샷)만 노출한다.
+2. **직접 변경 금지**: 외부에서 `subject.onNext()`를 직접 호출하는 것을 엄격히 금지한다.
+3. **Action/Intent 기반 상태 변경**: 상태 변경은 오직 전용 `Store` 내에서 정의된 `Action` 객체나 명시적인 `dispatch(Intent)` / `update(...)` 메서드를 통해서만 수행된다.
 
 ### 패턴
 
-```
+```java
 @Singleton
-public class SomeState {
-    private final BehaviorSubject<T> subject = BehaviorSubject.createDefault(initialValue);
-    public void next(T value) { subject.onNext(value); }
-    public T getValue() { return subject.getValue(); }
-    public Observable<T> asObservable() { return subject; }
+public class SomeStore {
+    // 1. 내부 상태 (은닉)
+    private final BehaviorSubject<T> state = BehaviorSubject.createDefault(initialValue);
+    
+    // 2. 상태 노출 (읽기 전용)
+    public T getValue() { return state.getValue(); }
+    public Observable<T> asObservable() { return state; }
+    
+    // 3. 상태 변경 통제 (명시적 액션/메서드)
+    public void dispatch(Action action) {
+        T currentState = state.getValue();
+        T nextState = reducer(currentState, action);
+        state.onNext(nextState);
+    }
 }
 ```
 
-- UI 컴포넌트가 `asObservable()`을 구독하여 상태 변경 시 자동 렌더링
-- `getValue()`로 현재 스냅샷 조회
-- Dagger `@Singleton`으로 모듈 내 공유
+- UI 컴포넌트가 `asObservable()`을 구독하여 상태 변경 시 자동 렌더링된다.
+- 상태가 변경되는 모든 진입점이 `dispatch` 또는 전용 `update` 메서드로 단일화되므로 상태 추적 및 디버깅이 용이해진다.
+- Dagger `@Singleton`으로 모듈 내에서 단일 Store(상태)를 공유한다.
 
 ---
 

@@ -79,33 +79,41 @@ classDiagram
 classDiagram
     class TypeList {
         <<@Singleton>>
-        -BehaviorSubject~Set~TypeValue~~ subject
+        -BehaviorSubject~Set~TypeValue~~ state
         +getValue(): Set~TypeValue~
-        +replace(types: Set~TypeValue~)
-        +add(type: TypeValue)
-        +remove(type: TypeValue)
-        +update(before, after: TypeValue)
+        +asObservable(): Observable~Set~TypeValue~~
+        +dispatch(action: Action)
+        -replace(types: Set~TypeValue~)
+        -add(type: TypeValue)
+        -remove(type: TypeValue)
+        -update(before, after: TypeValue)
     }
     class PositionMap {
         <<@Singleton>>
-        -BehaviorSubject~Map~String,Position~~ subject
+        -BehaviorSubject~Map~String,Position~~ state
         +getValue(): Map~String,Position~
+        +asObservable(): Observable~Map~String,Position~~
+        +dispatch(action: Action)
         +get(typeKey): Position
-        +put(typeKey, position)
-        +move(typeKey, dx, dy)
-        +replace(map)
+        -put(typeKey, position)
+        -move(typeKey, dx, dy)
+        -replace(map)
     }
     class LayoutList {
         <<@Singleton>>
-        -BehaviorSubject~List~LayoutPeriod~~ subject
+        -BehaviorSubject~List~LayoutPeriod~~ state
         +getValue(): List~LayoutPeriod~
-        +next(periods)
+        +asObservable(): Observable~List~LayoutPeriod~~
+        +dispatch(action: Action)
+        -next(periods)
     }
     class LayoutProvider {
         <<@Singleton>>
-        -BehaviorSubject~LayoutPeriod~ subject
+        -BehaviorSubject~LayoutPeriod~ state
         +getValue(): LayoutPeriod
-        +next(period)
+        +asObservable(): Observable~LayoutPeriod~
+        +dispatch(action: Action)
+        -next(period)
         +selectBestMatch(periods)
     }
     class ChangeTracker {

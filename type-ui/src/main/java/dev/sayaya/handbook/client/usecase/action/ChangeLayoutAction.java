@@ -28,11 +28,11 @@ public class ChangeLayoutAction implements Action {
 
     @Override
     public void execute() {
-        layoutProvider.next(after);
+        layoutProvider.replace(after);
     }
 
     @Override
     public void rollback() {
-        layoutProvider.next(before);
+        layoutProvider.replace(before);
     }
 }

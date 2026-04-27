@@ -56,7 +56,7 @@ public class LoadAction implements Action {
     public void execute() {
         // 레이아웃 목록 로드 → 기간 선택 → 타입 + 위치 로드
         layoutRepository.layouts().subscribe(periods -> {
-            layoutList.next(periods);
+            layoutList.replace(periods);
             layoutProvider.selectBestMatch(periods);
             LayoutPeriod current = layoutProvider.getValue();
             if (current == null) return;

@@ -50,7 +50,7 @@ public class PeriodRecalculationService {
         }
 
         if (!periods.isEmpty()) {
-            layoutList.next(periods);
+            layoutList.replace(periods);
             layoutProvider.selectBestMatch(periods);
         }
     }

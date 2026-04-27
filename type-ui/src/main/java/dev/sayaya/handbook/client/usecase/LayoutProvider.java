@@ -1,12 +1,14 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.LayoutPeriod;
+import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
@@ -24,16 +26,32 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  */
 @Singleton
 public class LayoutProvider {
-    @Delegate private final BehaviorSubject<LayoutPeriod> _this = behavior(null);
+    private final BehaviorSubject<LayoutPeriod> subject = behavior(null);
 
     @Inject LayoutProvider() {}
+
+    public Observable<LayoutPeriod> observable() {
+        return subject.asObservable();
+    }
+
+    public LayoutPeriod getValue() {
+        return subject.getValue();
+    }
+
+    public void replace(LayoutPeriod period) {
+        subject.next(period);
+    }
+
+    public void subscribe(Consumer<LayoutPeriod> consumer) {
+        subject.subscribe(consumer::accept);
+    }
 
     /** 새 기간 목록이 들어오면 현재 선택과 가장 많이 겹치는 기간을 자동 선택한다. */
     public void selectBestMatch(List<LayoutPeriod> periods) {
         if (periods == null || periods.isEmpty()) return;
-        LayoutPeriod current = _this.getValue();
+        LayoutPeriod current = subject.getValue();
         if (current == null) {
-            _this.next(periods.get(0));
+            subject.next(periods.get(0));
             return;
         }
         LayoutPeriod best = periods.get(0);
@@ -45,6 +63,6 @@ public class LayoutProvider {
                 best = p;
             }
         }
-        _this.next(best);
+        subject.next(best);
     }
 }
