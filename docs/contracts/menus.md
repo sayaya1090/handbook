@@ -12,18 +12,25 @@
   - `interfaces/api/MenuController.kt`
 - **(신규) landing-menu** — 앱 내부 랜딩 엔트리 (구현 위치 미정 — 별도 모듈 또는 gateway 로컬)
 
+## 도구 (Tools)
+
+- `Tool` 객체는 `Menu` 하위의 개별 동작 단위이다.
+- `url` 및 `urlRegex` 필드를 포함하며, `Menu`와 동일하게 `{workspaceId}` 예약어 치환 및 동적 정규식 매칭이 적용된다.
+- `url`이 정의된 도구는 클릭 시 `HistoryManager`를 통해 주소창을 해당 경로로 갱신하며, 이를 통해 딥링크를 지원한다.
+- `urlRegex`는 쉘의 `UrlBasedToolResolver`가 현재 활성화된 도구를 자동 선택할 때 사용된다.
+
 ### Client-side synthetic menus
 
 백엔드 `/menus` 집계 밖에서 **Shell 이 런타임에 합성**하는 가상 메뉴. `MenuList` 에 등록되지 않고 `urlRegex` 도 미지정이므로 `UrlBasedMenuResolver` 매칭 대상이 아니며, MenuRail / MobileTabs 에도 노출되지 않는다. 오직 `MenuSelected` 스트림에만 push 되어 기존 `ModuleScriptManager` 파이프라인으로 모듈 스크립트 로드를 유도한다.
 
 | 합성 소스 | 트리거 | 로드 대상 | UC |
 |----------|--------|----------|-----|
-| `shell-ui/WorkspaceOnboardingBootstrapper` | `WorkspaceList` 가 empty 방출 | `js/workspace/workspace.nocache.js` (workspace-ui Create/Join) | UC-12 / UC-S21 |
+| `shell-ui/WorkspaceOnboardingBootstrapper` | `WorkspaceList` 가 empty 방출 | `js/onboarding/onboarding.nocache.js` (onboarding-ui Create/Join) | UC-12 / UC-S21 |
 
 **제약**
 - `urlRegex` 미지정 → 딥링크·URL 기반 자동 선택 불가. 합성 메뉴는 일시 상태 (도메인 조건 복귀 시 더 이상 발화하지 않음) 에만 사용.
 - `loaded` 플래그로 세션 내 1회 발화 보장 — 도메인 조건이 재진입해도 반복 push 금지.
-- 외부 에이전트의 navigate 커맨드로 직접 트리거 불가 (MenuList 부재). 에이전트가 유도하려면 도메인 조건을 우회 조작해야 한다.
+- 외부 에이전트의 navigate 커맨드로 직접 트리거 불가 (MenuList 부재). 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.
 
 ## 소비자 (Consumers)
 
@@ -54,6 +61,7 @@ interface Menu {
     String order();       // 정렬 키 (알파벳순, 뒤로 갈수록 아래)
     String icon();        // FontAwesome 아이콘 클래스 (fa-xxx)
     String iconType();    // "light" | "solid"
+    String trailingText(); // 우측 보조 텍스트
     String script();      // GWT nocache.js 경로 (동적 로딩 대상)
     boolean bottom();     // 하단 고정 여부 (MenuRail/MobileTabs 내 정렬 힌트)
     String appBarSlot();  // null | "leading" | "center" | "trailing"  ← AppBar 승격 slot
@@ -114,7 +122,6 @@ enum SessionStateKind {
   ANONYMOUS           // 인증 없음 (쿠키 무효/부재)
   AUTHENTICATED       // 로그인 + 활성 워크스페이스 미선택
   IN_WORKSPACE        // 로그인 + 활성 워크스페이스 선택
-  // IN_WORKSPACE_AS_ADMIN  // Phase 2 예약 (role 세분화 후)
 }
 ```
 
@@ -122,7 +129,7 @@ enum SessionStateKind {
 - 직렬화 이름: `allowed_session_states` (snake_case).
 - 값은 `SessionStateKind` 이름의 UPPER_SNAKE_CASE 문자열 **배열** (예: `["AUTHENTICATED", "IN_WORKSPACE"]`).
 - **optional / nullable** — 누락 또는 null 이면 소비자는 **모든 상태에서 노출 (무제약)** 으로 간주.
-- 빈 배열 `[]` 은 "어떤 상태에서도 노출 금지" 의미 (공급자가 의도적으로 메뉴를 꺼두고 싶을 때). null 과 구분된다.
+- 빈 배열 `[]` 은 "어떤 상태에서도 숨김" 의미 (공급자가 의도적으로 메뉴를 꺼두고 싶을 때). null 과 구분된다.
 - v1 미디어타입 유지 (`application/vnd.sayaya.handbook.v1+json`) — additive 필드이므로 구 공급자/소비자와 호환.
 
 > **공급자 주의 — 계층 추론 없음, 명시 열거 필수**
@@ -145,7 +152,7 @@ enum SessionStateKind {
 **기본값 규칙 요약**
 | 필드 | 공급자 누락/null 시 | 빈 배열 `[]` 시 | 비고 |
 |------|---------------------|-----------------|------|
-| `allowed_session_states` | **무제약 (모든 상태 노출)** | 어떤 상태에서도 숨김 | 기존 4개 공급자 (login · search-type · search-document · search-workspace) 는 마이그레이션 전까지 null default 로 상시 노출. Phase 1 마이그레이션 완료 목표는 §3.24.5 예시 표 참조 |
+| `allowed_session_states` | **무제약 (모든 상태 노출)** | 어떤 상태에서도 숨김 | 기존 4개 공급자 (login · search-type · search-document · search-workspace) 는 마이그레이션 전까지 null default 로 상시 노출. |
 
 ## `MenuSupplier` 인터페이스
 
@@ -183,27 +190,7 @@ Accept: application/vnd.sayaya.handbook.v1+json
 | Supplier | 목표 | 비고 |
 |----------|------|------|
 | login | < 20ms | 인증 여부 분기만, I/O 없음 |
-| landing-menu (신규) | < 50ms | 정적 상수 (gateway 로컬 또는 별도 모듈) |
+| landing-menu | < 50ms | 정적 상수 (gateway 로컬 또는 별도 모듈) |
 | search-workspace | < 30ms | 정적 Menu 상수 1개 emit, DB 비접근 |
 | search-type | < 100ms | R2DBC read-only, cold start 시 pod 기동 지연 예외 |
 | search-document | < 100ms | R2DBC read-only |
-
-## 공급자별 현황
-
-| Supplier | 엔트리 | 인증 분기 | Phase 1 목표 `allowedSessionStates` | 비고 |
-|----------|-------|----------|--------------------------------------|------|
-| login | Sign In | principal null 여부 | `{ANONYMOUS}` | 공급자 내부에서 익명일 때만 emit. 선언값도 익명 전용으로 일치 |
-| login | Sign Out | principal 존재 여부 | `{AUTHENTICATED, IN_WORKSPACE}` | 공급자 내부에서 로그인 시만 emit. **두 값 명시 열거** (계층 추론 없음) |
-| landing-menu (신규) | 앱 내부 "소개" | 항상 공급 | `null` (무제약) | 모든 상태에서 상시 노출. 이름/URL 미정 |
-| search-type | 타입 목록 | 인증 필요 | `{IN_WORKSPACE}` | 워크스페이스 컨텍스트 필요 |
-| search-document | 문서 목록 | 인증 필요 | `{IN_WORKSPACE}` | 워크스페이스 컨텍스트 필요 |
-| search-workspace | 워크스페이스 (info/groups/permissions) | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | Drawer 하단 고정 (order=S, bottom=true) |
-| workspace-onboarding (신규 / search-workspace 내) | 워크스페이스 생성/참여 | 인증 필요 | `{AUTHENTICATED, IN_WORKSPACE}` | `AUTHENTICATED` 에 enabled 로 노출되어 `WorkspaceOnboardingBootstrapper` synthetic 메뉴를 대체 |
-
-## `urlRegex` 매칭 규약
-
-- **정규화 기준**: `UrlBasedMenuResolver`는 매칭 전 브라우저 URI에서 `origin`(프로토콜+호스트+포트)을 제거하고, 해시(`#`)를 제거하며, 반드시 `/`로 시작하는 **pathname**으로 정규화한다.
-- **매칭 방식**: `new JsRegExp(regex).test(normalizedPath)`
-- **선행 슬래시(/) 필수**: 브라우저 URI가 항상 `/`로 정규화되므로, `urlRegex` 패턴은 반드시 `/`로 시작해야 한다. (예: `^types` → `^/types`). 누락 시 직접 접속 시 메뉴 매칭에 실패한다.
-- **공급자 권장사항**: `urlRegex`는 반드시 `/`로 시작하는 정규식을 제공해야 하며, 전체 URL이 아닌 상대 경로(pathname)를 기준으로 작성해야 한다. (예: `^/workspaces$`)
-- **서버 연동**: 모든 `urlRegex` 경로에 대해 브라우저 직접 접속 시 SPA 진입점(`app.html`)이 반환되도록 Gateway 설정이 동기화되어야 한다. 현재 `gateway` 모듈의 `ui-clean-urls` 라우트가 이 역할을 수행한다. (주요 UI 경로 + `Accept: text/html` 매칭 시 `/app.html` 포워딩)

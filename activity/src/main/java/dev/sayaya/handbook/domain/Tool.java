@@ -29,6 +29,12 @@ public final class Tool {
     private String iconType;
     private String title;
     private String order;
+    @JsProperty
+    @JsonProperty("url")
+    private String url;
+    @JsProperty(name = "url_regex")
+    @JsonProperty("url_regex")
+    private String[] urlRegex;
     @Setter(onMethod_ = {@JsOverlay, @JsIgnore})
     private ToolFunction function;
     @JsOverlay @JsIgnore
@@ -37,7 +43,7 @@ public final class Tool {
     }
     @JsOverlay @JsIgnore
     public ToolBuilder toBuilder() {
-        return new ToolBuilder().icon(this.icon).iconType(this.iconType).title(this.title).order(this.order).function(this.function);
+        return new ToolBuilder().icon(this.icon).iconType(this.iconType).title(this.title).order(this.order).url(this.url).urlRegex(this.urlRegex).function(this.function);
     }
     @Setter
     @Accessors(fluent = true)
@@ -46,14 +52,28 @@ public final class Tool {
         private String iconType;
         private String title;
         private String order;
+        private String url;
+        private String[] urlRegex;
         private ToolFunction function;
         private ToolBuilder(){}
+        public ToolBuilder icon(String icon) { this.icon = icon; return this; }
+        public ToolBuilder iconType(String iconType) { this.iconType = iconType; return this; }
+        public ToolBuilder title(String title) { this.title = title; return this; }
+        public ToolBuilder order(String order) { this.order = order; return this; }
+        public ToolBuilder url(String url) { this.url = url; return this; }
+        public ToolBuilder urls(String... urls) {
+            this.urlRegex = urls;
+            return this;
+        }
+        public ToolBuilder function(ToolFunction function) { this.function = function; return this; }
         public Tool build() {
             var tool = new Tool();
             tool.icon = icon;
             tool.iconType = iconType;
             tool.title = title;
             tool.order = order;
+            tool.url = url;
+            tool.urlRegex = urlRegex;
             tool.function = function;
             return tool;
         }
