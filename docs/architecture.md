@@ -10,7 +10,8 @@ graph TB
         AgentUI["agent-ui<br/>에이전트 커맨드 UI"]
         TypeUI["type-ui<br/>캔버스 타입 편집기"]
         DocumentUI["document-ui<br/>스프레드시트 문서 편집기"]
-        WorkspaceUI["workspace-ui<br/>워크스페이스 관리"]
+        WorkspaceUI["workspace-ui<br/>워크스페이스 관리 (대시보드)"]
+        OnboardingUI["onboarding-ui<br/>워크스페이스 생성/참여 (온보딩)"]
         UiComponents["ui-components<br/>범용 UI 컴포넌트"]
         AgentBridge["agent-bridge<br/>모듈 간 브릿지"]
         LoginUI["login-ui<br/>로그인/로그아웃"]
@@ -68,6 +69,10 @@ graph TB
     DocumentUI --> UiComponents
     WorkspaceUI --> Activity
     WorkspaceUI --> AgentBridge
+    WorkspaceUI --> UiComponents
+    OnboardingUI --> Activity
+    OnboardingUI --> AgentBridge
+    OnboardingUI --> UiComponents
     LoginUI --> Activity
     DashboardUI --> Activity
     DashboardUI --> UiComponents
@@ -1275,7 +1280,8 @@ graph LR
 | **persist-type** | REST API | "GET /workspace/{id}/types" | "PUT/DELETE /workspace/{id}/types" | X (DB 직접 변경) |
 | **persist-workspace** | REST API | "(shell-ui WorkspaceList)" | "POST/PUT/DELETE /workspace" | X (DB 직접 변경) |
 | **search-type** | REST API | "GET /workspace/{id}/types" | "읽기 전용" | - |
-| **workspace-ui** | REST API | - | "POST /workspace (생성)" | X (DB 직접 변경) |
+| **onboarding-ui** | REST API | - | "POST /workspace (생성)" | X (DB 직접 변경) |
+| **workspace-ui** | REST API | "GET /workspace/{id}" | "PUT /workspace/{id}, POST /workspace/{id}/groups" | X (DB 직접 변경) |
 
 ### type-ui 에이전트 명령어
 
@@ -1323,7 +1329,7 @@ agent-ui(app에서 컴파일)와 type-ui/workspace-ui(별도 GWT 모듈)는 서�
 
 | 브릿지 | 메커니즘 | 방향 |
 |--------|----------|------|
-| `WindowMutationBridge` | `CustomEvent('handbook-mutate')` | agent-ui → type-ui/workspace-ui |
+| `WindowMutationBridge` | `CustomEvent('handbook-mutate')` | agent-ui → type-ui/onboarding-ui/workspace-ui |
 | `WindowStateProviderBridge` | `window.__handbook_stateProvider` | type-ui → agent-ui |
 | `WindowSearchProviderBridge` | `window.__handbook_searchProvider` | type-ui → agent-ui |
 
@@ -1623,6 +1629,7 @@ graph TD
     style search-document fill:#fbe9e7
     style search fill:#f3e5f5
     style workspace-ui fill:#e8eaf6
+    style onboarding-ui fill:#e8eaf6
     style document-ui fill:#e8eaf6
     style dashboard-ui fill:#e8eaf6
     style landing-ui fill:#e8eaf6

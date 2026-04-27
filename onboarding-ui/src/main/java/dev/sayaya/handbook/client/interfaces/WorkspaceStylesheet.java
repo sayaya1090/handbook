@@ -16,7 +16,7 @@ import javax.inject.Singleton;
  *
  * <p><b>조립 원칙:</b> shell-ui 의 {@code ShellStylesheet} 와 동일한 패턴 — 컴포넌트
  * 단위 DOM 자산 주입. Dagger 가 @Singleton 으로 생성하며
- * {@link dev.sayaya.handbook.client.interfaces.create.ContentElement} 가 생성자 파라미터로
+ * {@link dev.sayaya.handbook.client.onboarding.ContentElement} 가 생성자 파라미터로
  * 받아 entry 시점에 주입이 완료된다.</p>
  *
  * <p><b>주의:</b> MARKER_ID 로 중복 주입을 방지한다. GWT devMode 리로드나 같은 모듈

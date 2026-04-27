@@ -34,13 +34,13 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  * split("-")[0] 로 지역코드를 분리한다.</p>
  */
 @Module
-public class WorkspaceModule {
+public class OnboardingModule {
     @Provides @Singleton static BehaviorSubject<Progress> progress() { return behavior(Progress.hide()); }
     @Provides @Singleton static Observer<Progress> progressObserver(BehaviorSubject<Progress> s) { return s; }
     @Provides @Singleton static FetchApi fetchApi() { return new FetchApi() {}; }
     @Provides @Singleton static ToastContainer toastContainer() { return new ToastContainer(); }
     @Provides @Singleton static LanguageDetector languageDetector() {
-        return WorkspaceModule::detectLanguage;
+        return OnboardingModule::detectLanguage;
     }
     @Provides @Singleton static LanguagePackRepository languagePackRepository(FetchApi fetchApi) {
         return lang -> {

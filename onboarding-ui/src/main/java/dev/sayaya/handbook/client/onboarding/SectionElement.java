@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.interfaces.create;
+package dev.sayaya.handbook.client.onboarding;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;

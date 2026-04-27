@@ -4,7 +4,8 @@
 > - [shell-ui](../shell-ui/USECASE.md) — 프레임, 네비게이션, i18n
 > - [type-ui](../type-ui/USECASE.md) — 타입 캔버스 편집
 > - [document-ui](../document-ui/USECASE.md) — 문서 스프레드시트 편집
-> - [workspace-ui](../workspace-ui/USECASE.md) — 워크스페이스 생성/참여
+> - [onboarding-ui](../onboarding-ui/USECASE.md) — 워크스페이스 생성/참여 (온보딩)
+> - [workspace-ui](../workspace-ui/USECASE.md) — 워크스페이스 관리 (대시보드)
 > - [agent-ui](../agent-ui/USECASE.md) — 에이전트 UI 커맨드
 > - [dashboard-ui](../dashboard-ui/USECASE.md) — 대시보드 (통계, 품질, 에이전트 활동/실행/아티팩트)
 > - [agent-protocol](../agent-protocol/USECASE.md) — 에이전트 프로토콜
@@ -409,7 +410,7 @@ flowchart TD
 2. 참여 중인 워크스페이스가 있으면, 마지막으로 액션을 취한 워크스페이스로 자동 진입한다.
 
 **대안 흐름:**
-- 2a. 참여 중인 워크스페이스가 없으면, Shell 이 `workspace-ui` 모듈을 자동 주입해 워크스페이스 생성(UC-10), 조인(UC-06), 또는 대화형 설계(UC-80) 화면을 표시한다. 주입 메커니즘 상세는 **UC-12 (빈 워크스페이스 자동 온보딩)** 참조.
+- 2a. 참여 중인 워크스페이스가 없으면, Shell 이 `onboarding-ui` 모듈을 자동 주입해 워크스페이스 생성(UC-10), 조인(UC-06), 또는 대화형 설계(UC-80) 화면을 표시한다. 주입 메커니즘 상세는 **UC-12 (빈 워크스페이스 자동 온보딩)** 참조.
 
 ---
 
@@ -504,18 +505,18 @@ sequenceDiagram
     participant OB as WorkspaceOnboardingBootstrapper
     participant MS as MenuSelected
     participant MSM as ModuleScriptManager
-    participant WUI as "workspace-ui (iframe)"
+    participant OUI as "onboarding-ui (iframe)"
 
     User->>Shell: "로그인 완료"
     Shell->>WL: "워크스페이스 목록 조회"
     WL-->>OB: "empty 방출 (distinctUntilChanged)"
     OB->>OB: "loaded 플래그 확인 (중복 가드)"
-    OB->>MS: "가상 onboarding Menu push<br/>(title=workspace.onboarding,<br/>script=js/workspace/workspace.nocache.js,<br/>icon=fa-circle-plus, order=0)"
+    OB->>MS: "가상 onboarding Menu push<br/>(title=workspace.onboarding,<br/>script=/js/onboarding/onboarding.nocache.js,<br/>icon=fa-circle-plus, order=0)"
     MS-->>MSM: "메뉴 선택 이벤트"
-    MSM->>WUI: "workspace.nocache.js 로드 + 프레임 렌더"
-    WUI-->>User: "Create/Join 온보딩 화면 표시"
+    MSM->>OUI: "onboarding.nocache.js 로드 + 프레임 렌더"
+    OUI-->>User: "Create/Join 온보딩 화면 표시"
 
-    Note over User,WUI: "사용자가 워크스페이스 생성/조인 완료 시"
+    Note over User,OUI: "사용자가 워크스페이스 생성/조인 완료 시"
     User->>WL: "워크스페이스 생성 (UC-10) 또는 조인 (UC-06)"
     WL-->>Shell: "non-empty 방출"
     Shell->>Shell: "UrlBasedMenuResolver 정상 경로 복귀"
@@ -1894,11 +1895,11 @@ sequenceDiagram
 
 | 요구사항 | 관련 UC | 모듈 UC | 설명 |
 |----------|---------|---------|------|
-| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (workspace-ui) | POST /workspace/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 |
+| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspace/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 |
 | 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 |
 | 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 |
 | 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI |
-| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (workspace-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/공백/하이픈/언더스코어, 최대 255자 |
+| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (onboarding-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/공백/하이픈/언더스코어, 최대 255자 |
 | 6.6 접근성 (Accessibility) | 전체 UI UC | 전체 프론트엔드 모듈 | role 속성, aria-label, 키보드 네비게이션 (Tab/Enter/Escape) |
 | 6.7 파일 업로드 | UC-50 (문서 생성/편집) | UC-PD6 (persist-document) | File 속성 multipart/form-data 업로드 엔드포인트, S3/로컬 저장소 연동 |
 | 6.8 사용자 설정 | — | UC-S15, UC-S16 (shell-ui) | 언어/테마 퍼시스턴스, 설정 패널 UI |

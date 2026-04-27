@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.interfaces.create;
+package dev.sayaya.handbook.client.onboarding;
 
 import com.google.gwt.regexp.shared.RegExp;
 import dev.sayaya.handbook.client.components.ErrorNotifier;

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='onboarding'>
+    <inherits name='dev.sayaya.ui.Ui'/>
+    <inherits name='dev.sayaya.handbook.Activity'/>
+    <inherits name='dev.sayaya.handbook.UiComponents'/>
+    <entry-point class='dev.sayaya.handbook.client.Application'/>
+    <source path='client'/>
+</module>

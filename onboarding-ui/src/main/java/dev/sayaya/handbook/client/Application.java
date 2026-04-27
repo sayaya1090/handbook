@@ -5,7 +5,7 @@ import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.WindowRenderBridge;
 
 /**
- * workspace-ui 엔트리포인트.
+ * onboarding-ui 엔트리포인트.
  *
  * <p>Shell 의 FrameUpdater 는 {@link WindowRenderBridge} 로 들어온 Render 를 받아
  * 새 Frame 엘리먼트를 생성·배치한 뒤 onInvoke(frameEl) 로 모듈이 frame 내부를 그릴 기회를 준다.

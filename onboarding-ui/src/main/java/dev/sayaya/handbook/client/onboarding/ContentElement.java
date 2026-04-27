@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.interfaces.create;
+package dev.sayaya.handbook.client.onboarding;
 
 import dev.sayaya.handbook.client.interfaces.WorkspaceStylesheet;
 import elemental2.dom.HTMLDivElement;

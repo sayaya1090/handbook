@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.create;
+package dev.sayaya.handbook.client.onboarding;
 
 import com.google.gwt.core.client.EntryPoint;
 
