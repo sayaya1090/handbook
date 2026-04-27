@@ -36,8 +36,8 @@ tasks {
         generateJsInteropExports = true
         compiler { strict = true }
         test {
-            webPort = 18086
-        }
-    }
+            modules = listOf("dev.sayaya.handbook.LoginTest")
+            webPort = 18087
+        }    }
     test { useJUnitPlatform() }
 }

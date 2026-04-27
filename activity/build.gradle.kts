@@ -32,9 +32,9 @@ tasks {
         generateJsInteropExports = true
         compiler { strict = true }
         test {
+            modules = listOf("dev.sayaya.handbook.ActivityTest")
             webPort = 18090
-        }
-        }
+        }        }
     test {
         useJUnitPlatform()
     }

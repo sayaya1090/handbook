@@ -40,6 +40,7 @@ tasks {
             strict = true
         }
         test {
+            modules = listOf("dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.HistoryTest")
             webPort = 18080
         }
     }

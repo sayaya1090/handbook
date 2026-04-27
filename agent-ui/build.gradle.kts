@@ -36,9 +36,9 @@ tasks {
         generateJsInteropExports = true
         compiler { strict = true }
         test {
+            modules = listOf("dev.sayaya.handbook.AgentTest")
             webPort = 18083
-        }
-        }
+        }        }
     test {
         useJUnitPlatform()
     }

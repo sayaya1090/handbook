@@ -36,6 +36,7 @@ tasks {
         generateJsInteropExports = true
         compiler { strict = true }
         test {
+            modules = listOf("dev.sayaya.handbook.DocumentTest")
             webPort = 18082
         }
     }

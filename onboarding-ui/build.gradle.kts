@@ -28,6 +28,7 @@ gwt {
     generateJsInteropExports = true
     compiler { strict = true }
     test {
+        modules = listOf("dev.sayaya.handbook.OnboardingTest")
         webPort = 18086
     }
 }

@@ -18,16 +18,17 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 gwt {
-    gwtVersion = "2.12.2"
+    gwtVersion = "2.13.0"
     modules = listOf("dev.sayaya.handbook.Workspace")
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.WorkspaceTest")
+        modules = listOf("dev.sayaya.handbook.Workspace")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
     compiler { strict = true }
     test {
+        modules = listOf("dev.sayaya.handbook.Workspace")
         webPort = 18085
     }
 }
