@@ -77,18 +77,18 @@ switch (response.status) {
 
 ```mermaid
 flowchart LR
-    A[사용자 액션] --> B[FetchApi 호출]
+    A["사용자 액션"] --> B["FetchApi 호출"]
     B --> C{HTTP 응답}
-    C -->|200| D[정상 처리]
-    C -->|401| E[쿠키 삭제 + 로그인 리다이렉트]
-    C -->|409| F[.conflict 표시 + 사용자 선택]
-    C -->|"400, 404"| G[Toast ERROR]
-    C -->|"500"| H[Toast ERROR + 재시도 안내]
+    C -->|200| D["정상 처리"]
+    C -->|401| E["쿠키 삭제 + 로그인 리다이렉트"]
+    C -->|409| F[".conflict 표시 + 사용자 선택"]
+    C -->|"400, 404"| G["Toast ERROR"]
+    C -->|"500"| H["Toast ERROR + 재시도 안내"]
 
-    I[SSE 이벤트] --> J{이벤트 타입}
+    I["SSE 이벤트"] --> J{이벤트 타입}
     J -->|"DOCUMENT, TYPE_CREATED"| K["문서, 타입 목록 갱신"]
-    J -->|PRESENCE| L[프레즌스 표시]
-    J -->|연결 끊김| M[자동 재연결 + Toast WARNING]
+    J -->|PRESENCE| L["프레즌스 표시"]
+    J -->|연결 끊김| M["자동 재연결 + Toast WARNING"]
 ```
 
 > **요구사항 참조:** 6.3 에러 핸들링 개선 — API 호출 실패 시 사일런트 실패 금지 (토스트 알림 필수), save/delete/patch 실패 시 충돌 해결 UI, SSE 연결 끊김 시 자동 재연결 + 알림
@@ -134,16 +134,16 @@ Gateway → 선택적 서비스 호출 실패
 ```mermaid
 stateDiagram-v2
     [*] --> Connected
-    Connected --> Disconnected: SSE 연결 끊김
-    Disconnected --> Reconnecting: 즉시 재연결 시도
-    Reconnecting --> Connected: 성공
-    Reconnecting --> Waiting: 실패
-    Waiting --> Reconnecting: 대기 후 재시도
-    Note right of Waiting: Exponential backoff\n1초 → 2초 → 4초 → ... → 최대 30초
+    Connected --> Disconnected: "SSE 연결 끊김"
+    Disconnected --> Reconnecting: "즉시 재연결 시도"
+    Reconnecting --> Connected: "성공"
+    Reconnecting --> Waiting: "실패"
+    Waiting --> Reconnecting: "대기 후 재시도"
+    Note right of Waiting: "Exponential backoff\n1초 → 2초 → 4초 → ... → 최대 30초"
 
     state Reconnecting {
         [*] --> Attempt
-        Attempt --> [*]: 결과 반환
+        Attempt --> [*]: "결과 반환"
     }
 ```
 

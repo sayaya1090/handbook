@@ -4,7 +4,7 @@
 
 ```mermaid
 sequenceDiagram
-    actor Client as 클라이언트 (shell-ui)
+    actor Client as "클라이언트 (shell-ui)"
     participant GW as Gateway
     participant Ctrl as MessageController
     participant BC as Broadcaster
@@ -12,33 +12,33 @@ sequenceDiagram
     participant WS as WorkspaceSink
     participant Kafka as Kafka
 
-    Client->>GW: GET /workspace/{id}/messages
-    GW->>Ctrl: SSE 연결 요청
-    Ctrl->>BC: listen(workspace)
-    BC->>SM: listen(workspace)
-    SM->>SM: ConcurrentHashMap.compute(workspace)
-    alt 첫 구독자
-        SM->>WS: new WorkspaceSink(Sinks.many().replay().limit(10ms))
+    Client->>GW: "GET /workspace/{id}/messages"
+    GW->>Ctrl: "SSE 연결 요청"
+    Ctrl->>BC: "listen(workspace)"
+    BC->>SM: "listen(workspace)"
+    SM->>SM: "ConcurrentHashMap.compute(workspace)"
+    alt "첫 구독자"
+        SM->>WS: "new WorkspaceSink(Sinks.many().replay().limit(10ms))"
     end
-    SM->>WS: incrementSubscribers()
-    WS-->>SM: Flux<Event>
-    SM-->>BC: Flux<Event>
-    BC-->>Ctrl: Flux<Event>
-    Ctrl->>Ctrl: Event → ServerSentEvent 변환
-    Note over Ctrl: id=event.id, event=eventType, data=JSON(payload)
-    Ctrl-->>Client: text/event-stream
+    SM->>WS: "incrementSubscribers()"
+    WS-->>SM: "Flux<Event>"
+    SM-->>BC: "Flux<Event>"
+    BC-->>Ctrl: "Flux<Event>"
+    Ctrl->>Ctrl: "Event → ServerSentEvent 변환"
+    Note over Ctrl: "id=event.id, event=eventType, data=JSON(payload)"
+    Ctrl-->>Client: "text/event-stream"
 
-    loop Kafka 이벤트 수신
-        Kafka->>BC: EventMessageListener.accept(JSON)
-        BC->>BC: JSON → Event 역직렬화
-        BC->>SM: tryEmitNext(event)
-        SM->>WS: tryEmitNext(event) [workspace 매칭]
-        WS-->>Ctrl: Event 전달
-        Ctrl-->>Client: SSE 이벤트 전송
+    loop "Kafka 이벤트 수신"
+        Kafka->>BC: "EventMessageListener.accept(JSON)"
+        BC->>BC: "JSON → Event 역직렬화"
+        BC->>SM: "tryEmitNext(event)"
+        SM->>WS: "tryEmitNext(event) [workspace 매칭]"
+        WS-->>Ctrl: "Event 전달"
+        Ctrl-->>Client: "SSE 이벤트 전송"
     end
 
-    loop Keep-alive (10초 간격)
-        Ctrl-->>Client: SSE comment: "ping"
+    loop "Keep-alive (10초 간격)"
+        Ctrl-->>Client: "SSE comment: 'ping'"
     end
 ```
 
@@ -51,15 +51,15 @@ sequenceDiagram
     participant SM as WorkspaceSinkManager
     participant WS as WorkspaceSink
 
-    Client->>Ctrl: 연결 종료 (cancel)
-    Note over Ctrl: doOnCancel 트리거
-    Ctrl->>SM: doFinally → compute(workspace)
-    SM->>WS: decrementSubscribers()
-    alt 구독자 수 > 0
-        SM->>SM: WorkspaceSink 유지
-    else 구독자 수 ≤ 0 (마지막 구독자)
-        SM->>WS: tryEmitComplete()
-        SM->>SM: 맵에서 WorkspaceSink 제거
+    Client->>Ctrl: "연결 종료 (cancel)"
+    Note over Ctrl: "doOnCancel 트리거"
+    Ctrl->>SM: "doFinally → compute(workspace)"
+    SM->>WS: "decrementSubscribers()"
+    alt "구독자 수 > 0"
+        SM->>SM: "WorkspaceSink 유지"
+    else "구독자 수 ≤ 0 (마지막 구독자)"
+        SM->>WS: "tryEmitComplete()"
+        SM->>SM: "맵에서 WorkspaceSink 제거"
     end
 ```
 
@@ -130,24 +130,24 @@ sequenceDiagram
     participant GW as Gateway
     participant EB as event-broadcaster
 
-    Client->>GW: SSE 연결 (정상)
-    GW->>EB: SSE 프록시
-    EB-->>Client: text/event-stream (이벤트 수신 중)
-    Note over Client,EB: ⚡ 네트워크 장애 / 서비스 재시작
-    Client->>Client: onerror 감지
-    Client->>Client: Toast WARNING 표시
+    Client->>GW: "SSE 연결 (정상)"
+    GW->>EB: "SSE 프록시"
+    EB-->>Client: "text/event-stream (이벤트 수신 중)"
+    Note over Client,EB: "⚡ 네트워크 장애 / 서비스 재시작"
+    Client->>Client: "onerror 감지"
+    Client->>Client: "Toast WARNING 표시"
 
-    loop Exponential Backoff
-        Client->>GW: 재연결 시도 (1초 후)
-        GW-->>Client: 503 Service Unavailable
-        Client->>GW: 재연결 시도 (2초 후)
-        GW-->>Client: 503 Service Unavailable
-        Client->>GW: 재연결 시도 (4초 후)
-        GW->>EB: SSE 프록시
-        EB-->>Client: text/event-stream (재연결 성공)
+    loop "Exponential Backoff"
+        Client->>GW: "재연결 시도 (1초 후)"
+        GW-->>Client: "503 Service Unavailable"
+        Client->>GW: "재연결 시도 (2초 후)"
+        GW-->>Client: "503 Service Unavailable"
+        Client->>GW: "재연결 시도 (4초 후)"
+        GW->>EB: "SSE 프록시"
+        EB-->>Client: "text/event-stream (재연결 성공)"
     end
 
-    Client->>Client: Toast INFO "연결 복구"
+    Client->>Client: "Toast INFO '연결 복구'"
 ```
 
 ## UC-EB7: Kafka DLQ 처리
@@ -163,22 +163,22 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Kafka as Kafka (handbook-events)
+    participant Kafka as "Kafka (handbook-events)"
     participant Consumer as EventMessageListener
-    participant DLQ as Kafka (handbook-events.DLT)
+    participant DLQ as "Kafka (handbook-events.DLT)"
     participant Prometheus as Prometheus
 
-    Kafka->>Consumer: 이벤트 수신
-    Consumer->>Consumer: JSON 역직렬화 시도
-    Consumer-->>Consumer: 예외 발생
-    Consumer->>Consumer: 재시도 1 (1초 후)
-    Consumer-->>Consumer: 예외 발생
-    Consumer->>Consumer: 재시도 2 (2초 후)
-    Consumer-->>Consumer: 예외 발생
-    Consumer->>Consumer: 재시도 3 (4초 후)
-    Consumer-->>Consumer: 예외 발생
-    Consumer->>DLQ: DLQ에 이벤트 저장 (원본 + 에러 헤더)
-    Consumer->>Prometheus: dlq_events_total 카운터 증가
+    Kafka->>Consumer: "이벤트 수신"
+    Consumer->>Consumer: "JSON 역직렬화 시도"
+    Consumer-->>Consumer: "예외 발생"
+    Consumer->>Consumer: "재시도 1 (1초 후)"
+    Consumer-->>Consumer: "예외 발생"
+    Consumer->>Consumer: "재시도 2 (2초 후)"
+    Consumer-->>Consumer: "예외 발생"
+    Consumer->>Consumer: "재시도 3 (4초 후)"
+    Consumer-->>Consumer: "예외 발생"
+    Consumer->>DLQ: "DLQ에 이벤트 저장 (원본 + 에러 헤더)"
+    Consumer->>Prometheus: "dlq_events_total 카운터 증가"
 ```
 
 ---

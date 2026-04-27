@@ -63,7 +63,7 @@ sequenceDiagram
 
     Note over Agent,MR: WindowMutationBridge (CustomEvent)
 
-    alt 단계별 조작
+    alt "단계별 조작"
         Agent->>MR: ["WS_MODE CREATE"]
         MR->>AWH: processChange()
         AWH->>Mode: next(CREATE)
@@ -75,7 +75,7 @@ sequenceDiagram
         Agent->>MR: ["WS_SUBMIT"]
         MR->>AWH: processChange()
         AWH->>Repo: create("MyWorkspace", null)
-    else 한번에
+    else "한번에"
         Agent->>MR: ["WS_CREATE MyWorkspace"]
         MR->>AWH: processChange()
         AWH->>Mode: next(CREATE)

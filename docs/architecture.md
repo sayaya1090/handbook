@@ -174,22 +174,22 @@ sequenceDiagram
     participant M as MenuList
     participant H as HistoryManager
 
-    Note over B: initialize() 호출
-    par 데이터 로딩 (비동기)
-        Gateway->>S: /user (SessionState: AUTHENTICATED)
-        Gateway->>M: /menus (MenuList: Loaded)
+    Note over B: "initialize() 호출"
+    par "데이터 로딩 (비동기)"
+        Gateway->>S: "/user (SessionState: AUTHENTICATED)"
+        Gateway->>M: "/menus (MenuList: Loaded)"
     end
 
-    S->>B: stateChanged (subscribe)
-    B->>B: recompute() - MenuList 가 비었으면 대기
+    S->>B: "stateChanged (subscribe)"
+    B->>B: "recompute() - MenuList 가 비었으면 대기"
     
-    M->>B: menusChanged (subscribe)
-    B->>B: recompute() - 모든 조건 충족 확인
+    M->>B: "menusChanged (subscribe)"
+    B->>B: "recompute() - 모든 조건 충족 확인"
 
-    alt Clean URL Navigation 필요
-        B->>H: window.history.pushState(null, "", "/workspaces")
-    else 이미 URL 이 설정된 경우
-        B->>B: MenuSelected.next(menu) 직접 호출 (지연 로딩 트리거)
+    alt "Clean URL Navigation 필요"
+        B->>H: "window.history.pushState(null, '', '/workspaces')"
+    else "이미 URL 이 설정된 경우"
+        B->>B: "MenuSelected.next(menu) 직접 호출 (지연 로딩 트리거)"
     end
 ```
 
@@ -353,7 +353,7 @@ workspace, schema, document → (독립, 상호 의존 없음)
 
 ### 6. Event-Broadcaster 모듈
 
-**역할:** Kafka 이벤트를 수신하여 워크스페이스별 SSE로 브로드캐스트한다. **실시간 협업의 중심 허브**로서, 같은 워크스페이스의 모든 참여자(사용자 + AI 에이전트)가 동일한 SSE 스트림(`/workspace/{id}/messages`)을 구독한다. 사용자의 데이터 변경(DOCUMENT_CREATED, TYPE_CREATED 등)과 에이전트 커맨드(AGENT_COMMAND)가 모두 같은 Kafka 토픽("handbook-events")을 통해 동일한 SSE 스트림으로 전달되므로, 다른 사용자나 에이전트의 변경사항이 즉시 반영된다.
+**역할:** Kafka 이벤트를 수신하여 워크스페이스별 SSE로 브로드캐스트한다. **실시간 협업의 중심 허브**로서, 같은 워크스페이스의 모든 참여자(사용자 + 에이전트)가 동일한 SSE 스트림(`/workspace/{id}/messages`)을 구독한다. 사용자의 데이터 변경(DOCUMENT_CREATED, TYPE_CREATED 등)과 에이전트 커맨드(AGENT_COMMAND)가 모두 같은 Kafka 토픽("handbook-events")을 통해 동일한 SSE 스트림으로 전달되므로, 다른 사용자나 에이전트의 변경사항이 즉시 반영된다.
 
 **설계 결정:**
 
@@ -932,39 +932,39 @@ sequenceDiagram
     participant EB as event-broadcaster
     participant S as Backend Service
 
-    U->>F: 자연어 요청
-    F->>GW: POST /assistant/request
-    GW->>A: 라우팅
-    A->>L: 의도 해석 요청
-    L-->>A: 실행 계획
+    U->>F: "자연어 요청"
+    F->>GW: "POST /assistant/request"
+    GW->>A: "라우팅"
+    A->>L: "의도 해석 요청"
+    L-->>A: "실행 계획"
 
-    Note over A,K: 에이전트 커맨드를 Kafka AGENT_COMMAND 이벤트로 발행
-    A->>K: AGENT_COMMAND (navigate)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE /workspace/{id}/messages
-    A->>K: AGENT_COMMAND (attention)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE (attention)
-    A->>K: AGENT_COMMAND (preview)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE (preview)
-    A->>K: AGENT_COMMAND (await_confirm)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE (await_confirm)
-    F->>U: 확인 다이얼로그
+    Note over A,K: "에이전트 커맨드를 Kafka AGENT_COMMAND 이벤트로 발행"
+    A->>K: "AGENT_COMMAND (navigate)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE /workspace/{id}/messages"
+    A->>K: "AGENT_COMMAND (attention)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE (attention)"
+    A->>K: "AGENT_COMMAND (preview)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE (preview)"
+    A->>K: "AGENT_COMMAND (await_confirm)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE (await_confirm)"
+    F->>U: "확인 다이얼로그"
     U->>F: confirm
-    F->>GW: POST /assistant/respond
-    GW->>A: 응답 전달
-    A->>GW: PUT /types (기존 API 호출)
-    GW->>S: 라우팅 (인증·부하분산)
-    S-->>GW: 결과
-    GW-->>A: 결과
-    A->>K: AGENT_COMMAND (mutate)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE (mutate)
-    A->>K: AGENT_COMMAND (complete)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE (complete)
+    F->>GW: "POST /assistant/respond"
+    GW->>A: "응답 전달"
+    A->>GW: "PUT /types (기존 API 호출)"
+    GW->>S: "라우팅 (인증·부하분산)"
+    S-->>GW: "결과"
+    GW-->>A: "결과"
+    A->>K: "AGENT_COMMAND (mutate)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE (mutate)"
+    A->>K: "AGENT_COMMAND (complete)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE (complete)"
 ```
 
 **커맨드 타입:**
@@ -1272,10 +1272,10 @@ graph LR
 | 모듈 | 경로 | 읽기 | 쓰기 | 에이전트 작업 Undo |
 |------|------|------|------|-------------------|
 | **type-ui** | 메모리 직접 | `TypeStateProvider.snapshot()` | `AgentMutationHandler` -> `ActionManager` | O (같은 undo 스택) |
-| **persist-type** | REST API | GET /workspace/{id}/types | PUT/DELETE /workspace/{id}/types | X (DB 직접 변경) |
-| **persist-workspace** | REST API | (shell-ui WorkspaceList) | POST/PUT/DELETE /workspace | X (DB 직접 변경) |
-| **search-type** | REST API | GET /workspace/{id}/types | 읽기 전용 | - |
-| **workspace-ui** | REST API | - | POST /workspace (생성) | X (DB 직접 변경) |
+| **persist-type** | REST API | "GET /workspace/{id}/types" | "PUT/DELETE /workspace/{id}/types" | X (DB 직접 변경) |
+| **persist-workspace** | REST API | "(shell-ui WorkspaceList)" | "POST/PUT/DELETE /workspace" | X (DB 직접 변경) |
+| **search-type** | REST API | "GET /workspace/{id}/types" | "읽기 전용" | - |
+| **workspace-ui** | REST API | - | "POST /workspace (생성)" | X (DB 직접 변경) |
 
 ### type-ui 에이전트 명령어
 
@@ -1410,14 +1410,14 @@ sequenceDiagram
     participant DEH as DocumentEventHandler
     participant Toast as ToastContainer
 
-    UserA->>PD: PUT /workspace/{id}/documents
-    PD->>K: DOCUMENT_CREATED 이벤트 발행
-    K->>EB: 이벤트 수신
-    EB-->>WEL: SSE (type: DOCUMENT_CREATED)
-    WEL->>WEL: CustomEvent 생성 (detail: "DOCUMENT_CREATED:payload")
-    WEL->>WEB: window.dispatchEvent()
-    WEB->>DEH: events() 구독 발행
-    DEH->>DEH: 현재 타입의 문서 목록 재조회
+    UserA->>PD: "PUT /workspace/{id}/documents"
+    PD->>K: "DOCUMENT_CREATED 이벤트 발행"
+    K->>EB: "이벤트 수신"
+    EB-->>WEL: "SSE (type: DOCUMENT_CREATED)"
+    WEL->>WEL: "CustomEvent 생성 (detail: 'DOCUMENT_CREATED:payload')"
+    WEL->>WEB: "window.dispatchEvent()"
+    WEB->>DEH: "events() 구독 발행"
+    DEH->>DEH: "현재 타입의 문서 목록 재조회"
     DEH->>Toast: "다른 사용자가 문서를 변경했습니다"
 ```
 

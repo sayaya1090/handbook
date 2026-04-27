@@ -25,12 +25,12 @@ sequenceDiagram
     Login->>TP: publish(provider, principal)
     TP->>Repo: findUserByProviderAndAccount(provider, account)
     Repo->>DB: SELECT * FROM user WHERE provider=:p AND account=:a
-    alt 기존 사용자
+    alt "기존 사용자"
         DB-->>Repo: R2dbcUserEntity
         Repo-->>TP: User
         TP->>Repo: updateLastLoginDateTime(id, now)
         Repo->>DB: UPDATE user SET last_login_at=:now
-    else 신규 사용자
+    else "신규 사용자"
         DB-->>Repo: empty
         TP->>TP: createUser(provider, principal)
         TP->>Repo: create(user)
@@ -99,10 +99,10 @@ sequenceDiagram
     participant Ctrl as MenuController
 
     Client->>Ctrl: GET /menus
-    alt 미인증 (anonymous)
+    alt "미인증 (anonymous)"
         Ctrl-->>Client: [SIGN_IN 메뉴]
         Note over Client: login.nocache.js 스크립트 포함
-    else 인증됨
+    else "인증됨"
         Ctrl-->>Client: [SIGN_OUT 메뉴]
         Note over Client: logout.nocache.js 스크립트 포함
     end

@@ -19,7 +19,7 @@ sequenceDiagram
     participant FC as FeatureCardElement
 
     UI->>LC: build()
-    loop FeatureCardContent 목록
+    loop "FeatureCardContent 목록"
         LC->>FC: build(content)
         FC-->>LC: HTMLElement (카드)
     end
@@ -36,7 +36,7 @@ sequenceDiagram
 
     Note over LA: /user 로 로그인 상태 판별
     LA->>LC: build()
-    loop 동일 FeatureCardContent 목록
+    loop "동일 FeatureCardContent 목록"
         LC->>FC: build(content)
         FC-->>LC: HTMLElement
     end

@@ -14,18 +14,18 @@ sequenceDiagram
     participant MS as MenuSelected
     participant MSM as ModuleScriptManager
 
-    App->>UA: find()
-    UA->>UA: GET /user
-    UA-->>UP: User 발행
-    UP-->>ML: 사용자 변경 감지
-    ML->>MA: findAll()
-    MA->>MA: GET /menus
-    MA-->>ML: Menu[] 발행
-    UR->>UR: 현재 URL과 메뉴 urlRegex 매칭
-    UR->>MS: 매칭된 메뉴 선택
-    MS-->>MSM: 메뉴 변경 감지
-    MSM->>MSM: <script> 동적 주입
-    Note over MSM: js/type/type.nocache.js 등
+    App->>UA: "find()"
+    UA->>UA: "GET /user"
+    UA-->>UP: "User 발행"
+    UP-->>ML: "사용자 변경 감지"
+    ML->>MA: "findAll()"
+    MA->>MA: "GET /menus"
+    MA-->>ML: "Menu[] 발행"
+    UR->>UR: "현재 URL과 메뉴 urlRegex 매칭"
+    UR->>MS: "매칭된 메뉴 선택"
+    MS-->>MSM: "메뉴 변경 감지"
+    MSM->>MSM: "<script> 동적 주입"
+    Note over MSM: "js/type/type.nocache.js 등"
 ```
 
 ## 메뉴 클릭 → 모듈 로딩 시퀀스
@@ -41,18 +41,18 @@ sequenceDiagram
     participant HM as HistoryManager
     participant DM as DrawerMode
 
-    User->>MR: 메뉴 아이템 클릭
-    MR->>MS: next(menu)
+    User->>MR: "메뉴 아이템 클릭"
+    MR->>MS: "next(menu)"
     alt 도구 1개
-        MS->>TS: 자동 선택
-        TS->>TEM: exec()
-        TEM->>TEM: DOM 준비 대기 (100ms 재시도)
+        MS->>TS: "자동 선택"
+        TS->>TEM: "exec()"
+        TEM->>TEM: "DOM 준비 대기 (100ms 재시도)"
     else 도구 여러 개
-        MS-->>MR: Tool Rail EXPAND
+        MS-->>MR: "Tool Rail EXPAND"
     end
-    MS-->>MSM: 스크립트 주입
-    MS-->>HM: pushState(url)
-    Note over HM: Menu.url() 사용 (미지정 시 무시)
+    MS-->>MSM: "스크립트 주입"
+    MS-->>HM: "pushState(url)"
+    Note over HM: "Menu.url() 사용 (미지정 시 무시)"
     MS-->>DM: COLLAPSE
 ```
 
@@ -60,19 +60,19 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Agent as 에이전트 (SSE)
+    participant Agent as "에이전트 (SSE)"
     participant NH as NavigateHandler
-    participant URI as Observer<URI>
+    participant URI as "Observer<URI>"
     participant UR as UrlBasedMenuResolver
     participant MS as MenuSelected
     participant MSM as ModuleScriptManager
 
-    Agent->>NH: NavigateCommand (menu, url)
-    NH->>URI: URL 발행
-    URI-->>UR: URL 변경 감지
-    UR->>UR: urlRegex 매칭
-    UR->>MS: 메뉴 자동 선택
-    MS-->>MSM: 모듈 스크립트 주입
+    Agent->>NH: "NavigateCommand (menu, url)"
+    NH->>URI: "URL 발행"
+    URI-->>UR: "URL 변경 감지"
+    UR->>UR: "urlRegex 매칭"
+    UR->>MS: "메뉴 자동 선택"
+    MS-->>MSM: "모듈 스크립트 주입"
 ```
 
 ## Drawer 토글 시퀀스
@@ -88,14 +88,14 @@ sequenceDiagram
     participant MRE as MenuRailElement
     participant TRE as ToolRailElement
 
-    User->>Btn: 햄버거 버튼 클릭
-    Btn->>DM: next(EXPAND 또는 COLLAPSE)
-    DM-->>DE: state 변경
-    DM-->>MRM: update(drawerState, toolCount)
-    DM-->>TRM: update(drawerState, menuRailState, toolCount)
-    MRM-->>MRE: expand() / collapse() / hide()
-    TRM-->>TRE: expand() / collapse() / hide()
-    Note over Btn: SVG 햄버거 ↔ X 애니메이션
+    User->>Btn: "햄버거 버튼 클릭"
+    Btn->>DM: "next(EXPAND 또는 COLLAPSE)"
+    DM-->>DE: "state 변경"
+    DM-->>MRM: "update(drawerState, toolCount)"
+    DM-->>TRM: "update(drawerState, menuRailState, toolCount)"
+    MRM-->>MRE: "expand() / collapse() / hide()"
+    TRM-->>TRE: "expand() / collapse() / hide()"
+    Note over Btn: "SVG 햄버거 ↔ X 애니메이션"
 ```
 
 ## 토큰 자동 갱신 시퀀스
@@ -103,15 +103,15 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant UA as UserApi
-    participant Auth as /auth/refresh
+    participant Auth as "/auth/refresh"
     participant UP as UserProvider
 
-    loop 10분 주기
-        UA->>Auth: POST /auth/refresh
+    loop "10분 주기"
+        UA->>Auth: "POST /auth/refresh"
         alt 갱신 성공
-            Auth-->>UA: 새 토큰
+            Auth-->>UA: "새 토큰"
         else 갱신 실패
-            UA-->>UP: null 발행 (로그아웃)
+            UA-->>UP: "null 발행 (로그아웃)"
         end
     end
 ```
@@ -123,22 +123,22 @@ sequenceDiagram
     participant BD as BrowserLanguageDetector
     participant LP as LabelProvider
     participant FR as FetchLanguagePackRepository
-    participant Server as /js/language.{lang}.json
-    participant UI as UI 컴포넌트들
+    participant Server as "/js/language.{lang}.json"
+    participant UI as "UI 컴포넌트들"
 
-    BD->>BD: localStorage 'lang' 또는 navigator.language
-    BD-->>LP: "ko" 감지
-    LP->>FR: load("ko")
-    FR->>Server: fetch language.ko.json
+    BD->>BD: "localStorage 'lang' 또는 navigator.language"
+    BD-->>LP: "'ko' 감지"
+    LP->>FR: "load('ko')"
+    FR->>Server: "fetch language.ko.json"
     alt 성공
-        Server-->>FR: Labels JSON
+        Server-->>FR: "Labels JSON"
     else 실패
-        FR->>Server: fetch language.en.json (폴백)
-        Server-->>FR: Labels JSON
+        FR->>Server: "fetch language.en.json (폴백)"
+        Server-->>FR: "Labels JSON"
     end
-    FR-->>LP: Labels 발행
-    LP-->>UI: subscribe() → 라벨 갱신
-    Note over UI: 버튼 텍스트, 다이얼로그 제목 등 자동 갱신
+    FR-->>LP: "Labels 발행"
+    LP-->>UI: "subscribe() → 라벨 갱신"
+    Note over UI: "버튼 텍스트, 다이얼로그 제목 등 자동 갱신"
 ```
 
 ## UC-S1: 사용자 인증 및 초기 로딩
@@ -272,29 +272,29 @@ sequenceDiagram
     participant TR as ToolRailElement
     participant Close as CloseToolRailButton
 
-    Note over VP: 뷰포트 < 768px 감지 (또는 초기 로드)
-    VP->>DM: next(HIDE)
-    VP->>MR: setAttribute(mobile) — 레이아웃 고정
-    VP->>TR: setAttribute(mobile) — 레이아웃 고정
-    VP->>MRM: mobile=true → EXPAND (tools ≤ 1)
-    VP->>TRM: mobile=true → HIDE (tools ≤ 1)
-    MRM-->>MR: expand() → [mobile][expand] 하단 바에 메뉴 렌더
+    Note over VP: "뷰포트 < 768px 감지 (또는 초기 로드)"
+    VP->>DM: "next(HIDE)"
+    VP->>MR: "setAttribute(mobile) — 레이아웃 고정"
+    VP->>TR: "setAttribute(mobile) — 레이아웃 고정"
+    VP->>MRM: "mobile=true → EXPAND (tools ≤ 1)"
+    VP->>TRM: "mobile=true → HIDE (tools ≤ 1)"
+    MRM-->>MR: "expand() → [mobile][expand] 하단 바에 메뉴 렌더"
 
-    User->>MR: 도구가 여러 개인 메뉴 탭
-    MR->>MS: next(menu)
-    MS->>TL: 도구 목록 갱신 (size > 1)
-    TL-->>MRM: tools>1 → HIDE
-    TL-->>TRM: tools>1 → EXPAND
-    MRM-->>MR: hide() → [mobile][hide] (translateY 100%, opacity 0)
-    TRM-->>TR: expand() → [mobile][expand] (translateY 0, opacity 1)
-    Note over TR: 첫 아이템으로 CloseToolRailButton(←) 포함
+    User->>MR: "도구가 여러 개인 메뉴 탭"
+    MR->>MS: "next(menu)"
+    MS->>TL: "도구 목록 갱신 (size > 1)"
+    TL-->>MRM: "tools>1 → HIDE"
+    TL-->>TRM: "tools>1 → EXPAND"
+    MRM-->>MR: "hide() → [mobile][hide] (translateY 100%, opacity 0)"
+    TRM-->>TR: "expand() → [mobile][expand] (translateY 0, opacity 1)"
+    Note over TR: "첫 아이템으로 CloseToolRailButton(←) 포함"
 
-    User->>Close: ← 탭
-    Close->>MS: next(null)
-    MS->>TL: 도구 목록 clear
-    TL-->>MRM: tools≤1 → EXPAND
-    TL-->>TRM: tools≤1 → HIDE
-    MRM-->>MR: expand() → [mobile][expand] 복귀
+    User->>Close: "← 탭"
+    Close->>MS: "next(null)"
+    MS->>TL: "도구 목록 clear"
+    TL-->>MRM: "tools≤1 → EXPAND"
+    TL-->>TRM: "tools≤1 → HIDE"
+    MRM-->>MR: "expand() → [mobile][expand] 복귀"
 ```
 
 ## UC-S13: 모바일 반응형 레이아웃 (AppBar + 상단 Tabs + 하단 드릴인)

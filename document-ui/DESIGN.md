@@ -100,14 +100,14 @@ sequenceDiagram
     AM->>DA: PATCH /documents (changed: 변경 필드 + rev만)
     AM->>DA: DELETE /documents (deleted: id + rev)
     
-    alt 전체 성공
+    alt "전체 성공"
         AM->>AM: Undo/Redo 스택 초기화
         AM->>CT: reset()
         CT-->>Sheet: 셀 상태 초기화
-    else 409 Conflict (rev 불일치)
+    else "409 Conflict (rev 불일치)"
         DA-->>Sheet: 충돌 문서에 .conflict 표시
         Note over Sheet: 사용자 선택: 내 변경 유지 / 서버 수락
-    else 부분 실패
+    else "부분 실패"
         AM->>CT: 실패 항목만 더티 유지
         CT-->>Sheet: 실패 셀에 error 표시
     end

@@ -73,7 +73,7 @@ sequenceDiagram
     AEW-->>AEL: 초기 실행 목록 렌더링
     Note over AEL: executionId, intent, currentGroup/totalGroups, 진행률 %, 상태
 
-    loop AGENT_COMMAND 이벤트 수신
+    loop "AGENT_COMMAND 이벤트 수신"
         SSE-->>AEW: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":2,"totalGroups":3,"parallel":true,"stepCount":2}
         AEW->>AEL: 해당 실행 진행률 갱신
         Note over AEL: ex-1: 66% — Group 2/3 (2 parallel steps)

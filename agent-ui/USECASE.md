@@ -8,38 +8,38 @@ sequenceDiagram
     participant Input as AgentInputElement
     participant Client as AgentSseClient
     participant GW as Gateway
-    participant SSE as SSE /workspace/{id}/messages
+    participant SSE as "SSE /workspace/{id}/messages"
     participant Session as AgentSession
     participant Router as CommandRouter
     participant Handlers as 핸들러들
 
-    User->>Input: 자연어 요청 입력 + Enter
-    Input->>Client: startSession(workspace, text)
-    Client->>GW: POST /assistant/request
-    Client->>GW: POST /assistant/execute
-    Client->>Session: state → PLANNING
-    Input-->>Input: 입력 비활성 + 중단 버튼 표시
+    User->>Input: "자연어 요청 입력 + Enter"
+    Input->>Client: "startSession(workspace, text)"
+    Client->>GW: "POST /assistant/request"
+    Client->>GW: "POST /assistant/execute"
+    Client->>Session: "state → PLANNING"
+    Input-->>Input: "입력 비활성 + 중단 버튼 표시"
 
-    Note over SSE: 기존 워크스페이스 SSE 스트림에서 AGENT_COMMAND 이벤트 필터링
+    Note over SSE: "기존 워크스페이스 SSE 스트림에서 AGENT_COMMAND 이벤트 필터링"
 
-    loop AGENT_COMMAND 이벤트 수신
-        SSE-->>Router: AGENT_COMMAND JSON 커맨드
-        Router->>Router: JSON.parse() + type별 분기
-        Router->>Handlers: BehaviorSubject.next()
-        Note over Handlers: highlight, attention, progress 등
+    loop "AGENT_COMMAND 이벤트 수신"
+        SSE-->>Router: "AGENT_COMMAND JSON 커맨드"
+        Router->>Router: "JSON.parse() + type별 분기"
+        Router->>Handlers: "BehaviorSubject.next()"
+        Note over Handlers: "highlight, attention, progress 등"
     end
 
-    SSE-->>Router: AGENT_COMMAND {"type":"complete","summary":"..."}
-    Router->>Session: state → COMPLETED
-    Handlers->>Handlers: 성공 토스트 5초
-    Input-->>Input: 입력 활성화
+    SSE-->>Router: "AGENT_COMMAND {'type':'complete','summary':'...'}"
+    Router->>Session: "state → COMPLETED"
+    Handlers->>Handlers: "성공 토스트 5초"
+    Input-->>Input: "입력 활성화"
 ```
 
 ## 변경 미리보기 → 확인 → Mutation 시퀀스
 
 ```mermaid
 sequenceDiagram
-    participant SSE as SSE /workspace/{id}/messages
+    participant SSE as "SSE /workspace/{id}/messages"
     participant Router as CommandRouter
     participant Preview as PreviewPanelElement
     participant Confirm as ConfirmDialogElement
@@ -48,24 +48,24 @@ sequenceDiagram
     participant GW as Gateway
     participant Mutate as MutateHandler
 
-    SSE-->>Router: AGENT_COMMAND {"type":"preview","changes":[...]}
-    Router->>Preview: previewRequests.next()
-    Preview-->>Preview: diff 패널 표시
+    SSE-->>Router: "AGENT_COMMAND {'type':'preview','changes':[...]}"
+    Router->>Preview: "previewRequests.next()"
+    Preview-->>Preview: "diff 패널 표시"
 
-    SSE-->>Router: AGENT_COMMAND {"type":"await_confirm","options":["확인","취소"]}
-    Router->>Session: state → AWAITING_CONFIRM
-    Router->>Confirm: confirmRequests.next()
-    Confirm-->>Confirm: 다이얼로그 표시
+    SSE-->>Router: "AGENT_COMMAND {'type':'await_confirm','options':['확인','취소']}"
+    Router->>Session: "state → AWAITING_CONFIRM"
+    Router->>Confirm: "confirmRequests.next()"
+    Confirm-->>Confirm: "다이얼로그 표시"
 
     actor User as 사용자
-    User->>Confirm: "확인" 선택
-    Confirm->>Client: respond(workspace, "확인")
-    Client->>GW: POST /assistant/respond
+    User->>Confirm: "'확인' 선택"
+    Confirm->>Client: "respond(workspace, '확인')"
+    Client->>GW: "POST /assistant/respond"
 
-    SSE-->>Router: AGENT_COMMAND {"type":"mutate","changes":["ADD field:..."]}
-    Router->>Mutate: mutations.next()
-    Mutate-->>Mutate: 변경 로그 표시 (3초 후 페이드아웃)
-    Note over Mutate: WindowMutationBridge.publish()
+    SSE-->>Router: "AGENT_COMMAND {'type':'mutate','changes':['ADD field:...']}"
+    Router->>Mutate: "mutations.next()"
+    Mutate-->>Mutate: "변경 로그 표시 (3초 후 페이드아웃)"
+    Note over Mutate: "WindowMutationBridge.publish()"
 ```
 
 ## 에이전트 중단 시퀀스
@@ -78,11 +78,11 @@ sequenceDiagram
     participant GW as Gateway
     participant Session as AgentSession
 
-    User->>Input: Abort 버튼 클릭
-    Input->>Client: abort(workspace)
-    Client->>GW: POST /assistant/abort
-    Client->>Session: state → ABORTED
-    Input-->>Input: 입력 활성화
+    User->>Input: "Abort 버튼 클릭"
+    Input->>Client: "abort(workspace)"
+    Client->>GW: "POST /assistant/abort"
+    Client->>Session: "state → ABORTED"
+    Input-->>Input: "입력 활성화"
 ```
 
 ## 에이전트 UX 원칙 — 시각적 실행
@@ -169,7 +169,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant SSE as SSE /workspace/{id}/messages
+    participant SSE as "SSE /workspace/{id}/messages"
     participant Router as CommandRouter
     participant PH as ProgressHandler
     participant PE as ProgressElement
@@ -177,26 +177,26 @@ sequenceDiagram
     participant AP as ArtifactSummaryPanel
     participant Session as AgentSession
 
-    SSE-->>Router: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":1,"totalGroups":3,"parallel":true,"stepCount":2}
-    Router->>PH: progressRequests.next()
-    PH->>PE: Progress.percent(33, "ex-1: Group 1/3 - 2 parallel steps")
+    SSE-->>Router: "AGENT_COMMAND {'type':'progress','executionId':'ex-1','currentGroup':1,'totalGroups':3,'parallel':true,'stepCount':2}"
+    Router->>PH: "progressRequests.next()"
+    PH->>PE: "Progress.percent(33, 'ex-1: Group 1/3 - 2 parallel steps')"
 
-    SSE-->>Router: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":2,"totalGroups":3,"parallel":false,"stepCount":1}
-    Router->>PH: progressRequests.next()
-    PH->>PE: Progress.percent(66, "ex-1: Group 2/3 - 1 step")
+    SSE-->>Router: "AGENT_COMMAND {'type':'progress','executionId':'ex-1','currentGroup':2,'totalGroups':3,'parallel':false,'stepCount':1}"
+    Router->>PH: "progressRequests.next()"
+    PH->>PE: "Progress.percent(66, 'ex-1: Group 2/3 - 1 step')"
 
-    SSE-->>Router: AGENT_COMMAND {"type":"progress","executionId":"ex-1","currentGroup":3,"totalGroups":3,"parallel":true,"stepCount":3}
-    Router->>PH: progressRequests.next()
-    PH->>PE: Progress.percent(100, "ex-1: Group 3/3 - 3 parallel steps")
+    SSE-->>Router: "AGENT_COMMAND {'type':'progress','executionId':'ex-1','currentGroup':3,'totalGroups':3,'parallel':true,'stepCount':3}"
+    Router->>PH: "progressRequests.next()"
+    PH->>PE: "Progress.percent(100, 'ex-1: Group 3/3 - 3 parallel steps')"
 
-    SSE-->>Router: AGENT_COMMAND {"type":"complete","executionId":"ex-1","summary":"스키마 변경 완료","artifact":{"changes":[...]}}
-    Router->>CH: completeRequests.next()
-    CH->>PE: Progress.hide()
-    CH->>AP: artifact 데이터 전달
-    AP-->>AP: 아티팩트 요약 패널 표시
-    Note over AP: executionId: ex-1<br/>summary: 스키마 변경 완료<br/>changes: [CREATE field, UPDATE type, ...]
-    CH->>Session: state → COMPLETED
-    CH->>CH: 성공 토스트 5초
+    SSE-->>Router: "AGENT_COMMAND {'type':'complete','executionId':'ex-1','summary':'스키마 변경 완료','artifact':{'changes':[...]}}"
+    Router->>CH: "completeRequests.next()"
+    CH->>PE: "Progress.hide()"
+    CH->>AP: "artifact 데이터 전달"
+    AP-->>AP: "아티팩트 요약 패널 표시"
+    Note over AP: "executionId: ex-1<br/>summary: 스키마 변경 완료<br/>changes: [CREATE field, UPDATE type, ...]"
+    CH->>Session: "state → COMPLETED"
+    CH->>CH: "성공 토스트 5초"
 ```
 
 ## UC-A9: 에이전트 작업 중단
@@ -220,7 +220,7 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | AI 에이전트 |
-| **목표** | 에이전트가 데이터를 검색할 때, 검색 과정을 사용자에게 실시간으로 보여주면서 검색한다. |
+| **목표** | 에이전트가 데이터를 검색할 때, 검색 과정을 사용자에게 실시간으로 보여으면서 검색한다. |
 | **요구사항** | 1. **검색 시각화**: 에이전트가 타입/워크스페이스를 검색할 때 검색 쿼리와 결과를 UI에 실시간 표시.<br>2. **단계별 탐색**: 에이전트가 여러 타입을 순회하며 조사할 때 현재 어떤 항목을 보고 있는지 하이라이트.<br>3. **검색 결과 요약**: 검색 완료 후 결과와 판단 근거를 preview로 표시.<br>4. **사용자 피드백**: 검색 결과가 의도와 다르면 사용자가 수정 가능 (await_confirm). |
 | **예상 커맨드 시퀀스** | `progress` → `navigate` → `highlight` (순차 강조) → `attention` (결과 설명) → `preview` (변경 계획) → `await_confirm` (사용자 확인) |
 | **필요 구현** | Assistant가 검색 시 커맨드 시퀀스 자동 생성 / 검색 결과를 UI에 표시하는 공통 컴포넌트 |
@@ -230,42 +230,42 @@ sequenceDiagram
     actor User as 사용자
     participant Input as AgentInputElement
     participant GW as Gateway
-    participant Asst as Assistant (LLM)
+    participant Asst as "Assistant (LLM)"
     participant K as Kafka
     participant EB as event-broadcaster
     participant UI as agent-ui 핸들러들
     participant TypeUI as type-ui 캔버스
 
-    User->>Input: "customer 타입의 속성을 보여줘"
-    Input->>GW: POST /assistant/request
-    GW->>Asst: 요청 전달
+    User->>Input: "'customer 타입의 속성을 보여줘'"
+    Input->>GW: "POST /assistant/request"
+    GW->>Asst: "요청 전달"
 
-    Asst->>K: AGENT_COMMAND (progress: "타입 목록 조회 중...")
-    K->>EB: 이벤트 수신
-    EB-->>UI: ProgressHandler → 진행률 표시
+    Asst->>K: "AGENT_COMMAND (progress: '타입 목록 조회 중...')"
+    K->>EB: "이벤트 수신"
+    EB-->>UI: "ProgressHandler → 진행률 표시"
 
-    Asst->>K: AGENT_COMMAND (navigate: "types")
-    K->>EB: 이벤트 수신
-    EB-->>UI: NavigateHandler → types 화면 이동
-    Note over TypeUI: type-ui 모듈 로딩
+    Asst->>K: "AGENT_COMMAND (navigate: 'types')"
+    K->>EB: "이벤트 수신"
+    EB-->>UI: "NavigateHandler → types 화면 이동"
+    Note over TypeUI: "type-ui 모듈 로딩"
 
-    Asst->>K: AGENT_COMMAND (highlight: "[data-type-key='customer:1.0']")
-    K->>EB: 이벤트 수신
-    EB-->>UI: HighlightHandler → customer 타입 박스 강조
+    Asst->>K: "AGENT_COMMAND (highlight: '[data-type-key=\'customer:1.0\']')"
+    K->>EB: "이벤트 수신"
+    EB-->>UI: "HighlightHandler → customer 타입 박스 강조"
 
-    Asst->>K: AGENT_COMMAND (attention: "customer 타입 - 속성 3개")
-    K->>EB: 이벤트 수신
-    EB-->>UI: OverlayElement → 설명 오버레이 표시
-    UI-->>User: 에이전트의 탐색 과정 관찰
+    Asst->>K: "AGENT_COMMAND (attention: 'customer 타입 - 속성 3개')"
+    K->>EB: "이벤트 수신"
+    EB-->>UI: "OverlayElement → 설명 오버레이 표시"
+    UI-->>User: "에이전트의 탐색 과정 관찰"
 
-    Asst->>K: AGENT_COMMAND (preview: 속성 목록)
-    K->>EB: 이벤트 수신
-    EB-->>UI: PreviewPanelElement → 결과 표시
+    Asst->>K: "AGENT_COMMAND (preview: 속성 목록)"
+    K->>EB: "이벤트 수신"
+    EB-->>UI: "PreviewPanelElement → 결과 표시"
 
-    Asst->>K: AGENT_COMMAND (await_confirm: ["확인","다시 검색"])
-    K->>EB: 이벤트 수신
-    EB-->>UI: ConfirmDialogElement → 확인 대기
-    UI-->>User: 검색 결과 확인 요청
+    Asst->>K: "AGENT_COMMAND (await_confirm: ['확인','다시 검색'])"
+    K->>EB: "이벤트 수신"
+    EB-->>UI: "ConfirmDialogElement → 확인 대기"
+    UI-->>User: "검색 결과 확인 요청"
 ```
 
 ---
@@ -281,20 +281,20 @@ sequenceDiagram
     participant Confirm as ConfirmDialogElement
     participant VV as visualViewport
 
-    Note over VP: 뷰포트 < 768px 감지
-    VP->>Input: position: fixed, bottom: 0 (하단 고정)
-    VP->>Preview: flex-direction: column (세로 스택)
+    Note over VP: "뷰포트 < 768px 감지"
+    VP->>Input: "position: fixed, bottom: 0 (하단 고정)"
+    VP->>Preview: "flex-direction: column (세로 스택)"
 
-    User->>Input: 입력 필드 탭
-    Input->>VV: visualViewport.resize 이벤트 구독
-    Note over VV: 가상 키보드 올라옴
-    VV-->>Input: 키보드 높이만큼 bottom 조정
-    User->>Input: 텍스트 입력 + 전송
+    User->>Input: "입력 필드 탭"
+    Input->>VV: "visualViewport.resize 이벤트 구독"
+    Note over VV: "가상 키보드 올라옴"
+    VV-->>Input: "키보드 높이만큼 bottom 조정"
+    User->>Input: "텍스트 입력 + 전송"
 
-    Note over Confirm: 확인 요청 수신
-    Confirm->>Confirm: bottom sheet 스타일 (하단에서 슬라이드 업)
-    User->>Confirm: 옵션 탭
-    Confirm->>Confirm: 닫힘 (슬라이드 다운)
+    Note over Confirm: "확인 요청 수신"
+    Confirm->>Confirm: "bottom sheet 스타일 (하단에서 슬라이드 업)"
+    User->>Confirm: "옵션 탭"
+    Confirm->>Confirm: "닫힘 (슬라이드 다운)"
 ```
 
 ## UC-A12: 모바일 반응형 레이아웃

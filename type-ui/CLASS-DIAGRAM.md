@@ -19,10 +19,10 @@ classDiagram
         +boolean primitive
         +String parent
         +AttributeValue[] attributes
-        +key(): String «@JsOverlay»
+        +key(): String <<@JsOverlay>>
         +create(id, version, effect, expire): TypeValue$
-        +withAttributes(attrs): TypeValue «@JsOverlay»
-        +withDescription(desc): TypeValue «@JsOverlay»
+        +withAttributes(attrs): TypeValue <<@JsOverlay>>
+        +withDescription(desc): TypeValue <<@JsOverlay>>
     }
     class AttributeValue {
         <<@JsType native>>
@@ -33,9 +33,9 @@ classDiagram
         +boolean nullable
         +boolean inherited
         +of(name, order, type): AttributeValue$
-        +withName(name): AttributeValue «@JsOverlay»
-        +withType(type): AttributeValue «@JsOverlay»
-        +withNullable(n): AttributeValue «@JsOverlay»
+        +withName(name): AttributeValue <<@JsOverlay>>
+        +withType(type): AttributeValue <<@JsOverlay>>
+        +withNullable(n): AttributeValue <<@JsOverlay>>
     }
     class AttributeTypeValue {
         <<@JsType native>>
@@ -52,21 +52,21 @@ classDiagram
         +document(ref): AttributeTypeValue$
         +array(elementType): AttributeTypeValue$
         +map(keyType, valueType): AttributeTypeValue$
-        +simplify(): String «@JsOverlay»
+        +simplify(): String <<@JsOverlay>>
     }
     class Position {
         <<@JsType native>>
         +int x, y, width, height
         +of(x, y, w, h): Position$
-        +move(dx, dy): Position «@JsOverlay»
-        +resize(w, h): Position «@JsOverlay»
+        +move(dx, dy): Position <<@JsOverlay>>
+        +resize(w, h): Position <<@JsOverlay>>
     }
     class LayoutPeriod {
         <<@JsType native>>
         +double effectDateTime
         +double expireDateTime
         +of(effect, expire): LayoutPeriod$
-        +overlap(other): double «@JsOverlay»
+        +overlap(other): double <<@JsOverlay>>
     }
 
     TypeValue *-- AttributeValue
@@ -472,7 +472,7 @@ classDiagram
         -renderVersions(versions: Set~TypeValue~)
         -toggleVersionSelection(version: String, row: HTMLElement)
         -loadDiff(v1: String, v2: String)
-        -fetchDiff(typeId, v1, v2) «JSNI»
+        -fetchDiff(typeId, v1, v2) <<JSNI>>
         -renderDiff(diffObj: Object)
         -renderDiffError(error: String)
     }

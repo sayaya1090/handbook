@@ -14,17 +14,17 @@ sequenceDiagram
     participant CF as ColumnFactory
     participant Sheet as SpreadsheetElement
 
-    Shell->>App: js/data/data.nocache.js 로딩
-    App->>App: DaggerComponent.create()
-    App->>App: WindowStateProviderBridge.register()
-    App->>TA: list()
-    TA-->>TL: List<TypeInfo> 발행
-    TL-->>TP: 첫 번째 타입 자동 선택
-    TP-->>CF: 속성 → 컬럼 정의 변환
-    CF-->>Sheet: Handsontable 컬럼 설정
-    TP-->>DA: search(workspace, {type, page:0, limit:50})
-    DA-->>DL: List<DocumentValue> 발행
-    DL-->>Sheet: 데이터 렌더링
+    Shell->>App: "js/data/data.nocache.js 로딩"
+    App->>App: "DaggerComponent.create()"
+    App->>App: "WindowStateProviderBridge.register()"
+    App->>TA: "list()"
+    TA-->>TL: "List<TypeInfo> 발행"
+    TL-->>TP: "첫 번째 타입 자동 선택"
+    TP-->>CF: "속성 → 컬럼 정의 변환"
+    CF-->>Sheet: "Handsontable 컬럼 설정"
+    TP-->>DA: "search(workspace, {type, page:0, limit:50})"
+    DA-->>DL: "List<DocumentValue> 발행"
+    DL-->>Sheet: "데이터 렌더링"
 ```
 
 ## 문서 편집 → 저장 시퀀스
@@ -37,22 +37,22 @@ sequenceDiagram
     participant DL as DocumentList
     participant DA as DocumentApi
 
-    User->>Sheet: 셀 값 변경
-    Sheet->>Sheet: afterChange 이벤트 캡처
-    Sheet->>AM: execute(EditDocumentAction(before, after))
-    AM->>DL: 문서 업데이트
+    User->>Sheet: "셀 값 변경"
+    Sheet->>Sheet: "afterChange 이벤트 캡처"
+    Sheet->>AM: "execute(EditDocumentAction(before, after))"
+    AM->>DL: "문서 업데이트"
 
-    User->>Sheet: 새 행 추가 (Add 버튼)
-    Sheet->>AM: execute(AddDocumentAction)
-    AM->>DL: 빈 문서 추가
-    DL-->>Sheet: 행 추가 렌더링
+    User->>Sheet: "새 행 추가 (Add 버튼)"
+    Sheet->>AM: "execute(AddDocumentAction)"
+    AM->>DL: "빈 문서 추가"
+    DL-->>Sheet: "행 추가 렌더링"
 
-    User->>Sheet: Save 버튼 클릭
-    Sheet->>AM: execute(SaveAction)
-    AM->>DA: PUT /workspace/{id}/documents (변경된 문서)
-    AM->>DA: DELETE /workspace/{id}/documents (삭제된 문서)
-    DA-->>AM: 저장 완료
-    AM->>AM: 스택 초기화
+    User->>Sheet: "Save 버튼 클릭"
+    Sheet->>AM: "execute(SaveAction)"
+    AM->>DA: "PUT /workspace/{id}/documents (변경된 문서)"
+    AM->>DA: "DELETE /workspace/{id}/documents (삭제된 문서)"
+    DA-->>AM: "저장 완료"
+    AM->>AM: "스택 초기화"
 ```
 
 ## 타입 탭 전환 시퀀스
@@ -68,14 +68,14 @@ sequenceDiagram
     participant DL as DocumentList
     participant PS as PageState
 
-    User->>Tabs: "order" 탭 클릭
-    Tabs->>TP: next(orderType)
-    TP-->>CF: order 타입의 속성 → 컬럼 재생성
-    CF-->>Sheet: updateColumns(newColumns)
-    TP-->>PS: 페이지 초기화 (page:0)
-    PS-->>DA: search(workspace, {type:"order", page:0, limit:50})
-    DA-->>DL: List<DocumentValue> 발행
-    DL-->>Sheet: 데이터 갱신
+    User->>Tabs: "'order' 탭 클릭"
+    Tabs->>TP: "next(orderType)"
+    TP-->>CF: "order 타입의 속성 → 컬럼 재생성"
+    CF-->>Sheet: "updateColumns(newColumns)"
+    TP-->>PS: "페이지 초기화 (page:0)"
+    PS-->>DA: "search(workspace, {type:'order', page:0, limit:50})"
+    DA-->>DL: "List<DocumentValue> 발행"
+    DL-->>Sheet: "데이터 갱신"
 ```
 
 ## 에이전트 문서 조작 시퀀스
@@ -89,31 +89,31 @@ sequenceDiagram
     participant DL as DocumentList
     participant Sheet as SpreadsheetElement
 
-    Note over Agent,MR: WindowMutationBridge (CustomEvent)
+    Note over Agent,MR: "WindowMutationBridge (CustomEvent)"
 
-    alt 타입 선택
-        Agent->>MR: ["DOC_SELECT customer"]
-        MR->>ADH: processChange()
-        ADH->>ADH: TypeProvider.next(customerType)
-    else 문서 추가 + 편집
-        Agent->>MR: ["DOC_ADD"]
-        MR->>ADH: processChange()
-        ADH->>AM: execute(AddDocumentAction)
-        Agent->>MR: ["DOC_EDIT CUST-001 name 홍길동"]
-        MR->>ADH: processChange()
-        ADH->>AM: execute(EditDocumentAction)
-        AM->>DL: 문서 업데이트
-        DL-->>Sheet: 셀 값 반영
-    else 저장
-        Agent->>MR: ["DOC_SAVE"]
-        MR->>ADH: processChange()
-        ADH->>AM: execute(SaveAction)
+    alt "타입 선택"
+        Agent->>MR: "['DOC_SELECT customer']"
+        MR->>ADH: "processChange()"
+        ADH->>ADH: "TypeProvider.next(customerType)"
+    else "문서 추가 + 편집"
+        Agent->>MR: "['DOC_ADD']"
+        MR->>ADH: "processChange()"
+        ADH->>AM: "execute(AddDocumentAction)"
+        Agent->>MR: "['DOC_EDIT CUST-001 name 홍길동']"
+        MR->>ADH: "processChange()"
+        ADH->>AM: "execute(EditDocumentAction)"
+        AM->>DL: "문서 업데이트"
+        DL-->>Sheet: "셀 값 반영"
+    else "저장"
+        Agent->>MR: "['DOC_SAVE']"
+        MR->>ADH: "processChange()"
+        ADH->>AM: "execute(SaveAction)"
     end
 
     actor User as 사용자
-    User->>AM: Ctrl+Z (Undo)
-    AM->>DL: Action.rollback()
-    DL-->>Sheet: 에이전트 작업 되돌림
+    User->>AM: "Ctrl+Z (Undo)"
+    AM->>DL: "Action.rollback()"
+    DL-->>Sheet: "에이전트 작업 되돌림"
 ```
 
 ## 페이지네이션 시퀀스
@@ -127,12 +127,12 @@ sequenceDiagram
     participant DL as DocumentList
     participant Sheet as SpreadsheetElement
 
-    User->>Pager: 다음 페이지 클릭
-    Pager->>PS: next({...current, page: current.page + 1})
-    PS-->>DA: search(workspace, {type, page:1, limit:50})
-    DA-->>DL: List<DocumentValue> 발행
-    DL-->>Sheet: 데이터 갱신
-    DA-->>Pager: totalElements → 페이지 인디케이터 업데이트
+    User->>Pager: "다음 페이지 클릭"
+    Pager->>PS: "next({...current, page: current.page + 1})"
+    PS-->>DA: "search(workspace, {type, page:1, limit:50})"
+    DA-->>DL: "List<DocumentValue> 발행"
+    DL-->>Sheet: "데이터 갱신"
+    DA-->>Pager: "totalElements → 페이지 인디케이터 업데이트"
 ```
 
 ---
@@ -191,27 +191,27 @@ sequenceDiagram
     participant GW as Gateway
     participant DB as Database
 
-    User->>UI: Save 버튼 클릭
-    UI->>CT: getChangedKeys(), getDeletedKeys()
-    CT-->>UI: 변경 필드 맵, 삭제 키 목록
+    User->>UI: "Save 버튼 클릭"
+    UI->>CT: "getChangedKeys(), getDeletedKeys()"
+    CT-->>UI: "변경 필드 맵, 삭제 키 목록"
 
-    alt 신규 문서 (created)
-        UI->>GW: PUT /documents [{id:null, data:{전체}}]
+    alt "신규 문서 (created)"
+        UI->>GW: "PUT /documents [{id:null, data:{전체}}]"
         GW->>DB: INSERT
     end
-    alt 수정 문서 (changed)
-        UI->>GW: PATCH /documents [{id, rev, data:{변경필드만}}]
-        GW->>DB: UPDATE data = data || patch, rev 체크
-        alt rev 일치
+    alt "수정 문서 (changed)"
+        UI->>GW: "PATCH /documents [{id, rev, data:{변경필드만}}]"
+        GW->>DB: "UPDATE data = data || patch, rev 체크"
+        alt "rev 일치"
             DB-->>GW: OK (rev+1)
-        else rev 불일치 (동일 필드 충돌)
+        else "rev 불일치 (동일 필드 충돌)"
             DB-->>GW: OptimisticLockingFailure
             GW-->>UI: 409 Conflict
             Note over UI: .conflict 표시
         end
     end
-    alt 삭제 문서 (deleted)
-        UI->>GW: DELETE /documents [{id, rev}]
+    alt "삭제 문서 (deleted)"
+        UI->>GW: "DELETE /documents [{id, rev}]"
         GW->>DB: DELETE
     end
 
@@ -268,19 +268,19 @@ sequenceDiagram
     participant Ctrl as ControllerElement
     participant Card as CardViewElement
 
-    Note over VP: 뷰포트 < 768px 감지
-    VP->>Sheet: fixedColumnsLeft = 1 (serial 고정)
-    VP->>Tabs: overflow-x: auto (수평 스크롤)
-    VP->>Ctrl: flex-wrap 활성화 (줄바꿈)
+    Note over VP: "뷰포트 < 768px 감지"
+    VP->>Sheet: "fixedColumnsLeft = 1 (serial 고정)"
+    VP->>Tabs: "overflow-x: auto (수평 스크롤)"
+    VP->>Ctrl: "flex-wrap 활성화 (줄바꿈)"
 
-    alt 뷰포트 < 480px
-        VP->>Card: 카드 뷰 활성화
-        Card-->>Sheet: display: none
-        Note over Card: 문서별 카드 리스트 표시
-        User->>Card: 카드 탭 → 상세 보기
-    else 뷰포트 480~768px
-        VP->>Sheet: 수평 스크롤 모드
-        User->>Sheet: 좌우 스와이프로 컬럼 탐색
+    alt "뷰포트 < 480px"
+        VP->>Card: "카드 뷰 활성화"
+        Card-->>Sheet: "display: none"
+        Note over Card: "문서별 카드 리스트 표시"
+        User->>Card: "카드 탭 → 상세 보기"
+    else "뷰포트 480~768px"
+        VP->>Sheet: "수평 스크롤 모드"
+        User->>Sheet: "좌우 스와이프로 컬럼 탐색"
     end
 ```
 
@@ -329,27 +329,27 @@ sequenceDiagram
     participant CD as ColumnDef
     participant Sheet as SpreadsheetElement (Handsontable)
 
-    CF->>TL: getValue() → allTypes
-    CF->>TL: allTypes.stream().map(id) → typeNames[]
-    CF->>TI: attributes 순회
-    loop 각 속성
-        CF->>CD: fromAttribute(attr, typeNames)
-        alt type = "enum"
-            CD-->>CF: dropdown + source=allowedValues
-        else type = "date"
-            CD-->>CF: date + dateFormat="YYYY-MM-DD HH:mm"
-        else type = "number"
+    CF->>TL: "getValue() → allTypes"
+    CF->>TL: "allTypes.stream().map(id) → typeNames[]"
+    CF->>TI: "attributes 순회"
+    loop "각 속성"
+        CF->>CD: "fromAttribute(attr, typeNames)"
+        alt "type = \"enum\""
+            CD-->>CF: "dropdown + source=allowedValues"
+        else "type = \"date\""
+            CD-->>CF: "date + dateFormat='YYYY-MM-DD HH:mm'"
+        else "type = \"number\""
             CD-->>CF: numeric
-        else type = "bool"
+        else "type = \"bool\""
             CD-->>CF: checkbox
-        else type = "document"
-            CD-->>CF: dropdown + source=typeNames
-        else 기타
+        else "type = \"document\""
+            CD-->>CF: "dropdown + source=typeNames"
+        else "기타"
             CD-->>CF: text
         end
     end
-    CF-->>Sheet: ColumnDef[] 전달
-    Sheet->>Sheet: toColumns() → Handsontable Column[] 변환
+    CF-->>Sheet: "ColumnDef[] 전달"
+    Sheet->>Sheet: "toColumns() → Handsontable Column[] 변환"
 ```
 
 ## UC-D13: 실시간 협업
@@ -386,14 +386,14 @@ sequenceDiagram
     participant Sheet as SpreadsheetElement (B)
     participant GW as Gateway (SSE)
 
-    A->>GW: POST /presence {user:"A", serial:"CUST-001", field:"name"}
-    GW-->>Sheet: SSE PRESENCE 이벤트
-    Sheet->>Sheet: 셀 [CUST-001, name]에 A 색상 보더 + "A님" 라벨
-    Note over Sheet: 3초 후 라벨 fade-out, 보더는 유지
+    A->>GW: "POST /presence {user:'A', serial:'CUST-001', field:'name'}"
+    GW-->>Sheet: "SSE PRESENCE 이벤트"
+    Sheet->>Sheet: "셀 [CUST-001, name]에 A 색상 보더 + 'A님' 라벨"
+    Note over Sheet: "3초 후 라벨 fade-out, 보더는 유지"
 
-    A->>GW: POST /presence {user:"A", type:null}
-    GW-->>Sheet: SSE PRESENCE 해제
-    Sheet->>Sheet: 프레즌스 제거
+    A->>GW: "POST /presence {user:'A', type:null}"
+    GW-->>Sheet: "SSE PRESENCE 해제"
+    Sheet->>Sheet: "프레즌스 제거"
 ```
 
 ---

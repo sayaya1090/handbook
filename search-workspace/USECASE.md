@@ -25,7 +25,7 @@ sequenceDiagram
 
     Browser->>Gateway: GET /menus
     Gateway->>MenuService: menus(headers)
-    par 병렬 집계
+    par "병렬 집계"
         MenuService->>SW: GET /menus
         SW-->>MenuService: [workspaces]
     and

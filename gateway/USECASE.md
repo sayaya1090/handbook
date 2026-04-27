@@ -39,11 +39,11 @@ sequenceDiagram
 
     Client->>GW: HTTP 요청
     GW->>GW: Route Predicate 평가 (Path + Method)
-    alt 매칭되는 라우트 존재
+    alt "매칭되는 라우트 존재"
         GW->>Target: 요청 프록시
         Target-->>GW: 응답
         GW-->>Client: 응답 전달
-    else 매칭 실패
+    else "매칭 실패"
         GW-->>Client: 404 Not Found
     end
 ```
@@ -61,7 +61,7 @@ sequenceDiagram
     GW->>EB: SSE 프록시 연결
     EB-->>GW: text/event-stream
     GW-->>Client: SSE 스트림 전달
-    loop 연결 유지
+    loop "연결 유지"
         EB-->>GW: SSE 이벤트 / ping
         GW-->>Client: SSE 이벤트 / ping
     end
@@ -129,13 +129,13 @@ sequenceDiagram
 
     Client->>GW: OPTIONS /api/resource (Preflight)
     GW->>GW: Origin 검증 (허용 도메인 목록)
-    alt 허용된 Origin
+    alt "허용된 Origin"
         GW-->>Client: 200 OK + CORS 헤더 + CSP 헤더
         Client->>GW: GET /api/resource
         GW->>Target: 요청 프록시
         Target-->>GW: 응답
         GW-->>Client: 응답 + CSP 헤더
-    else 허용되지 않은 Origin
+    else "허용되지 않은 Origin"
         GW-->>Client: 403 Forbidden
     end
 ```
@@ -160,11 +160,11 @@ sequenceDiagram
 
     Client->>GW: POST /auth/login (1회~10회)
     GW->>GW: IP별 요청 카운트 확인
-    alt 제한 이내 (≤10회/분)
+    alt "제한 이내 (≤10회/분)"
         GW->>Login: 요청 전달
         Login-->>GW: 응답
         GW-->>Client: 응답
-    else 제한 초과 (>10회/분)
+    else "제한 초과 (>10회/분)"
         GW-->>Client: 429 Too Many Requests
         Note over Client: Retry-After 헤더 포함
     end

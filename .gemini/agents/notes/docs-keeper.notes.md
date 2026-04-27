@@ -21,6 +21,7 @@
 - **클린 URL 전환 시 크로스체크**: `docs/requirements.md` (정책) ↔ `docs/contracts/menus.md` (매칭 규약) ↔ `shell-ui/README.md` (구현 상세) ↔ `gateway/application.yml` (Fallback 라우팅) 4개 지점의 일관성을 확인해야 함.
 - **예약어(Placeholder) 사용 시 크로스체크**: `docs/contracts/menus.md` (예약어 규약) ↔ `모듈/USECASE.md` (메뉴 제공 예시) ↔ `shell-ui/USECASE.md` (치환/매칭 흐름). 특히 `{workspaceId}`가 URL과 정규식 양쪽에서 일관되게 사용되는지 확인.
 - **예약어 정규식 이스케이프 검증**: `urlRegex`에 예약어가 포함될 경우, 중괄호가 정규식 수량자로 해석되지 않도록 `\{workspaceId\}` 형태로 작성되었는지 또는 치환 엔진이 리터럴로 처리하는지 구현 코드와 대조 필수. (2026-05-15)
+- **Mermaid 예약어 충돌 주의**: 시퀀스 다이어그램 등에서 `Box`, `Note`, `Loop` 등을 참가자 별칭(alias)으로 사용할 경우 Mermaid 내부 키워드와 충돌하여 렌더링 에러가 발생할 수 있음. 별칭은 `TBox`, `Note_` 등 예약어와 겹치지 않는 이름을 권장함. (2026-05-15)
 
 ## 반복 함정
 

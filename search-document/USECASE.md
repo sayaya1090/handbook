@@ -166,7 +166,7 @@ sequenceDiagram
     Client->>Ctrl: GET /workspace/{id}/documents/export
     Ctrl->>Svc: findAllForExport(workspace, filters)
     Svc->>DB: SELECT (스트리밍 쿼리)
-    loop 청크 단위 전송
+    loop "청크 단위 전송"
         DB-->>Svc: 문서 N건
         Svc-->>Ctrl: Flux<Document> (N건)
         Ctrl-->>Client: chunked JSON/CSV (N건)

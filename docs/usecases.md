@@ -203,19 +203,19 @@ graph TB
 sequenceDiagram
     actor V as 방문자/크롤러
     participant GW as Gateway API (HTTPRoute)
-    participant S3 as S3 (ceph-rgw)
+    participant S3 as "S3 (ceph-rgw)"
 
-    V->>GW: GET / (또는 /en/)
-    GW->>S3: static/landing/{locale}/index.html
-    S3-->>GW: 정적 HTML (prerendered)
-    GW-->>V: 200 OK + HTML
-    Note over V: JS 실행 (Googlebot 포함)
-    V->>V: JWT 쿠키 검사
+    V->>GW: "GET / (또는 /en/)"
+    GW->>S3: "static/landing/{locale}/index.html"
+    S3-->>GW: "정적 HTML (prerendered)"
+    GW-->>V: "200 OK + HTML"
+    Note over V: "JS 실행 (Googlebot 포함)"
+    V->>V: "JWT 쿠키 검사"
     alt 쿠키 없음 (크롤러 또는 신규 방문자)
-        V->>V: 랜딩 그대로 노출
-        Note over V: 크롤러는 콘텐츠 인덱싱. 방문자는 CTA 확인
+        V->>V: "랜딩 그대로 노출"
+        Note over V: "크롤러는 콘텐츠 인덱싱. 방문자는 CTA 확인"
     else 쿠키 있음 (재방문 로그인 사용자)
-        V->>V: location.replace('/app.html')
+        V->>V: "location.replace('/app.html')"
     end
 ```
 
@@ -263,7 +263,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 (로그인·비로그인 모두) |
 | **선행 조건** | 사용자가 `/app.html` 진입점에 접근했다 |
-| **후행 조건** | 메뉴레일에서 선택한 랜딩 activity 가 프레임에 로딩되고, 상태별 CTA 가 표시된다 |
+| **후행 조건** | 메뉴레일에서 선택한 랜딩 activity 가 프레임을 로딩되고, 상태별 CTA 가 표시된다 |
 
 ```mermaid
 sequenceDiagram
@@ -273,19 +273,19 @@ sequenceDiagram
     participant LA as Landing Activity
     participant API as UserApi
 
-    U->>Shell: /app.html 진입
-    Shell->>GW: GET /menus
-    GW-->>Shell: [Sign In/Out, 랜딩(이름 미정), ...]
-    Shell->>U: MenuRail 렌더
-    U->>Shell: 랜딩 메뉴 선택
-    Shell->>LA: nocache.js 동적 로딩
-    LA->>API: GET /user
+    U->>Shell: "/app.html 진입"
+    Shell->>GW: "GET /menus"
+    GW-->>Shell: "[Sign In/Out, 랜딩(이름 미정), ...]"
+    Shell->>U: "MenuRail 렌더"
+    U->>Shell: "랜딩 메뉴 선택"
+    Shell->>LA: "nocache.js 동적 로딩"
+    LA->>API: "GET /user"
     alt 200 OK (로그인)
-        API-->>LA: 사용자 정보
-        LA->>U: FeatureGrid + "새 워크스페이스" CTA
+        API-->>LA: "사용자 정보"
+        LA->>U: "FeatureGrid + '새 워크스페이스' CTA"
     else 401/네트워크 오류 (비로그인)
-        API-->>LA: 401
-        LA->>U: FeatureGrid + "시작하기" CTA
+        API-->>LA: "401"
+        LA->>U: "FeatureGrid + '시작하기' CTA"
     end
 ```
 
@@ -322,18 +322,18 @@ sequenceDiagram
     participant L as Login 서비스
     participant IdP as OAuth2 제공자
 
-    U->>UI: 로그인 페이지 접근
-    UI->>UI: OAuth 제공자 버튼 표시
-    U->>GW: 제공자 버튼 클릭
-    GW->>L: /oauth2/authorization/{provider}
-    L->>IdP: OAuth2 인증 요청
-    IdP->>U: 인증 화면
-    U->>IdP: 인증 정보 입력
-    IdP->>L: 인증 콜백 (authorization code)
-    L->>L: 사용자 조회 또는 자동 생성
-    L->>L: JWT 토큰 발행 (RS256)
-    L-->>GW: Set-Cookie (HTTP-only, Secure)
-    GW-->>U: 홈 화면으로 리다이렉트
+    U->>UI: "로그인 페이지 접근"
+    UI->>UI: "OAuth 제공자 버튼 표시"
+    U->>GW: "제공자 버튼 클릭"
+    GW->>L: "/oauth2/authorization/{provider}"
+    L->>IdP: "OAuth2 인증 요청"
+    IdP->>U: "인증 화면"
+    U->>IdP: "인증 정보 입력"
+    IdP->>L: "인증 콜백 (authorization code)"
+    L->>L: "사용자 조회 또는 자동 생성"
+    L->>L: "JWT 토큰 발행 (RS256)"
+    L-->>GW: "Set-Cookie (HTTP-only, Secure)"
+    GW-->>U: "홈 화면으로 리다이렉트"
 ```
 
 **기본 흐름:**
@@ -504,21 +504,21 @@ sequenceDiagram
     participant OB as WorkspaceOnboardingBootstrapper
     participant MS as MenuSelected
     participant MSM as ModuleScriptManager
-    participant WUI as workspace-ui (iframe)
+    participant WUI as "workspace-ui (iframe)"
 
-    User->>Shell: 로그인 완료
-    Shell->>WL: 워크스페이스 목록 조회
-    WL-->>OB: empty 방출 (distinctUntilChanged)
-    OB->>OB: loaded 플래그 확인 (중복 가드)
-    OB->>MS: 가상 onboarding Menu push<br/>(title=workspace.onboarding,<br/>script=js/workspace/workspace.nocache.js,<br/>icon=fa-circle-plus, order=0)
-    MS-->>MSM: 메뉴 선택 이벤트
-    MSM->>WUI: workspace.nocache.js 로드 + 프레임 렌더
-    WUI-->>User: Create/Join 온보딩 화면 표시
+    User->>Shell: "로그인 완료"
+    Shell->>WL: "워크스페이스 목록 조회"
+    WL-->>OB: "empty 방출 (distinctUntilChanged)"
+    OB->>OB: "loaded 플래그 확인 (중복 가드)"
+    OB->>MS: "가상 onboarding Menu push<br/>(title=workspace.onboarding,<br/>script=js/workspace/workspace.nocache.js,<br/>icon=fa-circle-plus, order=0)"
+    MS-->>MSM: "메뉴 선택 이벤트"
+    MSM->>WUI: "workspace.nocache.js 로드 + 프레임 렌더"
+    WUI-->>User: "Create/Join 온보딩 화면 표시"
 
-    Note over User,WUI: 사용자가 워크스페이스 생성/조인 완료 시
-    User->>WL: 워크스페이스 생성 (UC-10) 또는 조인 (UC-06)
-    WL-->>Shell: non-empty 방출
-    Shell->>Shell: UrlBasedMenuResolver 정상 경로 복귀
+    Note over User,WUI: "사용자가 워크스페이스 생성/조인 완료 시"
+    User->>WL: "워크스페이스 생성 (UC-10) 또는 조인 (UC-06)"
+    WL-->>Shell: "non-empty 방출"
+    Shell->>Shell: "UrlBasedMenuResolver 정상 경로 복귀"
 ```
 
 **기본 흐름:**
@@ -658,15 +658,15 @@ sequenceDiagram
     participant Kafka
     participant V as 검증 시스템
 
-    TM->>GW: PUT /workspace/{ws}/types
-    GW->>API: 라우팅
-    API->>DB: 기존 버전 expireDateTime 설정
-    API->>DB: 새 버전 저장 (새 effectDateTime)
-    API->>Kafka: TYPE_CREATED 이벤트 발행
-    API-->>GW: 200 OK
-    GW-->>TM: 200 OK
-    Kafka->>V: 이벤트 수신
-    V->>V: 기존 문서 재검증 (UC-61)
+    TM->>GW: "PUT /workspace/{ws}/types"
+    GW->>API: "라우팅"
+    API->>DB: "기존 버전 expireDateTime 설정"
+    API->>DB: "새 버전 저장 (새 effectDateTime)"
+    API->>Kafka: "TYPE_CREATED 이벤트 발행"
+    API-->>GW: "200 OK"
+    GW-->>TM: "200 OK"
+    Kafka->>V: "이벤트 수신"
+    V->>V: "기존 문서 재검증 (UC-61)"
 ```
 
 **기본 흐름:**
@@ -740,16 +740,16 @@ sequenceDiagram
     participant GW as Gateway
     participant API as search-type
 
-    User->>UI: 타입 버전 이력 요청
-    UI->>GW: GET /types/{type}?version=
-    GW->>API: 전체 버전 목록 조회
-    API-->>UI: 버전 목록
+    User->>UI: "타입 버전 이력 요청"
+    UI->>GW: "GET /types/{type}?version="
+    GW->>API: "전체 버전 목록 조회"
+    API-->>UI: "버전 목록"
 
-    User->>UI: v1.0과 v2.0 비교 선택
-    UI->>GW: GET /types/{type}/diff?v1=1.0&v2=2.0
-    GW->>API: 두 버전 조회 + diff 계산
-    API-->>UI: DiffResult (added, removed, changed 속성)
-    UI->>UI: DiffPanel.show(changes)
+    User->>UI: "v1.0과 v2.0 비교 선택"
+    UI->>GW: "GET /types/{type}/diff?v1=1.0&v2=2.0"
+    GW->>API: "두 버전 조회 + diff 계산"
+    API-->>UI: "DiffResult (added, removed, changed 속성)"
+    UI->>UI: "DiffPanel.show(changes)"
 ```
 
 ---
@@ -920,11 +920,11 @@ sequenceDiagram
     participant GW as Gateway
     participant API as search-document
 
-    User->>UI: 문서 이력 비교 요청
-    UI->>GW: GET /{type}/{serial}/diff?date1=2026-01-01&date2=2026-06-01
-    GW->>API: 두 시점 문서 조회 + diff 계산
-    API-->>UI: DiffResult (changed fields with before/after values)
-    UI->>UI: DiffPanel.show(changes)
+    User->>UI: "문서 이력 비교 요청"
+    UI->>GW: "GET /{type}/{serial}/diff?date1=2026-01-01&date2=2026-06-01"
+    GW->>API: "두 시점 문서 조회 + diff 계산"
+    API-->>UI: "DiffResult (changed fields with before/after values)"
+    UI->>UI: "DiffPanel.show(changes)"
 ```
 
 ---
@@ -948,19 +948,19 @@ sequenceDiagram
     participant Pub as DocumentEventPublisher
     participant K as Kafka
 
-    U->>GW: POST /workspace/{id}/documents/import
-    Note over U,GW: Content-Type: application/json
-    Note over U,GW: Body: List<Document> (JSON)
-    GW->>Ctrl: @RequestBody List<Document>
-    Ctrl->>Svc: save(workspace, documents)
-    Svc->>Repo: saveAll(workspace, documents)
-    Repo->>DB: INSERT/UPDATE (TransactionalOperator)
-    DB-->>Repo: 저장된 엔티티
-    Repo-->>Svc: Flux<Document>
-    Svc->>Pub: publishCreated(workspace, document) (각 문서마다)
-    Pub->>K: DOCUMENT_CREATED → "handbook-events"
-    Svc-->>Ctrl: Flux<Document>
-    Ctrl-->>U: 201 Created + 저장된 문서 목록
+    U->>GW: "POST /workspace/{id}/documents/import"
+    Note over U,GW: "Content-Type: application/json"
+    Note over U,GW: "Body: List<Document> (JSON)"
+    GW->>Ctrl: "@RequestBody List<Document>"
+    Ctrl->>Svc: "save(workspace, documents)"
+    Svc->>Repo: "saveAll(workspace, documents)"
+    Repo->>DB: "INSERT/UPDATE (TransactionalOperator)"
+    DB-->>Repo: "저장된 엔티티"
+    Repo-->>Svc: "Flux<Document>"
+    Svc->>Pub: "publishCreated(workspace, document) (각 문서마다)"
+    Pub->>K: "DOCUMENT_CREATED → 'handbook-events'"
+    Svc-->>Ctrl: "Flux<Document>"
+    Ctrl-->>U: "201 Created + 저장된 문서 목록"
 ```
 
 **기본 흐름:**
@@ -993,22 +993,22 @@ sequenceDiagram
     participant Repo as DocumentRepository
     participant DB as PostgreSQL
 
-    U->>GW: GET /workspace/{id}/documents/export?format=csv
-    Note over U,GW: 선택적 쿼리 파라미터: ?type={typeId}&format=csv|json
-    GW->>Ctrl: @PathVariable workspace, @RequestParam type, format
-    Ctrl->>Svc: findAllForExport(workspace, type)
-    Svc->>Repo: findAll(workspace, type)
+    U->>GW: "GET /workspace/{id}/documents/export?format=csv"
+    Note over U,GW: "선택적 쿼리 파라미터: ?type={typeId}&format=csv|json"
+    GW->>Ctrl: "@PathVariable workspace, @RequestParam type, format"
+    Ctrl->>Svc: "findAllForExport(workspace, type)"
+    Svc->>Repo: "findAll(workspace, type)"
     Repo->>DB: SELECT
-    DB-->>Repo: 문서 목록
-    Repo-->>Svc: Flux<Document>
-    Svc-->>Ctrl: Flux<Document>
+    DB-->>Repo: "문서 목록"
+    Repo-->>Svc: "Flux<Document>"
+    Svc-->>Ctrl: "Flux<Document>"
     alt format=csv
-        Ctrl->>Csv: serialize(documents)
-        Csv-->>Ctrl: Flux<DataBuffer>
+        Ctrl->>Csv: "serialize(documents)"
+        Csv-->>Ctrl: "Flux<DataBuffer>"
     else format=json
-        Ctrl->>Ctrl: JSON 직렬화
+        Ctrl->>Ctrl: "JSON 직렬화"
     end
-    Ctrl-->>U: 200 OK + documents-export.csv/json (Content-Disposition: attachment)
+    Ctrl-->>U: "200 OK + documents-export.csv/json (Content-Disposition: attachment)"
 ```
 
 **기본 흐름:**
@@ -1040,15 +1040,15 @@ sequenceDiagram
 sequenceDiagram
     actor A as 사용자 A
     actor B as 사용자 B
-    participant GW as Gateway (SSE)
+    participant GW as "Gateway (SSE)"
 
-    A->>GW: POST /presence {user:"A", type:"customer", serial:"CUST-001", field:"name"}
-    GW-->>B: SSE PRESENCE {user:"A", type:"customer", serial:"CUST-001", field:"name"}
-    Note over B: 셀 [CUST-001, name]에 A 색상 보더 + "A님" 라벨
+    A->>GW: "POST /presence {user:'A', type:'customer', serial:'CUST-001', field:'name'}"
+    GW-->>B: "SSE PRESENCE {user:'A', type:'customer', serial:'CUST-001', field:'name'}"
+    Note over B: "셀 [CUST-001, name]에 A 색상 보더 + 'A님' 라벨"
 
-    A->>GW: POST /presence {user:"A", type:null}
-    GW-->>B: SSE PRESENCE {user:"A", type:null}
-    Note over B: 프레즌스 해제
+    A->>GW: "POST /presence {user:'A', type:null}"
+    GW-->>B: "SSE PRESENCE {user:'A', type:null}"
+    Note over B: "프레즌스 해제"
 ```
 
 ---
@@ -1087,33 +1087,33 @@ sequenceDiagram
     participant GW as Gateway
     participant DB as Database
 
-    Note over A,B: 프레즌스로 같은 문서 편집 중 인지
+    Note over A,B: "프레즌스로 같은 문서 편집 중 인지"
 
     rect rgb(220, 240, 220)
-        Note over A,DB: 비충돌: 서로 다른 필드
-        A->>GW: PATCH /documents (이름="홍길동", rev=1)
-        GW->>DB: data = data || '{"이름":"홍길동"}', rev 1→2
-        DB-->>GW: OK (rev=2)
-        GW-->>B: SSE DOCUMENT_CREATED
-        Note over B: 목록 갱신, 토스트
+        Note over A,DB: "비충돌: 서로 다른 필드"
+        A->>GW: "PATCH /documents (이름='홍길동', rev=1)"
+        GW->>DB: "data = data || '{\"이름\":\"홍길동\"}', rev 1→2"
+        DB-->>GW: "OK (rev=2)"
+        GW-->>B: "SSE DOCUMENT_CREATED"
+        Note over B: "목록 갱신, 토스트"
 
-        B->>GW: PATCH /documents (전화번호="010-1234", rev=2)
-        GW->>DB: data = data || '{"전화번호":"010-1234"}', rev 2→3
-        DB-->>GW: OK (rev=3)
-        Note over DB: 이름+전화번호 모두 보존
+        B->>GW: "PATCH /documents (전화번호='010-1234', rev=2)"
+        GW->>DB: "data = data || '{\"전화번호\":\"010-1234\"}', rev 2→3"
+        DB-->>GW: "OK (rev=3)"
+        Note over DB: "이름+전화번호 모두 보존"
     end
 
     rect rgb(255, 230, 230)
-        Note over A,DB: 충돌: 같은 필드
-        A->>GW: PATCH /documents (이름="홍길동", rev=1)
-        GW->>DB: rev 1→2
+        Note over A,DB: "충돌: 같은 필드"
+        A->>GW: "PATCH /documents (이름='홍길동', rev=1)"
+        GW->>DB: "rev 1→2"
         DB-->>GW: OK
 
-        B->>GW: PATCH /documents (이름="김철수", rev=1)
-        GW->>DB: rev 1→? (불일치)
+        B->>GW: "PATCH /documents (이름='김철수', rev=1)"
+        GW->>DB: "rev 1→? (불일치)"
         DB-->>GW: OptimisticLockingFailure
         GW-->>B: 409 Conflict
-        Note over B: .conflict 표시, 사용자 선택
+        Note over B: ".conflict 표시, 사용자 선택"
     end
 ```
 
@@ -1204,20 +1204,20 @@ sequenceDiagram
     participant API as Backend
     participant V as 검증 시스템
 
-    UI->>UI: 불일치 문서에 경고 표시
-    U->>UI: 경고 문서 확인
-    UI->>GW: GET /workspace/{ws}/compliance
-    GW->>API: 라우팅
-    API-->>GW: 불일치 사유 반환
-    GW-->>UI: 불일치 사유
-    U->>UI: 데이터 보정 입력
-    UI->>GW: PUT /workspace/{ws}/documents (새 버전)
-    GW->>API: 라우팅
-    API-->>GW: 200 OK
-    GW-->>UI: 200 OK
-    API->>V: DOCUMENT_CREATED 이벤트
-    V->>V: 재검증 (UC-60)
-    V-->>UI: SSE로 검증 결과 전달
+    UI->>UI: "불일치 문서에 경고 표시"
+    U->>UI: "경고 문서 확인"
+    UI->>GW: "GET /workspace/{ws}/compliance"
+    GW->>API: "라우팅"
+    API-->>GW: "불일치 사유 반환"
+    GW-->>UI: "불일치 사유"
+    U->>UI: "데이터 보정 입력"
+    UI->>GW: "PUT /workspace/{ws}/documents (새 버전)"
+    GW->>API: "라우팅"
+    API-->>GW: "200 OK"
+    GW-->>UI: "200 OK"
+    API->>V: "DOCUMENT_CREATED 이벤트"
+    V->>V: "재검증 (UC-60)"
+    V-->>UI: "SSE로 검증 결과 전달"
 ```
 
 **기본 흐름:**
@@ -1257,12 +1257,12 @@ sequenceDiagram
     participant ToolRail
     participant Frame
 
-    U->>MenuRail: 메뉴 클릭
-    MenuRail->>Shell: MenuSelected 이벤트
-    Shell->>Shell: 모듈 스크립트 동적 주입
-    Shell->>ToolRail: 해당 메뉴의 Tool 목록 표시
-    Shell->>Frame: 기존 콘텐츠 fade-out
-    Shell->>Frame: 새 콘텐츠 fade-in
+    U->>MenuRail: "메뉴 클릭"
+    MenuRail->>Shell: "MenuSelected 이벤트"
+    Shell->>Shell: "모듈 스크립트 동적 주입"
+    Shell->>ToolRail: "해당 메뉴의 Tool 목록 표시"
+    Shell->>Frame: "기존 콘텐츠 fade-out"
+    Shell->>Frame: "새 콘텐츠 fade-in"
 ```
 
 **기본 흐름:**
@@ -1342,47 +1342,47 @@ sequenceDiagram
     participant EB as event-broadcaster
     participant S as Backend
 
-    U->>F: "병원 진료 기록 관리가 필요해"
-    F->>GW: POST /assistant/request
-    GW->>A: 라우팅
-    A->>L: 의도 해석 + 타입 설계
-    L-->>A: 타입 구조
-    A->>K: AGENT_COMMAND (preview: 환자, 진료기록, 의사)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE /workspace/{id}/messages
-    A->>K: AGENT_COMMAND (attention: "이 구조로 시작할까요?")
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
-    A->>K: AGENT_COMMAND (await_confirm)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
-    U->>F: "처방은 별도 타입으로 분리해줘"
-    F->>GW: POST /assistant/respond
-    GW->>A: 응답 전달
-    A->>L: 구조 수정
-    L-->>A: 수정된 구조
-    A->>K: AGENT_COMMAND (preview: 갱신된 캔버스)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
-    A->>K: AGENT_COMMAND (await_confirm)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
+    U->>F: "'병원 진료 기록 관리가 필요해'"
+    F->>GW: "POST /assistant/request"
+    GW->>A: "라우팅"
+    A->>L: "의도 해석 + 타입 설계"
+    L-->>A: "타입 구조"
+    A->>K: "AGENT_COMMAND (preview: 환자, 진료기록, 의사)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE /workspace/{id}/messages"
+    A->>K: "AGENT_COMMAND (attention: '이 구조로 시작할까요?')"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
+    A->>K: "AGENT_COMMAND (await_confirm)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
+    U->>F: "'처방은 별도 타입으로 분리해줘'"
+    F->>GW: "POST /assistant/respond"
+    GW->>A: "응답 전달"
+    A->>L: "구조 수정"
+    L-->>A: "수정된 구조"
+    A->>K: "AGENT_COMMAND (preview: 갱신된 캔버스)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
+    A->>K: "AGENT_COMMAND (await_confirm)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
     U->>F: confirm
-    F->>GW: POST /assistant/respond
-    GW->>A: 응답 전달
-    A->>GW: PUT /workspace/{ws}/types (일괄 생성)
-    GW->>S: 라우팅
-    S-->>GW: 생성 완료
-    GW-->>A: 결과
-    A->>K: AGENT_COMMAND (navigate: 타입 캔버스)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
-    A->>K: AGENT_COMMAND (attention: 생성된 타입)
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
-    A->>K: AGENT_COMMAND (complete: "5개 타입 생성 완료")
-    K->>EB: 이벤트 수신
-    EB-->>F: SSE
+    F->>GW: "POST /assistant/respond"
+    GW->>A: "응답 전달"
+    A->>GW: "PUT /workspace/{ws}/types (일괄 생성)"
+    GW->>S: "라우팅"
+    S-->>GW: "생성 완료"
+    GW-->>A: "결과"
+    A->>K: "AGENT_COMMAND (navigate: 타입 캔버스)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
+    A->>K: "AGENT_COMMAND (attention: 생성된 타입)"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
+    A->>K: "AGENT_COMMAND (complete: '5개 타입 생성 완료')"
+    K->>EB: "이벤트 수신"
+    EB-->>F: "SSE"
 ```
 
 ---
@@ -1479,24 +1479,24 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant EA as 외부 AI 에이전트
-    participant MCP as mcp-server<br/>(후속)
+    participant MCP as "mcp-server<br/>(후속)"
     participant GW as Gateway
     participant SVC as 백엔드 서비스
-    participant AUD as Audit Log
+    participant AUD as "Audit Log"
 
-    Note over EA: 사용자 자연어: "주문 타입에 배송일 필드 추가"
-    EA->>EA: OpenAPI / MCP tool 스펙 참조
+    Note over EA: "사용자 자연어: '주문 타입에 배송일 필드 추가'"
+    EA->>EA: "OpenAPI / MCP tool 스펙 참조"
     alt OpenAPI function calling 경로
-        EA->>GW: PATCH /workspace/{id}/types (Bearer PAT)
+        EA->>GW: "PATCH /workspace/{id}/types (Bearer PAT)"
     else MCP 경로 (후속)
-        EA->>MCP: tool call: patch_type(workspace, type, changes)
-        MCP->>GW: PATCH /workspace/{id}/types (Bearer PAT)
+        EA->>MCP: "tool call: patch_type(workspace, type, changes)"
+        MCP->>GW: "PATCH /workspace/{id}/types (Bearer PAT)"
     end
-    GW->>GW: PAT 검증 + RBAC 적용 (§3.3)
-    GW->>SVC: 라우팅
-    SVC-->>GW: 200 OK / 409 Conflict / 403 Forbidden
-    GW->>AUD: caller_type=external_agent, caller_id=token_id
-    GW-->>EA: 응답
+    GW->>GW: "PAT 검증 + RBAC 적용 (§3.3)"
+    GW->>SVC: "라우팅"
+    SVC-->>GW: "200 OK / 409 Conflict / 403 Forbidden"
+    GW->>AUD: "caller_type=external_agent, caller_id=token_id"
+    GW-->>EA: "응답"
 ```
 
 **기본 흐름 (OpenAPI function calling 경로):**
@@ -1604,18 +1604,18 @@ sequenceDiagram
     participant QM as QualityMonitor
     participant K as Kafka
     participant EB as event-broadcaster
-    participant C as 클라이언트 (SSE)
+    participant C as "클라이언트 (SSE)"
 
     User->>A: "품질 검사 실행"
-    A->>Parser: parse(message)
-    Parser-->>A: ExecutionPlan (quality check)
-    A->>QM: scan workspace documents
-    QM->>QM: 결측치 / 중복 / 이상값 분석
-    QM-->>A: 감시 결과 (이슈 목록 + 심각도)
-    A->>K: AGENT_COMMAND (notify: 이슈 알림)
-    K->>EB: 이벤트 수신
-    EB-->>C: SSE /workspace/{id}/messages
-    Note over C: 대시보드 품질 현황 자동 갱신
+    A->>Parser: "parse(message)"
+    Parser-->>A: "ExecutionPlan (quality check)"
+    A->>QM: "scan workspace documents"
+    QM->>QM: "결측치 / 중복 / 이상값 분석"
+    QM-->>A: "감시 결과 (이슈 목록 + 심각도)"
+    A->>K: "AGENT_COMMAND (notify: 이슈 알림)"
+    K->>EB: "이벤트 수신"
+    EB-->>C: "SSE /workspace/{id}/messages"
+    Note over C: "대시보드 품질 현황 자동 갱신"
 ```
 
 ---
@@ -1647,15 +1647,15 @@ sequenceDiagram
     actor User as 사용자
     participant GW as Gateway
     participant A as Assistant
-    participant Ctx as ExecutionContext Map
+    participant Ctx as "ExecutionContext Map"
 
-    User->>GW: GET /assistant/executions?workspace={id}
-    GW->>A: getExecutions(workspace)
-    A->>Ctx: filter by workspace
-    Ctx-->>A: List<ExecutionContext>
-    A->>A: 각 context에서 상태 추출
-    Note over A: executionId, plan, currentGroup,<br/>totalGroups, progress %, status
-    A-->>User: 200 OK + List<ExecutionStatus>
+    User->>GW: "GET /assistant/executions?workspace={id}"
+    GW->>A: "getExecutions(workspace)"
+    A->>Ctx: "filter by workspace"
+    Ctx-->>A: "List<ExecutionContext>"
+    A->>A: "각 context에서 상태 추출"
+    Note over A: "executionId, plan, currentGroup,<br/>totalGroups, progress %, status"
+    A-->>User: "200 OK + List<ExecutionStatus>"
 ```
 
 ---
@@ -1687,13 +1687,13 @@ sequenceDiagram
     participant A as Assistant
     participant Repo as AuditRepository
 
-    User->>GW: GET /assistant/artifacts?workspace={id}
-    GW->>A: getArtifacts(workspace)
-    A->>Repo: findByWorkspace(workspace)
-    Repo-->>A: Flux<AuditEntry>
-    A->>A: artifact != null 필터링
-    Note over A: Artifact: executionId, summary,<br/>changes[{type, target, description}],<br/>timestamp
-    A-->>User: 200 OK + List<Artifact>
+    User->>GW: "GET /assistant/artifacts?workspace={id}"
+    GW->>A: "getArtifacts(workspace)"
+    A->>Repo: "findByWorkspace(workspace)"
+    Repo-->>A: "Flux<AuditEntry>"
+    A->>A: "artifact != null 필터링"
+    Note over A: "Artifact: executionId, summary,<br/>changes[{type, target, description}],<br/>timestamp"
+    A-->>User: "200 OK + List<Artifact>"
 ```
 
 ---
@@ -1726,29 +1726,29 @@ sequenceDiagram
     participant DB as Database
     participant K as Kafka
     participant EB as event-broadcaster
-    participant C as 클라이언트 (SSE)
+    participant C as "클라이언트 (SSE)"
 
-    Author->>API: PATCH /documents/{id}/status {status: "REVIEW"}
-    API->>DB: 문서 상태 조회
-    DB-->>API: status = DRAFT
-    API->>API: 전이 유효성 검증 (DRAFT→REVIEW ✓)
-    API->>API: 권한 검증 (작성자 ✓)
-    API->>DB: UPDATE status = REVIEW
-    API->>K: DOCUMENT_STATUS_CHANGED
-    K->>EB: 이벤트 수신
-    EB-->>C: SSE 알림
-    API-->>Author: 200 OK
+    Author->>API: "PATCH /documents/{id}/status {status: 'REVIEW'}"
+    API->>DB: "문서 상태 조회"
+    DB-->>API: "status = DRAFT"
+    API->>API: "전이 유효성 검증 (DRAFT→REVIEW ✓)"
+    API->>API: "권한 검증 (작성자 ✓)"
+    API->>DB: "UPDATE status = REVIEW"
+    API->>K: "DOCUMENT_STATUS_CHANGED"
+    K->>EB: "이벤트 수신"
+    EB-->>C: "SSE 알림"
+    API-->>Author: "200 OK"
 
-    Approver->>API: PATCH /documents/{id}/status {status: "PUBLISHED"}
-    API->>DB: 문서 상태 조회
-    DB-->>API: status = REVIEW
-    API->>API: 전이 유효성 검증 (REVIEW→PUBLISHED ✓)
-    API->>API: 권한 검증 (승인자 ✓)
-    API->>DB: UPDATE status = PUBLISHED
-    API->>K: DOCUMENT_STATUS_CHANGED
-    K->>EB: 이벤트 수신
-    EB-->>C: SSE 알림
-    API-->>Approver: 200 OK
+    Approver->>API: "PATCH /documents/{id}/status {status: 'PUBLISHED'}"
+    API->>DB: "문서 상태 조회"
+    DB-->>API: "status = REVIEW"
+    API->>API: "전이 유효성 검증 (REVIEW→PUBLISHED ✓)"
+    API->>API: "권한 검증 (승인자 ✓)"
+    API->>DB: "UPDATE status = PUBLISHED"
+    API->>K: "DOCUMENT_STATUS_CHANGED"
+    K->>EB: "이벤트 수신"
+    EB-->>C: "SSE 알림"
+    API-->>Approver: "200 OK"
 ```
 
 ---
@@ -1781,27 +1781,27 @@ sequenceDiagram
     participant WS as webhook-service
     participant Ext as 외부 시스템
 
-    Note over Admin,Ext: 웹훅 등록
-    Admin->>API: POST /workspace/{ws}/webhooks {url, events}
-    API->>DB: INSERT webhooks
-    API-->>Admin: 201 Created
+    Note over Admin,Ext: "웹훅 등록"
+    Admin->>API: "POST /workspace/{ws}/webhooks {url, events}"
+    API->>DB: "INSERT webhooks"
+    API-->>Admin: "201 Created"
 
-    Note over Admin,Ext: 이벤트 발생 시 콜백
-    K->>WS: DOCUMENT_CREATED 이벤트 수신
-    WS->>DB: 워크스페이스 활성 웹훅 조회
-    DB-->>WS: webhooks (url, events 필터)
-    WS->>WS: 이벤트 필터 매칭
-    WS->>Ext: HTTP POST {event, workspace, payload, timestamp}
-    Ext-->>WS: 200 OK
+    Note over Admin,Ext: "이벤트 발생 시 콜백"
+    K->>WS: "DOCUMENT_CREATED 이벤트 수신"
+    WS->>DB: "워크스페이스 활성 웹훅 조회"
+    DB-->>WS: "webhooks (url, events 필터)"
+    WS->>WS: "이벤트 필터 매칭"
+    WS->>Ext: "HTTP POST {event, workspace, payload, timestamp}"
+    Ext-->>WS: "200 OK"
 
-    Note over WS,Ext: 실패 시 재시도
-    WS->>Ext: HTTP POST (재시도 1회, 1초 후)
-    Ext-->>WS: 500 Error
-    WS->>Ext: HTTP POST (재시도 2회, 2초 후)
-    Ext-->>WS: 500 Error
-    WS->>Ext: HTTP POST (재시도 3회, 4초 후)
-    Ext-->>WS: 500 Error
-    WS->>DB: UPDATE webhooks SET active=false
+    Note over WS,Ext: "실패 시 재시도"
+    WS->>Ext: "HTTP POST (재시도 1회, 1초 후)"
+    Ext-->>WS: "500 Error"
+    WS->>Ext: "HTTP POST (재시도 2회, 2초 후)"
+    Ext-->>WS: "500 Error"
+    WS->>Ext: "HTTP POST (재시도 3회, 4초 후)"
+    Ext-->>WS: "500 Error"
+    WS->>DB: "UPDATE webhooks SET active=false"
 ```
 
 ---
@@ -1834,16 +1834,16 @@ sequenceDiagram
     participant API as Gateway
     participant DB as type_attributes
 
-    Note over TM,DB: 권한 설정
-    TM->>API: PATCH /workspace/{ws}/types<br/>{attributes: [{name:"salary", write_roles:["MANAGER"]}]}
-    API->>DB: UPDATE type_attributes SET write_roles='["MANAGER"]'
-    API-->>TM: 200 OK
+    Note over TM,DB: "권한 설정"
+    TM->>API: "PATCH /workspace/{ws}/types<br/>{attributes: [{name:'salary', write_roles:['MANAGER']}]}"
+    API->>DB: "UPDATE type_attributes SET write_roles='[\"MANAGER\"]'"
+    API-->>TM: "200 OK"
 
-    Note over U,DB: 문서 편집 시 적용
-    U->>API: GET /workspace/{ws}/types/{type}
-    API-->>U: {attributes: [{name:"salary", write_roles:["MANAGER"], read_roles:[]}]}
-    Note over U: 사용자 역할 = VIEWER → salary 셀 읽기 전용
-    U->>U: 스프레드시트에서 salary 셀 편집 차단 (readOnly)
+    Note over U,DB: "문서 편집 시 적용"
+    U->>API: "GET /workspace/{ws}/types/{type}"
+    API-->>U: "{attributes: [{name:'salary', write_roles:['MANAGER'], read_roles:[]}]}"
+    Note over U: "사용자 역할 = VIEWER → salary 셀 읽기 전용"
+    U->>U: "스프레드시트에서 salary 셀 편집 차단 (readOnly)"
 ```
 
 ---
@@ -1873,19 +1873,19 @@ sequenceDiagram
     participant Dash as dashboard-ui
     participant API as Gateway
 
-    U->>Dash: 대시보드 차트 탭 선택
-    Dash->>API: GET /workspace/{ws}/stats/timeline?from=2026-03-01&to=2026-04-08&interval=day
-    API-->>Dash: {documentCreations: [...], validationFailures: [...], agentUsage: [...]}
-    Dash->>Dash: 라인 차트 렌더링 (문서 생성, 검증 실패율, 에이전트 사용량)
+    U->>Dash: "대시보드 차트 탭 선택"
+    Dash->>API: "GET /workspace/{ws}/stats/timeline?from=2026-03-01&to=2026-04-08&interval=day"
+    API-->>Dash: "{documentCreations: [...], validationFailures: [...], agentUsage: [...]}"
+    Dash->>Dash: "라인 차트 렌더링 (문서 생성, 검증 실패율, 에이전트 사용량)"
 
-    Dash->>API: GET /workspace/{ws}/stats/distribution
-    API-->>Dash: {types: [{name:"customer", count:120}, {name:"order", count:85}]}
-    Dash->>Dash: 파이 차트 렌더링 (타입별 문서 분포)
+    Dash->>API: "GET /workspace/{ws}/stats/distribution"
+    API-->>Dash: "{types: [{name:'customer', count:120}, {name:'order', count:85}]}"
+    Dash->>Dash: "파이 차트 렌더링 (타입별 문서 분포)"
 
-    U->>Dash: 기간 변경 (주별)
-    Dash->>API: GET /workspace/{ws}/stats/timeline?from=2026-01-01&to=2026-04-08&interval=week
-    API-->>Dash: {documentCreations: [...], ...}
-    Dash->>Dash: 차트 갱신
+    U->>Dash: "기간 변경 (주별)"
+    Dash->>API: "GET /workspace/{ws}/stats/timeline?from=2026-01-01&to=2026-04-08&interval=week"
+    API-->>Dash: "{documentCreations: [...], ...}"
+    Dash->>Dash: "차트 갱신"
 ```
 
 ---

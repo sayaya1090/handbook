@@ -6,7 +6,7 @@
 
 ```mermaid
 flowchart TB
-    subgraph Client[Browser - GWT SPA]
+    subgraph Client ["Browser - GWT SPA"]
         APP[app / shell-ui]
         DOC_UI[document-ui]
         TYPE_UI[type-ui]
@@ -28,18 +28,18 @@ flowchart TB
 
     LOGIN[login :8081<br/>OAuth2 + JWT]
 
-    subgraph Write[Write Side - CUD + Kafka Producer]
+    subgraph Write ["Write Side - CUD + Kafka Producer"]
         P_TYPE[persist-type :8083]
         P_DOC[persist-document :8085]
         P_WS[persist-workspace :8086]
     end
 
-    subgraph Read[Read Side - CQRS]
+    subgraph Read ["Read Side - CQRS"]
         S_TYPE[search-type :8082]
         S_DOC[search-document :8084]
     end
 
-    subgraph Realtime[Realtime and AI]
+    subgraph Realtime ["Realtime and AI"]
         EB[event-broadcaster :8088<br/>Kafka to SSE]
         ASSIST[assistant :8087<br/>OpenAI Agent]
     end
