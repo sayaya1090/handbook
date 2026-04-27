@@ -63,9 +63,9 @@ out/
 compilation-mappings.txt
 clear.cache.gif
 
-# Test webapp generated resources (Keep HTML/source JS)
+# Test webapp generated resources (Keep HTML/source JS/CSS)
 **/src/test/webapp/*/
-**/src/test/webapp/js/sayaya-ui.js
-**/src/test/webapp/js/rxjs.umd.min.js
-**/src/test/webapp/js/fontawesome.min.js
-**/src/test/webapp/css/*.css
+!**/src/test/webapp/js/
+!**/src/test/webapp/css/
+!**/src/test/webapp/wav/
+!**/src/test/webapp/*.html
