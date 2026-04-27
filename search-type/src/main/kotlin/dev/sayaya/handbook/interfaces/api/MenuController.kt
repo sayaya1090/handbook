@@ -18,7 +18,7 @@ class MenuController {
             .order("B")
             .icon("fa-cubes")
             .iconType("sharp")
-            .script("js/type/type.nocache.js")
+            .script("/js/type/type.nocache.js")
             .tools(
                 Tool.builder().title("View as Graph").order("BE").icon("fa-diagram-project").iconType("sharp").build(),
             ).url("/workspace/{workspaceId}/types").urls("^/workspace/\\{workspaceId\\}/types$")

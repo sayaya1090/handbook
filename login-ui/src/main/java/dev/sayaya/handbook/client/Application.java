@@ -22,10 +22,10 @@ public class Application implements EntryPoint {
         Observer<Render> renderer = components.renderer();
         ContentElement content = components.content();
         renderer.next(frame -> {
-            loadCss("css/console.css");
-            loadCss("css/login.css");
-            loadCss("css/brands.min.css");
-            loadScript("js/brands.min.js");
+            loadCss("/css/console.css");
+            loadCss("/css/login.css");
+            loadCss("/css/brands.min.css");
+            loadScript("/js/brands.min.js");
             frame.append(content.element());
             return true;
         });

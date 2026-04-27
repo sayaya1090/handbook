@@ -51,7 +51,7 @@ class MenuController {
             .order("S")
             .icon("fa-briefcase")
             .iconType("sharp")
-            .script("js/workspace/workspace.nocache.js")
+            .script("/js/workspace/workspace.nocache.js")
             .bottom(true)
             .tools(
                 Tool.builder().title("workspace info").order("S1").icon("fa-information").iconType("sharp").build(),

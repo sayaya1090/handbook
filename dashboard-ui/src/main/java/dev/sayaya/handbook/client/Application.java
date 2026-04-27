@@ -14,7 +14,7 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
-        injectCss("css/dashboard.css");
+        injectCss("/css/dashboard.css");
 
         // URL에서 워크스페이스 ID 추출 후 API에 설정
         String wsId = extractWorkspaceId();

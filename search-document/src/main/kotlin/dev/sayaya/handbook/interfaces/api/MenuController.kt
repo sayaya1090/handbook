@@ -18,7 +18,7 @@ class MenuController {
             .order("A")
             .icon("fa-database")
             .iconType("sharp")
-            .script("js/data/data.nocache.js")
+            .script("/js/data/data.nocache.js")
             .tools(
                 Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
             ).url("/workspace/{workspaceId}/documents").urls("^/workspace/\\{workspaceId\\}/documents$")
@@ -31,7 +31,7 @@ class MenuController {
             .order("C")
             .icon("fa-chart-line")
             .iconType("sharp")
-            .script("js/dashboard/dashboard.nocache.js")
+            .script("/js/dashboard/dashboard.nocache.js")
             .url("/workspace/{workspaceId}/dashboard").urls("^/workspace/\\{workspaceId\\}/dashboard$")
             .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
             .build()

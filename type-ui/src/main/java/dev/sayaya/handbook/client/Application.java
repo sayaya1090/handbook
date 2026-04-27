@@ -19,7 +19,7 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
-        injectCss("css/type-ui.css");
+        injectCss("/css/type-ui.css");
 
         // 워크스페이스 ID 구독 및 API 주입 (실시간 감시 포함)
         WindowWorkspaceEventBridge.receiver().workspaceId().subscribe(workspaceId -> {

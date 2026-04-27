@@ -21,7 +21,7 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
-        injectCss("css/document-ui.css");
+        injectCss("/css/document-ui.css");
 
         // 에이전트 브릿지 등록
         WindowStateProviderBridge.register(component.documentStateProvider());
