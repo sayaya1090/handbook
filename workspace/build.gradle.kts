@@ -10,3 +10,10 @@ dependencies {
     implementation(libs.bundles.kotlin.webflux)
     testImplementation(libs.bundles.test.api)
 }
+
+tasks.named("bootJar") {
+    enabled = false
+}
+tasks.named("jar") {
+    enabled = true
+}

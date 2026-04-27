@@ -250,7 +250,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 캔버스 로딩 완료, LAYOUT 또는 TYPE 모드 |
-| **정상 흐름** | 1. 툴바의 "Add Type" 버튼 클릭 또는 캔버스 빈 영역 우클릭 → "Add Type" 선택.<br>2. `ContextMenuHelper.uniqueTypeId()`가 중복 없는 ID를 생성한다.<br>3. `CreateTBoxAction`이 `TypeList`에 타입을 추가하고 `PositionMap`에 기본 위치를 등록한다.<br>4. `PushOutOverlapAction`이 겹치는 박스를 자동으로 밀어낸다.<br>5. `ChangeTracker`에 CHANGED로 마킹된다.<br>6. 캔버스에 새 타입 카드가 나타난다. |
+| **정상 흐름** | 1. 툴레일의 "Add Type" 버튼 클릭 또는 캔버스 빈 영역 우클릭 → "Add Type" 선택.<br>2. `ContextMenuHelper.uniqueTypeId()`가 중복 없는 ID를 생성한다.<br>3. `CreateTBoxAction`이 `TypeList`에 타입을 추가하고 `PositionMap`에 기본 위치를 등록한다.<br>4. `PushOutOverlapAction`이 겹치는 박스를 자동으로 밀어낸다.<br>5. `ChangeTracker`에 CHANGED로 마킹된다.<br>6. 캔버스에 새 타입 카드가 나타난다. |
 | **대안 흐름** | 에이전트가 `CREATE type:<id>` 명령으로 동일한 흐름을 실행한다. |
 
 ## UC-T3: 타입 삭제
@@ -259,7 +259,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 타입이 1개 이상 선택됨 |
-| **정상 흐름** | 1. Delete/Backspace 키 또는 "Remove Type" 버튼 클릭 또는 타입 우클릭 → "Delete".<br>2. `DeleteTBoxAction`이 `TypeList`에서 제거하고 `ChangeTracker`에 DELETED로 마킹한다.<br>3. 관련 SVG 화살표가 자동으로 사라진다. |
+| **정상 흐름** | 1. Delete/Backspace 키 또는 툴레일 "Remove Type" 버튼 클릭 또는 타입 우클릭 → "Delete".<br>2. `DeleteTBoxAction`이 `TypeList`에서 제거하고 `ChangeTracker`에 DELETED로 마킹한다.<br>3. 관련 SVG 화살표가 자동으로 사라진다. |
 | **대안 흐름** | 에이전트가 `DELETE type:<key>` 명령으로 실행. |
 
 ## UC-T4: 타입 이동 (드래그 & 드롭)
@@ -270,7 +270,7 @@ sequenceDiagram
 | **선행조건** | LAYOUT 모드, 타입 1개 이상 선택 |
 | **정상 흐름** | 1. 선택된 타입 박스에서 mousedown → `DragShapeElement`가 고스트를 생성한다.<br>2. mousemove → 고스트가 마우스 델타만큼 이동한다. (스냅 활성 시 20px 격자 정렬)<br>3. mouseup → 고스트를 숨기고 `ComplexAction(MoveTBoxAction + PushOutOverlapAction)`을 실행한다.<br>4. 실제 박스가 최종 위치로 이동하고, 겹치는 박스가 BFS로 밀려난다. |
 | **대안 흐름** | 화살표 키로 5px(또는 스냅 시 20px) 이동. Shift+화살표로 20px 이동. |
-| **대안 흐름 (모바일)** | `TouchEventAdapter`가 touchstart/touchmove/touchend를 mousedown/mousemove/mouseup과 동일하게 변환하여 터치 드래그를 지원한다. |
+| **대안 흐름 (모바일)** | `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환하여 터치 드래그를 지원한다. |
 
 ## UC-T5: 타입 리사이즈
 
@@ -306,7 +306,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 레이아웃 기간이 2개 이상 존재 |
-| **정상 흐름** | 1. 툴바의 Before/After 버튼을 클릭한다.<br>2. `ChangeLayoutAction`이 실행되어 `LayoutProvider`가 이전/다음 기간으로 전환된다.<br>3. 해당 기간의 타입과 위치가 다시 로드된다.<br>4. 경계에 도달하면 버튼이 자동으로 disabled. |
+| **정상 흐름** | 1. 상태바의 기간 탐색 버튼을 클릭한다.<br>2. `ChangeLayoutAction`이 실행되어 `LayoutProvider`가 이전/다음 기간으로 전환된다.<br>3. 해당 기간의 타입과 위치가 다시 로드된다.<br>4. 경계에 도달하면 버튼이 자동으로 disabled. |
 
 ## UC-T9: Undo/Redo
 
@@ -314,7 +314,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 실행된 액션이 존재 (undo 기준) |
-| **정상 흐름** | 1. Ctrl+Z 또는 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화.<br>4. Undo로 원본 상태가 복원되면 `ChangeTracker`에서 해당 타입의 더티 플래그가 자동 해제된다.<br>5. Save 성공 시 Undo/Redo 스택이 초기화된다. |
+| **정상 흐름** | 1. Ctrl+Z 또는 툴레일 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 툴레일 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화.<br>4. Undo로 원본 상태가 복원되면 `ChangeTracker`에서 해당 타입의 더티 플래그가 자동 해제된다.<br>5. Save 성공 시 Undo/Redo 스택이 초기화된다. |
 | **특이사항** | 에이전트가 실행한 액션도 동일한 Undo 스택에 쌓이므로 사용자가 Ctrl+Z로 되돌릴 수 있다. |
 
 ## UC-T10: 저장/다시 로드 (패치 기반 원자적)
@@ -322,10 +322,10 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자, AI 에이전트 |
-| **선행조건** | `ChangeTracker.hasChanges() == true` (Save 버튼 활성화 상태) |
-| **정상 흐름 (저장)** | 1. Save 버튼 클릭 → `SaveAction` 실행.<br>2. **신규 타입**: `PUT /types` (전체 데이터, 새 버전 생성).<br>3. **변경 타입**: `PATCH /types` (ChangeTracker가 추적한 변경 속성 + rev만 전송). 서버에서 개별 속성 upsert.<br>4. **삭제 타입**: `DELETE /types`.<br>5. 위치 데이터를 `PUT /layouts`로 저장.<br>6. 전체 성공 시: `ChangeTracker` 초기화, Undo/Redo 스택 초기화, 모든 더티 상태 해제.<br>7. 부분 실패 시: 실패 항목만 더티 유지, 토스트. |
-| **정상 흐름 (다시 로드)** | Reload 버튼 → `LoadAction` 실행. 서버에서 최신 데이터 로드. 미저장 변경 사항 소실. |
-| **Save 버튼 UX** | 더티 없으면 비활성화, 변경 건수 뱃지 표시, 저장 중 스피너 표시. |
+| **선행조건** | `ChangeTracker.hasChanges() == true` (상태바 저장 버튼 활성화 상태) |
+| **정상 흐름 (저장)** | 1. 상태바 Save 버튼 클릭 → `SaveAction` 실행.<br>2. **신규 타입**: `PUT /types` (전체 데이터, 새 버전 생성).<br>3. **변경 타입**: `PATCH /types` (ChangeTracker가 추적한 변경 속성 + rev만 전송). 서버에서 개별 속성 upsert.<br>4. **삭제 타입**: `DELETE /types`.<br>5. 위치 데이터를 `PUT /layouts`로 저장.<br>6. 전체 성공 시: `ChangeTracker` 초기화, Undo/Redo 스택 초기화, 모든 더티 상태 해제.<br>7. 부분 실패 시: 실패 항목만 더티 유지, 토스트. |
+| **정상 흐름 (다시 로드)** | 상태바 Reload 버튼 → `LoadAction` 실행. 서버에서 최신 데이터 로드. 미저장 변경 사항 소실. |
+| **상태바 UX** | 더티 없으면 비활성화, 변경 건수 뱃지 표시, 저장 중 스피너 표시. |
 | **충돌 흐름** | 서로 다른 속성 수정 시: 비충돌 병합. 같은 속성 수정 시: 409 Conflict → `.conflict` 표시 + 사용자 선택. |
 
 ```mermaid
@@ -423,7 +423,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 (모바일/태블릿 디바이스) |
 | **선행조건** | 뷰포트 너비 < 768px |
-| **정상 흐름** | 1. `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환한다.<br>2. 캔버스에 핀치 줌(두 손가락 확대/축소)과 터치 드래그가 활성화된다.<br>3. 타입 박스에 터치 롱프레스(500ms)로 컨텍스트 메뉴를 열 수 있다.<br>4. 컨트롤러 툴바가 flex-wrap으로 줄바꿈되며, 핵심 버튼만 1행에 표시된다.<br>5. 속성 편집 다이얼로그가 전체 화면 bottom sheet로 전환된다. |
+| **정상 흐름** | 1. `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환한다.<br>2. 캔버스에 핀치 줌(두 손가락 확대/축소)과 터치 드래그가 활성화된다.<br>3. 타입 박스에 터치 롱프레스(500ms)로 컨텍스트 메뉴를 열 수 있다.<br>4. 상단 상태바와 좌측 툴레일이 모바일 대응 레이아웃으로 최적화된다 (툴레일 접기/펼치기 가능).<br>5. 속성 편집 다이얼로그가 전체 화면 bottom sheet로 전환된다. |
 
 ## UC-T14: RBAC 권한 검증 (계획)
 
@@ -431,7 +431,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 워크스페이스 선택 완료, type-ui 모듈 로딩 완료 |
-| **정상 흐름** | 1. 타입 편집 화면 진입 시 Shell로부터 현재 사용자의 권한 정보를 수신한다.<br>2. `workspace:type:edit` 권한이 있는 경우 일반 편집 모드로 진입한다.<br>3. `workspace:type:edit` 권한이 없는 경우 읽기 전용 모드로 전환한다.<br>4. 읽기 전용 모드에서는 Add Type, Delete, Save 버튼이 비활성화되고, 드래그/리사이즈/속성 편집이 차단된다.<br>5. 에이전트 명령(MutateCommand)도 권한이 없으면 무시된다. |
+| **정상 흐름** | 1. 타입 편집 화면 진입 시 Shell로부터 현재 사용자의 권한 정보를 수신한다.<br>2. `workspace:type:edit` 권한이 있는 경우 일반 편집 모드로 진입한다.<br>3. `workspace:type:edit` 권한이 없는 경우 읽기 전용 모드로 전환한다.<br>4. 읽기 전용 모드에서는 타입 생성/수정/삭제 버튼이 비활성화되고, 드래그/리사이즈/속성 편집이 차단된다.<br>5. 에이전트 명령(MutateCommand)도 권한이 없으면 무시된다. |
 | **대안 흐름** | 권한 정보를 가져올 수 없는 경우 읽기 전용 모드로 기본 전환한다. |
 | **요구사항** | 3.3 RBAC (역할 기반 접근 제어) — `{workspace}:type:{type}:edit` |
 

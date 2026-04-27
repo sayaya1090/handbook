@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
- * workspace-ui 공통 싱글턴을 제공하는 Dagger 모듈.
+ * onboarding-ui 공통 싱글턴을 제공하는 Dagger 모듈.
  *
  * <p><b>책임:</b> Progress, FetchApi, ToastContainer, 다국어(LanguageDetector, LanguagePackRepository),
  * MutationReceiver 등 모듈 전반에서 사용하는 공유 인스턴스를 DI 그래프에 바인딩한다.</p>

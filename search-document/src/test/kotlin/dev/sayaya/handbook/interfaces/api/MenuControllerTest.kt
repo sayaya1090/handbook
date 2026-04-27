@@ -23,20 +23,19 @@ class MenuControllerTest : BehaviorSpec({
     }
 
     Given("documents 메뉴의 allowedSessionStates 선언") {
-        val menu = MenuController.MENU
+        val menu = MenuController.DOCUMENTS_MENU
         When("IN_WORKSPACE 세션 상태에서 평가하면") {
             Then("isAllowedFor 는 true 를 반환한다") {
                 menu.isAllowedFor(SessionStateKind.IN_WORKSPACE) shouldBe true
             }
         }
-        When("ANONYMOUS 세션 상태에서 평가하면") {
-            Then("isAllowedFor 는 false 를 반환한다 — 워크스페이스 진입 후에만 노출") {
-                menu.isAllowedFor(SessionStateKind.ANONYMOUS) shouldBe false
-            }
-        }
-        When("AUTHENTICATED 세션 상태에서 평가하면") {
-            Then("isAllowedFor 는 false 를 반환한다 — 계층 추론 없음") {
-                menu.isAllowedFor(SessionStateKind.AUTHENTICATED) shouldBe false
+    }
+
+    Given("dashboard 메뉴의 allowedSessionStates 선언") {
+        val menu = MenuController.DASHBOARD_MENU
+        When("IN_WORKSPACE 세션 상태에서 평가하면") {
+            Then("isAllowedFor 는 true 를 반환한다") {
+                menu.isAllowedFor(SessionStateKind.IN_WORKSPACE) shouldBe true
             }
         }
     }

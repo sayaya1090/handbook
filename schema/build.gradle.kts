@@ -7,6 +7,13 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
 }
 dependencies {
-    implementation(libs.bundles.kotlin.webflux)
+    implementation(libs.kotlin.jackson)
     testImplementation(libs.bundles.test.api)
+}
+
+tasks.named("bootJar") {
+    enabled = false
+}
+tasks.named("jar") {
+    enabled = true
 }
