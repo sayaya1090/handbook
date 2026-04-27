@@ -11,7 +11,8 @@ spring:
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
             - Path=/types,/documents,/workspaces,/dashboard,/workspace/*/**
-            - Header=Accept, .*text/html.*
+            - Method=GET
+            - Header=Accept, ^(?!.*application/(json|vnd\.sayaya)).*text/html.*
           filters:
             - SetPath=/app.html
           order: 0
