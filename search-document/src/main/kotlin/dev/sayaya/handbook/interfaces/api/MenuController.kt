@@ -21,7 +21,7 @@ class MenuController {
             .script("js/data/data.nocache.js")
             .tools(
                 Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
-            ).url("/documents").urls("^documents")
+            ).url("/documents").urls("^/documents")
             .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
             .build()
     }

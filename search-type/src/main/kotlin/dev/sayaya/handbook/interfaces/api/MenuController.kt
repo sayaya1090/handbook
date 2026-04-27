@@ -21,7 +21,7 @@ class MenuController {
             .script("js/type/type.nocache.js")
             .tools(
                 Tool.builder().title("View as Graph").order("BE").icon("fa-diagram-project").iconType("sharp").build(),
-            ).url("/types").urls("^types")
+            ).url("/types").urls("^/types")
             .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
             .build()
     }
