@@ -92,6 +92,11 @@ classDiagram
         +empty()$ Labels
     }
 
+    class ToolProvider {
+        +publish(tools: Tool[])$
+        +subscribe(): Observable~String~
+    }
+
     class UserPreferences {
         <<utility>>
         +getLanguage(): String$ «JSNI»

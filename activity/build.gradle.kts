@@ -3,9 +3,12 @@ plugins {
     id("dev.sayaya.gwt")
 }
 dependencies {
+    implementation(project(":agent-bridge"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
+    testImplementation(libs.kotest.runner)
+    testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.bundles.test.web)
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)

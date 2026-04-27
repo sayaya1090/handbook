@@ -143,24 +143,49 @@ public class SomeStore {
 |------|---------|
 | **document-ui** | `{user, type, serial, field}` |
 | **type-ui** | `{user, typeKey}` |
+---
+
+## 동적 툴 프로바이더 (Dynamic Tool Provider) 통신
+
+자식 프레임(type-ui, document-ui 등)이 현재 컨텍스트에 맞는 도구 목록을 쉘(shell-ui)에 동적으로 제공하고, 쉘에서 선택된 도구 이벤트를 다시 자식 프레임이 수신하는 브라우저 컨텍스트 간 양방향 통신 패턴이다.
+
+### 통신 원칙
+
+1.  **도구 목록 발행 (Child → Shell)**: 자식 프레임은 활성화된 데이터나 상태가 변경될 때마다 `Tool[]` 목록을 쉘에 발행한다.
+2.  **도구 실행 구독 (Shell → Child)**: 쉘은 사용자가 Tool Rail에서 도구를 클릭하면 해당 도구의 식별자 정보를 담아 자식 프레임에 이벤트를 전달한다.
+3.  **느슨한 결합**: 쉘은 자식 프레임이 어떤 도구를 제공하는지 미리 알 필요가 없으며, 자식 프레임은 쉘의 UI 구조에 의존하지 않고 인터페이스(`ToolProvider`)를 통해 통신한다.
+
+### 브릿지 메커니즘 (`agent-bridge`)
+
+| 브릿지 | 방향 | 메커니즘 |
+|--------|------|----------|
+| `WindowToolPublisherBridge` | 자식 → 쉘 | `CustomEvent('handbook-tools-published')` |
+| `WindowToolSubscriberBridge` | 쉘 → 자식 | `CustomEvent('handbook-tool-selected')` |
+
+### 데이터 흐름
+
+```mermaid
+sequenceDiagram
+    participant C as 자식 프레임 (Module)
+    participant TP as ToolProvider (activity)
+    participant B as WindowBridge (agent-bridge)
+    participant S as 쉘 (shell-ui)
+
+    Note over C: "상태 변경 (예: 박스 선택)"
+    C->>TP: "publish(tools)"
+    TP->>B: "WindowToolPublisherBridge.publish(tools)"
+    B->>S: "window.dispatchEvent(handbook-tools-published)"
+    S->>S: "Tool Rail 갱신"
+
+    Note over S: "사용자가 도구 클릭"
+    S->>B: "WindowToolSubscriberBridge.notify(toolId)"
+    B->>TP: "이벤트 수신"
+    TP->>C: "등록된 핸들러 실행"
+```
 
 ---
 
-## 에이전트 연동 (WindowMutationBridge)
-
-`agent-bridge` 모듈의 `WindowMutationBridge`가 CustomEvent 기반으로 GWT 모듈 간 통신을 중개한다.
-
-### 패턴
-
-1. 에이전트 → `MutateCommand.changes[]` → Kafka → SSE → `CustomEvent('handbook-mutate')`
-2. 각 모듈의 `MutationReceiver` → `AgentHandler` → 명령 파싱 → `ActionManager.execute(Action)`
-3. 동일한 Action/Undo 스택 사용 → 사용자가 에이전트 작업을 Ctrl+Z로 되돌릴 수 있음
-
-### 상태 조회
-
-각 모듈은 `StateProvider.snapshot()` → JSON으로 현재 상태를 에이전트에 제공한다.
-
----
+## 프레즌스 (다른 사용자 편집 표시)
 
 ## MD3 네이티브 컴포넌트 (sayaya-ui)
 

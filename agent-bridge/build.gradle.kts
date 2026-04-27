@@ -5,6 +5,8 @@ plugins {
 dependencies {
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
+    testImplementation(libs.kotest.runner)
+    testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.bundles.test.web)
 }
 

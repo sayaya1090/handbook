@@ -43,6 +43,19 @@ classDiagram
         -searchNative(query: String): String$ «JSNI»
     }
 
+    class WindowToolPublisherBridge {
+        +publish(tools: String)$
+        -dispatchEvent(json: String)$ «JSNI»
+    }
+
+    class WindowToolSubscriberBridge {
+        -BehaviorSubject~String~ subject$
+        +events(): Observable~String~
+        +notify(toolId: String)$
+        -ensureListener()$
+        -dispatchEvent(toolId: String)$ «JSNI»
+    }
+
     class SearchCallback {
         <<interface>>
         +search(query: String): String
