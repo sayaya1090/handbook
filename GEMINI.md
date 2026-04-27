@@ -18,14 +18,16 @@
 ### 유스케이스 작성 규칙
 - **모든 유스케이스에는 시퀀스 다이어그램(mermaid)과 대응 테스트가 있어야 한다.**
 - 테스트가 없는 UC는 매트릭스에 "미구현"으로 표시.
-
-### 커밋
+### 커밋 전 체크리스트 (수정)
 - Co-Authored-By 태그 사용 금지
 - 커밋 메시지 한국어, conventional commits (feat/fix/docs/refactor/chore/test)
-- GWT 캐시 파일(*.cache.js, *.nocache.js, *.devmode.js, compilation-mappings.txt, clear.cache.gif) 커밋 금지
-- **커밋 전 로컬 테스트 필수.** 수정한 모듈은 `./gradlew :<module>:test` (프로덕션 코드 변경 시 의존 모듈 포함) 로 그린 확인 후 커밋. CI 에서 회귀 실패를 내보내지 않는다. 테스트 없이 커밋 가능한 예외: 순수 문서(*.md) / helm values / 주석만 수정.
+- **GWT 빌드 규칙 준수**: `gwt { ... }` 블록이 최상위(top-level)에 있으며, `test { modules = [...] }`가 제거되었는가?
+- **테스트 자산 포함**: `src/test/webapp` 하위의 필수 정적 자산(JS/CSS/HTML)이 `.gitignore`에 의해 차단되지 않고 커밋에 포함되었는가?
+- **신규 모듈 배포**: 신규 모듈 추가 시 Helm Chart(`charts/`)와 GitHub Actions 워크플로가 세트로 생성되었는가?
+- **로컬 테스트 필수**: 수정한 모듈은 `./gradlew :<module>:test` 로 그린 확인 후 커밋.
 
-### I18N (다국어)
+### 클래스 Javadoc (필수)
+... (rest of content)
 - **UI 텍스트는 LabelProvider를 통해 다국어 처리.** 한국어 하드코딩 금지.
 - 언어 파일: `src/main/i18n/language.{ko,en}.json` → 빌드 시 머지
 

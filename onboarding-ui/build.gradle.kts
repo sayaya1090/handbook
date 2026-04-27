@@ -4,6 +4,7 @@ plugins {
     id("dev.sayaya.gwt")
     id("com.adarshr.test-logger")
 }
+
 dependencies {
     implementation(project(":activity"))
     implementation(project(":agent-bridge"))
@@ -22,7 +23,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.OnboardingTest")
+        modules = listOf("dev.sayaya.handbook.Onboarding", "dev.sayaya.handbook.OnboardingTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
@@ -30,7 +31,6 @@ gwt {
     test {
         webPort = 18086
     }
-    // 중요: modules 설정을 마지막에 두어 devMode 설정이 덮어쓰는 것을 방지
     modules = listOf("dev.sayaya.handbook.Onboarding")
 }
 

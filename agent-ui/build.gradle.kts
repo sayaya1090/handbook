@@ -3,6 +3,7 @@ plugins {
     war
     id("dev.sayaya.gwt")
 }
+
 dependencies {
     implementation(project(":activity"))
     implementation(project(":agent-bridge"))
@@ -21,7 +22,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.AgentTest")
+        modules = listOf("dev.sayaya.handbook.Agent", "dev.sayaya.handbook.AgentTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
@@ -41,7 +42,5 @@ tasks {
         archiveFileName.set("agent-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-    test {
-        useJUnitPlatform()
-    }
+    test { useJUnitPlatform() }
 }

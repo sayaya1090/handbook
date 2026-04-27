@@ -652,7 +652,7 @@ client/
 ├── domain/          TypeValue, AttributeValue, AttributeTypeValue, Position, LayoutPeriod
 ├── usecase/         TypeList, LayoutList, LayoutProvider, PositionMap,
 │                    CanvasMode (VIEW/LAYOUT/TYPE), GridSnap, PeriodRecalculationService,
-│                    AgentMutationHandler, TypeStateProvider
+│                    AgentMutationHandler, TypeStateProvider, TypeToolManager
 │   ├── action/      CreateBox, DeleteBox, EditBox, MoveBox, ResizeBox, PushOutOverlap (BFS),
 │                    ChangeLayout, ComplexAction, LoadAction, SaveAction
 │   └── arrow/       ArrowFactory, Arrow (approachAngle), Point, Rectangle
@@ -660,18 +660,19 @@ client/
     ├── api/         TypeApi, LayoutApi (REST), Native 변환
     ├── canvas/      CanvasElement (드래그/드롭/키보드), CanvasContextMenuElement
     ├── box/         TypeElement (인라인 편집/리사이즈), BoxContextMenuElement, BoxReferenceElement (SVG 화살표)
-    ├── controller/  ControllerElement + ModeToggle + 개별 버튼 8개 + SnapCheckbox
+    ├── controller/  StatusHeaderElement, ModeToggle, SnapCheckbox (쉘 통합 시 숨김 처리)
     ├── editor/      AttributeEditorDialog + ValidatorEditorFactory + ValidatorEditor 8종
     ├── selection/   SelectedBoxElement, DragShapeElement (드래그 고스트)
     ├── value/       ValueElement (편집/삭제), ValueListElement
-    └── ContextMenuHelper (공용 유틸)
 ```
 
 **설계 결정:**
 
 | 결정 | 이유 |
 |------|------|
+| TypeToolManager 도입 | 로컬 도구들을 쉘의 전역 툴 레일로 통합 발행 및 이벤트 수신 관리 |
 | PositionMap으로 레이아웃 분리 | 백엔드 TypeLayout과 일치. 도메인에 캔버스 좌표 혼합 방지 |
+... (rest of decisions)
 | ChangeTracker로 변경 추적 분리 | 도메인 순수성 유지 |
 | ActionManager는 순수 undo/redo 스택 | 도메인 로직은 caller(버튼, 메뉴, 에이전트)에 위임. 단일 책임 |
 | VIEW/LAYOUT/TYPE 3모드 | LAYOUT: 이동/리사이즈, TYPE: 인라인 편집. 모드 분리로 이벤트 충돌 방지 |

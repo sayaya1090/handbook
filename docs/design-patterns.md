@@ -185,6 +185,48 @@ sequenceDiagram
 
 ---
 
+## Dynamic Tool Provider 패턴
+
+프레임 내의 자식 모듈(`type-ui`, `document-ui` 등)이 자신의 액션 도구들을 쉘의 전역 툴 레일(Tool Rail)에 동적으로 등록하고 제어하는 패턴이다.
+
+### 구성 요소
+1. **ToolProvider (activity)**: 도구 발행 및 선택 이벤트를 중계하는 싱글톤 Facade.
+2. **WindowToolBridge (agent-bridge)**: `window` 객체를 통한 호스트-프레임 간 저수준 통신 레이어.
+3. **ToolList/ToolSelected (shell-ui)**: 발행된 도구들을 렌더링하고 클릭 이벤트를 트리거하는 호스트 로직.
+
+### 데이터 흐름
+```mermaid
+sequenceDiagram
+    participant C as 자식 모듈 (Child)
+    participant TP as ToolProvider
+    participant B as Bridge
+    participant S as 쉘 (Host)
+
+    Note over C: "상태 변경 (예: 박스 선택)"
+    C->>TP: "publish(tools)"
+    TP->>B: "WindowToolPublisherBridge.publish()"
+    B->>S: "이벤트 수신 및 Tool Rail 갱신"
+
+    Note over S: "사용자가 도구 클릭"
+    S->>B: "WindowToolSubscriberBridge.select(id)"
+    B->>TP: "이벤트 수신"
+    TP->>C: "등록된 콜백 실행"
+```
+
+---
+
+## 표준 GWT 빌드 구성 (Standardized GWT Build)
+
+CI 안정성과 컴파일 충돌 방지를 위해 모든 GWT 모듈은 다음 빌드 설정을 준수한다.
+
+### 핵심 규칙
+1. **Extension 위치**: `gwt { ... }` 블록은 반드시 `tasks { ... }` 블록 **외부(최상위)**에 위치해야 한다.
+2. **테스트 모듈 격리**: `test { modules = [...] }` 설정을 사용하지 않는다. (이 설정은 전체 컴파일 대상을 오염시킬 수 있음)
+3. **우선순위 보장**: `modules = listOf(...)` 메인 모듈 정의는 `gwt` 블록의 가장 **마지막**에 배치한다.
+4. **테스트 자산 복사**: `gwtTestCompile` 태스크가 `copyTestWebResources`에 의존하도록 설정하여 CI 환경에서의 자산 누락을 방지한다.
+
+---
+
 ## MD3 네이티브 컴포넌트 (sayaya-ui)
 
 네이티브 HTML 요소 대신 `sayaya-ui` 라이브러리의 MD3 빌더 패턴 컴포넌트를 사용하여 디자인 시스템 일관성을 유지한다.
