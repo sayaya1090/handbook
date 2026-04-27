@@ -169,14 +169,11 @@ classDiagram
         CHANGED
         DELETED
     }
-    class Mode {
-        <<enum>>
-        VIEW
-        LAYOUT
-        TYPE
-    }
     ChangeTracker --> ChangeState
-    CanvasMode --> Mode
+    CanvasStateContext --> CanvasState
+    CanvasState <|.. ViewState
+    CanvasState <|.. LayoutState
+    CanvasState <|.. TypeState
 ```
 
 ## Action 계층
@@ -578,6 +575,17 @@ classDiagram
         -TypeList typeList
         +search(query): Observable~String~
         -matches(type, query): boolean
+    }
+
+    AgentMutationHandler --> ActionManager : execute(Action)
+    AgentMutationHandler --> TypeList
+    AgentMutationHandler --> PositionMap
+    TypeStateProvider --> TypeList : JSON 변환
+    TypeSearchProvider --> TypeList : 필터링
+```
+rovider --> TypeList : 필터링
+```
+ean
     }
 
     AgentMutationHandler --> ActionManager : execute(Action)

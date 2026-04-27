@@ -219,6 +219,24 @@ Dagger 주입 시 생성자 인자가 5개 이상인 경우, 연관된 의존성
 
 ---
 
+## State 패턴 (캔버스 모드 관리)
+
+`type-ui` 캔버스의 모드(View, Layout, Type)에 따른 마우스 및 키보드 이벤트 분기를 제거하기 위해 State 패턴을 적용한다.
+기존 `if (mode == LAYOUT)` 식의 분기문 대신 `CanvasState` 인터페이스와 각 모드별 구현체(`ViewState`, `LayoutState`, `TypeState`)에 이벤트 처리를 위임한다.
+
+### 구조
+- `CanvasState`: 캔버스의 마우스 다운/무브/업, 더블클릭, 호버 등의 이벤트를 정의하는 인터페이스.
+- `ViewState`: 읽기 전용 모드의 이벤트 처리. (팬/줌 등)
+- `LayoutState`: 레이아웃 편집 모드의 이벤트 처리. (드래그, 박스 선택/이동/리사이즈 등)
+- `TypeState`: 타입 편집 모드의 이벤트 처리. (속성 수정, 필드 추가 등)
+- `CanvasElement` 및 `TypeElement`는 현재 활성화된 `CanvasState`에 이벤트를 전달한다.
+
+### 장점
+- 캔버스 모드 추가/변경 시 기존 코드를 수정하지 않고 새로운 State 클래스만 추가/수정하면 되므로 OCP(개방-폐쇄 원칙)를 준수한다.
+- 각 모드의 이벤트 처리 로직이 개별 클래스로 분리되어 코드 가독성과 유지보수성이 향상된다.
+
+---
+
 ## CQRS with External Search Engine (PostgreSQL + ES)
 
 데이터의 원천 저장(Source of Truth)과 고성능 검색(Search)을 분리하는 CQRS 패턴을 구현한다.

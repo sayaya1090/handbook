@@ -174,7 +174,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
             MouseEvent me = (MouseEvent) e;
             if (me.button != 0) return;
             e.preventDefault(); // 텍스트 셀렉션 방지
-            if (canvasMode.isLayoutMode()) dragShape.show((int) me.clientX, (int) me.clientY);
+            canvasMode.getCurrentState().onTypeMouseDown(me, dragShape);
         });
         elem.element().addEventListener("contextmenu", e -> {
             e.preventDefault();
@@ -196,51 +196,52 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     }
 
     private void handleKeyDown(KeyboardEvent e) {
-        if (!canvasMode.isEditable()) return;
-        if (e.ctrlKey && "z".equals(e.key)) {
-            e.preventDefault();
-            if (e.shiftKey) actionManager.redo();
-            else actionManager.undo();
-        } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
-            e.preventDefault();
-            Set<String> allKeys = new HashSet<>();
-            for (TypeValue type : typeList.getValue()) {
-                allKeys.add(type.key());
-            }
-            selection.selectAll(allKeys);
-        } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
-            e.preventDefault();
-            Set<String> selected = new HashSet<>(selection.getValue());
-            for (TypeValue type : typeList.getValue()) {
-                if (selected.contains(type.key())) {
-                    actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
+        canvasMode.getCurrentState().onCanvasKeyDown(e, () -> {
+            if (e.ctrlKey && "z".equals(e.key)) {
+                e.preventDefault();
+                if (e.shiftKey) actionManager.redo();
+                else actionManager.undo();
+            } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
+                e.preventDefault();
+                Set<String> allKeys = new HashSet<>();
+                for (TypeValue type : typeList.getValue()) {
+                    allKeys.add(type.key());
+                }
+                selection.selectAll(allKeys);
+            } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
+                e.preventDefault();
+                Set<String> selected = new HashSet<>(selection.getValue());
+                for (TypeValue type : typeList.getValue()) {
+                    if (selected.contains(type.key())) {
+                        actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
+                    }
+                }
+                selection.clear();
+            } else if (e.key != null && e.key.startsWith("Arrow")) {
+                e.preventDefault();
+                Set<String> selected = selection.getValue();
+                if (selected.isEmpty()) return;
+                int step = gridSnap.isEnabled() ? 20 : (e.shiftKey ? 20 : 5);
+                int dx = 0, dy = 0;
+                switch (e.key) {
+                    case "ArrowUp":    dy = -step; break;
+                    case "ArrowDown":  dy = step;  break;
+                    case "ArrowLeft":  dx = -step; break;
+                    case "ArrowRight": dx = step;  break;
+                }
+                if (dx != 0 || dy != 0) {
+                    Set<String> keys = new HashSet<>(selected);
+                    MoveBoxAction move = new MoveBoxAction(positionMap, keys, dx, dy);
+                    Action[] pushOuts = keys.stream()
+                            .map(key -> new PushOutOverlapAction(positionMap, key, 10))
+                            .toArray(Action[]::new);
+                    Action[] all = new Action[1 + pushOuts.length];
+                    all[0] = move;
+                    System.arraycopy(pushOuts, 0, all, 1, pushOuts.length);
+                    actionManager.execute(new ComplexAction(all));
                 }
             }
-            selection.clear();
-        } else if (e.key != null && e.key.startsWith("Arrow")) {
-            e.preventDefault();
-            Set<String> selected = selection.getValue();
-            if (selected.isEmpty()) return;
-            int step = gridSnap.isEnabled() ? 20 : (e.shiftKey ? 20 : 5);
-            int dx = 0, dy = 0;
-            switch (e.key) {
-                case "ArrowUp":    dy = -step; break;
-                case "ArrowDown":  dy = step;  break;
-                case "ArrowLeft":  dx = -step; break;
-                case "ArrowRight": dx = step;  break;
-            }
-            if (dx != 0 || dy != 0) {
-                Set<String> keys = new HashSet<>(selected);
-                MoveBoxAction move = new MoveBoxAction(positionMap, keys, dx, dy);
-                Action[] pushOuts = keys.stream()
-                        .map(key -> new PushOutOverlapAction(positionMap, key, 10))
-                        .toArray(Action[]::new);
-                Action[] all = new Action[1 + pushOuts.length];
-                all[0] = move;
-                System.arraycopy(pushOuts, 0, all, 1, pushOuts.length);
-                actionManager.execute(new ComplexAction(all));
-            }
-        }
+        });
     }
 
     public TypeElement getElement(String typeKey) {

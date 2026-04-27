@@ -88,14 +88,14 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         nameLabel.textContent = type.id;
         nameLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
-            if (canvasMode.isTypeMode()) startInlineEdit();
+            canvasMode.getCurrentState().onNameDblClick(e, this::startInlineEdit);
         });
 
         versionLabel = div().css("type-version").element();
         versionLabel.textContent = type.version;
         versionLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
-            if (canvasMode.isTypeMode()) startVersionEdit();
+            canvasMode.getCurrentState().onVersionDblClick(e, this::startVersionEdit);
         });
 
         valueList = new ValueListElement();
@@ -251,43 +251,44 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         handle.addEventListener("mousedown", e -> {
             e.stopPropagation();
             e.preventDefault();
-            if (!canvasMode.isLayoutMode()) return;
             elemental2.dom.MouseEvent me = (elemental2.dom.MouseEvent) e;
-            startXY[0] = (int) me.clientX;
-            startXY[1] = (int) me.clientY;
-            startPos[0] = positionMap.get(type.key());
-            if (startPos[0] == null) return;
+            canvasMode.getCurrentState().onResizeMouseDown(me, () -> {
+                startXY[0] = (int) me.clientX;
+                startXY[1] = (int) me.clientY;
+                startPos[0] = positionMap.get(type.key());
+                if (startPos[0] == null) return;
 
-            elemental2.dom.EventListener moveListener = new elemental2.dom.EventListener() {
-                @Override public void handleEvent(elemental2.dom.Event evt) {
-                    elemental2.dom.MouseEvent mv = (elemental2.dom.MouseEvent) evt;
-                    int dx = (int) mv.clientX - startXY[0];
-                    int dy = (int) mv.clientY - startXY[1];
-                    int newW = Math.max(120, gridSnap.snap(startPos[0].width + dx));
-                    int newH = Math.max(60, gridSnap.snap(startPos[0].height + dy));
-                    positionMap.put(type.key(), Position.of(startPos[0].x, startPos[0].y, newW, newH));
-                }
-            };
-
-            elemental2.dom.EventListener upListener = new elemental2.dom.EventListener() {
-                @Override public void handleEvent(elemental2.dom.Event evt) {
-                    DomGlobal.document.removeEventListener("mousemove", moveListener);
-                    DomGlobal.document.removeEventListener("mouseup", this);
-                    Position endPos = positionMap.get(type.key());
-                    if (endPos != null && startPos[0] != null &&
-                            (endPos.width != startPos[0].width || endPos.height != startPos[0].height)) {
-                        // 이미 적용됨. undo용 액션만 기록.
-                        Position before = startPos[0];
-                        Position after = endPos;
-                        actionManager.execute(new ResizeBoxAction(positionMap, type.key(), before, after) {
-                            @Override public void execute() { /* 이미 적용됨 */ }
-                        });
+                elemental2.dom.EventListener moveListener = new elemental2.dom.EventListener() {
+                    @Override public void handleEvent(elemental2.dom.Event evt) {
+                        elemental2.dom.MouseEvent mv = (elemental2.dom.MouseEvent) evt;
+                        int dx = (int) mv.clientX - startXY[0];
+                        int dy = (int) mv.clientY - startXY[1];
+                        int newW = Math.max(120, gridSnap.snap(startPos[0].width + dx));
+                        int newH = Math.max(60, gridSnap.snap(startPos[0].height + dy));
+                        positionMap.put(type.key(), Position.of(startPos[0].x, startPos[0].y, newW, newH));
                     }
-                }
-            };
+                };
 
-            DomGlobal.document.addEventListener("mousemove", moveListener);
-            DomGlobal.document.addEventListener("mouseup", upListener);
+                elemental2.dom.EventListener upListener = new elemental2.dom.EventListener() {
+                    @Override public void handleEvent(elemental2.dom.Event evt) {
+                        DomGlobal.document.removeEventListener("mousemove", moveListener);
+                        DomGlobal.document.removeEventListener("mouseup", this);
+                        Position endPos = positionMap.get(type.key());
+                        if (endPos != null && startPos[0] != null &&
+                                (endPos.width != startPos[0].width || endPos.height != startPos[0].height)) {
+                            // 이미 적용됨. undo용 액션만 기록.
+                            Position before = startPos[0];
+                            Position after = endPos;
+                            actionManager.execute(new ResizeBoxAction(positionMap, type.key(), before, after) {
+                                @Override public void execute() { /* 이미 적용됨 */ }
+                            });
+                        }
+                    }
+                };
+
+                DomGlobal.document.addEventListener("mousemove", moveListener);
+                DomGlobal.document.addEventListener("mouseup", upListener);
+            });
         });
     }
 
