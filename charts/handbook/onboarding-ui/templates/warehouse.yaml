@@ -1,0 +1,22 @@
+{{- if not .Values.stage.prev }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: onboarding-ui
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.color }}
+spec:
+  freightCreationPolicy: Automatic
+  interval: 1m0s
+  subscriptions:
+    # GHA 가 빌드 후 `onboarding-ui-<short-sha>` 형태로 prerelease tag 를 만든다.
+    # Warehouse 는 그 tag 패턴을 추적해 새 빌드가 나올 때마다 Freight 를 발행한다.
+    - git:
+        repoURL: https://github.com/sayaya1090/handbook.git
+        commitSelectionStrategy: Lexical
+        allowTags: ^onboarding-ui-
+        strictSemvers: false
+        discoveryLimit: 5
+{{- end }}

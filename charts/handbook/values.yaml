@@ -74,6 +74,10 @@ services:
     kind: frontend
     color: teal
     stages: [dev, staging, prod]
+  - name: onboarding-ui
+    kind: frontend
+    color: skyblue
+    stages: [dev, staging, prod]
   - name: agent-ui
     kind: frontend
     color: lime
