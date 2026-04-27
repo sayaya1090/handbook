@@ -20,8 +20,7 @@ classDiagram
     class WorkspaceRepository {
         <<interface>>
         +create(name, description)
-        +update(id, name, description)
-        +delete(id)
+        +join(id)
     }
     class AgentWorkspaceHandler {
         +processChange(command)
@@ -54,8 +53,7 @@ classDiagram
     }
     class WorkspaceApi {
         +create(name, desc)
-        +update(id, name, desc)
-        +delete(id)
+        +join(id)
     }
 
     ContentElement --> DialogElement
@@ -75,7 +73,7 @@ classDiagram
 | **Observer** | `CreateWorkspaceMode`, `CreateWorkspaceParam` | BehaviorSubject로 모드/입력값 변경을 라디오 버튼, 입력 필드, Submit 버튼에 자동 전파. |
 | **Factory** | `SectionElementFactory` (@AssistedFactory) | 같은 SectionElement 컴포넌트를 CREATE/JOIN 모드 파라미터만 바꿔 생성. UI 재사용. |
 | **Command** | `AgentWorkspaceHandler` | 문자열 명령(WS_MODE, WS_INPUT, WS_SUBMIT, WS_CREATE)을 파싱하여 상태 변경 작업으로 변환. 에이전트의 지시를 UI 조작으로 분리. |
-| **Adapter** | `WorkspaceApi` → `WorkspaceRepository` | HTTP 호출(POST/PUT/DELETE)을 Repository 인터페이스로 래핑. FetchApi를 통해 통신 세부사항을 숨김. |
+| **Adapter** | `WorkspaceApi` → `WorkspaceRepository` | HTTP 호출(POST)을 Repository 인터페이스로 래핑. FetchApi를 통해 통신 세부사항을 숨김. |
 
 ## 모바일 지원
 
