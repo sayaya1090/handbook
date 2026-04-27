@@ -1,5 +1,8 @@
 ## 요청 로그
 
+- 2026-04-27: 스마트 라우팅 반영 → ArgoCD Sync 및 검증 완료. curl -I는 Method=GET 제한으로 404 반환됨을 확인.
+- 2026-04-27: 4915cae 반영 → Sync 및 재시작 완료, 200 OK 확인
+- 2026-04-27: Clean URL 404 진단 → Helm ConfigMap 동기화 누락 확인
 - 2026-04-26: shell-ui S3 점검 → JS 누락 확인 및 빌드 설정 결함 발견
 - 2026-04-23: S3 shell-ui 파일 목록 조회 → .cache.js 파일 리스트 확보
 - 2026-04-26: handbook-infra-dev Diff 확인 → 수동 싱크 필요성 및 ArgoCD Ghost Diff 가능성 파악
