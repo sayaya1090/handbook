@@ -90,7 +90,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | onboarding-ui 모듈 로딩 완료 |
-| **정상 흐름** | 1. CREATE 라디오 버튼을 선택한다. (`CreateWorkspaceMode` → CREATE)<br>2. 워크스페이스 이름을 입력한다. (`CreateWorkspaceParam` 업데이트)<br>3. 입력값이 있으면 Submit 버튼이 활성화된다.<br>4. Submit 클릭 → `WorkspaceRepository.create(name, null)` 호출.<br>5. `WorkspaceApi`가 `POST /workspace`로 요청을 전송한다. |
+| **정상 흐름** | 1. CREATE 라디오 버튼을 선택한다. (`CreateWorkspaceMode` → CREATE)<br>2. 워크스페이스 이름을 입력한다. (`CreateWorkspaceParam` 업데이트)<br>3. 입력값이 있으면 Submit 버튼이 활성화된다.<br>4. Submit 클릭 → `WorkspaceRepository.create(name, null)` 호출.<br>5. `WorkspaceApi`가 `POST /workspace`로 요청을 전송한다.<br>6. 성공 콜백을 받으면 `WindowUriBridge.navigate("/workspace/{id}/dashboard")`를 호출하여 페이지 새로고침 없이 대시보드로 심리스(Seamless) 전환이 일어난다. |
 | **대안 흐름** | 라디오 선택 시 입력 필드에 포커스가 자동 이동. 입력 필드 포커스 시 해당 모드로 자동 전환. |
 | **입력 검증** | 워크스페이스 이름: 영숫자+한글+공백+하이픈+언더스코어, 최대 255자. 클라이언트 사이드 검증 + 서버 사이드 검증 이중화. (요구사항 6.5) |
 
@@ -175,5 +175,8 @@ sequenceDiagram
 | UC-W4 (단계별) | 에이전트 워크스페이스 생성 (alt) | 전체 | AgentWorkspaceHandler(WS_MODE/WS_INPUT/WS_SUBMIT/WS_CREATE) | WorkspaceCreateTest: WS_INPUT 이벤트 → 다이얼로그/Submit 유지 |
 | UC-W5 (모바일) | 모바일 다이얼로그 전환 | 전체 | ViewportObserver, DialogElement(fullscreen bottom sheet), SectionElement(touch area 48px+), input(full-width) | WorkspaceCreateTest: 뷰포트 375x667 → 다이얼로그 표시(display!=none), Submit 존재, 입력 필드 2개 유지 |
 | UC-W6 (빈 상태 UI) | — | 전체 | EmptyStateElement, SectionElement | ❌ 미구현 (계획) |
+| UC-W7 (삭제 확인) | — | 전체 | ConfirmDialog | ❌ 미구현 (계획) |
+| UC-W8 (성공 피드백) | — | 전체 | ToastContainer, SubmitButton | ❌ 미구현 (계획) |
+EmptyStateElement, SectionElement | ❌ 미구현 (계획) |
 | UC-W7 (삭제 확인) | — | 전체 | ConfirmDialog | ❌ 미구현 (계획) |
 | UC-W8 (성공 피드백) | — | 전체 | ToastContainer, SubmitButton | ❌ 미구현 (계획) |

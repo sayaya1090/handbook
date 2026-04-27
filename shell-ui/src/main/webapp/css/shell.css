@@ -767,3 +767,15 @@ body[data-scrolled] .menu-tabs {
         bottom: calc(56px + env(safe-area-inset-bottom, 0px));
     }
 }
+
+body[data-onboarding="true"] .shell-app-bar,
+body[data-onboarding="true"] .drawer,
+body[data-onboarding="true"] .menu-tabs {
+    display: none !important;
+}
+
+body[data-onboarding="true"] {
+    --shell-app-bar-height: 0px;
+    --shell-mobile-tabs-height: 0px;
+    --shell-frame-left-offset: 0px;
+}

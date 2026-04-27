@@ -60,6 +60,13 @@ internal class WorkspaceCreateTest: GwtTestSpec({
                 val value = page.evaluate("document.querySelectorAll('.ws-section')[0].querySelector('md-outlined-text-field.ws-section-input').value") as String
                 value shouldBe "TestWorkspace"
             }
+            Then("Submit 버튼을 클릭하면 성공 응답(id)을 받고 WindowUriBridge를 통해 /workspace/{id}/dashboard로 네비게이션(navigate)을 호출한다") {
+                page.evaluate("window.__handbook_uri_called = null; window.__handbook_uri = function(uri) { window.__handbook_uri_called = uri; }")
+                page.evaluate("document.querySelector('.ws-submit').click()")
+                Thread.sleep(500)
+                val uriCalled = page.evaluate("window.__handbook_uri_called").toString()
+                (uriCalled.contains("/workspace/") && uriCalled.contains("/dashboard")) shouldBe true
+            }
         }
 
         // UC-W3: 에이전트 워크스페이스 모드 전환

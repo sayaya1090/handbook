@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module rename-to='onboardingtest'>
     <inherits name='dev.sayaya.handbook.Onboarding'/>
-    <inherits name='dev.sayaya.gwt.Test'/>
     <entry-point class='dev.sayaya.handbook.client.onboarding.TestApplication'/>
     <source path='client'/>
 </module>

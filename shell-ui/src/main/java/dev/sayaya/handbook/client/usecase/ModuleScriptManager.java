@@ -20,12 +20,21 @@ public class ModuleScriptManager {
     public void initialize() {
         menu.subscribe(this::update);
     }
-    private void update(Menu menu) {
-        if(menu == null) return;
+
+    /**
+     * 외부에서 스크립트 경로를 직접 주입하여 모듈을 로드한다.
+     */
+    public void load(String src) {
+        if(src == null || src.isEmpty()) return;
         var existingScript = document.getElementById("module-script");
         if(existingScript != null) existingScript.remove();
         var scriptEl = script().attr("type", "text/javascript").id("module-script").attr("async", "true");
-        scriptEl.element().src = menu.script();
+        scriptEl.element().src = src;
         document.head.append(scriptEl.element());
+    }
+
+    private void update(Menu menu) {
+        if(menu == null) return;
+        load(menu.script());
     }
 }

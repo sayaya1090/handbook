@@ -18,7 +18,7 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 gwt {
-    gwtVersion = "2.12.2"
+    gwtVersion = "2.13.0"
     modules = listOf("dev.sayaya.handbook.Onboarding")
     sourceLevel = "auto"
     devMode {
@@ -45,3 +45,4 @@ tasks.named("war", War::class) {
     archiveFileName.set("onboarding-ui.war")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+tasks.test { useJUnitPlatform() }

@@ -63,10 +63,12 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         this.workspaces = workspaces;
         if (workspaces == null || workspaces.isEmpty()) {
             _this.disabled(true);
+            _this.element().style.display = "none";
             return;
         }
-        _this.removeAllOptions();
         _this.disabled(false);
+        _this.element().style.display = "";
+        _this.removeAllOptions();
         for (var workspace : workspaces) _this.option().value(workspace.id()).headline(workspace.name());
     }
 

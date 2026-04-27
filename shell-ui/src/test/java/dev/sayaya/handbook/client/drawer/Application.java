@@ -16,6 +16,7 @@ public class Application implements EntryPoint {
         components.urlBasedToolResolver().initialize();
         components.toolBasedMenuResolver().initialize();
         components.script().initialize();
+        components.bootstrapper().initialize();
         // Composition Root — 본 테스트 셸도 프로덕션 ShellInitializer 와 동일 순서로 조립.
         // Presenter 참조만으로 구독 트리거 — Dagger 가 @Singleton 인스턴스를 생성하며 생성자 내부에서 구독 시작.
         components.mobileTabsPresenter();

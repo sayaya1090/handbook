@@ -372,6 +372,7 @@ sequenceDiagram
 | UC-S9 (에이전트) | 에이전트 화면 이동 | 유스케이스 | UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, HostSharedModule(uri) | UrlBasedMenuResolverTest: 에이전트 navigate 커맨드 URL 패턴 처리 검증 |
 | UC-S10 (i18n) | i18n (다국어) | Frame+API | BrowserLanguageDetector, FetchLanguagePackRepository, LabelProvider | DrawerTest: 메뉴 아이템에 텍스트 라벨 존재 확인 |
 | UC-S11 (프레임전환) | — (단순) | Frame+API | FrameUpdater, FrameFactory, FrameElement, ContentElement | FrameTest: 컨테이너 존재, 초기 프레임 0개, 렌더러1 → 프레임 1개 + 텍스트 "Hello, World!!", 렌더러2 → 교체 + "2nd Renderer rendered", 재전환 → 프레임 1개 유지 |
+| UC-12 (자동온보딩) | 빈 워크스페이스 자동 온보딩 | Frame+API | WorkspaceList, UrlBasedMenuResolver, MenuSelected | ❌ 미구현 |
 | UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ProgressTest: 컨테이너/라벨 존재, 초기 opacity=0, indeterminate → opacity=1 + 라벨 숨김, 30% → "처리 중" + "3/10", 70% → "거의 완료" + "7/10", 100% → "완료" + "10/10", hide → opacity=0, 재표시 검증 |
 | UC-S13 (모바일) | 모바일 드릴인/드릴백 | Drawer UI | ViewportObserver(isMobile → `[mobile]` 속성), MobileTabsElement, MobileTabsPresenter, NavEntryFactory, MenuTabBuilder, OverflowMenuView, ResponsiveOverflow, ShellAppBarElement, MenuRailMode/ToolRailMode, CloseToolRailButton | DrawerModeTest: 드릴인/드릴백 상태 전이 + 상호 배타성 검증 / DrawerTest: 모바일 MobileTabs 렌더·메뉴↔도구 모드 전환·overflow 팝업·탭 배경 투명화 / ResponsiveOverflowTest: 3단계 폴백 경계값 |
 | UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspace/{id}/messages, 이벤트 타입별 UI 갱신 | UrlBasedMenuResolverTest: SSE 이벤트 기반 메뉴 갱신 검증 |
@@ -387,6 +388,17 @@ sequenceDiagram
 ## 에이전트 연동
 
 shell-ui 는 프론트엔드 Shell 모듈로 공개 REST API 를 노출하지 않는다. 그러나 외부/내부 AI 에이전트가 Shell 파이프라인과 상호작용하는 지점이 존재하므로 아래와 같이 기록한다.
+
+| # | 항목 | 값 | 비고 |
+|---|------|---|------|
+| 1 | 내부 assistant 연동 | `AGENT_COMMAND` 수신 (`navigate`, `highlight`, `mutate`) | assistant 가 shell 의 URL 변경·DOM selector 하이라이트를 유도. `UrlBasedMenuResolver` / `HistoryManager` 가 navigate 타겟, `HighlightEffect` 가 highlight 타겟 |
+| 2 | 외부 AI Tool Use | N/A — 백엔드 API 없음 | shell-ui 자체는 `/openapi.json` 미발행. 외부 에이전트는 gateway 경유 백엔드 서비스로만 접근 |
+| 3 | OpenAPI 어노테이션 | N/A | 동일 사유 |
+| 4 | 감사 경로 | N/A (shell 자체) | 단, shell 이 트리거한 백엔드 호출은 각 서비스에서 `AuditEntry` 발행 (`docs/contracts/audit.md`) |
+| 5 | Agent Command 타겟 | URL 패턴: `MenuList.urlRegex` 에 등록된 메뉴 경로. selector: `.menu-rail .item`, `.tool-rail .item`, `.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
+
+**UC-S21 특기사항**: 가상 onboarding Menu 는 `MenuList` 밖에서 합성되므로 `urlRegex` 미지정 — 외부 에이전트의 navigate 커맨드로 직접 트리거 불가능. 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.
+-ui 는 프론트엔드 Shell 모듈로 공개 REST API 를 노출하지 않는다. 그러나 외부/내부 AI 에이전트가 Shell 파이프라인과 상호작용하는 지점이 존재하므로 아래와 같이 기록한다.
 
 | # | 항목 | 값 | 비고 |
 |---|------|---|------|

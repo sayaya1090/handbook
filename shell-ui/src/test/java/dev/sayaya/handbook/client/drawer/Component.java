@@ -8,6 +8,7 @@ import dev.sayaya.handbook.client.usecase.HistoryManager;
 import dev.sayaya.handbook.client.usecase.ModuleScriptManager;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
+import dev.sayaya.handbook.client.usecase.WorkspaceOnboardingBootstrapper;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -25,6 +26,7 @@ public interface Component {
     HistoryManager historyManager();
     UrlBasedMenuResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
+    WorkspaceOnboardingBootstrapper bootstrapper();
     BehaviorSubject<String> uri();
     Observer<Progress> progressObserver();
 }

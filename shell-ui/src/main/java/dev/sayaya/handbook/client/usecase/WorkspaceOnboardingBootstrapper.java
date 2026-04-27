@@ -12,7 +12,7 @@ import dev.sayaya.handbook.client.domain.Workspace;
  * <p><b>책임:</b>
  * <ul>
  *   <li>사용자가 인증되었으나 워크스페이스 ID가 URL에 없는 경우를 감지</li>
- *   <li>워크스페이스가 하나도 없으면 온보딩(/workspaces)으로 이동</li>
+ *   <li>워크스페이스가 하나도 없으면 온보딩(/workspaces) 스크립트를 동적 주입</li>
  *   <li>워크스페이스가 있으면 첫 번째 항목의 대시보드로 자동 선택</li>
  * </ul></p>
  */
@@ -21,6 +21,8 @@ public class WorkspaceOnboardingBootstrapper {
     private final UserProvider userProvider;
     private final WorkspaceList workspaceList;
     private final BehaviorSubject<String> uri;
+    private final MenuSelected menuSelected;
+    private final ModuleScriptManager scriptManager;
     private boolean bootstrapped = false;
     private boolean userLoaded = false;
     private List<Workspace> loadedWorkspaces = null;
@@ -29,11 +31,15 @@ public class WorkspaceOnboardingBootstrapper {
     WorkspaceOnboardingBootstrapper(
             UserProvider userProvider,
             WorkspaceList workspaceList,
-            BehaviorSubject<String> uri
+            BehaviorSubject<String> uri,
+            MenuSelected menuSelected,
+            ModuleScriptManager scriptManager
     ) {
         this.userProvider = userProvider;
         this.workspaceList = workspaceList;
         this.uri = uri;
+        this.menuSelected = menuSelected;
+        this.scriptManager = scriptManager;
     }
 
     public void initialize() {
@@ -46,6 +52,13 @@ public class WorkspaceOnboardingBootstrapper {
         workspaceList.subscribe(list -> {
             loadedWorkspaces = list;
             checkAndRedirect();
+        });
+        uri.subscribe(path -> {
+            if ("/workspaces".equals(path)) {
+                elemental2.dom.DomGlobal.document.body.setAttribute("data-onboarding", "true");
+            } else {
+                elemental2.dom.DomGlobal.document.body.removeAttribute("data-onboarding");
+            }
         });
     }
 
@@ -67,7 +80,9 @@ public class WorkspaceOnboardingBootstrapper {
 
         bootstrapped = true;
         if (loadedWorkspaces.isEmpty()) {
-            // 워크스페이스 없음 -> 온보딩(생성/조인) 화면으로 이동
+            // 워크스페이스 없음 -> 메뉴 선택을 초기화하고 온보딩(생성/조인) 모듈 스크립트를 직접 주입
+            menuSelected.next(null);
+            scriptManager.load("/js/onboarding/onboarding.nocache.js");
             uri.next("/workspaces");
         } else {
             // 워크스페이스 있음 -> 첫 번째 항목 선택 (대시보드로 진입)
