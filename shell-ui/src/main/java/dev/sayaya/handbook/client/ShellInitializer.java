@@ -53,89 +53,97 @@ import static org.jboss.elemento.Elements.body;
  */
 @Singleton
 public class ShellInitializer {
-    private final HistoryManager historyManager;
-    private final UrlBasedMenuResolver urlBasedMenuResolver;
-    private final ToolBasedMenuResolver toolBasedMenuResolver;
-    private final FrameUpdater frameUpdater;
-    private final ModuleScriptManager scriptManager;
-    private final ShellAppBarElement appBar;
-    private final MobileTabsElement mobileTabs;
-    // MobileTabsPresenter 는 Dagger 가 이 필드에 주입하는 시점 구독을 시작한다 (생성자 내부).
-    // 직접 호출은 없지만 참조만으로 그래프 포함 유발. @SuppressWarnings 로 unused 플래그 억제.
-    @SuppressWarnings("unused") private final MobileTabsPresenter mobileTabsPresenter;
-    private final ProgressElement progressElement;
-    private final ContentElement contentElement;
-    private final WorkspaceEventListener workspaceEventListener;
-    private final WorkspaceOnboardingBootstrapper workspaceOnboardingBootstrapper;
-    private final SessionPollingService sessionManager;
-    private final Observer<Progress> progressObserver;
-    private final Observer<Render> renderObserver;
-    private final Observer<String> uriObserver;
-    private final LabelProvider labelProvider;
+    @Singleton
+    public static class ShellContext {
+        public final HistoryManager historyManager;
+        public final UrlBasedMenuResolver urlBasedMenuResolver;
+        public final ToolBasedMenuResolver toolBasedMenuResolver;
+        public final FrameUpdater frameUpdater;
+        public final ModuleScriptManager scriptManager;
+        public final ShellAppBarElement appBar;
+        public final MobileTabsElement mobileTabs;
+        @SuppressWarnings("unused") public final MobileTabsPresenter mobileTabsPresenter;
+        public final ProgressElement progressElement;
+        public final ContentElement contentElement;
+        public final WorkspaceEventListener workspaceEventListener;
+        public final WorkspaceOnboardingBootstrapper workspaceOnboardingBootstrapper;
+        public final SessionPollingService sessionManager;
+        public final Observer<Progress> progressObserver;
+        public final Observer<Render> renderObserver;
+        public final Observer<String> uriObserver;
+        public final LabelProvider labelProvider;
 
-    @Inject ShellInitializer(
-            HistoryManager historyManager,
-            UrlBasedMenuResolver urlBasedMenuResolver,
-            ToolBasedMenuResolver toolBasedMenuResolver,
-            FrameUpdater frameUpdater,
-            ModuleScriptManager scriptManager,
-            ShellAppBarElement appBar,
-            MobileTabsElement mobileTabs,
-            MobileTabsPresenter mobileTabsPresenter,
-            ProgressElement progressElement,
-            ContentElement contentElement,
-            WorkspaceEventListener workspaceEventListener,
-            WorkspaceOnboardingBootstrapper workspaceOnboardingBootstrapper,
-            SessionPollingService sessionManager,
-            Observer<Progress> progressObserver,
-            Observer<Render> renderObserver,
-            Observer<String> uriObserver,
-            LabelProvider labelProvider
-    ) {
-        this.historyManager = historyManager;
-        this.urlBasedMenuResolver = urlBasedMenuResolver;
-        this.toolBasedMenuResolver = toolBasedMenuResolver;
-        this.frameUpdater = frameUpdater;
-        this.scriptManager = scriptManager;
-        this.appBar = appBar;
-        this.mobileTabs = mobileTabs;
-        this.mobileTabsPresenter = mobileTabsPresenter;
-        this.progressElement = progressElement;
-        this.contentElement = contentElement;
-        this.workspaceEventListener = workspaceEventListener;
-        this.workspaceOnboardingBootstrapper = workspaceOnboardingBootstrapper;
-        this.sessionManager = sessionManager;
-        this.progressObserver = progressObserver;
-        this.renderObserver = renderObserver;
-        this.uriObserver = uriObserver;
-        this.labelProvider = labelProvider;
+        @Inject
+        public ShellContext(
+                HistoryManager historyManager,
+                UrlBasedMenuResolver urlBasedMenuResolver,
+                ToolBasedMenuResolver toolBasedMenuResolver,
+                FrameUpdater frameUpdater,
+                ModuleScriptManager scriptManager,
+                ShellAppBarElement appBar,
+                MobileTabsElement mobileTabs,
+                MobileTabsPresenter mobileTabsPresenter,
+                ProgressElement progressElement,
+                ContentElement contentElement,
+                WorkspaceEventListener workspaceEventListener,
+                WorkspaceOnboardingBootstrapper workspaceOnboardingBootstrapper,
+                SessionPollingService sessionManager,
+                Observer<Progress> progressObserver,
+                Observer<Render> renderObserver,
+                Observer<String> uriObserver,
+                LabelProvider labelProvider
+        ) {
+            this.historyManager = historyManager;
+            this.urlBasedMenuResolver = urlBasedMenuResolver;
+            this.toolBasedMenuResolver = toolBasedMenuResolver;
+            this.frameUpdater = frameUpdater;
+            this.scriptManager = scriptManager;
+            this.appBar = appBar;
+            this.mobileTabs = mobileTabs;
+            this.mobileTabsPresenter = mobileTabsPresenter;
+            this.progressElement = progressElement;
+            this.contentElement = contentElement;
+            this.workspaceEventListener = workspaceEventListener;
+            this.workspaceOnboardingBootstrapper = workspaceOnboardingBootstrapper;
+            this.sessionManager = sessionManager;
+            this.progressObserver = progressObserver;
+            this.renderObserver = renderObserver;
+            this.uriObserver = uriObserver;
+            this.labelProvider = labelProvider;
+        }
+    }
+
+    private final ShellContext context;
+
+    @Inject ShellInitializer(ShellContext context) {
+        this.context = context;
     }
 
     public void initialize() {
-        historyManager.initialize();
-        urlBasedMenuResolver.initialize();
-        toolBasedMenuResolver.initialize();
-        frameUpdater.initialize();
-        scriptManager.initialize();
-        workspaceEventListener.initialize();
-        workspaceOnboardingBootstrapper.initialize();
-        sessionManager.initialize();
+        context.historyManager.initialize();
+        context.urlBasedMenuResolver.initialize();
+        context.toolBasedMenuResolver.initialize();
+        context.frameUpdater.initialize();
+        context.scriptManager.initialize();
+        context.workspaceEventListener.initialize();
+        context.workspaceOnboardingBootstrapper.initialize();
+        context.sessionManager.initialize();
         // Composition Root — DOM 최상위 배치 순서를 한 곳에서 명시한다.
         // AppBar(최상단 고정) → MobileTabs(AppBar 바로 아래) → Progress(상단 indicator)
         // → Content(Drawer + 본문). Drawer 의 backdrop-filter 가 containing block 을
         // 오염시키지 않도록 fixed 위젯은 반드시 body 직속에 놓는다.
-        body().add(appBar);
-        body().add(mobileTabs);
-        body().add(progressElement);
-        body().add(contentElement);
+        body().add(context.appBar);
+        body().add(context.mobileTabs);
+        body().add(context.progressElement);
+        body().add(context.contentElement);
         publishBridges();
     }
 
     private void publishBridges() {
-        WindowProgressBridge.register(value -> progressObserver.next(jsToProgress(value)));
-        WindowRenderBridge.register(value -> { Render r = jsinterop.base.Js.cast(value); renderObserver.next(r); });
-        WindowUriBridge.register(uriObserver::next);
-        labelProvider.subscribe(labels -> WindowLabelBridge.publish(labels));
+        WindowProgressBridge.register(value -> context.progressObserver.next(jsToProgress(value)));
+        WindowRenderBridge.register(value -> { Render r = jsinterop.base.Js.cast(value); context.renderObserver.next(r); });
+        WindowUriBridge.register(context.uriObserver::next);
+        context.labelProvider.subscribe(labels -> WindowLabelBridge.publish(labels));
         DomGlobal.window.dispatchEvent(new CustomEvent<>("handbook-shell-ready"));
     }
 

@@ -341,16 +341,20 @@ classDiagram
         modules: Module, ApiModule, I18nModule, HostSharedModule
         +shellInitializer(): ShellInitializer
     }
+    class ShellContext {
+        <<@Singleton>>
+        +HistoryManager historyManager
+        +UrlBasedMenuResolver urlResolver
+        +ToolBasedMenuResolver toolResolver
+        +FrameUpdater frameUpdater
+        +ModuleScriptManager scriptManager
+        +ProgressElement progressElement
+        +ContentElement contentElement
+        +SessionPollingService sessionPollingService
+    }
     class ShellInitializer {
         <<@Singleton>>
-        -HistoryManager
-        -UrlBasedMenuResolver
-        -ToolBasedMenuResolver
-        -FrameUpdater
-        -ModuleScriptManager
-        -ProgressElement
-        -ContentElement
-        -SessionPollingService
+        -ShellContext context
         +initialize()
     }
     class SessionPollingService {
@@ -405,6 +409,7 @@ classDiagram
 
     Application --> Component : DaggerComponent.create()
     Component --> ShellInitializer
+    ShellInitializer --> ShellContext
     ShellInitializer --> WindowProgressBridge : register(progress)
     ShellInitializer --> WindowUriBridge : register(uri)
     ShellInitializer --> WindowLabelBridge : publish(labels)

@@ -305,8 +305,16 @@ classDiagram
         -initBoxHandlers(elem: TypeElement)
         -handleKeyDown(e: KeyboardEvent)
     }
+    class EditorContext {
+        <<@Singleton>>
+        +ChangeTracker changeTracker
+        +TypeList typeList
+        +CanvasMode canvasMode
+        +ActionManager actionManager
+    }
     class StatusHeaderElement {
         <<@Singleton>>
+        -EditorContext context
         -HTMLDivElement workspaceInfo
         -HTMLDivElement typeInfo
         -HTMLDivElement status
@@ -394,6 +402,7 @@ classDiagram
     CanvasElement --> BoxContextMenuElement
     CanvasElement --> StatusHeaderElement
     CanvasElement --> ToolRailElement
+    StatusHeaderElement --> EditorContext
     ToolRailElement *-- Tool
     BoxElementFactory ..> TypeElement : creates
     TypeElement *-- ValueListElement

@@ -195,6 +195,30 @@ type-ui의 속성 편집에서 Array/Map 타입의 서브 타입 에디터를 �
 
 ---
 
+## Parameter Object 패턴 (생성자 과잉 주입 해결)
+
+Dagger 주입 시 생성자 인자가 5개 이상인 경우, 연관된 의존성들을 묶어 하나의 객체(예: `EditorContext`, `ShellContext`)로 캡슐화하는 패턴이다.
+
+### 구조
+- 성격이 유사하거나 함께 사용되는 의존성들을 묶어 `XXXContext` 또는 `XXXDependencies` 형태의 Parameter Object를 정의한다.
+- 5개 이상의 의존성을 가지는 클래스는 이 Parameter Object를 단일 생성자 파라미터로 주입받는다.
+
+### 장점
+- **응집도 향상**: 연관된 의존성들을 논리적인 그룹으로 묶어 관리할 수 있다.
+- **유연성 확보**: 새로운 의존성이 추가되거나 기존 의존성이 제거될 때, 의존성을 사용하는 클래스의 생성자 시그니처를 변경하지 않고 Parameter Object만 수정하면 된다.
+
+### 규칙
+- 생성자 파라미터가 5개를 초과하는 경우 Parameter Object 추출을 고려한다.
+- Context 클래스 내 필드들은 `public` (또는 Kotlin의 경우 프로퍼티)으로 선언하여 접근을 용이하게 한다.
+
+### 적용 모듈
+| 모듈 | Context 클래스 | 주입 대상 |
+|------|--------------|-----------|
+| **type-ui** | `EditorContext` | `StatusHeaderElement` 등 |
+| **shell-ui** | `ShellContext` | `ShellInitializer` 등 |
+
+---
+
 ## CQRS with External Search Engine (PostgreSQL + ES)
 
 데이터의 원천 저장(Source of Truth)과 고성능 검색(Search)을 분리하는 CQRS 패턴을 구현한다.
