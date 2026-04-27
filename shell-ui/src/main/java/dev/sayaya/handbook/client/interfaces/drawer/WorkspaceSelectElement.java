@@ -1,9 +1,13 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.domain.Workspace;
+import dev.sayaya.handbook.client.usecase.SessionContext;
+import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
 import dev.sayaya.handbook.client.usecase.WorkspaceList;
+import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.ui.elements.SelectElementBuilder.OutlinedSelectElementBuilder;
 import elemental2.dom.HTMLElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -15,13 +19,13 @@ import static dev.sayaya.ui.elements.SelectElementBuilder.select;
 /**
  * 워크스페이스 선택 드롭다운.
  *
- * <p><b>책임:</b> {@link WorkspaceList} 를 구독해 사용자 소유 워크스페이스 목록을 select
- * option 으로 렌더한다. 빈 목록일 때는 자동 disabled.</p>
- *
- * <p><b>배치:</b> 2026-04 AppBar 도입 이후 {@link ShellAppBarElement} 의 center slot 에 상시
- * 노출된다. 이전에는 Drawer header 에 있어 {@link dev.sayaya.handbook.client.usecase.MenuRailMode}
- * 상태(COLLAPSE/HIDE) 에 따라 자체 opacity/width 로 숨기는 로직이 있었으나, 전역 AppBar 로
- * 이관되면서 MenuRailMode 종속 숨김 로직은 제거됨. 워크스페이스는 언제나 변경 가능.</p>
+ * <p><b>책임:</b>
+ * <ul>
+ *   <li>{@link WorkspaceList} 를 구독해 사용자 소유 워크스페이스 목록을 select option 으로 렌더</li>
+ *   <li>사용자가 워크스페이스 변경 시 {@link SessionContext} 의 {@code workspaceId} 를 갱신</li>
+ *   <li>현재 URL에서 이전 워크스페이스 ID를 새 ID로 교체하여 {@code uri} 스트림에 반영</li>
+ *   <li>{@link SessionContext} 를 구독하여 외부(URL 등)에서 변경된 워크스페이스 ID를 UI에 동기화</li>
+ * </ul></p>
  */
 @Singleton
 public class WorkspaceSelectElement implements IsElement<HTMLElement> {
@@ -29,8 +33,30 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
     private List<Workspace> workspaces;
 
     @Inject
-    WorkspaceSelectElement(WorkspaceList workspaces) {
+    WorkspaceSelectElement(WorkspaceList workspaces, SessionContext sessionContext, BehaviorSubject<String> uri) {
         workspaces.subscribe(this::update);
+        sessionContext.subscribe(ctx -> {
+            String wsId = ctx.get("workspaceId");
+            if (wsId != null && !wsId.equals(_this.element().value)) {
+                _this.element().value = wsId;
+            }
+        });
+        _this.on(EventType.change, evt -> {
+            String wsId = _this.element().value;
+            String currentUri = uri.getValue();
+            if (currentUri != null) {
+                // WorkspaceEventListener 의 정적 메서드를 활용해 현재 ID 추출
+                String oldWsId = WorkspaceEventListener.extractWorkspaceId(currentUri);
+                if (oldWsId != null && !oldWsId.equals(wsId)) {
+                    String newUri = currentUri.replace("/workspace/" + oldWsId, "/workspace/" + wsId);
+                    uri.next(newUri);
+                } else if (oldWsId == null) {
+                    // 워크스페이스 컨텍스트가 없는 URL에서 선택한 경우 대시보드로 이동
+                    uri.next("/workspace/" + wsId + "/dashboard");
+                }
+            }
+            sessionContext.set("workspaceId", wsId);
+        });
     }
 
     private void update(List<Workspace> workspaces) {

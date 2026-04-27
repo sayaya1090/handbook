@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.usecase.MenuSelected;
+import dev.sayaya.handbook.client.usecase.PlaceholderResolver;
 import dev.sayaya.handbook.client.usecase.ToolSelected;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.Tool;
@@ -38,12 +39,14 @@ public class NavEntryFactory {
     private final MenuSelected selected;
     private final ToolSelected toolSelected;
     private final LabelProvider labelProvider;
+    private final PlaceholderResolver placeholderResolver;
 
     @Inject
-    NavEntryFactory(MenuSelected selected, ToolSelected toolSelected, LabelProvider labelProvider) {
+    NavEntryFactory(MenuSelected selected, ToolSelected toolSelected, LabelProvider labelProvider, PlaceholderResolver placeholderResolver) {
         this.selected = selected;
         this.toolSelected = toolSelected;
         this.labelProvider = labelProvider;
+        this.placeholderResolver = placeholderResolver;
     }
 
     /**
@@ -52,8 +55,9 @@ public class NavEntryFactory {
      * 시맨틱). click 시 {@link MenuSelected} 발행.
      */
     public HTMLElement populateMenuTab(PrimaryTabElementBuilder tb, Menu menu) {
+        String href = placeholderResolver.resolve(menu.url());
         return MenuTabBuilder.primaryTab(tb, menu.icon(), "menuTitle", menu.title(),
-                labelProvider, () -> selected.next(menu));
+                href, labelProvider, () -> selected.next(menu));
     }
 
     /**
@@ -62,8 +66,9 @@ public class NavEntryFactory {
      */
     public HTMLElement renderMenuItem(Menu menu, Runnable afterSelect) {
         HTMLContainerBuilder<HTMLElement> mi = htmlContainer("md-menu-item", HTMLElement.class);
+        String href = placeholderResolver.resolve(menu.url());
         return MenuTabBuilder.overflowMenuItem(mi, menu.icon(), "menuTitle", menu.title(),
-                labelProvider, () -> {
+                href, labelProvider, () -> {
                     selected.next(menu);
                     if (afterSelect != null) afterSelect.run();
                 });
@@ -75,6 +80,6 @@ public class NavEntryFactory {
      */
     public HTMLElement populateToolTab(PrimaryTabElementBuilder tb, Tool tool) {
         return MenuTabBuilder.primaryTab(tb, tool.icon(), "toolTitle", tool.title(),
-                labelProvider, () -> toolSelected.next(tool), "tool-tab");
+                null, labelProvider, () -> toolSelected.next(tool), "tool-tab");
     }
 }

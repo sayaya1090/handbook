@@ -22,6 +22,14 @@ import java.util.List;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
+
+import javax.inject.Singleton;
+import java.util.List;
+
+import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
+
 @dagger.Module
 public class DrawerMock {
     public static final Menu[] menu = new Menu[] {
@@ -79,6 +87,13 @@ public class DrawerMock {
             .script("js/login/login.nocache.js")
             .bottom(true)
             .appBarSlot("trailing")
+            .build(),
+        Menu.builder()
+            .title("Dynamic Menu")
+            .order("D")
+            .icon("fa-cubes")
+            .url("/workspace/{workspaceId}/type")
+            .urls("^/workspace/\\{workspaceId\\}/type$")
             .build()
     };
     private static final User user = new User();
@@ -89,7 +104,13 @@ public class DrawerMock {
         return () -> behavior(user);
     }
     @Provides @Singleton WorkspaceRepository provideWorkspaceRepository() {
-        return () -> behavior(List.<Workspace>of());
+        var ws1 = Js.<Workspace>cast(JsPropertyMap.of());
+        Js.asPropertyMap(ws1).set("id", "ws-1");
+        Js.asPropertyMap(ws1).set("name", "Workspace 1");
+        var ws2 = Js.<Workspace>cast(JsPropertyMap.of());
+        Js.asPropertyMap(ws2).set("id", "ws-2");
+        Js.asPropertyMap(ws2).set("name", "Workspace 2");
+        return () -> behavior(List.of(ws1, ws2));
     }
     @Provides @Singleton BehaviorSubject<String> provideUri() {
         return behavior(null);

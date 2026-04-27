@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-15: 워크스페이스 URL 연동 구현 → PlaceholderResolver/SessionContext 도입
 - 2026-04-18: 메뉴 클릭 URL 동기화 -> MenuSelected-HistoryManager 양방향 동기화 설계 확인
 - 2026-04-23: 온보딩 레이스 컨디션 수정 -> 메뉴 로딩이 워크스페이스 체크보다 선행되도록 보장
 - 2026-04-23: GWT 모듈 레이지 로딩 트리거 개선 -> Onboarding Bootstrapper 에서 window.location.hash 를 사용하여 workspace-ui 모듈이 정상적으로 로드되도록 수정
@@ -14,10 +15,12 @@
 
 ## 탐색 패턴
 
-(미확보)
+- **URL 정규식 매칭 전 예약어 치환 (2026-05-15)**: `UrlBasedMenuResolver` 등에서 메뉴 활성화 여부를 판단할 때, `menu.urlRegex` 를 그대로 쓰지 말고 `PlaceholderResolver` 를 통해 `{workspaceId}` 등 동적 세그먼트를 현재 컨텍스트 값으로 치환한 후 매칭해야 한다. 치환되지 않은 정규식은 가변 ID 경로(예: `/w/123/dashboard`)에서 항상 매칭 실패를 유발한다.
 
 ## 반복 함정
 
+- **SessionContext 를 통한 반응형 컨텍스트 관리 (2026-05-15)**: 워크스페이스 전환처럼 전역 상태가 변경될 때 UI 가 즉각 반응해야 하는 경우, 단순 싱글톤 필드가 아닌 `SessionContext` (Observable 모델)를 사용한다. `UrlBasedMenuResolver` 는 이 컨텍스트를 구독하여 URL 변화뿐 아니라 "세션 상태 변화(예: 워크스페이스 ID 확정)" 시점에도 메뉴 선택 상태를 재계산함으로써 레이스 컨디션을 방지한다.
+- **PlaceholderResolver 와 {workspaceId} 예약어 규약 (2026-05-15)**: 프레임워크 수준에서 `{workspaceId}` 는 현재 선택된 워크스페이스의 고유 식별자로 규약한다. 메뉴 정의(`menus.md`)의 URL 패턴에 이 예약어를 사용하면, `PlaceholderResolver` 가 `SessionContext` 의 현재 값을 주입하여 런타임 URL 을 생성한다. 신규 예약어 추가 시 `PlaceholderResolver` 에 치환 로직을 반드시 포함해야 한다.
 - **비활성화된 메뉴의 호버 peek 차단 (2026-04-23)**: `MenuRailItemElement` 가 `[disabled]` 상태일 때도 `mouseover` 이벤트가 `MenuHover` 를 발행하면, 툴레일이 열려 비정상적인 UI 전환이 발생한다. 이벤트 핸들러 최상단에서 `element().hasAttribute("disabled")` 가드 필수.
 - **Drawer 에서 "rail 상태와 무관하게 항상 보여야 하는 컨트롤" 은 rail 의 자식이 아니라 drawer 직속에 mount** — rail 에 `[hide]` (width:0 + overflow:hidden) 가 걸리면 자식도 함께 잘린다. 햄버거처럼 "menu-rail HIDE 여도 drawer 가 visible 인 모든 순간에는 노출" 이 요구사항이면 `.drawer > .body` 의 sibling (drawer flex-column 의 첫 자식) 으로 두고 rail 만 flex:1 min-height:0 으로 둔다. rail 상단 mount 는 "rail 이 보이는 동안만" 의 세트에 해당. (2026-04-18 C)
 - **`@JsOverlay` 재귀 호출 금지** — GWT ReferenceError. static 헬퍼로 우회.

@@ -37,7 +37,7 @@ sequenceDiagram
 | **선행조건** | 워크스페이스 선택 완료, Shell이 dashboard-ui 모듈을 로딩 |
 | **정상 흐름** | 1. Shell이 `js/dashboard/dashboard.nocache.js`를 동적 로딩한다.<br>2. `DashboardApi.fetchStats()`로 워크스페이스 통계를 조회한다.<br>3. `StatsProvider`에 통계가 발행되고 `StatsCardElement`가 타입 수, 문서 수, 사용자 수를 MD3 Card로 표시한다. |
 | **결과** | 3개의 통계 카드(타입 수, 문서 수, 사용자 수)가 대시보드 상단에 표시된다. |
-| **요구사항** | 6.2 대시보드 API 통합 — API URL을 워크스페이스 기반으로 구성 (GET /workspace/{id}/quality-issues, GET /workspace/{id}/agent-activity) |
+| **요구사항** | 6.2 대시보드 API 통합 — API URL을 워크스페이스 기반으로 구성 (GET /workspace/{workspaceId}/quality-issues, GET /workspace/{workspaceId}/agent-activity) |
 
 ## UC-DB2: 품질 현황 조회
 
@@ -111,7 +111,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 대시보드 로딩 완료, 워크스페이스 SSE 연결 상태 |
-| **정상 흐름** | 1. `DashboardApi.fetchActiveExecutions()`로 현재 진행 중인 에이전트 실행 목록을 조회한다 (GET /assistant/executions?workspace={id}).<br>2. `ActiveExecutionsWidget`이 각 실행의 executionId, 의도(intent), 현재 그룹/전체 그룹, 병렬 여부, 진행률(%)을 MD3 Card로 표시한다.<br>3. 워크스페이스 SSE에서 AGENT_COMMAND `type:"progress"` 이벤트를 수신하여 해당 실행의 진행률을 실시간 갱신한다.<br>4. `type:"complete"` 수신 시 해당 실행을 완료 상태로 전환하고, 5초 후 목록에서 제거한다. |
+| **정상 흐름** | 1. `DashboardApi.fetchActiveExecutions()`로 현재 진행 중인 에이전트 실행 목록을 조회한다 (GET /assistant/executions?workspace={workspaceId}).<br>2. `ActiveExecutionsWidget`이 각 실행의 executionId, 의도(intent), 현재 그룹/전체 그룹, 병렬 여부, 진행률(%)을 MD3 Card로 표시한다.<br>3. 워크스페이스 SSE에서 AGENT_COMMAND `type:"progress"` 이벤트를 수신하여 해당 실행의 진행률을 실시간 갱신한다.<br>4. `type:"complete"` 수신 시 해당 실행을 완료 상태로 전환하고, 5초 후 목록에서 제거한다. |
 | **대안 흐름** | 진행 중인 실행이 없는 경우 "활성 에이전트 실행 없음" 메시지를 표시한다. |
 | **특이사항** | 초기 데이터는 REST API로 조회하고, 이후 SSE 이벤트로 실시간 갱신하는 하이브리드 방식이다. |
 
@@ -121,7 +121,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 대시보드 로딩 완료, 1건 이상의 완료된 에이전트 실행이 존재 |
-| **정상 흐름** | 1. `DashboardApi.fetchArtifacts()`로 아티팩트 목록을 조회한다 (GET /assistant/artifacts?workspace={id}).<br>2. `ArtifactListWidget`이 최근 아티팩트를 카드 형태로 표시한다. 각 카드에 executionId, summary(실행 결과 요약), changes 수, timestamp가 포함된다.<br>3. 기존 `AgentActivityList`의 활동 행에 아티팩트가 있는 경우 "아티팩트 보기" 링크를 추가한다.<br>4. 링크 클릭 시 해당 아티팩트의 상세 변경 목록(type/target/description)을 펼쳐 표시한다. |
+| **정상 흐름** | 1. `DashboardApi.fetchArtifacts()`로 아티팩트 목록을 조회한다 (GET /assistant/artifacts?workspace={workspaceId}).<br>2. `ArtifactListWidget`이 최근 아티팩트를 카드 형태로 표시한다. 각 카드에 executionId, summary(실행 결과 요약), changes 수, timestamp가 포함된다.<br>3. 기존 `AgentActivityList`의 활동 행에 아티팩트가 있는 경우 "아티팩트 보기" 링크를 추가한다.<br>4. 링크 클릭 시 해당 아티팩트의 상세 변경 목록(type/target/description)을 펼쳐 표시한다. |
 | **대안 흐름** | 아티팩트가 없는 경우 "에이전트 아티팩트 없음" 메시지를 표시한다. |
 
 ## UC-DB6: 감사 로그 타임라인

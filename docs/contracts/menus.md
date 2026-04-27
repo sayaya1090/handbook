@@ -57,12 +57,24 @@ interface Menu {
     String script();      // GWT nocache.js 경로 (동적 로딩 대상)
     boolean bottom();     // 하단 고정 여부 (MenuRail/MobileTabs 내 정렬 힌트)
     String appBarSlot();  // null | "leading" | "center" | "trailing"  ← AppBar 승격 slot
-    String url();         // 클릭 시 브라우저 주소창에 반영될 대표 URL (Clean URL)
-    List<String> urlRegex(); // 브라우저 URL 기반으로 이 메뉴를 자동 선택(매칭)할 때 사용되는 정규식 목록
+    String url();         // 클릭 시 브라우저 주소창에 반영될 대표 URL (Clean URL). {workspaceId} 예약어 사용 가능.
+    List<String> urlRegex(); // 브라우저 URL 기반으로 이 메뉴를 자동 선택(매칭)할 때 사용되는 정규식 목록. {workspaceId} 예약어 사용 가능.
     Set<SessionStateKind> allowedSessionStates(); // null/누락 ⇒ 모든 상태 노출 (무제약). 요구사항 §3.24
     // 향후 href 필드 추가 검토 (SEO 랜딩 정적 링크용 — landing.md 참조)
 }
 ```
+
+### `url` 및 `urlRegex` 예약어(Placeholder) 규약
+
+`url` 및 `urlRegex` 필드에는 `{key}` 형태의 예약어를 사용할 수 있다. 이들은 렌더링(url) 및 라우팅 매칭(urlRegex) 시점에 현재 세션 컨텍스트 값으로 치환된다.
+
+- **`{workspaceId}`**: 현재 선택된 워크스페이스의 고유 식별자로 치환된다.
+  - 예 (url): `/workspace/{workspaceId}/types` → `/workspace/ws-777/types`
+  - 예 (urlRegex): `^/workspace/\{workspaceId\}/types$` → `^/workspace/ws-777/types$`
+- **치환 시점**:
+  - `url`: 메뉴 아이템 렌더링 직전 및 클릭 시점에 치환되어 브라우저 주소창에 반영된다.
+  - `urlRegex`: `UrlBasedMenuResolver`가 현재 브라우저 URL과 비교하기 직전에 현재 워크스페이스 컨텍스트 값을 사용하여 정규식 문자열 내의 예약어를 실제 값으로 치환한 후 매칭을 수행한다.
+- **이스케이프 주의**: `urlRegex`는 정규표현식이므로 `{}`가 정규식 문법(수량자)으로 오인되지 않도록 처리해야 한다. 치환 엔진은 `{workspaceId}` 리터럴을 찾아 실제 ID로 바꾼 뒤 `JsRegExp`로 컴파일한다.
 
 ### `title` i18n 키 규약
 

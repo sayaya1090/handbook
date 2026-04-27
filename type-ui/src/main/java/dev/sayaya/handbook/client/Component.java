@@ -29,4 +29,12 @@ public interface Component {
     dev.sayaya.handbook.client.usecase.TypeSearchProvider typeSearchProvider();
     dev.sayaya.handbook.client.usecase.TypeEventHandler typeEventHandler();
     dev.sayaya.handbook.client.components.ToastContainer toastContainer();
+    dev.sayaya.handbook.client.usecase.TypeRepository typeRepository();
+    dev.sayaya.handbook.client.usecase.LayoutRepository layoutRepository();
+    dev.sayaya.handbook.client.usecase.TypeList typeList();
+    dev.sayaya.handbook.client.usecase.PositionMap positionMap();
+    dev.sayaya.handbook.client.components.ChangeTracker changeTracker();
+    dev.sayaya.handbook.client.components.ActionManager actionManager();
+    dev.sayaya.handbook.client.usecase.LayoutProvider layoutProvider();
+    dev.sayaya.handbook.client.usecase.LayoutList layoutList();
 }

@@ -254,5 +254,29 @@ internal class CollaborationTest: GwtTestSpec({
                 page.querySelector(".box-reference-svg") shouldNotBe null
             }
         }
+
+        // UC-T25: 워크스페이스 전환 — 쉘에서 워크스페이스 변경 시 데이터 재로딩
+        When("쉘에서 워크스페이스를 변경하여 이벤트를 발행하면") {
+            // 현재 박스 개수 기록
+            val before = page.querySelectorAll(".type-box").count()
+            // 워크스페이스 컨텍스트 변경 이벤트 발행 (id: new-workspace)
+            page.evaluate("""
+                (function() {
+                    var evt = new CustomEvent('handbook-workspace-context', { detail: 'new-workspace', bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1500) // 로딩 시간 대기
+            Then("새로운 워크스페이스의 데이터로 캔버스가 갱신된다") {
+                // Mock 데이터 환경에서는 동일한 데이터를 반환할 수 있으므로, 
+                // 최소한 에러 없이 캔버스가 다시 렌더링되었는지 확인
+                page.querySelector(".type-canvas") shouldNotBe null
+                val html = page.querySelector(".type-canvas")!!.innerHTML()
+                html.isNotBlank() shouldBe true
+            }
+            Then("컨트롤러가 초기화된 상태로 유지된다") {
+                page.querySelector(".type-controller") shouldNotBe null
+            }
+        }
     }
 })

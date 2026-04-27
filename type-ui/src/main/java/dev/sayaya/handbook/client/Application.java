@@ -1,10 +1,12 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import dev.sayaya.handbook.client.interfaces.api.LayoutApi;
+import dev.sayaya.handbook.client.interfaces.api.TypeApi;
+import dev.sayaya.handbook.client.usecase.action.LoadAction;
 import dev.sayaya.handbook.domain.Render;
-import dev.sayaya.handbook.usecase.WindowRenderBridge;
-import dev.sayaya.handbook.usecase.WindowStateProviderBridge;
-import dev.sayaya.handbook.usecase.WindowSearchProviderBridge;
+import dev.sayaya.handbook.usecase.*;
+import elemental2.dom.DomGlobal;
 
 import static org.jboss.elemento.Elements.div;
 
@@ -18,6 +20,31 @@ public class Application implements EntryPoint {
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
         injectCss("css/type-ui.css");
+
+        // 워크스페이스 ID 구독 및 API 주입 (실시간 감시 포함)
+        WindowWorkspaceEventBridge.receiver().workspaceId().subscribe(workspaceId -> {
+            // workspaceId가 null이면 현재 URL에서 추출 시도 (새로고침 등 초기 진입 케이스)
+            String wsId = workspaceId != null ? workspaceId : extractWorkspaceId(DomGlobal.window.location.pathname);
+            if (wsId == null) return;
+            
+            if (component.typeRepository() instanceof TypeApi) {
+                ((TypeApi) component.typeRepository()).setWorkspace(wsId);
+            }
+            if (component.layoutRepository() instanceof LayoutApi) {
+                ((LayoutApi) component.layoutRepository()).setWorkspace(wsId);
+            }
+            // 워크스페이스가 결정되었거나 바뀌었으므로 데이터를 로드
+            new LoadAction(
+                    component.typeRepository(),
+                    component.layoutRepository(),
+                    component.typeList(),
+                    component.positionMap(),
+                    component.changeTracker(),
+                    component.actionManager(),
+                    component.layoutProvider(),
+                    component.layoutList()
+            ).execute();
+        });
 
         // 워크스페이스 이벤트 핸들러 초기화 (실시간 협업)
         component.typeEventHandler().init();
@@ -41,6 +68,22 @@ public class Application implements EntryPoint {
         // + shell #content(100dvh) 뒤에 스택되어 뷰포트 밖으로 밀려나는 회귀를 유발한다.
         Render render = frame -> { frame.append(container); return true; };
         WindowRenderBridge.next(render);
+    }
+
+    /**
+     * URL에서 워크스페이스 ID를 추출한다. (WorkspaceEventListener와 동일 규약)
+     * 예: "/workspace/abc-123/types" -> "abc-123"
+     */
+    private static String extractWorkspaceId(String path) {
+        if (path == null) return null;
+        int idx = path.indexOf("/workspace/");
+        if (idx < 0) return null;
+        String rest = path.substring(idx + "/workspace/".length());
+        int slashIdx = rest.indexOf('/');
+        String wsId = slashIdx >= 0 ? rest.substring(0, slashIdx) : rest;
+        int queryIdx = wsId.indexOf('?');
+        if (queryIdx >= 0) wsId = wsId.substring(0, queryIdx);
+        return wsId.isEmpty() ? null : wsId;
     }
 
     /** 지정된 CSS 파일을 &lt;link&gt; 요소로 document.head에 추가한다. */

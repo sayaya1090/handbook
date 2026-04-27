@@ -27,23 +27,24 @@ Java 레벨의 인터페이스만으로는 런타임 연결이 불가능하다. 
 | `WindowProgressBridge` | `window.__handbook_progress` | shell-ui: `register(observer)` | agent-ui: `next(progress)` |
 | `WindowUriBridge` | `window.__handbook_uri` | shell-ui: `register(observer)` | agent-ui: `next(uri)` |
 | `WindowLabelBridge` | `window.__handbook_labels` | shell-ui: `publish(labels)` | agent-ui: `subscribe(callback)` |
+| `WindowWorkspaceEventBridge` | `CustomEvent('handbook-workspace-event')` <br> `CustomEvent('handbook-workspace-context')` | shell-ui: `publish(type, payload)`, `publishWorkspace(id)` | type-ui/document-ui: `receiver()` |
 
 ## 사용법
 
-### 발행 측 (agent-ui)
+### 발행 측 (agent-ui / shell-ui)
 
 ```java
-// MutateCommand 수신 시
+// MutateCommand 수신 시 (agent-ui)
 WindowMutationBridge.publish(changes);
 
-// 상태 조회
-String json = WindowStateProviderBridge.snapshot();
+// 워크스페이스 SSE 이벤트 발행 (shell-ui)
+WindowWorkspaceEventBridge.publish("TYPE_CREATED", json);
 
-// 검색
-Observable<String> result = WindowSearchProviderBridge.search("customer");
+// 현재 워크스페이스 ID 컨텍스트 발행 (shell-ui)
+WindowWorkspaceEventBridge.publishWorkspace("ws-123");
 ```
 
-### 구독 측 (type-ui)
+### 구독 측 (type-ui / document-ui)
 
 ```java
 // Dagger Module에서 MutationReceiver 제공
@@ -51,9 +52,10 @@ Observable<String> result = WindowSearchProviderBridge.search("customer");
     return WindowMutationBridge.receiver();
 }
 
-// Application에서 StateProvider/SearchProvider 등록
-WindowStateProviderBridge.register(typeStateProvider);
-WindowSearchProviderBridge.register(query -> searchProvider.search(query));
+// 워크스페이스 이벤트 및 ID 구독
+WorkspaceEventReceiver receiver = WindowWorkspaceEventBridge.receiver();
+receiver.events().subscribe(event -> handle(event));
+receiver.workspaceId().subscribe(id -> updateContext(id));
 ```
 
 ## 도메인 타입 (domain 패키지)

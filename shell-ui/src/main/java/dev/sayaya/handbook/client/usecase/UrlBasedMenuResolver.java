@@ -21,17 +21,27 @@ public class UrlBasedMenuResolver {
     private final Observable<String> uri;
     private final MenuSelected select;
     private final DrawerMode drawer;
+    private final PlaceholderResolver placeholderResolver;
+    private final SessionContext sessionContext;
     private String lastKnownUri = null;
-    @Inject UrlBasedMenuResolver(MenuList menu, Observable<String> uri, MenuSelected select, DrawerMode drawer) {
+
+    @Inject UrlBasedMenuResolver(MenuList menu, Observable<String> uri, MenuSelected select,
+                                 DrawerMode drawer, PlaceholderResolver placeholderResolver,
+                                 SessionContext sessionContext) {
         this.menu = menu;
         this.uri = uri;
         this.select = select;
         this.drawer = drawer;
+        this.placeholderResolver = placeholderResolver;
+        this.sessionContext = sessionContext;
     }
+
     public void initialize() {
         menu.subscribe(this::update);
         uri.subscribe(this::onUriChanged);
+        sessionContext.subscribe(ctx -> update(menu.getValue()));
     }
+
     private void update(List<Menu> menu) {
         map.clear();
         if(menu != null && !menu.isEmpty()) {
@@ -39,10 +49,12 @@ public class UrlBasedMenuResolver {
             if(lastKnownUri != null) resolve(lastKnownUri);
         }
     }
+
     private void registerRegex(Menu menu) {
         if(menu == null || menu.urlRegex() == null) return;
         for(var regex : menu.urlRegex()) {
-            map.put(new JsRegExp(regex), menu);
+            String resolved = placeholderResolver.resolve(regex);
+            map.put(new JsRegExp(resolved), menu);
         }
     }
     private void onUriChanged(String newUri) {

@@ -17,12 +17,12 @@
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{id}/documents` | 문서 검색 (페이지네이션, 필터) |
-| GET | `/workspace/{id}/documents/search?q=` | 전문 검색 (data 필드 내 텍스트 매칭) |
-| GET | `/workspace/{id}/{type}/{serial}` | 특정 문서 조회 |
-| GET | `/workspace/{id}/{type}/{serial}/history` | 문서 이력 조회 (전체 버전) |
-| GET | `/workspace/{id}/{type}/{serial}/diff?date1=&date2=` | 두 시점 간 문서 diff |
-| GET | `/workspace/{id}/documents/export` | 문서 내보내기 (CSV/JSON, Content-Disposition: attachment) |
+| GET | `/workspace/{workspaceId}/documents` | 문서 검색 (페이지네이션, 필터) |
+| GET | `/workspace/{workspaceId}/documents/search?q=` | 전문 검색 (data 필드 내 텍스트 매칭) |
+| GET | `/workspace/{workspaceId}/{type}/{serial}` | 특정 문서 조회 |
+| GET | `/workspace/{workspaceId}/{type}/{serial}/history` | 문서 이력 조회 (전체 버전) |
+| GET | `/workspace/{workspaceId}/{type}/{serial}/diff?date1=&date2=` | 두 시점 간 문서 diff |
+| GET | `/workspace/{workspaceId}/documents/export` | 문서 내보내기 (CSV/JSON, Content-Disposition: attachment) |
 | GET | `/menus` | 문서 메뉴 정보 (Gateway 수집용) |
 
 ## persist-document와의 역할 분리

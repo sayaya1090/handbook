@@ -17,7 +17,9 @@ import jsinterop.base.Js;
  */
 public final class WindowWorkspaceEventBridge {
     private static final String EVENT_NAME = "handbook-workspace-event";
+    private static final String CONTEXT_EVENT_NAME = "handbook-workspace-context";
     private static final BehaviorSubject<String> subject = BehaviorSubject.behavior(null);
+    private static final BehaviorSubject<String> workspaceIdSubject = BehaviorSubject.behavior(null);
     private static boolean listenerRegistered = false;
 
     private WindowWorkspaceEventBridge() {}
@@ -37,10 +39,31 @@ public final class WindowWorkspaceEventBridge {
         DomGlobal.window.dispatchEvent(new CustomEvent<>(EVENT_NAME, init));
     }
 
-    /** 편집 모듈 측: WorkspaceEventReceiver를 반환한다. window 이벤트를 구독하여 subject로 전달. */
+    /**
+     * shell-ui 측: 현재 선택된 워크스페이스 ID가 변경되었음을 브라우저 전체에 발행한다.
+     */
+    public static void publishWorkspace(String workspaceId) {
+        @SuppressWarnings("unchecked")
+        CustomEventInit<String> init = Js.cast(CustomEventInit.create());
+        init.setDetail(workspaceId);
+        init.setBubbles(false);
+        DomGlobal.window.dispatchEvent(new CustomEvent<>(CONTEXT_EVENT_NAME, init));
+    }
+
+    /** 편집 모듈 측: WorkspaceEventReceiver를 반환한다. */
     public static WorkspaceEventReceiver receiver() {
         ensureListener();
-        return () -> subject.asObservable();
+        return new WorkspaceEventReceiver() {
+            @Override
+            public dev.sayaya.rx.Observable<String> events() {
+                return subject.asObservable();
+            }
+
+            @Override
+            public dev.sayaya.rx.Observable<String> workspaceId() {
+                return workspaceIdSubject.asObservable();
+            }
+        };
     }
 
     private static void ensureListener() {
@@ -53,6 +76,13 @@ public final class WindowWorkspaceEventBridge {
             String data = Js.cast(detail);
             if (data.isEmpty()) return;
             subject.next(data);
+        });
+        DomGlobal.window.addEventListener(CONTEXT_EVENT_NAME, evt -> {
+            CustomEvent<?> ce = Js.cast(evt);
+            Object detail = ce.detail;
+            if (detail == null) return;
+            String data = Js.cast(detail);
+            workspaceIdSubject.next(data);
         });
     }
 }

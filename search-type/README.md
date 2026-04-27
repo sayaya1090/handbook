@@ -16,10 +16,10 @@
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{id}/types` | 타입 조회 (기간 필터 선택) |
-| GET | `/workspace/{id}/types/{typeId}/versions` | 특정 타입의 모든 버전 조회 |
-| GET | `/workspace/{id}/types/{typeId}/diff?v1=&v2=` | 두 버전 간 diff |
-| GET | `/workspace/{id}/layouts` | 레이아웃 기간 목록 |
+| GET | `/workspace/{workspaceId}/types` | 타입 조회 (기간 필터 선택) |
+| GET | `/workspace/{workspaceId}/types/{typeId}/versions` | 특정 타입의 모든 버전 조회 |
+| GET | `/workspace/{workspaceId}/types/{typeId}/diff?v1=&v2=` | 두 버전 간 diff |
+| GET | `/workspace/{workspaceId}/layouts` | 레이아웃 기간 목록 |
 | GET | `/menus` | 타입 메뉴 정보 (Gateway 수집용) |
 
 ## persist-type과의 역할 분리

@@ -24,12 +24,14 @@ import javax.inject.Singleton;
 public class WorkspaceEventListener {
     private static final String BRIDGE_EVENT_NAME = "handbook-workspace-event";
     private final BehaviorSubject<String> uri;
+    private final SessionContext sessionContext;
     private EventSource eventSource;
     private String currentWorkspaceId;
 
     @Inject
-    WorkspaceEventListener(BehaviorSubject<String> uri) {
+    WorkspaceEventListener(BehaviorSubject<String> uri, SessionContext sessionContext) {
         this.uri = uri;
+        this.sessionContext = sessionContext;
     }
 
     public void initialize() {
@@ -38,6 +40,7 @@ public class WorkspaceEventListener {
 
     private void onUriChanged(String newUri) {
         String wsId = extractWorkspaceId(newUri);
+        sessionContext.set("workspaceId", wsId);
         if (wsId == null) {
             disconnect();
             currentWorkspaceId = null;
@@ -92,7 +95,7 @@ public class WorkspaceEventListener {
      * URL에서 워크스페이스 ID를 추출한다.
      * 예: "/workspace/abc-123/type" -> "abc-123"
      */
-    static String extractWorkspaceId(String url) {
+    public static String extractWorkspaceId(String url) {
         if (url == null) return null;
         int idx = url.indexOf("/workspace/");
         if (idx < 0) return null;

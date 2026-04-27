@@ -25,10 +25,12 @@ public class HistoryManager {
     private static final Logger logger = Logger.getLogger(HistoryManager.class.getName());
     private final BehaviorSubject<String> uri;
     private final MenuSelected menuSelected;
+    private final PlaceholderResolver placeholderResolver;
 
-    @Inject HistoryManager(BehaviorSubject<String> uri, MenuSelected menuSelected) {
+    @Inject HistoryManager(BehaviorSubject<String> uri, MenuSelected menuSelected, PlaceholderResolver placeholderResolver) {
         this.uri = uri;
         this.menuSelected = menuSelected;
+        this.placeholderResolver = placeholderResolver;
     }
 
     public void initialize() {
@@ -52,7 +54,7 @@ public class HistoryManager {
 
     private void onMenuSelected(Menu menu) {
         if (menu == null) return;
-        String targetUrl = menu.url();
+        String targetUrl = placeholderResolver.resolve(menu.url());
         elemental2.dom.DomGlobal.console.log("HistoryManager.onMenuSelected: title=" + menu.title() + ", targetUrl=" + targetUrl + ", currentUri=" + uri.getValue());
         if (targetUrl == null || targetUrl.isEmpty()) return;
 

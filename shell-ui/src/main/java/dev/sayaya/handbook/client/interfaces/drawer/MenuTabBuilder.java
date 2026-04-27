@@ -43,15 +43,11 @@ final class MenuTabBuilder {
     }
 
     /**
-     * {@code md-primary-tab} 호스트를 한 번에 조립해 native element 를 반환한다. outline(slot=icon)
-     * + filled(slot=active-icon) 두 아이콘을 대칭 배치하고 라벨 span, tooltip, highlight observer,
-     * click 핸들러, i18n 구독을 연결한다. MD3 md-primary-tab 이 active 속성 토글에 따라 두 슬롯을
-     * 자동 교체 렌더 + indicator 이동 애니메이션을 처리.
-     *
      * @param tb          데코레이트 대상 탭 빌더 (이미 parent md-tabs 에 attach 된 상태여야 함)
      * @param faIcon      FontAwesome 아이콘 클래스 (fa-xxx)
      * @param datasetKey  agent selector 용 data-* 키 이름 (menuTitle / toolTitle)
      * @param i18nKey     LabelProvider 해석 키. null 이면 dataset/라벨 모두 skip
+     * @param href        탭의 링크 URL. Clean URL 지원 및 중간 클릭(새 탭)용.
      * @param provider    라벨 해석용 LabelProvider
      * @param onClick     탭 click 시 실행할 핸들러
      * @param extraCss    추가 CSS 클래스 (tool 모드 탭은 {@code tool-tab})
@@ -59,9 +55,11 @@ final class MenuTabBuilder {
      */
     static HTMLElement primaryTab(PrimaryTabElementBuilder tb, String faIcon,
                                   String datasetKey, String i18nKey,
+                                  String href,
                                   LabelProvider provider, Runnable onClick,
                                   String... extraCss) {
         tb.css("menu-tab");
+        if (href != null) tb.attr("href", href);
         for (String c : extraCss) tb.element().classList.add(c);
         tb.add(IconElementBuilder.icon().css("fa-sharp", "fa-light", faIcon, "icon-outline")
                         .attr("slot", "icon"))
@@ -73,7 +71,14 @@ final class MenuTabBuilder {
         HTMLElement label = span().css("menu-tab-label").element();
         tab.appendChild(label);
         if (i18nKey != null) tab.dataset.set(datasetKey, i18nKey);
-        tb.on(EventType.click, evt -> onClick.run());
+        tb.on(EventType.click, evt -> {
+            // href 가 있으면 브라우저 기본 동작(이동)이 발생할 수 있는데,
+            // HistoryManager 를 통한 SPA 전환을 위해 기본 동작 방지 후 onClick 실행.
+            // 단, Ctrl/Cmd 클릭은 브라우저 기본 새 탭 열기에 맡김.
+            if (evt.ctrlKey || evt.metaKey) return;
+            evt.preventDefault();
+            onClick.run();
+        });
         TooltipCard tooltip = TooltipCard.anchor(tab).position("bottom").enabled(false);
         HighlightEffect.observe(tab,
                 () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
@@ -94,14 +99,17 @@ final class MenuTabBuilder {
      * @param faIcon      FontAwesome 아이콘 클래스
      * @param datasetKey  agent selector 용 data-* 키 이름
      * @param i18nKey     LabelProvider 해석 키. null 이면 dataset/라벨 모두 skip
+     * @param href        메뉴 아이템의 링크 URL.
      * @param provider    라벨 해석용 LabelProvider
      * @param onClick     아이템 click 시 실행할 핸들러
      * @return 조립 완료된 md-menu-item 의 native element
      */
     static HTMLElement overflowMenuItem(HTMLContainerBuilder<HTMLElement> mi, String faIcon,
                                         String datasetKey, String i18nKey,
+                                        String href,
                                         LabelProvider provider, Runnable onClick) {
         mi.css("menu-tab-menu-item");
+        if (href != null) mi.attr("href", href);
         HTMLElement icon = IconElementBuilder.icon()
                 .css("fa-sharp", "fa-light", faIcon, "icon-outline")
                 .attr("slot", "start").element();
@@ -110,7 +118,11 @@ final class MenuTabBuilder {
         headline.setAttribute("slot", "headline");
         mi.element().appendChild(headline);
         if (i18nKey != null) mi.element().dataset.set(datasetKey, i18nKey);
-        mi.on(EventType.click, evt -> onClick.run());
+        mi.on(EventType.click, evt -> {
+            if (evt.ctrlKey || evt.metaKey) return;
+            evt.preventDefault();
+            onClick.run();
+        });
         provider.subscribe(labels -> {
             String title = labels.getOrDefault(i18nKey, i18nKey != null ? i18nKey : "");
             headline.textContent = title;

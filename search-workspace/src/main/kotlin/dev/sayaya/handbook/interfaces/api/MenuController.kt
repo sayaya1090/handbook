@@ -57,7 +57,7 @@ class MenuController {
                 Tool.builder().title("workspace info").order("S1").icon("fa-information").iconType("sharp").build(),
                 Tool.builder().title("groups").order("S5").icon("fa-users-gear").iconType("sharp").build(),
                 Tool.builder().title("permissions").order("S9").icon("fa-key").iconType("sharp").build(),
-            ).url("/workspaces").urls("^/workspaces")
+            ).url("/workspace/{workspaceId}").urls("^/workspace/\\{workspaceId\\}(/.*)?$")
             // 워크스페이스 관리 메뉴는 활성 워크스페이스 선택 후에만 의미가 있음.
             // 계층 추론 없음 — AUTHENTICATED 만 선언하면 IN_WORKSPACE 에서 안 보이므로 두 값 다 필요하진 않지만,
             // 이 메뉴는 IN_WORKSPACE 전용이라 단일 선언으로 충분.

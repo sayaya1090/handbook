@@ -85,11 +85,12 @@ sequenceDiagram
     PM-->>Canvas: 박스 이동 + 겹침 해소
 ```
 
-## 타입 조회 (초기 로딩) 시퀀스
+## 타입 조회 (초기 로딩 및 전환) 시퀀스
 
 ```mermaid
 sequenceDiagram
-    participant Shell as Shell (ModuleScriptManager)
+    participant Shell as Shell (WorkspaceSelect)
+    participant Bridge as WindowWorkspaceEventBridge
     participant App as Application
     participant LA as LayoutApi
     participant LL as LayoutList
@@ -99,12 +100,16 @@ sequenceDiagram
     participant PM as PositionMap
     participant PRS as PeriodRecalculationService
     participant Canvas as CanvasElement
-    participant Ref as BoxReferenceElement
 
-    Shell->>App: type.nocache.js 로딩
-    App->>App: DaggerComponent.create()
-    App->>App: WindowStateProviderBridge.register()
-    App->>App: WindowSearchProviderBridge.register()
+    Shell->>Bridge: publishWorkspace(id)
+    Note over Bridge: CustomEvent('handbook-workspace-context')
+    
+    App->>Bridge: receiver().workspaceId().subscribe()
+    Bridge-->>App: workspaceId 발행
+    
+    App->>TA: setWorkspace(id)
+    App->>LA: setWorkspace(id)
+    
     Note over App: LoadAction 실행
     App->>LA: layouts()
     LA-->>LL: LayoutPeriod[] 발행
@@ -113,11 +118,10 @@ sequenceDiagram
     TA-->>TL: Set<TypeValue> 발행
     App->>LA: positions(selectedPeriod)
     LA-->>PM: Map<String,Position> 발행
+    
     TL-->>PRS: 타입 변경 감지
     PRS->>PRS: 기간 경계 재계산
-    PRS-->>LL: 기간 목록 갱신
     TL-->>Canvas: syncElements() → 카드 렌더링
-    TL-->>Ref: redraw() → SVG 화살표
 ```
 
 ## 속성 편집 시퀀스
@@ -631,6 +635,7 @@ sequenceDiagram
 | UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository | CollaborationTest: TYPE_CREATED 3건 연속 수신 → 캔버스/컨트롤러/SVG 정상 유지 검증, EdgeCaseTest: malformed/빈 JSON 이벤트 → 에러 없이 유지 |
 | UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedBoxElement, DeleteBoxAction, ChangeTracker | ❌ 테스트 미작성 (BulkDeleteButton 구현 완료, Ctrl+A 전체 선택 지원) |
 | UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions(), search-type TypeController.versions() (백엔드 구현 완료) | ❌ 테스트 미작성 (VersionHistoryPanel, versions API 구현 완료) |
-| UC-T25 (빈 상태 UI) | — | — | SpreadsheetElement (empty overlay) | ✅ 구현 완료 |
-| UC-T26 (삭제 확인) | — | — | ConfirmDialog (type-ui) | ✅ 구현 완료 |
-| UC-T27 (성공 피드백) | — | — | SaveButton, SubmitButton (SUCCESS 토스트) | ✅ 구현 완료 |
+| UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | CollaborationTest: 쉘 워크스페이스 변경 이벤트 시 데이터 갱신 확인 (UC-T25) |
+| UC-T26 (빈 상태 UI) | — | — | SpreadsheetElement (empty overlay) | ✅ 구현 완료 |
+| UC-T27 (삭제 확인) | — | — | ConfirmDialog (type-ui) | ✅ 구현 완료 |
+| UC-T28 (성공 피드백) | — | — | SaveButton, SubmitButton (SUCCESS 토스트) | ✅ 구현 완료 |

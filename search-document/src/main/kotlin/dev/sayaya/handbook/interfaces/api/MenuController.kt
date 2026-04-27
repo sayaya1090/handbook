@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux
 @RestController
 class MenuController {
     companion object {
-        val MENU: Menu = Menu.builder()
+        val DOCUMENTS_MENU: Menu = Menu.builder()
             .title("documents")
             .supportingText("Define Master Data")
             .order("A")
@@ -21,12 +21,23 @@ class MenuController {
             .script("js/data/data.nocache.js")
             .tools(
                 Tool.builder().title("View as Table").order("AE").icon("fa-table").iconType("sharp").build(),
-            ).url("/documents").urls("^/documents")
+            ).url("/workspace/{workspaceId}/documents").urls("^/workspace/\\{workspaceId\\}/documents$")
+            .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
+            .build()
+
+        val DASHBOARD_MENU: Menu = Menu.builder()
+            .title("dashboard")
+            .supportingText("Monitor Quality and Activity")
+            .order("C")
+            .icon("fa-chart-line")
+            .iconType("sharp")
+            .script("js/dashboard/dashboard.nocache.js")
+            .url("/workspace/{workspaceId}/dashboard").urls("^/workspace/\\{workspaceId\\}/dashboard$")
             .allowedSessionStates(SessionStateKind.IN_WORKSPACE)
             .build()
     }
 
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)
-    fun menus(): Flux<Menu> = Flux.just(MENU)
+    fun menus(): Flux<Menu> = Flux.just(DOCUMENTS_MENU, DASHBOARD_MENU)
 }
