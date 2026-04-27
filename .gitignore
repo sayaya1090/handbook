@@ -56,3 +56,4 @@ out/
 # Gemini 임시 비밀값 (JWT 쿠키 등) — 절대 커밋 금지
 .gemini/secrets/
 *.hprof
+**/src/test/webapp/
