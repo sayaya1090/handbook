@@ -201,11 +201,12 @@ sequenceDiagram
 - `HistoryManager`: HTML5 History API(`pushState`, `popstate`)를 사용하여 URL을 관리한다.
 - `UrlBasedMenuResolver`: 브라우저의 `pathname`을 정규화(origin, port, protocol 제거)하여 메뉴 `urlRegex`와 매칭한다.
 
-### 2. 서버 사이드 지원 (Gateway 구현 완료)
-브라우저에서 `/workspace/123/types`와 같은 UI 경로로 직접 접속하거나 새로고침할 때, 서버는 해당 경로에 대한 리소스를 찾는 대신 SPA 진입점인 `app.html`을 반환해야 한다.
+### 2. 서버 사이드 지원 (Gateway 스마트 라우팅)
+브라우저에서 `/types` 등 UI 경로로 직접 접속 시 SPA 진입점인 `app.html`을 반환하되, 동일 경로의 REST API 호출과는 충돌하지 않도록 **스마트 라우팅(Smart Routing)**을 적용한다.
 
-- **Spring Cloud Gateway**: 가장 높은 우선순위(`order: 0`)로 `ui-clean-urls` 라우트를 설정하여 `/types`, `/documents`, `/workspaces`, `/dashboard` 등 UI 경로에 대한 `Accept: text/html` 요청을 가로채 `/app.html`로 포워딩한다.
-- **클라우드 환경**: S3(ceph-rgw) 등 정적 자산 서버는 `app.html`을 서빙하며, Gateway가 `SetPath=/app.html` 필터를 통해 실제 경로를 변환하여 요청한다.
+- **Accept 헤더 기반 분리**: `ui-clean-urls` 라우트는 `Accept` 헤더에 `text/html`이 포함되어 있고, `application/json`이나 벤더 타입(`application/vnd.sayaya...`)이 **포함되지 않은 경우**에만 매칭된다. (Negative Lookahead 정규식 적용)
+- **우선순위 제어**: 가장 높은 우선순위(`order: 0`)로 설정하여 API 라우트보다 먼저 평가하되, 헤더 조건 불일치 시 하단의 API 라우트로 자연스럽게 fallthrough 되도록 설계한다.
+- **운영 설정 유의사항**: 운영 환경에서는 Helm 차트의 `ConfigMap`이 jar 내부의 `application.yml`을 **파일 단위로 완전히 대체(Overwrite)**한다. 따라서 소스 코드의 설정 변경 시 반드시 `charts/handbook/gateway/templates/configmap.yaml`에도 동일한 내용을 동기화해야 한다.
 
 ---
 

@@ -150,6 +150,7 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | Kargo warehouse 가 새 이미지 감지 못 함 | `strictSemvers: true` + jib `latest` 태그만 push | `strictSemvers: false` + jib 에 commit SHA 태그 추가 (`-Djib.to.tags=$SHORT_SHA`) |
 | `aws s3 sync` 가 같은 크기 파일 스킵 | Gradle 재현가능 빌드의 mtime 고정 + 동일 사이즈 | `aws s3 cp --recursive` 로 무조건 업로드. helm vendored tgz 갱신 필요 |
 | Gateway 라우트 0개 로딩 | 1) `spring.cloud.gateway.routes` (구 경로) 사용 — Spring Cloud Gateway 5.0부터 `spring.cloud.gateway.server.webflux.routes` 로 변경됨. 2) servlet classpath 오염 — activity 의존에서 `gwt-servlet-jakarta` 미제외 시 reactive auto-config 실패 | 프로퍼티 경로를 `spring.cloud.gateway.server.webflux.routes` 로 변경. activity 의존에 `exclude(group = "org.gwtproject", module = "gwt-servlet-jakarta")` 추가 |
+| Clean URL 직접 접속 시 404 또는 API 충돌 | 1) Gateway 라우트 누락 2) Accept 헤더 기반 분리 미흡 3) Helm ConfigMap 미동기화 | Gateway에 `ui-clean-urls` 라우트 추가 (order:0). Accept 헤더 정규식(`^(?!.*application/json).*text/html.*`)으로 API와 분리. Helm 차트 ConfigMap 동기화 필수 |
 | UI 모듈 렌더 안 됨 / 뷰포트 밖으로 밀림 | `Application.onModuleLoad()` 에서 `body().add(container)` 직접 호출. 전역 `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 y=100dvh 위치에 렌더됨 | `WindowRenderBridge.next(render)` 경유로 shell FrameUpdater 에 Render 전달 → Frame 엘리먼트 내부에 mount. 계약 상세는 `docs/contracts/frame.md` |
 
 상세 패턴/코드 예시는 `.gemini/skills/debugging.md` 참조.
