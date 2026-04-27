@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.domain.Workspace;
+import dev.sayaya.handbook.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.SessionContext;
 import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
 import dev.sayaya.handbook.client.usecase.WorkspaceList;

@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.SessionState;
-import dev.sayaya.handbook.client.domain.User;
+import dev.sayaya.handbook.domain.User;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;

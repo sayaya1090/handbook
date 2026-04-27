@@ -33,6 +33,7 @@ class WorkspaceServiceTest : BehaviorSpec({
         every { groupRepo.createAndAssign(any(), principal, "Admin", null) } returns Mono.just(
             Group(UUID.randomUUID(), UUID.randomUUID(), "Admin", null)
         )
+        every { groupRepo.save(any()) } answers { Mono.just(firstArg()) }
         every { eventPublisher.publishCreated(any()) } returns Mono.empty()
 
         When("create를 호출하면") {
@@ -49,8 +50,9 @@ class WorkspaceServiceTest : BehaviorSpec({
             Then("워크스페이스 저장 시 creator UUID 가 함께 전달된다 — created_by 감사 회귀 방지") {
                 verify(exactly = 1) { workspaceRepo.save(any(), creator) }
             }
-            Then("Admin 그룹이 생성되고 할당된다") {
+            Then("Admin 및 Member 그룹이 생성된다") {
                 verify { groupRepo.createAndAssign(any(), principal, "Admin", null) }
+                verify { groupRepo.save(match { it.name == "Member" }) }
             }
             Then("WORKSPACE_CREATED 이벤트가 발행된다") {
                 verify { eventPublisher.publishCreated(any()) }

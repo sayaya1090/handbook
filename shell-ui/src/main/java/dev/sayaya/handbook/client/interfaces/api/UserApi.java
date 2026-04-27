@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
-import dev.sayaya.handbook.client.domain.User;
+import dev.sayaya.handbook.domain.User;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.domain.Progress;

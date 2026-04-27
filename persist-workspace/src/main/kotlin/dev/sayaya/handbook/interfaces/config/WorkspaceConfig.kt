@@ -1,10 +1,6 @@
 package dev.sayaya.handbook.interfaces.config
 
-import dev.sayaya.handbook.usecase.GroupRepository
-import dev.sayaya.handbook.usecase.WebhookService
-import dev.sayaya.handbook.usecase.WorkspaceEventPublisher
-import dev.sayaya.handbook.usecase.WorkspaceRepository
-import dev.sayaya.handbook.usecase.WorkspaceService
+import dev.sayaya.handbook.usecase.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.r2dbc.config.EnableR2dbcAuditing
@@ -30,4 +26,10 @@ class WorkspaceConfig {
         eventPublisher: WorkspaceEventPublisher,
         workspaceTransactionalOperator: TransactionalOperator,
     ) = WorkspaceService(workspaceRepo, groupRepo, webhookService, eventPublisher, workspaceTransactionalOperator)
+
+    @Bean
+    fun groupService(groupRepo: GroupRepository) = GroupService(groupRepo)
+
+    @Bean
+    fun roleService(roleRepo: RoleRepository) = RoleService(roleRepo)
 }

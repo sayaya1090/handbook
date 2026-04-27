@@ -83,19 +83,23 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
         """).then().block()
         client.sql("""
             CREATE TABLE "group" (
+                id UUID NOT NULL,
                 workspace UUID NOT NULL,
                 name VARCHAR(255) NOT NULL,
+                description TEXT,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
                 created_by UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000',
-                PRIMARY KEY (workspace, name)
+                PRIMARY KEY (id)
             )
         """).then().block()
         client.sql("""
             CREATE TABLE group_member (
+                id UUID NOT NULL,
                 workspace UUID NOT NULL,
-                "group" VARCHAR(255) NOT NULL,
+                "group" UUID NOT NULL,
                 member UUID NOT NULL,
-                PRIMARY KEY (workspace, "group", member)
+                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                PRIMARY KEY (id)
             )
         """).then().block()
 

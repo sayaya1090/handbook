@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.usecase
 
+import dev.sayaya.handbook.domain.Group
 import dev.sayaya.handbook.domain.Workspace
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
@@ -32,6 +33,7 @@ class WorkspaceService(
 ) {
     /**
      * 새 워크스페이스를 생성한다. Admin 그룹을 함께 생성하고 생성자를 그 그룹의 첫 멤버로 배정한다.
+     * 추가로 빈 Member 그룹을 자동 생성하여 join 요청 시 사용할 수 있게 한다.
      *
      * @param creator 생성자 사용자 UUID — `workspace.created_by` 및 `last_modified_by` 에 기록된다.
      *   `group_member.member` 와 동일 출처(Principal) 에서 추출되어야 감사 일관성이 유지된다.
@@ -41,6 +43,7 @@ class WorkspaceService(
         val workspace = Workspace(UUID.randomUUID(), name, description)
         return workspaceRepo.save(workspace, creator)
             .delayUntil { groupRepo.createAndAssign(it, principal, GROUP_ADMIN, null) }
+            .delayUntil { groupRepo.save(Group(UUID.randomUUID(), workspace.id, GROUP_MEMBER, null)) }
             .delayUntil { eventPublisher.publishCreated(it) }
     }
 
@@ -79,5 +82,6 @@ class WorkspaceService(
 
     companion object {
         const val GROUP_ADMIN = "Admin"
+        const val GROUP_MEMBER = "Member"
     }
 }

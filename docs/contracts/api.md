@@ -46,6 +46,14 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 |--------|------|------|
 | POST | `/workspace` | 워크스페이스 생성 |
 | POST | `/workspace/{id}/join` | 워크스페이스 조인 |
+| POST | `/workspace/{ws}/groups` | 그룹 생성 |
+| GET | `/workspace/{ws}/groups` | 그룹 목록 조회 |
+| DELETE | `/workspace/{ws}/groups/{gid}` | 그룹 삭제 |
+| POST | `/workspace/{ws}/groups/{gid}/members/{uid}` | 그룹 멤버 추가 |
+| DELETE | `/workspace/{ws}/groups/{gid}/members/{uid}` | 그룹 멤버 삭제 |
+| GET | `/workspace/{ws}/groups/{gid}/roles` | 그룹의 역할 조회 |
+| POST | `/workspace/{ws}/groups/{gid}/roles` | 그룹에 역할 부여 |
+| DELETE | `/workspace/{ws}/groups/{gid}/roles/{role}` | 그룹의 역할 제거 |
 
 ## 타입
 

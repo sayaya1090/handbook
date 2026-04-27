@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain;
+package dev.sayaya.handbook.domain;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
-public final class Workspace {
+public final class User {
     private String id;
     private String name;
 }

@@ -19,50 +19,90 @@ import java.util.*
  *
  * **의존관계:**
  * - [R2dbcEntityTemplate] — R2DBC 엔티티 삽입/조회
- *
- * **주의:** addMember는 기본 "Member" 그룹에 사용자를 추가한다.
- * 그룹이 존재하지 않으면 자동 생성 후 멤버를 추가한다.
  */
 @Repository
 class R2dbcGroupRepositoryAdapter(
     private val template: R2dbcEntityTemplate,
 ) : GroupRepository {
 
+    override fun save(group: Group): Mono<Group> {
+        val entity = R2dbcGroupEntity(
+            id = group.id,
+            workspace = group.workspace,
+            name = group.name,
+            description = group.description
+        )
+        return template.insert(entity)
+            .map { Group(it.id!!, it.workspace, it.name, it.description) }
+    }
+
+    override fun delete(workspaceId: UUID, groupId: UUID): Mono<Void> {
+        val criteria = Query.query(
+            Criteria.where("workspace").`is`(workspaceId)
+                .and("id").`is`(groupId)
+        )
+        return template.delete(criteria, R2dbcGroupEntity::class.java).then()
+    }
+
     override fun createAndAssign(workspace: Workspace, creator: Principal, name: String, description: String?): Mono<Group> {
-        val groupEntity = R2dbcGroupEntity(workspace = workspace.id, name = name)
-        val memberEntity = R2dbcGroupMemberEntity(
+        val groupId = UUID.randomUUID()
+        val groupEntity = R2dbcGroupEntity(
+            id = groupId,
             workspace = workspace.id,
-            group = name,
+            name = name,
+            description = description
+        )
+        val memberEntity = R2dbcGroupMemberEntity(
+            id = UUID.randomUUID(),
+            workspace = workspace.id,
+            group = groupId,
             member = userUuid(creator),
         )
         return template.insert(groupEntity)
             .delayUntil { template.insert(memberEntity) }
-            .map { Group(UUID.randomUUID(), workspace.id, name, description) }
+            .map { Group(groupId, workspace.id, name, description) }
     }
 
     override fun addMember(workspaceId: UUID, principal: Principal): Mono<Void> {
-        val memberEntity = R2dbcGroupMemberEntity(
-            workspace = workspaceId,
-            group = GROUP_MEMBER,
-            member = userUuid(principal),
-        )
-        return template.insert(memberEntity).then()
+        // "Member" 그룹을 찾거나 없으면 생성해야 함 (Phase 1 에서는 기존 join 로직 유지하되 ID 기반으로 보완 필요)
+        // 현재는 "Member" 그룹이 이미 존재한다고 가정하고 검색 후 추가하거나, 
+        // 워크스페이스 생성 시 Admin 과 함께 Member 그룹도 자동 생성하는 것이 안전함.
+        val criteria = Query.query(Criteria.where("workspace").`is`(workspaceId).and("name").`is`(GROUP_MEMBER))
+        return template.selectOne(criteria, R2dbcGroupEntity::class.java)
+            .flatMap { group ->
+                val memberEntity = R2dbcGroupMemberEntity(
+                    id = UUID.randomUUID(),
+                    workspace = workspaceId,
+                    group = group.id!!,
+                    member = userUuid(principal),
+                )
+                template.insert(memberEntity)
+            }.then()
     }
 
-    /**
-     * Principal 에서 사용자 UUID 를 추출한다.
-     *
-     * ### 우선순위 (Phase 1a — 2026-04-18)
-     * `UserAuthentication` 인 경우 다음 순서로 폴백한다:
-     *   1. `sub` — 사용자 식별자 (JWT `sub` 클레임, 재발급 불변). 신규 경로.
-     *   2. `id`  — Phase 1a 이전 토큰에서는 사용자 UUID 가 `jti` 에 담겨 있었으므로 폴백.
-     *              이후 토큰은 매 발행 고유 토큰 ID 를 담으나 현재는 양립 기간.
-     *   3. 둘 다 null 이면 `principal.name` 을 마지막 폴백으로 파싱. 실패 시 예외.
-     *
-     * **테스트 경로:** `Principal { UUID.randomUUID().toString() }` 람다는 `UserAuthentication`
-     * 이 아니므로 else 분기로 빠져 `principal.name` 을 그대로 파싱한다
-     * (`R2dbcWorkspaceCascadeIntegrationTest` 등).
-     */
+    override fun addMember(groupId: UUID, userId: UUID): Mono<Void> {
+        // workspaceId 를 알기 위해 group 을 먼저 조회
+        val criteria = Query.query(Criteria.where("id").`is`(groupId))
+        return template.selectOne(criteria, R2dbcGroupEntity::class.java)
+            .flatMap { group ->
+                val memberEntity = R2dbcGroupMemberEntity(
+                    id = UUID.randomUUID(),
+                    workspace = group.workspace,
+                    group = groupId,
+                    member = userId,
+                )
+                template.insert(memberEntity)
+            }.then()
+    }
+
+    override fun removeMember(groupId: UUID, userId: UUID): Mono<Void> {
+        val criteria = Query.query(
+            Criteria.where("group").`is`(groupId)
+                .and("member").`is`(userId)
+        )
+        return template.delete(criteria, R2dbcGroupMemberEntity::class.java).then()
+    }
+
     private fun userUuid(principal: Principal): UUID = when (principal) {
         is UserAuthentication -> {
             val raw = principal.sub
@@ -74,10 +114,6 @@ class R2dbcGroupRepositoryAdapter(
         else -> UUID.fromString(principal.name)
     }
 
-    /**
-     * `group_member` 먼저 삭제한 뒤 `group` row 를 삭제한다. FK 가 물리적으로 선언되어
-     * 있지 않더라도 의미론적 참조 순서를 보존한다.
-     */
     override fun deleteByWorkspace(workspaceId: UUID): Mono<Void> {
         val criteria = Query.query(Criteria.where("workspace").`is`(workspaceId))
         return template.delete(criteria, R2dbcGroupMemberEntity::class.java)

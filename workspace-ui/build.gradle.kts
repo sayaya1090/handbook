@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":activity"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
+    implementation(project(":shell-ui"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
@@ -49,4 +50,9 @@ tasks {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
     test { useJUnitPlatform() }
+}
+
+tasks.jar {
+    from(sourceSets.main.get().allSource)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

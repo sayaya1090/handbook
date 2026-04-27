@@ -552,9 +552,30 @@ sequenceDiagram
 | **선행 조건** | `{workspace}:group:create` 권한을 가진다 |
 | **후행 조건** | 워크스페이스에 새 그룹이 생성된다 |
 
+```mermaid
+sequenceDiagram
+    actor Admin as 워크스페이스 관리자
+    participant UI as GroupsTabElement
+    participant GW as Gateway
+    participant API as persist-workspace
+
+    Admin->>UI: "그룹 추가" 버튼 클릭
+    UI->>Admin: 이름/설명 입력 폼 표시
+    Admin->>UI: 정보 입력 후 "저장"
+    UI->>GW: POST /workspace/{ws}/groups {name, description}
+    GW->>API: 그룹 생성 요청
+    API->>API: 이름 중복 검증
+    API->>API: DB 저장
+    API-->>GW: 201 Created (Group ID)
+    GW-->>UI: 201 Created
+    UI->>UI: 그룹 목록 갱신 + 토스트 표시
+```
+
 **기본 흐름:**
-1. 관리자가 그룹 이름과 설명을 입력한다.
-2. 시스템이 워크스페이스 내에 그룹을 생성한다.
+1. 관리자가 그룹 관리 탭에서 "그룹 추가" 버튼을 클릭한다.
+2. 시스템이 그룹 이름과 설명을 입력할 수 있는 폼을 제공한다.
+3. 관리자가 정보를 입력하고 저장을 요청한다.
+4. 시스템이 워크스페이스 내에 고유한 이름인지 확인 후 그룹을 생성한다.
 
 ---
 
@@ -567,40 +588,86 @@ sequenceDiagram
 | **후행 조건** | 그룹이 삭제되고, 소속 사용자의 그룹 배정이 해제된다 |
 
 **기본 흐름:**
-1. 관리자가 삭제할 그룹을 선택한다.
-2. 시스템이 그룹을 삭제한다.
+1. 관리자가 삭제할 그룹을 선택하고 삭제를 요청한다.
+2. 시스템이 ConfirmDialog를 통해 재확인한다.
+3. 승인 시 시스템이 해당 그룹과 그룹-멤버 매핑, 그룹-역할 매핑을 모두 삭제한다.
 
 ---
 
-### UC-22: 사용자 배정
+### UC-22: 사용자 배정 (멤버 추가/삭제)
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 워크스페이스 관리자 |
 | **선행 조건** | `{workspace}:user:assign` 권한을 가진다 |
-| **후행 조건** | 사용자가 지정된 그룹에 배정된다 |
+| **후행 조건** | 사용자가 지정된 그룹에 배정되거나 제거된다 |
+
+```mermaid
+sequenceDiagram
+    actor Admin as 워크스페이스 관리자
+    participant UI as GroupsTabElement
+    participant GW as Gateway
+    participant API as persist-workspace
+
+    Admin->>UI: 특정 그룹 선택
+    UI->>UI: 멤버 목록 조회
+    Admin->>UI: "멤버 추가" 버튼 클릭
+    UI->>Admin: 사용자 검색 폼 표시
+    Admin->>UI: 사용자 선택 후 "추가"
+    UI->>GW: POST /workspace/{ws}/groups/{gid}/members/{uid}
+    GW->>API: 배정 요청
+    API->>API: 중복 배정 확인
+    API->>API: DB 저장
+    API-->>GW: 204 No Content
+    GW-->>UI: 204 No Content
+    UI->>UI: 멤버 목록 갱신
+```
 
 **기본 흐름:**
-1. 관리자가 사용자와 대상 그룹을 선택한다.
-2. 시스템이 사용자를 해당 그룹에 배정한다.
+1. 관리자가 특정 그룹을 선택하고 "멤버 추가"를 클릭한다.
+2. 시스템이 사용자 검색(이름/이메일) 기능을 제공한다.
+3. 관리자가 대상 사용자를 선택하여 추가를 요청한다.
+4. 시스템이 해당 그룹에 사용자를 배정한다.
 
 ---
 
-### UC-23: 역할 부여
+### UC-23: 역할 부여 (RBAC)
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | 워크스페이스 관리자, 시스템 관리자 |
+| **액터** | 워크스페이스 관리자 |
 | **선행 조건** | `{workspace}:role:assign` 권한을 가진다 |
 | **후행 조건** | 그룹에 역할이 부여되고, 소속 사용자가 해당 Permission을 획득한다 |
 
+```mermaid
+sequenceDiagram
+    actor Admin as 워크스페이스 관리자
+    participant UI as PermissionsTabElement
+    participant GW as Gateway
+    participant API as persist-workspace
+
+    Admin->>UI: 특정 그룹 선택
+    UI->>UI: 현재 부여된 역할 목록 표시
+    Admin->>UI: 역할 선택 (예: TYPE_MANAGER)
+    UI->>UI: 해당 역할의 Permission 미리보기 표시
+    Admin->>UI: "부여" 요청
+    UI->>GW: POST /workspace/{ws}/groups/{gid}/roles {roleName}
+    GW->>API: 역할 매핑 저장
+    API->>API: DB 저장 (group_roles)
+    API-->>GW: 204 No Content
+    GW-->>UI: 204 No Content
+    UI->>UI: 역할 목록 갱신 + 권한 즉시 반영
+```
+
 **기본 흐름:**
-1. 관리자가 대상 그룹과 부여할 역할을 선택한다.
-2. 시스템이 그룹에 역할을 부여한다.
+1. 관리자가 권한 관리 탭에서 그룹을 선택한다.
+2. 시스템이 부여 가능한 표준 역할 목록을 제공한다.
+3. 관리자가 역할을 선택하면 시스템이 해당 역할이 포함하는 상세 Permission 목록을 미리보기로 보여준다.
+4. 관리자가 부여를 확정하면 시스템이 그룹-역할 매핑을 저장한다.
 
 ---
 
-### UC-24: 권한 조회
+### UC-24: 권한 및 멤버 조회
 
 | 항목 | 내용 |
 |------|------|
@@ -610,7 +677,7 @@ sequenceDiagram
 
 **기본 흐름:**
 1. 관리자가 그룹 또는 사용자의 권한 목록을 요청한다.
-2. 시스템이 해당 그룹/사용자에게 부여된 역할과 Permission 목록을 반환한다.
+2. 시스템이 해당 그룹/사용자에게 부여된 역할과 그로부터 유도된 모든 Permission 목록을 병합하여 반환한다.
 
 ---
 
@@ -1907,6 +1974,7 @@ sequenceDiagram
 | 6.10 벌크 작업 | UC-50, UC-51, UC-30 | UC-D21 (document-ui), UC-T23 (type-ui) | 문서 다중 선택 일괄 삭제/상태 변경, 타입 다중 선택 일괄 삭제 |
 | 6.11 세션 관리 | UC-01 (인증) | UC-S17 (shell-ui) | 토큰 자동 갱신, 만료 경고, 로그인 리다이렉트 |
 | 6.12 타입 버전 히스토리 UI | UC-30, UC-31 | UC-T24 (type-ui), UC-ST4 (search-type) | 타입 버전 목록 브라우징, 두 버전 간 diff 비교 |
+| 6.13 워크스페이스 관리 | UC-20~UC-24 | UC-PW5~PW8, UC-WM1~WM4 | 그룹 생성/삭제, 멤버 배정, 역할 부여 (workspace-ui, persist-workspace) |
 
 ---
 

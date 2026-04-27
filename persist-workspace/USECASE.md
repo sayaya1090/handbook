@@ -73,6 +73,57 @@ sequenceDiagram
     Note over Ctrl: title="workspaces", order="S",<br/>icon="fa-briefcase", script="js/workspace/workspace.nocache.js",<br/>tools: workspace info, groups, permissions
 ```
 
+## 그룹 및 멤버 관리 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor Admin as 워크스페이스 관리자
+    participant GW as Gateway
+    participant Ctrl as GroupController
+    participant Svc as GroupService
+    participant GRepo as GroupRepository
+    participant DB as PostgreSQL
+
+    Admin->>GW: POST /workspace/{ws}/groups {name, description}
+    GW->>Ctrl: createGroup
+    Ctrl->>Svc: createGroup(workspaceId, name, description)
+    Svc->>GRepo: save(group)
+    GRepo->>DB: INSERT INTO groups
+    DB-->>GRepo: Group
+    Svc-->>Ctrl: Group
+    Ctrl-->>Admin: 201 Created
+
+    Admin->>GW: POST /workspace/{ws}/groups/{gid}/members/{uid}
+    GW->>Ctrl: addMember
+    Ctrl->>Svc: addMember(workspaceId, groupId, userId)
+    Svc->>GRepo: addMember(groupId, userId)
+    GRepo->>DB: INSERT INTO group_members
+    DB-->>GRepo: 완료
+    Svc-->>Ctrl: 완료
+    Ctrl-->>Admin: 204 No Content
+```
+
+## 역할 부여 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor Admin as 워크스페이스 관리자
+    participant GW as Gateway
+    participant Ctrl as RoleController
+    participant Svc as RoleService
+    participant RRepo as RoleRepository
+    participant DB as PostgreSQL
+
+    Admin->>GW: POST /workspace/{ws}/groups/{gid}/roles {roleName}
+    GW->>Ctrl: assignRole
+    Ctrl->>Svc: assignRole(groupId, roleName)
+    Svc->>RRepo: saveMapping(groupId, roleName)
+    RRepo->>DB: INSERT INTO group_roles (group_id, role_name)
+    DB-->>RRepo: 완료
+    Svc-->>Ctrl: 완료
+    Ctrl-->>Admin: 204 No Content
+```
+
 ---
 
 ## UC-PW1: 워크스페이스 생성
@@ -113,13 +164,53 @@ sequenceDiagram
 | **정상 흐름** | 1. 클라이언트가 `DELETE /workspace/{id}`를 요청한다.<br>2. `WorkspaceController`가 `WorkspaceService.delete(id)`를 호출한다.<br>3. `WorkspaceRepository.delete()`로 워크스페이스를 삭제한다 (관련 데이터 cascade 삭제).<br>4. `WorkspaceEventPublisher.publishDeleted(id)`로 삭제 이벤트를 Kafka에 발행한다.<br>5. 204 No Content가 반환된다. |
 | **결과** | 204 No Content |
 
+## UC-PW5: 그룹 생성
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 워크스페이스 관리자 |
+| **선행조건** | `{workspace}:group:create` 권한 보유 |
+| **정상 흐름** | 1. 관리자가 그룹명과 설명을 전송한다.<br>2. 이름 중복 여부를 확인한다.<br>3. 새 그룹을 저장한다. |
+| **결과** | 201 Created |
+
+## UC-PW6: 그룹 삭제
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 워크스페이스 관리자 |
+| **선행조건** | `{workspace}:group:delete` 권한 보유 |
+| **정상 흐름** | 1. 관리자가 그룹 ID를 지정하여 삭제를 요청한다.<br>2. 해당 그룹과 멤버 매핑, 역할 매핑을 일괄 삭제한다. |
+| **결과** | 204 No Content |
+
+## UC-PW7: 멤버 배정
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 워크스페이스 관리자 |
+| **선행조건** | `{workspace}:user:assign` 권한 보유 |
+| **정상 흐름** | 1. 관리자가 그룹 ID와 사용자 ID를 지정한다.<br>2. 해당 그룹에 사용자를 추가한다. (이미 존재하면 무시) |
+| **결과** | 204 No Content |
+
+## UC-PW8: 역할 부여
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 워크스페이스 관리자 |
+| **선행조건** | `{workspace}:role:assign` 권한 보유 |
+| **정상 흐름** | 1. 관리자가 그룹 ID와 역할명을 지정한다.<br>2. `group_roles` 테이블에 매핑을 저장한다. |
+| **결과** | 204 No Content |
+
 ---
 
 ## 트레이서빌리티 매트릭스
 
 | UC | 요구사항 | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
 |----|---------|---|---|---|
-| UC-PW1 (생성) | 3.1 (워크스페이스 생성, Admin 그룹 자동 생성) | 워크스페이스 생성 | WorkspaceController, WorkspaceService, WorkspaceRepository, R2dbcWorkspaceRepositoryAdapter, GroupRepository, R2dbcGroupRepositoryAdapter, WorkspaceEventPublisher, KafkaWorkspaceEventPublisher | - |
-| UC-PW2 (목록 조회) | 3.1 (참여 중인 워크스페이스 조회) | — (미구현) | — | - |
-| UC-PW3 (참여) | 3.1 (기존 워크스페이스에 조인) | — (미구현) | GroupRepository | - |
-| UC-PW4 (삭제) | 3.1 (워크스페이스 삭제, cascade) | 워크스페이스 삭제 | WorkspaceController, WorkspaceService, WorkspaceRepository, R2dbcWorkspaceRepositoryAdapter, WorkspaceEventPublisher, KafkaWorkspaceEventPublisher | - |
+| UC-PW1 (생성) | 3.1 | 워크스페이스 생성 | WorkspaceController, WorkspaceService, WorkspaceRepository | - |
+| UC-PW2 (목록) | 3.1 | — | search-workspace 측 담당 | - |
+| UC-PW3 (참여) | 3.1 | — | WorkspaceService.join | - |
+| UC-PW4 (삭제) | 3.1 | 워크스페이스 삭제 | WorkspaceController, WorkspaceService | - |
+| UC-PW5 (그룹 생성) | 3.2 | 그룹 및 멤버 관리 | GroupController, GroupService, GroupRepository | - |
+| UC-PW6 (그룹 삭제) | 3.2 | 그룹 및 멤버 관리 | GroupController, GroupService, GroupRepository | - |
+| UC-PW7 (멤버 배정) | 3.2 | 그룹 및 멤버 관리 | GroupController, GroupService, GroupRepository | - |
+| UC-PW8 (역할 부여) | 3.3 | 역할 부여 | RoleController, RoleService, RoleRepository | - |

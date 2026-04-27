@@ -15,22 +15,29 @@ CREATE TABLE IF NOT EXISTS workspace (
 );
 
 CREATE TABLE IF NOT EXISTS "group" (
+    id         UUID         NOT NULL,
     workspace  UUID         NOT NULL,
     name       VARCHAR(255) NOT NULL,
+    description TEXT,
     created_at TIMESTAMPTZ  NOT NULL DEFAULT now(),
     created_by UUID         NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000',
-    PRIMARY KEY (workspace, name),
+    PRIMARY KEY (id),
+    UNIQUE (workspace, name),
     CONSTRAINT fk_group_workspace
         FOREIGN KEY (workspace) REFERENCES workspace(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS group_member (
+    id        UUID         NOT NULL,
     workspace UUID         NOT NULL,
-    "group"   VARCHAR(255) NOT NULL,
+    "group"   UUID         NOT NULL,
     member    UUID         NOT NULL,
-    PRIMARY KEY (workspace, "group", member),
+    PRIMARY KEY (id),
+    UNIQUE (workspace, "group", member),
     CONSTRAINT fk_group_member_workspace
-        FOREIGN KEY (workspace) REFERENCES workspace(id) ON DELETE CASCADE
+        FOREIGN KEY (workspace) REFERENCES workspace(id) ON DELETE CASCADE,
+    CONSTRAINT fk_group_member_group
+        FOREIGN KEY ("group") REFERENCES "group"(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS webhooks (

@@ -58,10 +58,12 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
 
         client.sql("""
             CREATE TABLE group_member (
+                id UUID NOT NULL,
                 workspace UUID NOT NULL,
-                "group" VARCHAR(255) NOT NULL,
+                "group" UUID NOT NULL,
                 member UUID NOT NULL,
-                PRIMARY KEY (workspace, "group", member)
+                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                PRIMARY KEY (id)
             )
         """).then().block()
 
@@ -75,12 +77,16 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
         // alice 는 alpha(admin) + beta(Member) 소속, bob 은 gamma(admin) 소속.
         // 한 워크스페이스에서 다중 그룹 소속이어도 DISTINCT 로 한 번만 반환되는지 검증하기 위해
         // alice 를 alpha 의 admin 과 Member 두 그룹 모두에 등록한다.
+        val gid1 = UUID.randomUUID()
+        val gid2 = UUID.randomUUID()
+        val gid3 = UUID.randomUUID()
+        val gid4 = UUID.randomUUID()
         client.sql("""
-            INSERT INTO group_member (workspace, "group", member) VALUES
-            ('$wsId1', 'admin',  '$alice'),
-            ('$wsId1', 'Member', '$alice'),
-            ('$wsId2', 'Member', '$alice'),
-            ('$wsId3', 'admin',  '$bob')
+            INSERT INTO group_member (id, workspace, "group", member) VALUES
+            ('${UUID.randomUUID()}', '$wsId1', '$gid1', '$alice'),
+            ('${UUID.randomUUID()}', '$wsId1', '$gid2', '$alice'),
+            ('${UUID.randomUUID()}', '$wsId2', '$gid3', '$alice'),
+            ('${UUID.randomUUID()}', '$wsId3', '$gid4', '$bob')
         """).then().block()
     }
 

@@ -14,6 +14,8 @@ import java.util.*
  * **의존관계:** [R2dbcGroupRepositoryAdapter][dev.sayaya.handbook.interfaces.database.R2dbcGroupRepositoryAdapter]가 구현한다.
  */
 interface GroupRepository {
+    fun save(group: Group): Mono<Group>
+    fun delete(workspaceId: UUID, groupId: UUID): Mono<Void>
     fun createAndAssign(workspace: Workspace, creator: Principal, name: String, description: String?): Mono<Group>
 
     /**
@@ -24,6 +26,8 @@ interface GroupRepository {
      * @return 완료 시그널
      */
     fun addMember(workspaceId: UUID, principal: Principal): Mono<Void>
+    fun addMember(groupId: UUID, userId: UUID): Mono<Void>
+    fun removeMember(groupId: UUID, userId: UUID): Mono<Void>
 
     /**
      * 주어진 워크스페이스에 속한 모든 그룹과 그룹 멤버 row 를 삭제한다.
