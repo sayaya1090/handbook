@@ -2,12 +2,10 @@ package dev.sayaya.handbook
 
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldNotBeBlank
 
-@GwtHtml("workspacetest.html")
+@GwtHtml("onboardingtest.html")
 internal class WorkspaceCreateTest: GwtTestSpec({
     Given("워크스페이스 CREATE UI가 초기화됨") {
         // UC-W1: 워크스페이스 생성 — 구조 검증
@@ -64,7 +62,7 @@ internal class WorkspaceCreateTest: GwtTestSpec({
                 page.evaluate("window.__handbook_uri_called = null; window.__handbook_uri = function(uri) { window.__handbook_uri_called = uri; }")
                 page.evaluate("document.querySelector('.ws-submit').click()")
                 Thread.sleep(500)
-                val uriCalled = page.evaluate("window.__handbook_uri_called").toString()
+                val uriCalled = page.evaluate("window.__handbook_uri_called")?.toString() ?: ""
                 (uriCalled.contains("/workspace/") && uriCalled.contains("/dashboard")) shouldBe true
             }
         }

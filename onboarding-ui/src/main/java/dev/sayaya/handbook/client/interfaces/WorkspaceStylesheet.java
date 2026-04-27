@@ -27,7 +27,7 @@ public class WorkspaceStylesheet {
     private static final String HREF = "css/workspace.css";
     private static final String MARKER_ID = "handbook-workspace-stylesheet";
 
-    @Inject WorkspaceStylesheet() {
+    @Inject public WorkspaceStylesheet() {
         if (DomGlobal.document.getElementById(MARKER_ID) != null) return;
         HTMLLinkElement link = (HTMLLinkElement) DomGlobal.document.createElement("link");
         link.id = MARKER_ID;
