@@ -32,8 +32,6 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
     @Inject
     ControllerElement(BeforeButton beforeBtn, AfterButton afterBtn,
                       AddTypeButton addBtn, RemoveTypeButton removeBtn, BulkDeleteButton bulkDeleteBtn,
-                      UndoButton undoBtn, RedoButton redoBtn,
-                      SaveButton saveBtn, ReloadButton reloadBtn,
                       SnapCheckbox snapCheckbox, ModeToggleButton modeToggle) {
         _this.css("type-controller")
                 .add(modeToggle)
@@ -41,10 +39,6 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
                         .add(beforeBtn).add(afterBtn))
                 .add(div().css("type-ctrl-group")
                         .add(addBtn).add(removeBtn).add(bulkDeleteBtn))
-                .add(div().css("type-ctrl-group")
-                        .add(undoBtn).add(redoBtn))
-                .add(div().css("type-ctrl-group")
-                        .add(saveBtn).add(reloadBtn))
                 .add(snapCheckbox);
     }
 }

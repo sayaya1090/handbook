@@ -39,14 +39,14 @@ internal class UndoRedoTest: GwtTestSpec({
 
         // UC-T8: 기간 이동 버튼 존재 확인
         Then("Before/After 버튼이 존재한다") {
-            page.querySelector(".type-ctrl-btn-before") shouldNotBe null
-            page.querySelector(".type-ctrl-btn-after") shouldNotBe null
+            page.querySelector(".type-controller .type-ctrl-btn-before") shouldNotBe null
+            page.querySelector(".type-controller .type-ctrl-btn-after") shouldNotBe null
         }
 
         // UC-T10: 저장/로드 버튼 존재 확인
         Then("Save/Reload 버튼이 존재한다") {
-            page.querySelector(".type-ctrl-btn-save") shouldNotBe null
-            page.querySelector(".type-ctrl-btn-reload") shouldNotBe null
+            page.querySelector(".type-status-header .type-ctrl-btn-save") shouldNotBe null
+            page.querySelector(".type-status-header .type-ctrl-btn-reload") shouldNotBe null
         }
 
         // UC-T2: 더티 트래킹 — 생성된 타입에 더티 상태 적용
@@ -54,7 +54,7 @@ internal class UndoRedoTest: GwtTestSpec({
             page.click(".type-ctrl-btn-add")
             Thread.sleep(500)
             Then("Save 버튼이 활성화된다") {
-                val disabled = page.querySelector(".type-ctrl-btn-save")!!
+                val disabled = page.querySelector(".type-status-header .type-ctrl-btn-save")!!
                     .evaluate("el => el.disabled") as Boolean
                 disabled shouldBe false
             }
@@ -65,14 +65,14 @@ internal class UndoRedoTest: GwtTestSpec({
             page.evaluate("document.querySelector('.type-canvas').focus()")
             // 모든 액션을 Undo (Undo 버튼이 비활성화될 때까지)
             for (i in 1..10) {
-                val undoDisabled = page.querySelector(".type-ctrl-btn-undo")!!
+                val undoDisabled = page.querySelector(".type-status-header .type-ctrl-btn-undo")!!
                     .evaluate("el => el.disabled") as Boolean
                 if (undoDisabled) break
                 page.keyboard().press("Control+z")
                 Thread.sleep(500)
             }
             Then("Undo 스택이 비어 Undo 버튼이 비활성화된다") {
-                val disabled = page.querySelector(".type-ctrl-btn-undo")!!
+                val disabled = page.querySelector(".type-status-header .type-ctrl-btn-undo")!!
                     .evaluate("el => el.disabled") as Boolean
                 disabled shouldBe true
             }
@@ -101,7 +101,7 @@ internal class UndoRedoTest: GwtTestSpec({
                 afterUndo shouldBe before
             }
             Then("Undo 후 Redo 버튼이 활성화된다") {
-                val redoDisabled = page.querySelector(".type-ctrl-btn-redo")!!
+                val redoDisabled = page.querySelector(".type-status-header .type-ctrl-btn-redo")!!
                     .evaluate("el => el.disabled") as Boolean
                 redoDisabled shouldBe false
             }

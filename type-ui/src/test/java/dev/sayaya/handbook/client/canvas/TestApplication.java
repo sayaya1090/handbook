@@ -39,6 +39,7 @@ public class TestApplication implements EntryPoint {
 
         body()
             .add(div().css("type-container")
+                .add(component.statusHeader())
                 .add(component.controller())
                 .add(component.canvas())
                 .add(component.attributeEditor()));

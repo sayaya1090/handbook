@@ -21,7 +21,7 @@ public class LabelProvider {
     private final BehaviorSubject<Labels> subject = behavior(Labels.empty());
 
     @Inject
-    LabelProvider(LanguageDetector detector, LanguagePackRepository repo) {
+    public LabelProvider(LanguageDetector detector, LanguagePackRepository repo) {
         String lang = detector.detect();
         try {
             repo.load(lang).subscribe(subject::next);

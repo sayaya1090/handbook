@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.interfaces.api.ApiModule;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementModule;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
 import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
+import dev.sayaya.handbook.client.interfaces.controller.StatusHeaderElement;
 import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
 
 import javax.inject.Singleton;
@@ -24,6 +25,7 @@ import javax.inject.Singleton;
 public interface Component {
     CanvasElement canvas();
     ControllerElement controller();
+    StatusHeaderElement statusHeader();
     AttributeEditorDialog attributeEditor();
     dev.sayaya.handbook.client.usecase.TypeStateProvider typeStateProvider();
     dev.sayaya.handbook.client.usecase.TypeSearchProvider typeSearchProvider();

@@ -1,5 +1,21 @@
 # Type-UI 유스케이스
 
+## 툴바 분리 레이아웃
+
+기존 상단 컨트롤러가 '상단 상태바'와 '좌측 툴레일'로 분리되어 캔버스 작업 영역을 최대화합니다.
+
+```mermaid
+graph TD
+    subgraph UI_Layout
+        Header[상단 상태바: 워크스페이스/타입 정보/상태]
+        ToolRail[좌측 툴레일: 툴 선택/액션 버튼]
+        Canvas[캔버스 영역: 타입 카드/관계선]
+    end
+    
+    Header --- Canvas
+    ToolRail --- Canvas
+```
+
 ## 타입 생성 → 저장 시퀀스
 
 ```mermaid

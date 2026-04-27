@@ -305,6 +305,27 @@ classDiagram
         -initBoxHandlers(elem: TypeElement)
         -handleKeyDown(e: KeyboardEvent)
     }
+    class StatusHeaderElement {
+        <<@Singleton>>
+        -HTMLDivElement workspaceInfo
+        -HTMLDivElement typeInfo
+        -HTMLDivElement status
+        +update(typeCount, status)
+    }
+    class ToolRailElement {
+        <<@Singleton>>
+        -HTMLDivElement rail
+        -Map~String,Tool~ tools
+        +addTool(tool: Tool)
+        +selectTool(toolId)
+    }
+    class Tool {
+        <<record>>
+        +String id
+        +String icon
+        +Runnable action
+        +boolean selected
+    }
     class TypeElement {
         <<@AssistedInject>>
         -TypeValue type
@@ -371,6 +392,9 @@ classDiagram
     CanvasElement --> BoxReferenceElement : SVG 화살표
     CanvasElement --> CanvasContextMenuElement
     CanvasElement --> BoxContextMenuElement
+    CanvasElement --> StatusHeaderElement
+    CanvasElement --> ToolRailElement
+    ToolRailElement *-- Tool
     BoxElementFactory ..> TypeElement : creates
     TypeElement *-- ValueListElement
     ValueListElement *-- ValueElement
