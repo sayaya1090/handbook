@@ -27,12 +27,12 @@ data:
           routes:
             # Clean URL 지원: 브라우저에서 직접 접속 시 app.html 반환
             - id: ui-clean-urls
-              uri: http://ceph-rgw:80/handbook-{{ .Values.stage | default "dev" }}/static
+              uri: http://ceph-rgw:80
               predicates:
                 - Path=/types,/documents,/workspaces,/dashboard,/workspace/*/**
                 - Header=Accept, .*text/html.*
               filters:
-                - SetPath=/app.html
+                - RewritePath=/.*, /handbook-{{ .Values.stage.name | default "dev" }}/static/app.html
               order: 0
             # 인증
             - id: login
@@ -98,9 +98,11 @@ data:
                     fallbackUri: forward:/fallback/empty
             # 정적 리소스 — S3(ceph-rgw)
             - id: static
-              uri: http://ceph-rgw:80/handbook-{{ .Values.stage | default "dev" }}/static
+              uri: http://ceph-rgw:80
               predicates:
                 - Path=/js/**,/css/**,/icons/**,/manifest.json,/service-worker.js,/wav/**,/favicon.ico,/app.html
+              filters:
+                - RewritePath=/(?<segment>.*), /handbook-{{ .Values.stage.name | default "dev" }}/static/${segment}
     server:
       port: 8080
     cors:
