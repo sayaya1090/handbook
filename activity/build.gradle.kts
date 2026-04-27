@@ -14,29 +14,29 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 
+gwt {
+    gwtVersion = "2.13.0"
+    sourceLevel = "auto"
+    war = file("src/main/webapp")
+    devMode {
+        modules = listOf("dev.sayaya.handbook.ActivityTest")
+        war = file("src/test/webapp")
+    }
+    generateJsInteropExports = true
+    compiler { strict = true }
+    test {
+        webPort = 18090
+    }
+    modules = listOf("dev.sayaya.handbook.Activity")
+}
+
 tasks {
     jar {
         enabled = true
         from(sourceSets.main.get().allSource)
         duplicatesStrategy = DuplicatesStrategy.WARN
     }
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.Activity")
-        war = file("src/main/webapp")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.ActivityTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler { strict = true }
-        test {
-            modules = listOf("dev.sayaya.handbook.ActivityTest")
-            webPort = 18090
-        }        }
     test {
         useJUnitPlatform()
     }
 }
-

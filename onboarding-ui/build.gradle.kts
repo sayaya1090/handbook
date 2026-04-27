@@ -17,9 +17,9 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
+
 gwt {
     gwtVersion = "2.13.0"
-    modules = listOf("dev.sayaya.handbook.Onboarding")
     sourceLevel = "auto"
     devMode {
         modules = listOf("dev.sayaya.handbook.OnboardingTest")
@@ -28,22 +28,26 @@ gwt {
     generateJsInteropExports = true
     compiler { strict = true }
     test {
-        modules = listOf("dev.sayaya.handbook.OnboardingTest")
         webPort = 18086
     }
+    // 중요: modules 설정을 마지막에 두어 devMode 설정이 덮어쓰는 것을 방지
+    modules = listOf("dev.sayaya.handbook.Onboarding")
 }
-tasks.register<Copy>("copyTestResources") {
-    from("src/main/webapp")
-    into("src/test/webapp")
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-tasks.named("compileTestJava") { dependsOn("copyTestResources") }
-tasks.named("war", War::class) {
-    dependsOn("gwtCompile")
-    from("build/gwt/war") {
-        into("js")
+
+tasks {
+    register<Copy>("copyTestResources") {
+        from("src/main/webapp")
+        into("src/test/webapp")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
-    archiveFileName.set("onboarding-ui.war")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    named("compileTestJava") { dependsOn("copyTestResources") }
+    war {
+        dependsOn("gwtCompile")
+        from("build/gwt/war") {
+            into("js")
+        }
+        archiveFileName.set("onboarding-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+    test { useJUnitPlatform() }
 }
-tasks.test { useJUnitPlatform() }

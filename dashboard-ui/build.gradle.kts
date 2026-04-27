@@ -17,6 +17,22 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
+
+gwt {
+    gwtVersion = "2.13.0"
+    sourceLevel = "auto"
+    devMode {
+        modules = listOf("dev.sayaya.handbook.Dashboard", "dev.sayaya.handbook.DashboardTest")
+        war = file("src/test/webapp")
+    }
+    generateJsInteropExports = true
+    compiler { strict = true }
+    test {
+        webPort = 18084
+    }
+    modules = listOf("dev.sayaya.handbook.Dashboard")
+}
+
 tasks {
     war {
         dependsOn("gwtCompile")
@@ -25,21 +41,6 @@ tasks {
         }
         archiveFileName.set("dashboard-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.Dashboard")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.Dashboard", "dev.sayaya.handbook.DashboardTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler { strict = true }
-        test {
-            modules = listOf("dev.sayaya.handbook.DashboardTest")
-            webPort = 18084
-        }
     }
     test { useJUnitPlatform() }
 }

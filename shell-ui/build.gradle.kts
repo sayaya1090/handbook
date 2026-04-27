@@ -18,6 +18,24 @@ dependencies {
     testAnnotationProcessor(libs.dagger.compiler)
 }
 
+gwt {
+    gwtVersion = "2.13.0"
+    sourceLevel = "auto"
+    devMode {
+        modules = listOf("dev.sayaya.handbook.Shell", "dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.HistoryTest")
+        war = file("src/test/webapp")
+    }
+    generateJsInteropExports = true
+    compiler {
+        strict = true
+    }
+    test {
+        webPort = 18080
+    }
+    // 중요: modules 설정을 마지막에 두어 devMode 설정이 덮어쓰는 것을 방지
+    modules = listOf("dev.sayaya.handbook.Shell")
+}
+
 tasks {
     war {
         dependsOn("gwtCompile")
@@ -27,23 +45,5 @@ tasks {
         archiveFileName.set("shell-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.Shell")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.Shell", "dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.HistoryTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler {
-            strict = true
-        }
-        test {
-            modules = listOf("dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.HistoryTest")
-            webPort = 18080
-        }
-    }
     test { useJUnitPlatform() }
 }
-

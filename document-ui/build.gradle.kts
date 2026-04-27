@@ -16,6 +16,22 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
+
+gwt {
+    gwtVersion = "2.13.0"
+    sourceLevel = "auto"
+    devMode {
+        modules = listOf("dev.sayaya.handbook.Document", "dev.sayaya.handbook.DocumentTest")
+        war = file("src/test/webapp")
+    }
+    generateJsInteropExports = true
+    compiler { strict = true }
+    test {
+        webPort = 18082
+    }
+    modules = listOf("dev.sayaya.handbook.Document")
+}
+
 tasks {
     war {
         dependsOn("gwtCompile")
@@ -24,21 +40,6 @@ tasks {
         }
         archiveFileName.set("document-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.Document")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.Document", "dev.sayaya.handbook.DocumentTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler { strict = true }
-        test {
-            modules = listOf("dev.sayaya.handbook.DocumentTest")
-            webPort = 18082
-        }
     }
     test { useJUnitPlatform() }
 }

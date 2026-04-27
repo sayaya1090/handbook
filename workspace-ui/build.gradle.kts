@@ -17,9 +17,9 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
+
 gwt {
     gwtVersion = "2.13.0"
-    modules = listOf("dev.sayaya.handbook.Workspace")
     sourceLevel = "auto"
     devMode {
         modules = listOf("dev.sayaya.handbook.Workspace")
@@ -28,21 +28,25 @@ gwt {
     generateJsInteropExports = true
     compiler { strict = true }
     test {
-        modules = listOf("dev.sayaya.handbook.Workspace")
         webPort = 18085
     }
+    modules = listOf("dev.sayaya.handbook.Workspace")
 }
-tasks.register<Copy>("copyTestResources") {
-    from("src/main/webapp")
-    into("src/test/webapp")
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-tasks.named("compileTestJava") { dependsOn("copyTestResources") }
-tasks.named("war", War::class) {
-    dependsOn("gwtCompile")
-    from("build/gwt/war") {
-        into("js")
+
+tasks {
+    register<Copy>("copyTestResources") {
+        from("src/main/webapp")
+        into("src/test/webapp")
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
-    archiveFileName.set("workspace-ui.war")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    named("compileTestJava") { dependsOn("copyTestResources") }
+    war {
+        dependsOn("gwtCompile")
+        from("build/gwt/war") {
+            into("js")
+        }
+        archiveFileName.set("workspace-ui.war")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+    test { useJUnitPlatform() }
 }

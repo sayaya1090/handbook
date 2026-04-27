@@ -16,6 +16,22 @@ dependencies {
     testAnnotationProcessor(libs.lombok)
     testAnnotationProcessor(libs.dagger.compiler)
 }
+
+gwt {
+    gwtVersion = "2.13.0"
+    sourceLevel = "auto"
+    devMode {
+        modules = listOf("dev.sayaya.handbook.AgentTest")
+        war = file("src/test/webapp")
+    }
+    generateJsInteropExports = true
+    compiler { strict = true }
+    test {
+        webPort = 18083
+    }
+    modules = listOf("dev.sayaya.handbook.Agent")
+}
+
 tasks {
     war {
         dependsOn("gwtCompile")
@@ -25,20 +41,6 @@ tasks {
         archiveFileName.set("agent-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-    gwt {
-        gwtVersion = "2.13.0"
-        sourceLevel = "auto"
-        modules = listOf("dev.sayaya.handbook.Agent")
-        devMode {
-            modules = listOf("dev.sayaya.handbook.AgentTest")
-            war = file("src/test/webapp")
-        }
-        generateJsInteropExports = true
-        compiler { strict = true }
-        test {
-            modules = listOf("dev.sayaya.handbook.AgentTest")
-            webPort = 18083
-        }        }
     test {
         useJUnitPlatform()
     }
