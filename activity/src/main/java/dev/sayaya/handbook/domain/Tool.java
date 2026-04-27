@@ -21,9 +21,9 @@ import lombok.experimental.Accessors;
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
 public final class Tool {
+    private String id;
     private String icon;
     // @JsProperty(GWT) + @JsonProperty(Spring) 이원 병기 — 각 서비스 ObjectMapper 가
-    // SNAKE_CASE 전략을 설정하지 않아도 wire 이름이 일관되게 snake_case 로 유지됨.
     @JsProperty(name = "icon_type")
     @JsonProperty("icon_type")
     private String iconType;
@@ -43,11 +43,12 @@ public final class Tool {
     }
     @JsOverlay @JsIgnore
     public ToolBuilder toBuilder() {
-        return new ToolBuilder().icon(this.icon).iconType(this.iconType).title(this.title).order(this.order).url(this.url).urlRegex(this.urlRegex).function(this.function);
+        return new ToolBuilder().id(this.id).icon(this.icon).iconType(this.iconType).title(this.title).order(this.order).url(this.url).urlRegex(this.urlRegex).function(this.function);
     }
     @Setter
     @Accessors(fluent = true)
     public static class ToolBuilder {
+        private String id;
         private String icon;
         private String iconType;
         private String title;
@@ -56,6 +57,7 @@ public final class Tool {
         private String[] urlRegex;
         private ToolFunction function;
         private ToolBuilder(){}
+        public ToolBuilder id(String id) { this.id = id; return this; }
         public ToolBuilder icon(String icon) { this.icon = icon; return this; }
         public ToolBuilder iconType(String iconType) { this.iconType = iconType; return this; }
         public ToolBuilder title(String title) { this.title = title; return this; }
@@ -68,6 +70,7 @@ public final class Tool {
         public ToolBuilder function(ToolFunction function) { this.function = function; return this; }
         public Tool build() {
             var tool = new Tool();
+            tool.id = id;
             tool.icon = icon;
             tool.iconType = iconType;
             tool.title = title;

@@ -36,6 +36,7 @@ classDiagram
     Menu *-- MenuBuilder
 
     class Tool {
+        -String id
         -String icon
         -String iconType
         -String title
@@ -46,6 +47,7 @@ classDiagram
     }
 
     class ToolBuilder {
+        +id(String): ToolBuilder
         +icon(String): ToolBuilder
         +iconType(String): ToolBuilder
         +title(String): ToolBuilder
@@ -93,8 +95,12 @@ classDiagram
     }
 
     class ToolProvider {
-        +publish(tools: Tool[])$
-        +subscribe(): Observable~String~
+        +publish(tools: Tool[])
+        +onSelect(callback: Consumer~String~)
+        +subscribe(callback: Consumer~Tool[]~)
+        +select(toolId: String)
+        +tools(): Observable~Tool[]~
+        +selectedToolId(): Observable~String~
     }
 
     class UserPreferences {

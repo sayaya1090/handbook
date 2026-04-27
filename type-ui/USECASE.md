@@ -16,6 +16,30 @@ graph TD
     ToolRail --- Canvas
 ```
 
+## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
+
+캔버스의 상태(모드, 선택 여부 등)에 따라 적절한 도구들을 쉘의 툴레일에 동적으로 노출하고 이벤트를 처리합니다.
+
+```mermaid
+sequenceDiagram
+    participant C as Type-UI
+    participant TP as ToolProvider (activity)
+    participant B as WindowBridge (agent-bridge)
+    participant S as Shell (shell-ui)
+
+    Note over C: "캔버스 초기화 또는 상태 변경"
+    C->>TP: "publish([Add, Undo, Redo, ...])"
+    TP->>B: "WindowToolPublisherBridge.publish(tools)"
+    B->>S: "window.dispatchEvent(published)"
+    S->>S: "Tool Rail UI 갱신"
+
+    Note over S: "사용자가 'Undo' 도구 클릭"
+    S->>B: "WindowToolSubscriberBridge.select('undo')"
+    B->>TP: "이벤트 수신"
+    TP->>C: "onSelect 핸들러 트리거"
+    C->>C: "ActionManager.undo() 실행"
+```
+
 ## 타입 생성 → 저장 시퀀스
 
 ```mermaid

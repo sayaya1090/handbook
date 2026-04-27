@@ -27,20 +27,21 @@ import static java.util.Comparator.nullsLast;
 @Singleton
 public class ToolList {
     @Delegate private final BehaviorSubject<List<Tool>> _this = behavior(List.of());
-    @Inject ToolList(MenuSelected menu, MenuHover hover) {
+    @Inject ToolList(MenuSelected menu, MenuHover hover, dev.sayaya.handbook.usecase.ToolProvider toolProvider) {
         Observable.merge(
-            menu.asObservable(),
-            hover.asObservable()
-        ).distinctUntilChanged().subscribe(this::update);
+            menu.asObservable().map(this::fromMenu),
+            hover.asObservable().map(this::fromMenu),
+            toolProvider.tools().map(Arrays::asList)
+        ).distinctUntilChanged().subscribe(this::next);
+        
+        // 쉘 초기화 시 윈도우 브릿지로부터 도구 목록 수신 시작
+        toolProvider.subscribe(tools -> {});
     }
-    private void update(Menu menu) {
-        if(menu == null) next(List.of());
-        else {
-            var tools = menu.tools();
-            List<Tool> list = tools != null
-                ? Arrays.stream(tools).sorted(nullsLast(comparing(Tool::order))).collect(Collectors.toList())
-                : List.of();
-            next(list);
-        }
+    private List<Tool> fromMenu(Menu menu) {
+        if(menu == null) return List.of();
+        var tools = menu.tools();
+        return tools != null
+            ? Arrays.stream(tools).sorted(nullsLast(comparing(Tool::order))).collect(Collectors.toList())
+            : List.of();
     }
 }

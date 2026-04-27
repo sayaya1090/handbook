@@ -27,6 +27,7 @@ public interface Component {
     ControllerElement controller();
     StatusHeaderElement statusHeader();
     AttributeEditorDialog attributeEditor();
+    dev.sayaya.handbook.client.usecase.TypeToolManager typeToolManager();
     dev.sayaya.handbook.client.usecase.TypeStateProvider typeStateProvider();
     dev.sayaya.handbook.client.usecase.TypeSearchProvider typeSearchProvider();
     dev.sayaya.handbook.client.usecase.TypeEventHandler typeEventHandler();

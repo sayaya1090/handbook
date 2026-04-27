@@ -44,15 +44,14 @@ classDiagram
     }
 
     class WindowToolPublisherBridge {
-        +publish(tools: String)$
-        -dispatchEvent(json: String)$ «JSNI»
+        +publish(tools: Tool[])$
+        +register(callback: Consumer~Tool[]~)$
+        -dispatchEvent(tools: Tool[])$ «JSNI»
     }
 
     class WindowToolSubscriberBridge {
-        -BehaviorSubject~String~ subject$
-        +events(): Observable~String~
-        +notify(toolId: String)$
-        -ensureListener()$
+        +select(toolId: String)$
+        +register(callback: Consumer~String~)$
         -dispatchEvent(toolId: String)$ «JSNI»
     }
 

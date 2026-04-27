@@ -58,16 +58,25 @@ public class Application implements EntryPoint {
             component.typeSearchProvider().search(q).subscribe(v -> result[0] = v);
             return result[0];
         });
+        
+        // 동적 도구 관리자 초기화
+        component.typeToolManager().init();
 
         var container = div().css("type-container")
                 .add(component.statusHeader())
                 .add(component.controller())
                 .add(component.canvas())
-                .add(component.attributeEditor())
-                .element();
+                .add(component.attributeEditor());
+        
+        if (WindowRenderBridge.isRegistered()) {
+            // 쉘과 통합된 상태라면 기존 헤더와 컨트롤러 숨김
+            component.statusHeader().element().style.display = "none";
+            component.controller().element().style.display = "none";
+        }
+
         // shell FrameUpdater 에 Render 를 전달 — body 직접 append 는 body{position:fixed;inset:0}
         // + shell #content(100dvh) 뒤에 스택되어 뷰포트 밖으로 밀려나는 회귀를 유발한다.
-        Render render = frame -> { frame.append(container); return true; };
+        Render render = frame -> { frame.append(container.element()); return true; };
         WindowRenderBridge.next(render);
     }
 
