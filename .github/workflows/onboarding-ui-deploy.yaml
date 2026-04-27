@@ -1,0 +1,14 @@
+name: 온보딩 UI 모듈 빌드
+on:
+  push:
+    paths:
+      - onboarding-ui/**
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    uses: ./.github/workflows/_frontend-deploy.yaml
+    with:
+      submodule: onboarding-ui
+    secrets: inherit
