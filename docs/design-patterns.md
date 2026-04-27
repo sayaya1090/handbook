@@ -263,3 +263,18 @@ flowchart LR
 - **성능**: 복합 필터링 및 전문 검색(Full-text Search) 성능을 극대화한다.
 - **확장성**: 읽기와 쓰기 부하를 독립적으로 분리하여 확장할 수 있다.
 - **유연성**: 검색 인덱스 구조를 도메인 모델과 다르게 최적화하여 구성할 수 있다.
+
+---
+
+## Strategy 패턴 (에이전트 커맨드 파싱)
+
+`AgentMutationHandler` 등에서 에이전트의 텍스트 기반 뮤테이션 커맨드(`CREATE`, `ADD`, `SET`, `REMOVE`, `DELETE` 등)를 파싱하고 실행할 때 발생하는 거대한 `switch-case`나 분기문을 제거하기 위해 Strategy 패턴을 도입한다.
+
+### 구조
+- `MutationStrategy`: 개별 커맨드 접두사별 파싱 및 Action 생성 로직을 캡슐화하는 인터페이스.
+- `CreateTypeStrategy`, `AddFieldStrategy`, `SetPropertyStrategy` 등: 특정 커맨드 문자열에 대응하는 구체적인 전략 클래스들.
+- `AgentMutationHandler`: 커맨드의 접두사를 확인하여 적절한 `MutationStrategy`를 선택하고, 파싱 결과를 `ActionManager`에 위임한다.
+
+### 장점
+- 커맨드 파싱 로직이 각 전략 클래스로 분리되어 단일 책임 원칙(SRP)을 준수하며, `AgentMutationHandler`의 크기가 크게 줄어든다.
+- 새로운 커맨드 유형 추가 시 기존 코드를 수정하지 않고 새 `MutationStrategy` 구현체만 추가하면 되므로 개방-폐쇄 원칙(OCP)을 준수한다.

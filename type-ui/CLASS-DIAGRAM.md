@@ -552,19 +552,44 @@ classDiagram
 classDiagram
     class AgentMutationHandler {
         <<@Singleton>>
+        -MutationStrategy[] strategies
         -ActionManager actionManager
+        +AgentMutationHandler(..., MutationReceiver)
+        -processChange(change: String)
+    }
+    
+    class MutationStrategy {
+        <<interface>>
+        +matches(command: String): boolean
+        +parse(command: String): Action
+    }
+    
+    class CreateTypeStrategy {
         -TypeList typeList
         -PositionMap positionMap
         -ChangeTracker changeTracker
-        -LayoutProvider layoutProvider
-        +AgentMutationHandler(..., MutationReceiver)
-        -processChange(change: String)
-        -createType(id: String)
-        -deleteType(key: String)
-        -addField(key, name, typeStr)
-        -removeField(key, name)
-        -setProperty(key, propValue)
     }
+    
+    class DeleteTypeStrategy {
+        -TypeList typeList
+        -ChangeTracker changeTracker
+    }
+    
+    class AddFieldStrategy {
+        -TypeList typeList
+        -ChangeTracker changeTracker
+    }
+    
+    class RemoveFieldStrategy {
+        -TypeList typeList
+        -ChangeTracker changeTracker
+    }
+    
+    class SetPropertyStrategy {
+        -TypeList typeList
+        -ChangeTracker changeTracker
+    }
+
     class TypeStateProvider {
         <<@Singleton>>
         -TypeList typeList
@@ -577,20 +602,13 @@ classDiagram
         -matches(type, query): boolean
     }
 
+    AgentMutationHandler --> MutationStrategy : uses
+    MutationStrategy <|.. CreateTypeStrategy
+    MutationStrategy <|.. DeleteTypeStrategy
+    MutationStrategy <|.. AddFieldStrategy
+    MutationStrategy <|.. RemoveFieldStrategy
+    MutationStrategy <|.. SetPropertyStrategy
     AgentMutationHandler --> ActionManager : execute(Action)
-    AgentMutationHandler --> TypeList
-    AgentMutationHandler --> PositionMap
-    TypeStateProvider --> TypeList : JSON 변환
-    TypeSearchProvider --> TypeList : 필터링
-```
-rovider --> TypeList : 필터링
-```
-ean
-    }
-
-    AgentMutationHandler --> ActionManager : execute(Action)
-    AgentMutationHandler --> TypeList
-    AgentMutationHandler --> PositionMap
     TypeStateProvider --> TypeList : JSON 변환
     TypeSearchProvider --> TypeList : 필터링
 ```

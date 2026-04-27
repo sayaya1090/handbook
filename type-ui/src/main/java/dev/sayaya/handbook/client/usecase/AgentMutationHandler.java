@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.domain.AttributeTypeValue;
 import dev.sayaya.handbook.client.domain.AttributeValue;
 import dev.sayaya.handbook.client.domain.Position;
 import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
@@ -17,6 +18,7 @@ import dev.sayaya.handbook.usecase.MutationReceiver;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * 에이전트의 MutateCommand(changes 문자열 배열)를 type-ui Action으로 변환하여 실행한다.
@@ -33,20 +35,20 @@ import java.util.Arrays;
 @Singleton
 public class AgentMutationHandler {
     private final ActionManager actionManager;
-    private final TypeList typeList;
-    private final PositionMap positionMap;
-    private final ChangeTracker tracker;
-    private final LayoutProvider layoutProvider;
+    private final Map<String, MutationStrategy> strategies;
 
     @Inject
     AgentMutationHandler(ActionManager actionManager, TypeList typeList, PositionMap positionMap,
                          ChangeTracker tracker, LayoutProvider layoutProvider,
                          MutationReceiver mutationReceiver) {
         this.actionManager = actionManager;
-        this.typeList = typeList;
-        this.positionMap = positionMap;
-        this.tracker = tracker;
-        this.layoutProvider = layoutProvider;
+        this.strategies = Map.of(
+            "CREATE", new CreateTypeStrategy(typeList, positionMap, tracker, layoutProvider),
+            "DELETE", new DeleteTypeStrategy(typeList, tracker),
+            "ADD",    new AddFieldStrategy(typeList, tracker),
+            "REMOVE", new RemoveFieldStrategy(typeList, tracker),
+            "SET",    new SetPropertyStrategy(typeList, tracker)
+        );
 
         mutationReceiver.mutations().subscribe(changes -> {
             if (changes == null) return;
@@ -63,54 +65,91 @@ public class AgentMutationHandler {
         String command = parts[0].toUpperCase();
         String operand = parts[1];
 
-        switch (command) {
-            case "CREATE": processCreate(operand); break;
-            case "DELETE": processDelete(operand); break;
-            case "ADD":    processAdd(operand); break;
-            case "REMOVE": processRemove(operand); break;
-            case "SET":    processSet(operand); break;
-        }
-    }
-
-    /** CREATE type:customer */
-    private void processCreate(String operand) {
-        if (!operand.startsWith("type:")) return;
-        String id = operand.substring(5);
-        var period = layoutProvider.getValue();
-        if (period == null) return;
-        TypeValue newType = TypeValue.create(id, "1.0", period.effectDateTime, period.expireDateTime);
-        Position pos = Position.of(50, 80, 240, 160);
-        actionManager.execute(new ComplexAction(
-                new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
-                new PushOutOverlapAction(positionMap, newType.key(), 10)
-        ));
-    }
-
-    /** DELETE type:customer:1.0 */
-    private void processDelete(String operand) {
-        if (!operand.startsWith("type:")) return;
-        String typeKey = operand.substring(5);
-        for (TypeValue type : typeList.getValue()) {
-            if (type.key().equals(typeKey)) {
-                actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
-                break;
+        MutationStrategy strategy = strategies.get(command);
+        if (strategy != null) {
+            Action action = strategy.parse(operand);
+            if (action != null) {
+                actionManager.execute(action);
             }
         }
     }
+}
 
-    /** ADD field:customer:1.0:phone:type=text */
-    private void processAdd(String operand) {
-        if (!operand.startsWith("field:")) return;
+interface MutationStrategy {
+    Action parse(String operand);
+}
+
+class CreateTypeStrategy implements MutationStrategy {
+    private final TypeList typeList;
+    private final PositionMap positionMap;
+    private final ChangeTracker tracker;
+    private final LayoutProvider layoutProvider;
+
+    CreateTypeStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider) {
+        this.typeList = typeList;
+        this.positionMap = positionMap;
+        this.tracker = tracker;
+        this.layoutProvider = layoutProvider;
+    }
+
+    @Override
+    public Action parse(String operand) {
+        if (!operand.startsWith("type:")) return null;
+        String id = operand.substring(5);
+        var period = layoutProvider.getValue();
+        if (period == null) return null;
+        TypeValue newType = TypeValue.create(id, "1.0", period.effectDateTime, period.expireDateTime);
+        Position pos = Position.of(50, 80, 240, 160);
+        return new ComplexAction(
+                new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
+                new PushOutOverlapAction(positionMap, newType.key(), 10)
+        );
+    }
+}
+
+class DeleteTypeStrategy implements MutationStrategy {
+    private final TypeList typeList;
+    private final ChangeTracker tracker;
+
+    DeleteTypeStrategy(TypeList typeList, ChangeTracker tracker) {
+        this.typeList = typeList;
+        this.tracker = tracker;
+    }
+
+    @Override
+    public Action parse(String operand) {
+        if (!operand.startsWith("type:")) return null;
+        String typeKey = operand.substring(5);
+        for (TypeValue type : typeList.getValue()) {
+            if (type.key().equals(typeKey)) {
+                return new DeleteBoxAction(typeList, tracker, type);
+            }
+        }
+        return null;
+    }
+}
+
+class AddFieldStrategy implements MutationStrategy {
+    private final TypeList typeList;
+    private final ChangeTracker tracker;
+
+    AddFieldStrategy(TypeList typeList, ChangeTracker tracker) {
+        this.typeList = typeList;
+        this.tracker = tracker;
+    }
+
+    @Override
+    public Action parse(String operand) {
+        if (!operand.startsWith("field:")) return null;
         String rest = operand.substring(6);
-        // format: typeKey:attrName:type=attrType
         String[] fieldParts = rest.split(":");
-        if (fieldParts.length < 4) return;
+        if (fieldParts.length < 4) return null;
         String typeKey = fieldParts[0] + ":" + fieldParts[1];
         String attrName = fieldParts[2];
         String typeSpec = fieldParts.length > 3 ? fieldParts[3] : "";
 
         TypeValue type = findType(typeKey);
-        if (type == null) return;
+        if (type == null) return null;
 
         AttributeTypeValue attrType = parseAttrType(typeSpec);
         int nextOrder = (type.attributes != null ? type.attributes.length : 0) + 1;
@@ -120,53 +159,7 @@ public class AgentMutationHandler {
         AttributeValue[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
         newAttrs[oldAttrs.length] = newAttr;
         TypeValue after = type.withAttributes(newAttrs);
-        actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
-    }
-
-    /** REMOVE field:customer:1.0:phone */
-    private void processRemove(String operand) {
-        if (!operand.startsWith("field:")) return;
-        String rest = operand.substring(6);
-        String[] fieldParts = rest.split(":");
-        if (fieldParts.length < 3) return;
-        String typeKey = fieldParts[0] + ":" + fieldParts[1];
-        String attrName = fieldParts[2];
-
-        TypeValue type = findType(typeKey);
-        if (type == null || type.attributes == null) return;
-
-        AttributeValue[] newAttrs = Arrays.stream(type.attributes)
-                .filter(a -> !a.name.equals(attrName))
-                .toArray(AttributeValue[]::new);
-        TypeValue after = type.withAttributes(newAttrs);
-        actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
-    }
-
-    /** SET type:customer:1.0:description=고객 정보 */
-    private void processSet(String operand) {
-        if (!operand.startsWith("type:")) return;
-        String rest = operand.substring(5);
-        // format: typeKey:property=value
-        int eqIdx = rest.indexOf('=');
-        if (eqIdx < 0) return;
-        String keyAndProp = rest.substring(0, eqIdx);
-        String value = rest.substring(eqIdx + 1);
-
-        int lastColon = keyAndProp.lastIndexOf(':');
-        if (lastColon < 0) return;
-        String typeKey = keyAndProp.substring(0, lastColon);
-        String property = keyAndProp.substring(lastColon + 1);
-
-        TypeValue type = findType(typeKey);
-        if (type == null) return;
-
-        TypeValue after;
-        switch (property) {
-            case "description": after = type.withDescription(value); break;
-            case "parent":      after = type.withParent(value); break;
-            default: return;
-        }
-        actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
+        return new EditBoxAction(typeList, tracker, type, after);
     }
 
     private TypeValue findType(String typeKey) {
@@ -187,3 +180,83 @@ public class AgentMutationHandler {
         }
     }
 }
+
+class RemoveFieldStrategy implements MutationStrategy {
+    private final TypeList typeList;
+    private final ChangeTracker tracker;
+
+    RemoveFieldStrategy(TypeList typeList, ChangeTracker tracker) {
+        this.typeList = typeList;
+        this.tracker = tracker;
+    }
+
+    @Override
+    public Action parse(String operand) {
+        if (!operand.startsWith("field:")) return null;
+        String rest = operand.substring(6);
+        String[] fieldParts = rest.split(":");
+        if (fieldParts.length < 3) return null;
+        String typeKey = fieldParts[0] + ":" + fieldParts[1];
+        String attrName = fieldParts[2];
+
+        TypeValue type = findType(typeKey);
+        if (type == null || type.attributes == null) return null;
+
+        AttributeValue[] newAttrs = Arrays.stream(type.attributes)
+                .filter(a -> !a.name.equals(attrName))
+                .toArray(AttributeValue[]::new);
+        TypeValue after = type.withAttributes(newAttrs);
+        return new EditBoxAction(typeList, tracker, type, after);
+    }
+
+    private TypeValue findType(String typeKey) {
+        for (TypeValue t : typeList.getValue()) {
+            if (t.key().equals(typeKey)) return t;
+        }
+        return null;
+    }
+}
+
+class SetPropertyStrategy implements MutationStrategy {
+    private final TypeList typeList;
+    private final ChangeTracker tracker;
+
+    SetPropertyStrategy(TypeList typeList, ChangeTracker tracker) {
+        this.typeList = typeList;
+        this.tracker = tracker;
+    }
+
+    @Override
+    public Action parse(String operand) {
+        if (!operand.startsWith("type:")) return null;
+        String rest = operand.substring(5);
+        int eqIdx = rest.indexOf('=');
+        if (eqIdx < 0) return null;
+        String keyAndProp = rest.substring(0, eqIdx);
+        String value = rest.substring(eqIdx + 1);
+
+        int lastColon = keyAndProp.lastIndexOf(':');
+        if (lastColon < 0) return null;
+        String typeKey = keyAndProp.substring(0, lastColon);
+        String property = keyAndProp.substring(lastColon + 1);
+
+        TypeValue type = findType(typeKey);
+        if (type == null) return null;
+
+        TypeValue after;
+        switch (property) {
+            case "description": after = type.withDescription(value); break;
+            case "parent":      after = type.withParent(value); break;
+            default: return null;
+        }
+        return new EditBoxAction(typeList, tracker, type, after);
+    }
+
+    private TypeValue findType(String typeKey) {
+        for (TypeValue t : typeList.getValue()) {
+            if (t.key().equals(typeKey)) return t;
+        }
+        return null;
+    }
+}
+

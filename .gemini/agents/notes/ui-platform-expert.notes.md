@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-17: 에이전트 커맨드 파싱 최적화 → AgentMutationHandler에 Strategy 패턴 도입 및 테스트 갱신
 - 2026-05-16: 생성자 과잉 주입 해결 → StatusHeaderElement 및 ShellInitializer 에 중첩 Context 클래스 도입
 - 2026-05-16: 타입 편집기 UI 재설계 Phase 2 → DrawerTest 상단 상태바 검증 및 ToolTest 신설
 - 2026-05-15: 온보딩 풀스크린 및 심리스 전환 구현 → data-onboarding 기반 Shell UI 가리기 및 WindowUriBridge.navigate 연동 추가
