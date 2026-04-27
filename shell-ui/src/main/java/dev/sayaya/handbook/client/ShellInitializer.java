@@ -12,6 +12,7 @@ import dev.sayaya.handbook.client.usecase.SessionPollingService;
 import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
 import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
+import dev.sayaya.handbook.client.usecase.WorkspaceOnboardingBootstrapper;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.LabelProvider;
@@ -65,6 +66,7 @@ public class ShellInitializer {
     private final ProgressElement progressElement;
     private final ContentElement contentElement;
     private final WorkspaceEventListener workspaceEventListener;
+    private final WorkspaceOnboardingBootstrapper workspaceOnboardingBootstrapper;
     private final SessionPollingService sessionManager;
     private final Observer<Progress> progressObserver;
     private final Observer<Render> renderObserver;
@@ -83,6 +85,7 @@ public class ShellInitializer {
             ProgressElement progressElement,
             ContentElement contentElement,
             WorkspaceEventListener workspaceEventListener,
+            WorkspaceOnboardingBootstrapper workspaceOnboardingBootstrapper,
             SessionPollingService sessionManager,
             Observer<Progress> progressObserver,
             Observer<Render> renderObserver,
@@ -100,6 +103,7 @@ public class ShellInitializer {
         this.progressElement = progressElement;
         this.contentElement = contentElement;
         this.workspaceEventListener = workspaceEventListener;
+        this.workspaceOnboardingBootstrapper = workspaceOnboardingBootstrapper;
         this.sessionManager = sessionManager;
         this.progressObserver = progressObserver;
         this.renderObserver = renderObserver;
@@ -114,6 +118,7 @@ public class ShellInitializer {
         frameUpdater.initialize();
         scriptManager.initialize();
         workspaceEventListener.initialize();
+        workspaceOnboardingBootstrapper.initialize();
         sessionManager.initialize();
         // Composition Root — DOM 최상위 배치 순서를 한 곳에서 명시한다.
         // AppBar(최상단 고정) → MobileTabs(AppBar 바로 아래) → Progress(상단 indicator)
