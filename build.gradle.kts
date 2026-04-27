@@ -136,11 +136,11 @@ subprojects {
         }
         // shell-ui는 JS/CSS 소스가 자기 자신이므로 복사 불필요
         if (project.name != "shell-ui") {
-            tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") }.configureEach {
+            tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") || it.name.startsWith("gwtTest") }.configureEach {
                 dependsOn(copyTestResources, copyTestCss, mergeI18n)
             }
         } else {
-            tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") }.configureEach {
+            tasks.matching { it.name.startsWith("gwtDev") || it.name.startsWith("gwtCompile") || it.name.startsWith("gwtTest") }.configureEach {
                 dependsOn(mergeI18n)
             }
         }
