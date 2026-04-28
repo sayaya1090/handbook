@@ -5,19 +5,27 @@ plugins {
 dependencies {
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     testImplementation(libs.kotest.runner)
     testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.bundles.test.web)
+    testAnnotationProcessor(libs.lombok)
+    testAnnotationProcessor(libs.dagger.compiler)
 }
 
 gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     war = file("src/main/webapp")
+    devMode {
+        modules = listOf("dev.sayaya.handbook.AgentBridgeTest")
+        war = file("src/test/webapp")
+    }
     generateJsInteropExports = true
     compiler { strict = true }
     test {
-        webPort = 18089
+        webPort = 18095
+        modules = listOf("dev.sayaya.handbook.AgentBridgeTest")
     }
     modules = listOf("dev.sayaya.handbook.AgentBridge")
 }

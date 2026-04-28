@@ -54,7 +54,7 @@ AgentCommand (abstract)
 agent-protocol/
 ├── build.gradle.kts
 └── src/main/java/dev/sayaya/handbook/
-    ├── AgentProtocol.gwt.xml
+    ├── AgentProtocol.gwt.xml          # GWT 상속용 설정
     └── domain/
         ├── AgentCommand.java          # 추상 베이스 (@JsonTypeInfo)
         ├── CommandType.java           # 10종 enum
