@@ -36,7 +36,7 @@ public class BrowserLanguageDetector implements LanguageDetector {
         public NativeStorage localStorage;
     }
 
-    @Inject BrowserLanguageDetector() {}
+    @Inject public BrowserLanguageDetector() {}
 
     @Override
     public String detect() {

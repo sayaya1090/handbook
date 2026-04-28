@@ -3,7 +3,6 @@ plugins {
     id("dev.sayaya.gwt")
 }
 dependencies {
-    implementation(project(":agent-bridge"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")

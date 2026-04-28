@@ -12,15 +12,16 @@ import elemental2.promise.Promise;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static elemental2.dom.DomGlobal.console;
+
 /**
  * JSON 언어팩 파일을 fetch로 로드한다.
- * 요청 실패 시 영어(en) 팩으로 폴백한다.
  */
 @Singleton
 public class FetchLanguagePackRepository implements LanguagePackRepository {
     private final FetchApi fetchApi;
 
-    @Inject FetchLanguagePackRepository(FetchApi fetchApi) {
+    @Inject public FetchLanguagePackRepository(FetchApi fetchApi) {
         this.fetchApi = fetchApi;
     }
 
@@ -28,21 +29,22 @@ public class FetchLanguagePackRepository implements LanguagePackRepository {
     public Observable<Labels> load(String lang) {
         Promise<Labels> promise = fetchLanguagePack(lang)
                 .catch_(err -> {
-                    GWT.log("Language pack '" + lang + "' not found, falling back to 'en'");
+                    GWT.log("Language pack '" + lang + "' failed, falling back to 'en': " + err);
                     return fetchLanguagePack("en");
                 });
         return AsyncSubject.await(promise);
     }
 
     private Promise<Labels> fetchLanguagePack(String lang) {
-        return fetchApi.request("js/language." + lang + ".json")
-                .then(this::handleResponse)
+        String url = GWT.getHostPageBaseURL() + "js/language." + lang + ".json";
+        return fetchApi.request(url)
+                .then(Promise::resolve)
                 .then(Response::json)
                 .then(obj -> Promise.resolve((Labels) obj));
     }
 
     private Promise<Response> handleResponse(Response response) {
         if (response.ok) return Promise.resolve(response);
-        return Promise.reject("HTTP " + response.status);
+        return Promise.reject("HTTP " + response.status + " " + response.statusText);
     }
 }

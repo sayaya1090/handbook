@@ -1,7 +1,5 @@
 package dev.sayaya.handbook.usecase;
 
-import dev.sayaya.handbook.usecase.WindowToolPublisherBridge;
-import dev.sayaya.handbook.usecase.WindowToolSubscriberBridge;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -33,12 +31,12 @@ public class ToolProvider {
     /** 현재 모듈의 도구 목록을 쉘에 알린다. */
     public void publish(Tool[] tools) {
         this.tools.next(tools);
-        WindowToolPublisherBridge.publish(tools);
+        ToolPublisher.publish(tools);
     }
 
     /** 쉘에서 선택된 도구 이벤트를 구독한다. */
     public void onSelect(Consumer<String> callback) {
-        WindowToolSubscriberBridge.register(toolId -> {
+        ToolSubscriber.register(toolId -> {
             selectedToolId.next(toolId);
             callback.accept(toolId);
         });
@@ -48,7 +46,7 @@ public class ToolProvider {
 
     /** 자식 모듈이 발행하는 도구 목록을 수신한다. */
     public void subscribe(Consumer<Tool[]> callback) {
-        WindowToolPublisherBridge.register(tools -> {
+        ToolPublisher.register(tools -> {
             Tool[] casted = jsinterop.base.Js.cast(tools);
             this.tools.next(casted);
             callback.accept(casted);
@@ -58,7 +56,7 @@ public class ToolProvider {
     /** 사용자가 클릭한 도구를 자식 모듈에 알린다. */
     public void select(String toolId) {
         selectedToolId.next(toolId);
-        WindowToolSubscriberBridge.select(toolId);
+        ToolSubscriber.select(toolId);
     }
 
     public Observable<Tool[]> tools() { return tools.asObservable(); }
