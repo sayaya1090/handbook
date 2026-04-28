@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module rename-to="workspaceTest">
-    <inherits name="dev.sayaya.handbook.WorkspaceDomain"/>
+<module rename-to="workspace_shared">
+    <inherits name="dev.sayaya.handbook.Workspace"/>
     <entry-point class="dev.sayaya.handbook.client.Application"/>
     <source path="client"/>
 </module>

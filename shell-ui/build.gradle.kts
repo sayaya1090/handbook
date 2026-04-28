@@ -6,7 +6,7 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
-    implementation(project(":workspace-domain"))
+    implementation(project(":workspace"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
