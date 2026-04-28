@@ -11,6 +11,9 @@ public final class User {
 
     @JsOverlay @JsIgnore
     public static User create(String id, String name, String email) {
+        if (id == null || id.trim().isEmpty()) throw new IllegalArgumentException("ID cannot be empty");
+        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
+
         User user = new User();
         user.id = id;
         user.name = name;

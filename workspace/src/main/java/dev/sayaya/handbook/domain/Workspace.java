@@ -11,6 +11,9 @@ public final class Workspace {
 
     @JsOverlay @JsIgnore
     public static Workspace create(String id, String name, String description) {
+        if (id == null || id.trim().isEmpty()) throw new IllegalArgumentException("ID cannot be empty");
+        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
+        
         Workspace ws = new Workspace();
         ws.id = id;
         ws.name = name;
@@ -25,6 +28,9 @@ public final class Workspace {
 
         @JsOverlay @JsIgnore
         public static WorkspaceSimple create(String id, String name) {
+            if (id == null || id.trim().isEmpty()) throw new IllegalArgumentException("ID cannot be empty");
+            if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
+
             WorkspaceSimple ws = new WorkspaceSimple();
             ws.id = id;
             ws.name = name;

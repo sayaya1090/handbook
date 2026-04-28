@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.domain
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import java.util.*
@@ -15,6 +16,13 @@ class WorkspaceTest : BehaviorSpec({
                 workspace.description shouldBe "Desc"
             }
         }
+        When("이름이 비어있으면") {
+            Then("IllegalArgumentException이 발생해야 한다") {
+                shouldThrow<IllegalArgumentException> {
+                    Workspace.create("id", " ", "desc")
+                }
+            }
+        }
     }
     Given("WorkspaceSimple") {
         When("생성하면") {
@@ -23,6 +31,13 @@ class WorkspaceTest : BehaviorSpec({
             Then("필드가 정상 할당된다") {
                 simple.id shouldBe id
                 simple.name shouldBe "Simple WS"
+            }
+        }
+        When("ID가 비어있으면") {
+            Then("IllegalArgumentException이 발생해야 한다") {
+                shouldThrow<IllegalArgumentException> {
+                    Workspace.WorkspaceSimple.create("", "name")
+                }
             }
         }
     }

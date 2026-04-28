@@ -12,6 +12,10 @@ public final class Group {
 
     @JsOverlay @JsIgnore
     public static Group create(String id, String workspace, String name, String description) {
+        if (id == null || id.trim().isEmpty()) throw new IllegalArgumentException("ID cannot be empty");
+        if (workspace == null || workspace.trim().isEmpty()) throw new IllegalArgumentException("Workspace ID cannot be empty");
+        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
+
         Group group = new Group();
         group.id = id;
         group.workspace = workspace;
