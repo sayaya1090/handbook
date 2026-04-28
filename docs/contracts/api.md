@@ -118,9 +118,9 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 | Method | Path | 설명 |
 |--------|------|------|
-| POST | `/workspace/{ws}/webhooks` | 웹훅 등록 |
-| GET | `/workspace/{ws}/webhooks` | 목록 |
-| DELETE | `/workspace/{ws}/webhooks/{id}` | 삭제 |
+| POST | `/workspaces/{ws}/webhooks` | 웹훅 등록 |
+| GET | `/workspaces/{ws}/webhooks` | 목록 |
+| DELETE | `/workspaces/{ws}/webhooks/{id}` | 삭제 |
 
 ## 디스커버리 (외부 AI / SEO)
 

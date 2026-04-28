@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
-import dev.sayaya.handbook.domain.Log;
+import dev.sayaya.handbook.client.domain.Log;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;
 

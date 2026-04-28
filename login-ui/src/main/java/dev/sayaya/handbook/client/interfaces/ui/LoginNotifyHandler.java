@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces.ui;
 
 import dev.sayaya.handbook.domain.*;
 
-import dev.sayaya.handbook.domain.Log;
+import dev.sayaya.handbook.client.domain.Log;
 import dev.sayaya.handbook.client.usecase.LoginCommandDispatcher;
 
 import javax.inject.Inject;

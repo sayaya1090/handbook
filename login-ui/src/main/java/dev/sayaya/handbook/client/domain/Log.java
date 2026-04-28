@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.domain;
+package dev.sayaya.handbook.client.domain;
 
 import dev.sayaya.rx.subject.ReplaySubject;
 import lombok.experimental.Delegate;
