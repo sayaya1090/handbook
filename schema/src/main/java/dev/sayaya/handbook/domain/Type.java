@@ -2,17 +2,19 @@ package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
+import lombok.*;
+import lombok.experimental.Accessors;
 
-/**
- * 타입 스키마를 표현하는 공용 도메인 모델.
- */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
+@NoArgsConstructor
 public final class Type {
-    @JsonProperty("id") @JsProperty public String id;
-    @JsonProperty("version") @JsProperty public String version;
-    @JsonProperty("width") @JsProperty public double width;
-    @JsonProperty("height") @JsProperty public double height;
-    @JsonProperty("attributes") @JsProperty public Attribute[] attributes;
+    @JsonProperty("id") @JsProperty private String id;
+    @JsonProperty("version") @JsProperty private String version;
+    @JsonProperty("width") @JsProperty private double width;
+    @JsonProperty("height") @JsProperty private double height;
+    @JsonProperty("attributes") @JsProperty private Attribute[] attributes;
 
     @JsOverlay @JsIgnore
     public static Type create(String id, String version, double width, double height) {

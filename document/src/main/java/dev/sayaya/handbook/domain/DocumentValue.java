@@ -1,36 +1,39 @@
 package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jsinterop.annotations.JsOverlay;
-import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsType;
+import jsinterop.annotations.*;
 import jsinterop.base.JsPropertyMap;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 
-/**
- * 백엔드(Kotlin)와 프론트엔드(GWT)가 공유하는 문서 도메인 모델.
- * 네이티브 JsType 규칙에 따라 필드는 public 이어야 한다.
- */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class DocumentValue {
-    @JsonProperty("id") public String id;
-    @JsonProperty("type") public String type;
-    @JsonProperty("serial") public String serial;
-    @JsonProperty("effectDateTime") public double effectDateTime;
-    @JsonProperty("expireDateTime") public double expireDateTime;
-    @JsonProperty("createDateTime") public double createDateTime;
-    @JsonProperty("creator") public String creator;
-    @JsonProperty("data") public JsPropertyMap<String> data;
-    @JsonProperty("status") @Builder.Default public String status = "DRAFT";
-    @JsonProperty("rev") public double rev;
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Setter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
+@NoArgsConstructor
+public final class DocumentValue {
+    @JsonProperty("id") @JsProperty private String id;
+    @JsonProperty("type") @JsProperty private String type;
+    @JsonProperty("serial") @JsProperty private String serial;
+    @JsonProperty("effectDateTime") @JsProperty private double effectDateTime;
+    @JsonProperty("expireDateTime") @JsProperty private double expireDateTime;
+    @JsonProperty("createDateTime") @JsProperty private double createDateTime;
+    @JsonProperty("creator") @JsProperty private String creator;
+    @JsonProperty("data") @JsProperty private JsPropertyMap<String> data;
+    @JsonProperty("status") @JsProperty private String status;
+    @JsonProperty("rev") @JsProperty private double rev;
 
     @JsOverlay
     public final boolean isExpired(double now) {
         return expireDateTime > 0 && expireDateTime <= now;
+    }
+
+    @JsOverlay @JsIgnore
+    public static DocumentValue create(String id, String type) {
+        DocumentValue doc = new DocumentValue();
+        doc.id = id;
+        doc.type = type;
+        doc.status = "DRAFT";
+        return doc;
     }
 }

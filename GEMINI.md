@@ -5,6 +5,9 @@
 
 ## 개발 규칙
 
+### 엔지니어링 표준 (Engineering Standards)
+- **최신 아키텍처 원칙**: 도메인 모델 통합, 제로 카피 전략, GWT 런타임 테스트 표준은 `docs/engineering-standards.md`를 반드시 준수한다. (2026-04-28 정립)
+
 ### 상호작용 원칙 (Interaction Principles)
 - **자율 행동 금지 (No Autonomous Action):** 인공지능은 어떠한 경우에도 임의로 판단하여 코드를 수정, 생성, 삭제하거나 시스템 설정을 변경하지 않는다.
 - **단계별 확인 (Step-by-Step Confirmation):** 모든 작업은 논리적인 최소 단위의 단계(Step)로 나누어야 하며, 각 단계가 시작되기 전에 반드시 사용자의 명시적인 승인(예: "진행하세요", "OK")을 받아야 한다.

@@ -11,10 +11,10 @@ class GroupTest : BehaviorSpec({
             val workspaceId = UUID.randomUUID().toString()
             val group = Group.create(id, workspaceId, "Group One", "Desc")
             Then("필드가 정상적으로 할당되어야 한다") {
-                group.id shouldBe id
-                group.workspace shouldBe workspaceId
-                group.name shouldBe "Group One"
-                group.description shouldBe "Desc"
+                group.id() shouldBe id
+                group.workspace() shouldBe workspaceId
+                group.name() shouldBe "Group One"
+                group.description() shouldBe "Desc"
             }
         }
     }

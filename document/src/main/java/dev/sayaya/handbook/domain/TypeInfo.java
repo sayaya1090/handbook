@@ -1,20 +1,16 @@
 package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
+import jsinterop.annotations.*;
+import lombok.*;
+import lombok.experimental.Accessors;
 
-/**
- * 문서 타입 정보.
- */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class TypeInfo {
-    @JsonProperty("id") public String id;
-    @JsonProperty("version") public String version;
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Setter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
+@NoArgsConstructor
+public final class TypeInfo {
+    @JsonProperty("id") @JsProperty private String id;
+    @JsonProperty("version") @JsProperty private String version;
 }

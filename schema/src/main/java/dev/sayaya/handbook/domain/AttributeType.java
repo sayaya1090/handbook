@@ -2,11 +2,14 @@ package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
+import lombok.*;
+import lombok.experimental.Accessors;
 
-/**
- * 속성의 데이터 타입을 나타내는 공용 도메인 모델.
- */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Setter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
+@NoArgsConstructor
 public final class AttributeType {
     @JsonProperty("type") @JsProperty public String type;
     @JsonProperty("referencedType") @JsProperty public String referencedType;

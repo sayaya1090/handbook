@@ -2,11 +2,16 @@ package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
+@NoArgsConstructor
 public final class LayoutPeriod {
-    @JsonProperty("effectDateTime") @JsProperty public double effectDateTime;
-    @JsonProperty("expireDateTime") @JsProperty public double expireDateTime;
+    @JsonProperty("effectDateTime") @JsProperty private double effectDateTime;
+    @JsonProperty("expireDateTime") @JsProperty private double expireDateTime;
 
     @JsOverlay @JsIgnore
     public static LayoutPeriod of(double start, double end) {
@@ -16,7 +21,6 @@ public final class LayoutPeriod {
         return period;
     }
 
-    /** 도메인 로직: 기간 중첩 계산 */
     @JsOverlay
     public final double overlap(LayoutPeriod other) {
         double start = Math.max(effectDateTime, other.effectDateTime);
