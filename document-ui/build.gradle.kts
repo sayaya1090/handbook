@@ -11,7 +11,7 @@ dependencies {
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
     implementation(project(":document"))
-    implementation(project(":schema-domain"))
+    implementation(project(":schema"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
