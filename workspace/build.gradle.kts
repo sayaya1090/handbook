@@ -1,19 +1,17 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.spring")
     id("dev.sayaya.gwt")
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
-    id("com.adarshr.test-logger")
 }
 
 dependencies {
-    implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
-    testImplementation(libs.bundles.test.api)
+    testImplementation(libs.kotest.runner)
+    testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.bundles.test.web)
+    testAnnotationProcessor(libs.lombok)
+    testAnnotationProcessor(libs.dagger.compiler)
 }
 
 gwt {
@@ -28,7 +26,6 @@ gwt {
     compiler { strict = true }
     test {
         webPort = 18094
-        modules = listOf("dev.sayaya.handbook.WorkspaceTest")
     }
     modules = listOf("dev.sayaya.handbook.Workspace")
 }
@@ -38,9 +35,6 @@ tasks {
         enabled = true
         from(sourceSets.main.get().allSource)
         duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-    bootJar {
-        enabled = false
     }
     test {
         useJUnitPlatform()

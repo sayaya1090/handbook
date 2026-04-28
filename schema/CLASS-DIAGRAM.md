@@ -1,65 +1,35 @@
 # Schema 클래스 다이어그램
 
+## 도메인 모델 (Shared)
+
 ```mermaid
 classDiagram
     class Type {
-        +String id
-        +String version
-        +Instant effectDateTime
-        +Instant expireDateTime
-        +String? description
-        +Boolean primitive
-        +String? parent
-        +equals(other): Boolean [id+version 복합키]
+        -String id
+        -String version
+        -Attribute[] attributes
+        +id() String
+        +create(id, ver, w, h)$ Type
     }
-
     class Attribute {
-        +String name
-        +Short order
-        +String? description
-        +AttributeType type
-        +Boolean nullable
-        +Boolean inherited
+        -String name
+        -AttributeType type
+        +name() String
+        +create(id, name, order, type)$ Attribute
     }
-
     class AttributeType {
-        <<sealed interface>>
+        -String type
+        -AttributeType elementType
+        +simplify() String
+        +text()$ AttributeType
+        +array(element)$ AttributeType
     }
-    class Text { +List~String~ regexPatterns }
-    class Bool
-    class Number { +Long? min; +Long? max }
-    class Date { +Instant? after; +Instant? before }
-    class Enum { +Set~String~ allowedValues }
-    class Array { +AttributeType elementType }
-    class Map { +AttributeType keyType; +AttributeType valueType }
-    class File { +Set~String~ extensions }
-    class Document { +String referencedType }
-
-    AttributeType <|.. Text
-    AttributeType <|.. Bool
-    AttributeType <|.. Number
-    AttributeType <|.. Date
-    AttributeType <|.. Enum
-    AttributeType <|.. Array
-    AttributeType <|.. Map
-    AttributeType <|.. File
-    AttributeType <|.. Document
-
-    Attribute --> AttributeType
-
-    class Validator {
-        <<sealed interface>>
-        +validate(value): Boolean
+    class LayoutPeriod {
+        -double effectDateTime
+        -double expireDateTime
+        +overlap(other) double
     }
-    class Regex { +String pattern }
-    class ValidatorBool
-    class ValidatorNumber { +Double? min; +Double? max }
-    class ValidatorDate { +Instant? lowerBound; +Instant? upperBound }
-    class ValidatorEnum { +Set~String~ options }
 
-    Validator <|.. Regex
-    Validator <|.. ValidatorBool
-    Validator <|.. ValidatorNumber
-    Validator <|.. ValidatorDate
-    Validator <|.. ValidatorEnum
+    Type *-- Attribute
+    Attribute *-- AttributeType
 ```

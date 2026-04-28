@@ -12,6 +12,8 @@ description: 디버깅 패턴 및 문제 해결 가이드
 | `bad SQL grammar` + JSONB | R2DBC 엔티티의 JSONB 컬럼이 `String` 타입 | `io.r2dbc.postgresql.codec.Json` 타입 사용 |
 | `no Identifier. Update not possible` | 엔티티에 `@Id` 누락 | `@Id` 어노테이션 추가 |
 | `GWT ReferenceError` | `@JsOverlay` 인스턴스 메서드에서 재귀 호출 | static 헬퍼로 우회 |
+| `Native 필드 접근 불가` | `isNative=true` 클래스의 `private` 필드에 게터 없이 접근 | `@Getter(onMethod_ = {@JsOverlay})` 추가 및 메서드 호출 |
+| `cannot find symbol` (TypeValue 등) | 도메인 통합으로 클래스명이 `Type` 등으로 변경됨 | 최신 `CLASS-DIAGRAM.md` 참조하여 클래스명 수정 |
 | `DuplicateKeyException` on save | `@Version rev`가 null → INSERT 시도 | `fromDomain()`에서 rev 전달 |
 | `Address already in use` (GWT 테스트) | openWebServer 포트 충돌 | 모듈별 고유 포트 할당으로 해결됨 (build.gradle.kts portMap) |
 | Jackson `event_type` null | `@JsonTypeInfo` + 같은 클래스에 여러 discriminator | 구현 클래스에 `@JsonProperty("event_type")` 추가 |

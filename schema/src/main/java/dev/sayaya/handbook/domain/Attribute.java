@@ -18,6 +18,8 @@ public final class Attribute {
     @JsOverlay @JsIgnore
     public static Attribute create(String id, String name, int order, AttributeType type) {
         if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException("Attribute name cannot be blank.");
+        if (!name.matches("^[a-zA-Z0-9_-]+$")) throw new IllegalArgumentException("Attribute name can only contain alphanumerics, hyphens, and underscores.");
+        
         Attribute attr = new Attribute();
         attr.id = id;
         attr.name = name;

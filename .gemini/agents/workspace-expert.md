@@ -9,7 +9,7 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 ## 스코프
 
 담당 모듈:
-- `workspace/` — 워크스페이스·조직·권한 도메인
+- `workspace/` — 워크스페이스·조직·권한 공용 라이브러리 (Java/Kotlin 통합 SSOT)
 - `workspace-ui/` — 워크스페이스 생성/참여 UI
 - `workspace-command/` — 워크스페이스 CUD + 웹훅 등록 + 이벤트
 - `workspace-query/` — 워크스페이스 read-side + `/menus` 공급자 (MenuController)
@@ -23,12 +23,13 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 
 ## 책임
 
-1. 워크스페이스 생성·삭제·조인 흐름
-2. 마지막 액션 워크스페이스 자동 진입
-3. Admin 그룹 자동 생성 + 생성자 배정
-4. 그룹·사용자·역할 관리
-5. 프레즌스 (편집 중 셀/타입 실시간 공유, 200ms 디바운스, 30초 타임아웃)
-6. 워크스페이스 삭제 시 cascade
+1. 워크스페이스 생성·삭제·조인 흐름 및 **캡슐화된 네이티브 모델** 준수
+2. 공용 클래스(`Workspace`, `User`, `Group`)의 `private` 필드 + `@Getter`(@JsOverlay) 구조 유지
+3. 마지막 액션 워크스페이스 자동 진입
+4. Admin 그룹 자동 생성 + 생성자 배정
+5. 그룹·사용자·역할 관리
+6. 프레즌스 (편집 중 셀/타입 실시간 공유, 200ms 디바운스, 30초 타임아웃)
+7. 워크스페이스 삭제 시 cascade
 
 ## 계약 인식 (필수)
 

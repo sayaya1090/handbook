@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":agent-bridge"))
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
@@ -20,7 +19,7 @@ gwt {
     sourceLevel = "auto"
     war = file("src/main/webapp")
     devMode {
-        modules = listOf("dev.sayaya.handbook.Document")
+        modules = listOf("dev.sayaya.handbook.DocumentTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

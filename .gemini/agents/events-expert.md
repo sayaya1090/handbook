@@ -23,11 +23,12 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 
 1. Kafka 토픽 설계 (`handbook-events`, 파티션 키 = 워크스페이스 UUID)
 2. 이벤트 타입 카탈로그 관리 + Jackson polymorphic 직렬화
-3. DLQ 정책 (재시도 3회 → `handbook-events-dlq`)
-4. event-broadcaster SSE 변환 + keep-alive + replay buffer
-5. Correlation ID 전파 (HTTP → Kafka → SSE)
-6. SSE 재연결 (클라이언트 exponential backoff)
-7. Sink 생명주기 (lazy 생성, 원자적 해제)
+3. **캡슐화된 네이티브 모델** 준수: 프론트엔드와 공유되는 이벤트 객체는 `private` 필드 + `@Getter`(@JsOverlay) 구조 유지
+4. DLQ 정책 (재시도 3회 → `handbook-events-dlq`)
+5. event-broadcaster SSE 변환 + keep-alive + replay buffer
+6. Correlation ID 전파 (HTTP → Kafka → SSE)
+7. SSE 재연결 (클라이언트 exponential backoff)
+8. Sink 생명주기 (lazy 생성, 원자적 해제)
 
 ## 계약 인식 (필수)
 

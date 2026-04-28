@@ -9,7 +9,7 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 ## 스코프
 
 담당 모듈:
-- `document/` — 문서 생명주기 도메인 엔티티
+- `document/` — 문서 도메인 공용 라이브러리 (Java/Kotlin 통합 SSOT)
 - `document-ui/` — Handsontable 기반 스프레드시트 에디터 (GWT)
 - `document-command/` — 문서 CUD + Kafka 이벤트 발행
 - `document-query/` — 문서 검색·조회 (CQRS Read)
@@ -23,12 +23,13 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 
 ## 책임
 
-1. 문서 CRUD + 이력(불변 버전) 흐름
-2. 더티 트래킹 규칙 (생성/수정/삭제/유효/무효/충돌)
-3. 패치 기반 저장 (JSONB `||` 머지) + `@Version rev` 낙관적 잠금
-4. 문서 검증(Compliance) 결과 조회 및 사후 보정
-5. 임포트/익스포트 (CSV/JSON)
-6. 상태 전이 (DRAFT → REVIEW → PUBLISHED / 반려)
+1. 문서 CRUD + 이력(불변 버전) 흐름 및 **캡슐화된 네이티브 모델** 준수
+2. 공용 클래스(`DocumentValue`, `TypeInfo`)의 `private` 필드 + `@Getter`(@JsOverlay) 구조 유지
+3. 더티 트래킹 규칙 (생성/수정/삭제/유효/무효/충돌)
+4. 패치 기반 저장 (JSONB `||` 머지) + `@Version rev` 낙관적 잠금
+5. 문서 검증(Compliance) 결과 조회 및 사후 보정
+6. 임포트/익스포트 (CSV/JSON)
+7. 상태 전이 (DRAFT → REVIEW → PUBLISHED / 반려)
 
 ## 계약 인식 (필수)
 

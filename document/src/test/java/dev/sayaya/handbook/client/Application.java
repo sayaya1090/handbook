@@ -10,6 +10,7 @@ import static elemental2.dom.DomGlobal.console;
 public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
+        console.log("LOG_DOCUMENT_TEST_START");
         testDocumentValue();
         testDocumentLogic();
         console.log("DOCUMENT_TEST_READY");

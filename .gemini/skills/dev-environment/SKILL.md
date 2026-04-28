@@ -55,7 +55,7 @@ E2E=true ./gradlew :e2e:test      # E2E (서버 실행 필요)
 
 ### 주의사항
 - 통합 테스트(R2dbc*IntegrationTest)는 Testcontainers로 PostgreSQL 자동 실행
-- GWT 테스트는 모듈별 고유 포트 할당 (병렬 실행 가능, `--parallel`)
+- GWT 테스트는 모듈별 고유 포트 할당 (18090: activity, 18091: schema, 18092: document, 18094: workspace)
 - E2E 테스트는 게이트웨이 + 모든 백엔드 서비스 실행 필요
 
 ## Prometheus / Grafana 로컬 설정 (7.4 관측성)

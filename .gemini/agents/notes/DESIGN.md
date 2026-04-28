@@ -52,11 +52,13 @@
 | 에이전트 | 스코프 파일 | 전형적 작업 |
 |---------|-------------|-------------|
 | **auth-expert** | `login/`, `login-ui/`, `authentication/`, `docs/requirements/auth.md` | PAT 도입 영향, OAuth 제공자 추가, RBAC 확장 |
-| **schema-expert** | `schema/`, `type-ui/`, `type-command/`, `type-query/`, `docs/requirements/schema.md` | 속성 타입 추가 절차, 타입 버전 생성 흐름 |
-| **document-expert** | `document/`, `document-ui/`, `document-command/`, `document-query/`, `docs/requirements/document.md` | 더티 트래킹 규칙, JSONB 머지, import/export |
-| **workspace-expert** | `workspace/`, `workspace-ui/`, `workspace-command/`, `docs/requirements/workspace.md` | 조인 흐름, 프레즌스, 그룹 관리 |
-| **assistant-expert** | `assistant/`, `agent-protocol/`, `agent-ui/`, `docs/requirements/assistant.md` | 커맨드 처리, 감사 로그, 실행 계획 |
-| **landing-expert** | `landing-content/`, `landing-ui/`, `docs/requirements/landing.md`, `docs/requirements/external-ai.md` | SEO 메타, 프리렌더, MCP 서버(후속) |
+| **schema-expert** | `schema/`, `type-ui/`, `type-command/`, `type-query/` | 공용 도메인 모델(Type/Attribute) 확장, 검증기 규칙 |
+| **document-expert** | `document/`, `document-ui/`, `document-command/`, `document-query/` | 공용 모델(DocumentValue) 관리, 패치 머지 규칙 |
+| **workspace-expert** | `workspace/`, `workspace-ui/`, `workspace-command/` | 공용 모델(Workspace/User) 관리, 프레즌스, 그룹 관리 |
+| **assistant-expert** | `assistant/`, `agent-protocol/`, `agent-ui/` | 커맨드 처리, 감사 로그, 실행 계획 |
+| **landing-expert** | `landing-content/`, `landing-ui/`, `docs/requirements/landing.md` | SEO 메타, 프리렌더, MCP 서버(후속) |
+
+> **통합 도메인 아키텍처 (2026-04-28)**: `*-domain` 모듈을 각 도메인 모듈로 통합하여 백엔드(JVM)와 프론트엔드(GWT)가 동일한 Java 소스(SSOT)를 공유함. 모든 도메인 모델은 **캡슐화된 네이티브 모델** 패턴을 준수해야 함.
 
 ### 3.2 플랫폼 전문가 (2)
 

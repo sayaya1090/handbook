@@ -9,7 +9,7 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 ## 스코프
 
 담당 모듈:
-- `schema/` — 타입 시스템 도메인 엔티티 (Type, Attribute, Validator, Compliance)
+- `schema/` — 타입 시스템 공용 라이브러리 (Java/Kotlin 통합 SSOT)
 - `type-ui/` — 캔버스 기반 타입 스키마 편집기 (GWT)
 - `type-command/` — 타입 CRUD + 레이아웃 관리 + 이벤트 발행
 - `type-query/` — 타입 읽기 전용
@@ -23,11 +23,12 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 
 ## 책임
 
-1. 타입 정의·변경·버전 관리 설명
-2. 속성 타입(Text/Bool/Number/Date/Enum/Array/Map/File/Document) 및 Validator 규칙
-3. 레이아웃(타입 캔버스 배치) 영향도
-4. 타입 변경 시 문서 재검증 트리거 흐름 (`VALIDATION_REQUESTED` 이벤트)
-5. 필드 레벨 권한 적용 (`read_roles` / `write_roles` JSONB)
+1. 타입 정의·변경·버전 관리 및 **캡슐화된 네이티브 모델** 준수
+2. 공용 클래스(`Type`, `Attribute`, `AttributeType`)의 `private` 필드 + `@Getter`(@JsOverlay) 구조 유지
+3. 속성 타입 및 Validator 규칙 (다형성 직렬화 보장)
+4. 레이아웃(타입 캔버스 배치) 영향도 및 유효 기간 중첩 계산
+5. 타입 변경 시 문서 재검증 트리거 흐름 (`VALIDATION_REQUESTED` 이벤트)
+6. 필드 레벨 권한 적용 (`read_roles` / `write_roles` JSONB)
 
 ## 계약 인식 (필수)
 
