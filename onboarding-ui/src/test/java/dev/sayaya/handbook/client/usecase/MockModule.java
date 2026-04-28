@@ -8,7 +8,7 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.MutationReceiver;
-import dev.sayaya.handbook.usecase.WindowMutationBridge;
+import dev.sayaya.handbook.usecase.AgentMutation;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -41,7 +41,7 @@ public class MockModule {
         return new WorkspaceStylesheet();
     }
     @Provides @Singleton static MutationReceiver mutationReceiver() {
-        return WindowMutationBridge.receiver();
+        return AgentMutation.receiver();
     }
     @Provides @Singleton static AgentWorkspaceHandler agentWorkspaceHandler(CreateWorkspaceMode mode, CreateWorkspaceParam param, WorkspaceRepository api, MutationReceiver mutationReceiver) {
         return new AgentWorkspaceHandler(mode, param, api, mutationReceiver);

@@ -61,7 +61,7 @@ sequenceDiagram
     participant Param as CreateWorkspaceParam
     participant Repo as WorkspaceRepository
 
-    Note over Agent,MR: WindowMutationBridge (CustomEvent)
+    Note over Agent,MR: AgentMutation (CustomEvent)
 
     alt "단계별 조작"
         Agent->>MR: ["WS_MODE CREATE"]
@@ -112,7 +112,7 @@ sequenceDiagram
 | **선행조건** | onboarding-ui 모듈 로딩 완료, MutationReceiver 연결 |
 | **정상 흐름 (단계별)** | 1. 에이전트가 `WS_MODE CREATE` → `CreateWorkspaceMode`가 CREATE로 전환.<br>2. `WS_INPUT MyWorkspace` → `CreateWorkspaceParam`에 "MyWorkspace" 설정.<br>3. `WS_SUBMIT` → CREATE 모드이고 입력값이 있으면 `WorkspaceRepository.create()` 호출. |
 | **정상 흐름 (한번에)** | 에이전트가 `WS_CREATE MyWorkspace` → 모드 전환 + 입력 + 생성을 한번에 실행. |
-| **브릿지** | `agent-bridge` 모듈의 `WindowMutationBridge`가 CustomEvent로 연결. |
+| **브릿지** | `agent-bridge` 모듈의 `AgentMutation`가 CustomEvent로 연결. |
 
 ## UC-W4: 에이전트 단계별 UI 조작
 

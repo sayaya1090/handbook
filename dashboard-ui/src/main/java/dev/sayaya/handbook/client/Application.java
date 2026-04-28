@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import dev.sayaya.handbook.domain.Render;
-import dev.sayaya.handbook.usecase.WindowRenderBridge;
+import dev.sayaya.handbook.usecase.RenderSharing;
 
 import java.util.Arrays;
 
@@ -34,7 +34,7 @@ public class Application implements EntryPoint {
         // shell FrameUpdater 에 Render 를 전달 — body 직접 append 는 body{position:fixed;inset:0}
         // + shell #content(100dvh) 뒤에 스택되어 뷰포트 밖으로 밀려나는 회귀를 유발한다.
         Render render = frame -> { frame.append(component.dashboard().element()); return true; };
-        WindowRenderBridge.next(render);
+        RenderSharing.next(render);
     }
 
     /**

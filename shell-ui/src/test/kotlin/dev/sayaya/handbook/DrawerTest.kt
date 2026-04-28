@@ -607,17 +607,17 @@ internal class DrawerTest: GwtTestSpec({
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
         Thread.sleep(500)
 
-        Then("WindowUriBridge 가 window.__handbook_uri 에 등록되어 있다") {
+        Then("0 가 window.__handbook_uri 에 등록되어 있다") {
             val registered = page.evaluate("typeof window.__handbook_uri === 'function'").toString()
             registered shouldBe "true"
         }
 
-        Then("WindowProgressBridge 가 window.__handbook_progress 에 등록되어 있다") {
+        Then("ProgressSharing 가 window.__handbook_progress 에 등록되어 있다") {
             val registered = page.evaluate("typeof window.__handbook_progress === 'function'").toString()
             registered shouldBe "true"
         }
 
-        When("WindowUriBridge 로 menu1-tool1 URL 을 전달하면") {
+        When("0 로 menu1-tool1 URL 을 전달하면") {
             page.evaluate("window.__handbook_uri('menu1-tool1')")
             Thread.sleep(500)
             Then("Menu 1 이 selected 된다") {
@@ -628,7 +628,7 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
-        When("WindowUriBridge 로 menu3-tool1 URL 을 전달하면") {
+        When("0 로 menu3-tool1 URL 을 전달하면") {
             page.evaluate("window.__handbook_uri('menu3-tool1')")
             Thread.sleep(500)
             Then("Menu 3 이 selected 로 변경된다") {
@@ -651,7 +651,7 @@ internal class DrawerTest: GwtTestSpec({
         //   - agent-command highlight(.ui-highlight) 시 tooltip 즉시 표시
         // EXPAND hover peek positive 회귀는 DrawerMock 의 class 체계 정리 후 별 PR 에서 재도입.
 
-        When("WindowProgressBridge 로 프로그레스를 전달하면") {
+        When("ProgressSharing 로 프로그레스를 전달하면") {
             page.evaluate("""
                 window.__handbook_progress({ enabled: true, intermediate: false, value: 3, max: 10, description: '처리 중' })
             """.trimIndent())
@@ -804,7 +804,7 @@ internal class DrawerTest: GwtTestSpec({
     }
 
     // ── Shell Frame 레이아웃 토큰 (docs/contracts/frame.md) ───────────────────────────────
-    // UI 모듈들이 WindowRenderBridge 로 mount 되는 Frame 의 여백·오프셋이 데스크톱/모바일
+    // UI 모듈들이 RenderSharing 로 mount 되는 Frame 의 여백·오프셋이 데스크톱/모바일
     // 분기별로 올바른지 검증. .frame 엘리먼트 자체는 이 테스트 shell 에 없으므로
     // :root CSS 커스텀 프로퍼티 값으로 확인. 토큰 정의는 shell-ui/src/main/webapp/css/shell.css.
     Given("데스크톱 뷰포트(1280x720) 에서 shell 레이아웃 토큰은") {

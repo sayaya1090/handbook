@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to="document_shared">
+    <inherits name="dev.sayaya.handbook.Document"/>
+    <entry-point class="dev.sayaya.handbook.client.Application"/>
+    <source path="client"/>
+</module>

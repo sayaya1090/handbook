@@ -6,7 +6,7 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
-    implementation(project(":schema-api-gwt"))
+    implementation(project(":schema-domain"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
@@ -35,12 +35,6 @@ gwt {
 }
 
 tasks {
-    register<Copy>("copyTestResources") {
-        from("src/main/webapp")
-        into("src/test/webapp")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-    named("compileTestJava") { dependsOn("copyTestResources") }
     war {
         dependsOn("gwtCompile")
         from("build/gwt/war") {

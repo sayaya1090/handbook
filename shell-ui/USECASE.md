@@ -242,7 +242,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 시스템 (메뉴 선택 시 자동) |
 | **선행조건** | 메뉴 선택으로 모듈 스크립트가 주입됨 |
-| **정상 흐름** | 1. 로딩된 모듈이 `WindowRenderBridge.next(render)` 로 Render 콜백(`HTMLElement frame -> boolean`)을 발행한다 — 자기 컨테이너를 body 에 직접 append 하지 않는다 (`docs/contracts/frame.md`).<br>2. shell 의 `ShellInitializer` 에서 `WindowRenderBridge.register` 로 등록된 Observer 가 Render 를 `FrameUpdater` 에 전달.<br>3. `FrameUpdater`가 `FrameFactory`로 새 `FrameElement` 를 생성 → Render 의 `onInvoke(frame.element())` 호출 → 모듈이 frame 내부에 DOM append.<br>4. 이전 프레임에 fadeOut 적용 (100ms) 후 DOM에서 제거.<br>5. 새 프레임에 fadeIn 적용하여 `ContentElement` 에 추가. `.frame` 은 AppBar / MobileTabs / rail collapse 오프셋을 고려한 여백 내부에 배치됨. |
+| **정상 흐름** | 1. 로딩된 모듈이 `RenderSharing.next(render)` 로 Render 콜백(`HTMLElement frame -> boolean`)을 발행한다 — 자기 컨테이너를 body 에 직접 append 하지 않는다 (`docs/contracts/frame.md`).<br>2. shell 의 `ShellInitializer` 에서 `RenderSharing.register` 로 등록된 Observer 가 Render 를 `FrameUpdater` 에 전달.<br>3. `FrameUpdater`가 `FrameFactory`로 새 `FrameElement` 를 생성 → Render 의 `onInvoke(frame.element())` 호출 → 모듈이 frame 내부에 DOM append.<br>4. 이전 프레임에 fadeOut 적용 (100ms) 후 DOM에서 제거.<br>5. 새 프레임에 fadeIn 적용하여 `ContentElement` 에 추가. `.frame` 은 AppBar / MobileTabs / rail collapse 오프셋을 고려한 여백 내부에 배치됨. |
 
 ## UC-S12: 진행률 표시
 
@@ -319,7 +319,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 시스템 (자동) |
 | **선행조건** | shell-ui 초기화 완료 (UC-S1 이후) |
-| **정상 흐름** | 1. `ShellInitializer.publishBridges()`가 `WindowProgressBridge.register()`, `WindowUriBridge.register()`, `WindowLabelBridge.publish()`를 호출하여 shell의 Progress/URI/Label 상태를 window 객체에 등록한다.<br>2. `handbook-shell-ready` CustomEvent를 dispatch한다.<br>3. agent-ui 등 독립 GWT 모듈이 이 이벤트를 수신하고 브릿지를 통해 shell 상태에 접근한다. |
+| **정상 흐름** | 1. `ShellInitializer.publishBridges()`가 `ProgressSharing.register()`, `0.register()`, `LabelSharing.publish()`를 호출하여 shell의 Progress/URI/Label 상태를 window 객체에 등록한다.<br>2. `handbook-shell-ready` CustomEvent를 dispatch한다.<br>3. agent-ui 등 독립 GWT 모듈이 이 이벤트를 수신하고 브릿지를 통해 shell 상태에 접근한다. |
 | **특이사항** | shell-ui와 agent-ui는 각각 독립된 GWT 컴파일 결과물(nocache.js)을 갖는다. Java 레벨 인터페이스 공유가 불가능하므로 agent-bridge 모듈이 제공하는 window 브릿지를 사용한다. |
 
 ## UC-S15: 사용자 설정 — 언어/테마 퍼시스턴스
@@ -381,7 +381,7 @@ sequenceDiagram
 | UC-S17 (세션관리) | — | Frame+API | SessionPollingService, FetchApi, ToastContainer, LabelProvider | ❌ 테스트 미작성 (SessionPollingService 구현 완료) |
 | UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
-| UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, WindowProgressBridge, WindowUriBridge, WindowLabelBridge | ❌ 테스트 미작성 (구현 완료) |
+| UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, ProgressSharing, 0, LabelSharing | ❌ 테스트 미작성 (구현 완료) |
 
 ---
 

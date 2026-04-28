@@ -8,10 +8,10 @@ plugins {
 
 dependencies {
     implementation(project(":activity"))
-    implementation(project(":document-api-gwt"))
-    implementation(project(":schema-api-gwt"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
+    implementation(project(":document"))
+    implementation(project(":schema-domain"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)

@@ -22,7 +22,7 @@ public class Application implements EntryPoint {
         injectCss("/css/type-ui.css");
 
         // 워크스페이스 ID 구독 및 API 주입 (실시간 감시 포함)
-        WindowWorkspaceEventBridge.receiver().workspaceId().subscribe(workspaceId -> {
+        WorkspaceEvent.receiver().workspaceId().subscribe(workspaceId -> {
             // workspaceId가 null이면 현재 URL에서 추출 시도 (새로고침 등 초기 진입 케이스)
             String wsId = workspaceId != null ? workspaceId : extractWorkspaceId(DomGlobal.window.location.pathname);
             if (wsId == null) return;
@@ -51,8 +51,8 @@ public class Application implements EntryPoint {
         org.jboss.elemento.Elements.body().add(component.toastContainer());
 
         // 에이전트 브릿지 등록: StateProvider, SearchProvider
-        WindowStateProviderBridge.register(component.typeStateProvider());
-        WindowSearchProviderBridge.register(q -> {
+        AgentState.register(component.typeStateProvider());
+        AgentSearch.register(q -> {
             // TypeSearchProvider.search()는 BehaviorSubject를 반환하므로 동기적으로 값을 꺼낸다
             final String[] result = {null};
             component.typeSearchProvider().search(q).subscribe(v -> result[0] = v);
@@ -68,7 +68,7 @@ public class Application implements EntryPoint {
                 .add(component.canvas())
                 .add(component.attributeEditor());
         
-        if (WindowRenderBridge.isRegistered()) {
+        if (RenderSharing.isRegistered()) {
             // 쉘과 통합된 상태라면 기존 헤더와 컨트롤러 숨김
             component.statusHeader().element().style.display = "none";
             component.controller().element().style.display = "none";
@@ -77,7 +77,7 @@ public class Application implements EntryPoint {
         // shell FrameUpdater 에 Render 를 전달 — body 직접 append 는 body{position:fixed;inset:0}
         // + shell #content(100dvh) 뒤에 스택되어 뷰포트 밖으로 밀려나는 회귀를 유발한다.
         Render render = frame -> { frame.append(container.element()); return true; };
-        WindowRenderBridge.next(render);
+        RenderSharing.next(render);
     }
 
     /**

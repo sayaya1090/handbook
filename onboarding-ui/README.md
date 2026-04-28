@@ -18,7 +18,7 @@
 ## 에이전트 연동
 
 에이전트는 shell의 `AGENT_COMMAND navigate`를 통해 `/workspaces` URL로 이 화면에 진입시킬 수 있습니다.
-또한 `WindowMutationBridge`를 통해 `WS_MODE`, `WS_INPUT`, `WS_SUBMIT`, `WS_CREATE` 등의 명령어로 생성 UI를 원격 제어할 수 있습니다.
+또한 `AgentMutation`를 통해 `WS_MODE`, `WS_INPUT`, `WS_SUBMIT`, `WS_CREATE` 등의 명령어로 생성 UI를 원격 제어할 수 있습니다.
 
 ## 계층 구조
 

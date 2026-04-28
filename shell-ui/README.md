@@ -323,11 +323,11 @@ shell-ui의 테스트 웹앱 리소스(JS/CSS)는 다른 GWT UI 모듈의 테스
 
 ## 브릿지 게시
 
-shell-ui는 독립 GWT 모듈로 컴파일되며, agent-ui 등 다른 GWT 모듈과 `window` 객체를 통해 통신한다. `ShellInitializer.initialize()` 마지막 단계에서 `WindowProgressBridge`, `WindowRenderBridge`, `WindowUriBridge`, `WindowLabelBridge` (agent-bridge 모듈)를 등록하고, `handbook-shell-ready` CustomEvent를 dispatch한다. 다른 모듈은 이 이벤트를 수신한 뒤 브릿지를 통해 shell의 Progress/URI/Label 상태에 접근하거나 `WindowRenderBridge.next(render)` 로 Frame mount 를 위임한다.
+shell-ui는 독립 GWT 모듈로 컴파일되며, agent-ui 등 다른 GWT 모듈과 `window` 객체를 통해 통신한다. `ShellInitializer.initialize()` 마지막 단계에서 `ProgressSharing`, `RenderSharing`, `0`, `LabelSharing` (agent-bridge 모듈)를 등록하고, `handbook-shell-ready` CustomEvent를 dispatch한다. 다른 모듈은 이 이벤트를 수신한 뒤 브릿지를 통해 shell의 Progress/URI/Label 상태에 접근하거나 `RenderSharing.next(render)` 로 Frame mount 를 위임한다.
 
 ## Frame Mount 계약
 
-자식 UI 모듈(login-ui, workspace-ui, type-ui, document-ui, dashboard-ui) 은 자기 컨테이너를 `body` 에 직접 append 하지 **않는다**. 대신 `WindowRenderBridge.next(render)` 로 `Render` 콜백(`HTMLElement frame -> boolean`) 을 넘기면 shell 의 `FrameUpdater` 가 Frame 엘리먼트를 만들고 `.frame` 내부에 모듈 컨텐츠를 mount 한다. `body{position:fixed; inset:0}` 때문에 body 직접 append 는 뷰포트 밖으로 밀려나는 회귀를 유발한다. 계약 상세는 [`docs/contracts/frame.md`](../docs/contracts/frame.md).
+자식 UI 모듈(login-ui, workspace-ui, type-ui, document-ui, dashboard-ui) 은 자기 컨테이너를 `body` 에 직접 append 하지 **않는다**. 대신 `RenderSharing.next(render)` 로 `Render` 콜백(`HTMLElement frame -> boolean`) 을 넘기면 shell 의 `FrameUpdater` 가 Frame 엘리먼트를 만들고 `.frame` 내부에 모듈 컨텐츠를 mount 한다. `body{position:fixed; inset:0}` 때문에 body 직접 append 는 뷰포트 밖으로 밀려나는 회귀를 유발한다. 계약 상세는 [`docs/contracts/frame.md`](../docs/contracts/frame.md).
 
 ### 레이아웃 토큰 (shell.css)
 
@@ -343,7 +343,7 @@ shell-ui는 독립 GWT 모듈로 컴파일되며, agent-ui 등 다른 GWT 모듈
 ## 의존성
 
 - **activity** — Menu, Tool, ToolFunction, Render 도메인 클래스
-- **agent-bridge** — 모듈 간 window 브릿지 (WindowProgressBridge, **WindowRenderBridge**, WindowUriBridge, WindowLabelBridge)
+- **agent-bridge** — 모듈 간 window 브릿지 (ProgressSharing, **RenderSharing**, 0, LabelSharing)
 - **sayaya-ui** — Material Design 3 UI 컴포넌트
 - **sayaya-rx** — RxJava GWT 래퍼 (BehaviorSubject, Observable)
 - **Elemento** — GWT DOM 빌더

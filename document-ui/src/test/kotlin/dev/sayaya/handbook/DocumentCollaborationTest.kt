@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 @GwtHtml("documenttest.html")
 internal class DocumentCollaborationTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {
-        // UC-D9: 에이전트 문서 조작 - WindowMutationBridge를 통한 CustomEvent 디스패치
+        // UC-D9: 에이전트 문서 조작 - AgentMutation를 통한 CustomEvent 디스패치
         When("에이전트가 DOC_ADD 이벤트를 디스패치하면") {
             page.evaluate("""
                 (function() {

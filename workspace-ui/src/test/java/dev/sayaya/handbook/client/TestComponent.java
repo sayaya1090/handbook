@@ -1,4 +1,15 @@
 package dev.sayaya.handbook.client;
 
-public class TestComponent {
+import dagger.Component;
+import dev.sayaya.handbook.client.interfaces.api.MockWorkspaceApi;
+import dev.sayaya.handbook.client.usecase.WorkspaceApi;
+import dev.sayaya.handbook.usecase.LabelProvider;
+
+import javax.inject.Singleton;
+
+@Singleton
+@Component
+public interface TestComponent {
+    MockWorkspaceApi api();
+    //LabelProvider labelProvider();
 }

@@ -53,7 +53,7 @@ public class MockModule {
     @Provides @Singleton static ActionManager actionManager() { return new ActionManager(); }
     @Provides @Singleton static ChangeTracker changeTracker() { return new ChangeTracker(); }
     @Provides @Singleton static MutationReceiver mutationReceiver() {
-        return dev.sayaya.handbook.usecase.WindowMutationBridge.receiver();
+        return dev.sayaya.handbook.usecase.AgentMutation.receiver();
     }
     @Provides @Singleton static ConfirmDialog confirmDialog() {
         return new ConfirmDialog();

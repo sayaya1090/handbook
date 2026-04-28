@@ -391,17 +391,17 @@ classDiagram
         +render(): BehaviorSubject~Render~$
         +progress(): BehaviorSubject~Progress~$
     }
-    class WindowProgressBridge {
+    class ProgressSharing {
         <<agent-bridge>>
         +register(NextFn)$
         +next(Object)$
     }
-    class WindowUriBridge {
+    class 0 {
         <<agent-bridge>>
         +register(NextFn)$
         +next(String)$
     }
-    class WindowLabelBridge {
+    class LabelSharing {
         <<agent-bridge>>
         +publish(Labels)$
         +subscribe(NextFn)$
@@ -410,9 +410,9 @@ classDiagram
     Application --> Component : DaggerComponent.create()
     Component --> ShellInitializer
     ShellInitializer --> ShellContext
-    ShellInitializer --> WindowProgressBridge : register(progress)
-    ShellInitializer --> WindowUriBridge : register(uri)
-    ShellInitializer --> WindowLabelBridge : publish(labels)
+    ShellInitializer --> ProgressSharing : register(progress)
+    ShellInitializer --> 0 : register(uri)
+    ShellInitializer --> LabelSharing : publish(labels)
 ```
 
 ## 디자인 패턴

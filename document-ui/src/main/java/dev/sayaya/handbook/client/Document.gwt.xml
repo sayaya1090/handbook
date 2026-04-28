@@ -8,8 +8,8 @@
     <inherits name="dev.sayaya.handbook.Activity"/>
     <inherits name="dev.sayaya.handbook.AgentBridge"/>
     <inherits name="dev.sayaya.handbook.UiComponents"/>
-    <inherits name="dev.sayaya.handbook.SchemaApi"/>
-    <inherits name="dev.sayaya.handbook.DocumentApi"/>
+    <inherits name="dev.sayaya.handbook.SchemaDomain"/>
+    <inherits name="dev.sayaya.handbook.Document"/>
     <entry-point class="dev.sayaya.handbook.client.Application"/>
     <source path="client"/>
 </module>

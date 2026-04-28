@@ -24,8 +24,8 @@ public interface DocumentModule {
     @Provides @Singleton static Observer<Progress> progressObserver(BehaviorSubject<Progress> s) { return s; }
     @Provides @Singleton static Observer<Render> renderObserver() { return behavior(null); }
     @Provides @Singleton static Observer<String> uriObserver() { return behavior(null); }
-    @Provides @Singleton static MutationReceiver mutationReceiver() { return WindowMutationBridge.receiver(); }
-    @Provides @Singleton static WorkspaceEventReceiver workspaceEventReceiver() { return WindowWorkspaceEventBridge.receiver(); }
+    @Provides @Singleton static MutationReceiver mutationReceiver() { return AgentMutation.receiver(); }
+    @Provides @Singleton static WorkspaceEventReceiver workspaceEventReceiver() { return WorkspaceEvent.receiver(); }
     @Provides @Singleton static ToastContainer toastContainer() { return new ToastContainer(); }
     @Provides @Singleton static ConfirmDialog confirmDialog() { return new ConfirmDialog(); }
     

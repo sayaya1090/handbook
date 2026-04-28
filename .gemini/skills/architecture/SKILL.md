@@ -27,7 +27,7 @@ description: Handbook 프로젝트 아키텍처 및 모듈 구조 지침
 - **Action + ActionManager**: Command 패턴 Undo/Redo (ui-components에 정의)
 - **ChangeTracker**: 키 기반 더티 트래킹 (ui-components에 정의)
 - **BehaviorSubject**: 반응형 상태 관리
-- **WindowMutationBridge**: GWT 모듈 간 CustomEvent 통신 (agent-bridge)
+- **AgentMutation**: GWT 모듈 간 CustomEvent 통신 (agent-bridge)
 - **Port & Adapter**: usecase 포트를 API 어댑터가 구현 (헥사고날)
 
 ## 기술 스택

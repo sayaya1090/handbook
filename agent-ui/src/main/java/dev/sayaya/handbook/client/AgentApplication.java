@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.usecase.WindowProgressBridge;
+import dev.sayaya.handbook.usecase.ProgressSharing;
 import elemental2.dom.DomGlobal;
 
 /**
@@ -14,7 +14,7 @@ import elemental2.dom.DomGlobal;
 public class AgentApplication implements EntryPoint {
     @Override
     public void onModuleLoad() {
-        if (WindowProgressBridge.isRegistered()) {
+        if (ProgressSharing.isRegistered()) {
             boot();
         } else {
             DomGlobal.window.addEventListener("handbook-shell-ready", e -> boot());

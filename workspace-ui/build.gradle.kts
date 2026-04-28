@@ -7,9 +7,10 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
-    implementation(project(":workspace-api-gwt"))
+    implementation(project(":workspace-domain"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
+    implementation(project(":shell-ui"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
@@ -24,7 +25,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Workspace")
+        modules = listOf("dev.sayaya.handbook.WorkspaceManagementTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
@@ -36,21 +37,7 @@ gwt {
 }
 
 tasks {
-    register<Copy>("copyTestResources") {
-        from("src/main/webapp")
-        into("src/test/webapp")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-    register<Copy>("copyGwtToTest") {
-        dependsOn("gwtTestCompile")
-        from("build/gwt/war/workspace")
-        into("src/test/webapp/workspace")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-    named("compileTestJava") { dependsOn("copyTestResources") }
-    named("test") { 
-        dependsOn("copyGwtToTest")
-    }
+
     war {
         dependsOn("gwtCompile")
         from("build/gwt/war") {
@@ -60,9 +47,4 @@ tasks {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
     test { useJUnitPlatform() }
-}
-
-tasks.jar {
-    from(sourceSets.main.get().allSource)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

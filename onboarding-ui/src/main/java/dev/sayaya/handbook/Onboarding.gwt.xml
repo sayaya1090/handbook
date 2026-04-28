@@ -6,7 +6,7 @@
     <inherits name="dev.sayaya.Ui"/>
     <inherits name="dev.sayaya.Rx" />
     <inherits name="dev.sayaya.handbook.Activity"/>
-    <inherits name="dev.sayaya.handbook.WorkspaceApi"/>
+    <inherits name="dev.sayaya.handbook.WorkspaceDomain"/>
     <inherits name="dev.sayaya.handbook.AgentBridge"/>
 
     <inherits name='dev.sayaya.handbook.UiComponents'/>

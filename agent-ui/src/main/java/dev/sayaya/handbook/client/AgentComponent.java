@@ -1,18 +1,31 @@
 package dev.sayaya.handbook.client;
 
+import dev.sayaya.handbook.client.interfaces.*;
+import dev.sayaya.handbook.client.usecase.AgentSession;
+import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
+import dev.sayaya.handbook.domain.Progress;
+import dev.sayaya.rx.Observer;
+
 import javax.inject.Singleton;
 
-/**
- * agent-ui 독립 실행 시 사용하는 Dagger 컴포넌트.
- *
- * <p>shell-ui 와 같은 Dagger 그래프를 공유하지 않으며, shell 이 window 브릿지에
- * 게시한 공유 상태를 {@link AgentBridgeModule} 을 통해 주입받는다.</p>
- */
 @Singleton
-@dagger.Component(modules = {
-        AgentModule.class,
-        AgentBridgeModule.class
-})
+@dagger.Component(modules = { AgentModule.class, AgentBridgeModule.class })
 public interface AgentComponent {
     AgentInitializer initializer();
+    AgentCommandDispatcher commandRouter();
+    AgentSession agentSession();
+    OverlayElement overlayElement();
+    ConfirmDialogElement confirmDialogElement();
+    PreviewPanelElement previewPanelElement();
+    HighlightHandler highlightHandler();
+    ScrollHandler scrollHandler();
+    ProgressHandler progressHandler();
+    NavigateHandler navigateHandler();
+    NotifyHandler notifyHandler();
+    CompleteHandler completeHandler();
+    MutateHandler mutateHandler();
+    AgentInputElement agentInputElement();
+    ArtifactSummaryPanel artifactSummaryPanel();
+    SearchVisualizationHandler searchVisualizationHandler();
+    Observer<Progress> progressObserver();
 }

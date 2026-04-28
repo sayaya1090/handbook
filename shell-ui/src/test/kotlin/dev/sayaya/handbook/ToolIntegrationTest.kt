@@ -9,8 +9,8 @@ import io.kotest.matchers.shouldNotBe
 @GwtHtml("drawer.html")
 internal class ToolIntegrationTest: GwtTestSpec({
     Given("ToolProvider 브릿지가 초기화됨") {
-        Then("WindowToolPublisherBridge가 활성화되어 있다") {
-            // WindowToolPublisherBridge.register()가 호출되면 window.__handbook_tool_publisher 가 함수로 등록됨
+        Then("ToolPublisher가 활성화되어 있다") {
+            // ToolPublisher.register()가 호출되면 window.__handbook_tool_publisher 가 함수로 등록됨
             val registered = page.evaluate("typeof window.__handbook_tool_publisher === 'function'").toString()
             registered shouldBe "true"
         }
@@ -35,7 +35,7 @@ internal class ToolIntegrationTest: GwtTestSpec({
             }
         }
         When("렌더링된 도구를 클릭하면") {
-            // WindowToolSubscriberBridge.register()가 호출되면 window.__handbook_tool_subscriber 가 함수로 등록됨
+            // ToolSubscriber.register()가 호출되면 window.__handbook_tool_subscriber 가 함수로 등록됨
             // 테스트에서는 이를 가로채서 클릭 이벤트가 전달되는지 확인
             page.evaluate("""
                 window.__handbook_tool_selected_id = null;
@@ -47,7 +47,7 @@ internal class ToolIntegrationTest: GwtTestSpec({
             """.trimIndent())
             page.click(".tool-rail .item[data-tool-title='Delete Tool']")
             Thread.sleep(200)
-            Then("WindowToolSubscriberBridge를 통해 선택된 도구 ID가 전파된다") {
+            Then("ToolSubscriber를 통해 선택된 도구 ID가 전파된다") {
                 val selectedId = page.evaluate("window.__handbook_tool_selected_id").toString()
                 selectedId shouldBe "tool-2"
             }

@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 @GwtHtml("canvastest.html")
 internal class CollaborationTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {
-        // UC-T11: 에이전트 타입 생성 - WindowMutationBridge CustomEvent 디스패치
+        // UC-T11: 에이전트 타입 생성 - AgentMutation CustomEvent 디스패치
         When("에이전트가 CREATE 이벤트를 디스패치하면") {
             val before = page.querySelectorAll(".type-box").count()
             page.evaluate("""

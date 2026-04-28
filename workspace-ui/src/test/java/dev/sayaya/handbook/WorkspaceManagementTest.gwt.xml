@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to="WorkspaceManagementTest">
+    <inherits name="dev.sayaya.handbook.Activity"/>
+    <inherits name="dev.sayaya.handbook.Workspace"/>
+    <entry-point class="dev.sayaya.handbook.client.TestApplication"/>
+    <source path="client"/>
+    <source path="interfaces"/>
+    <source path="usecase"/>
+</module>

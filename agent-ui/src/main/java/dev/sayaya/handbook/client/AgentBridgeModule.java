@@ -7,9 +7,9 @@ import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.ViewportObserver;
-import dev.sayaya.handbook.usecase.WindowLabelBridge;
-import dev.sayaya.handbook.usecase.WindowProgressBridge;
-import dev.sayaya.handbook.usecase.WindowUriBridge;
+import dev.sayaya.handbook.usecase.LabelSharing;
+import dev.sayaya.handbook.usecase.ProgressSharing;
+import dev.sayaya.handbook.usecase.UriSharing;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -31,12 +31,12 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class AgentBridgeModule {
     @Provides @Singleton
     static Observer<Progress> progressObserver() {
-        return Observer.next(p -> WindowProgressBridge.next(p));
+        return Observer.next(p -> ProgressSharing.next(p));
     }
 
     @Provides @Singleton
     static Observer<String> uriObserver() {
-        return Observer.next(url -> WindowUriBridge.navigate(url));
+        return Observer.next(url -> 0.navigate(url));
     }
 
     @Provides @Singleton
@@ -58,9 +58,9 @@ public class AgentBridgeModule {
     static LanguagePackRepository languagePackRepository() {
         return lang -> {
             BehaviorSubject<Labels> subject = behavior(Labels.empty());
-            Object snapshot = WindowLabelBridge.snapshot();
+            Object snapshot = LabelSharing.snapshot();
             if (snapshot != null) subject.next(Js.cast(snapshot));
-            DomGlobal.window.addEventListener(WindowLabelBridge.EVENT_NAME, evt -> {
+            DomGlobal.window.addEventListener(LabelSharing.EVENT_NAME, evt -> {
                 CustomEvent<?> ce = Js.cast(evt);
                 if (ce.detail != null) subject.next(Js.cast(ce.detail));
             });

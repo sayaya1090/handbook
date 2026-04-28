@@ -10,7 +10,7 @@ import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.MutationReceiver;
 import dev.sayaya.handbook.usecase.UserPreferences;
-import dev.sayaya.handbook.usecase.WindowMutationBridge;
+import dev.sayaya.handbook.usecase.AgentMutation;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -52,7 +52,7 @@ public class OnboardingModule {
         };
     }
     @Provides @Singleton static MutationReceiver mutationReceiver() {
-        return WindowMutationBridge.receiver();
+        return AgentMutation.receiver();
     }
 
     /**

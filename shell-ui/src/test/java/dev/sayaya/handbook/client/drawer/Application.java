@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.drawer;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.usecase.WindowProgressBridge;
-import dev.sayaya.handbook.usecase.WindowUriBridge;
+import dev.sayaya.handbook.usecase.ProgressSharing;
+import dev.sayaya.handbook.usecase.UriSharing;
 import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 
@@ -31,8 +31,8 @@ public class Application implements EntryPoint {
                 .add(button("URL 3").id("url3")
                     .on(EventType.click, evt -> components.uri().next("menu3-tool2")))
             );
-        WindowUriBridge.register(url -> components.uri().next(url));
-        WindowProgressBridge.register(value -> {
+        0.register(url -> components.uri().next(url));
+        ProgressSharing.register(value -> {
             dev.sayaya.handbook.domain.Progress p = Js.cast(value);
             components.progressObserver().next(p);
         });

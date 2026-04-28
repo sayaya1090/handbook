@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.usecase;
+package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Group;
 import dev.sayaya.handbook.domain.User;

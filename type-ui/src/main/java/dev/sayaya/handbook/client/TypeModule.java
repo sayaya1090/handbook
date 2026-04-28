@@ -10,8 +10,8 @@ import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.MutationReceiver;
 import dev.sayaya.handbook.usecase.UserPreferences;
-import dev.sayaya.handbook.usecase.WindowMutationBridge;
-import dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge;
+import dev.sayaya.handbook.usecase.AgentMutation;
+import dev.sayaya.handbook.usecase.WorkspaceEvent;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.rx.Observer;
@@ -30,8 +30,8 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  * ToastContainer, 다국어(LanguageDetector, LanguagePackRepository) 등 모듈 전반에서 사용하는
  * 공유 인스턴스를 DI 그래프에 바인딩한다.</p>
  * <p><b>의존관계:</b> <ul>
- *   <li>{@link dev.sayaya.handbook.usecase.WindowMutationBridge} — agent-bridge 기반 모듈 간 CustomEvent 수신</li>
- *   <li>{@link dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge} — 워크스페이스 이벤트 수신</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.AgentMutation} — agent-bridge 기반 모듈 간 CustomEvent 수신</li>
+ *   <li>{@link dev.sayaya.handbook.usecase.WorkspaceEvent} — 워크스페이스 이벤트 수신</li>
  *   <li>{@link dev.sayaya.handbook.usecase.FetchApi} — 언어팩 JSON fetch</li>
  * </ul></p>
  * <p><b>주의:</b> detectLanguage()는 Elemental2를 통해 localStorage/navigator.language를 읽는다.</p>
@@ -45,10 +45,10 @@ public class TypeModule {
     @Provides @Singleton static Observer<Render> renderObserver() { return behavior(null); }
     @Provides @Singleton static Observer<String> uriObserver() { return behavior(null); }
     @Provides @Singleton static MutationReceiver mutationReceiver() {
-        return WindowMutationBridge.receiver();
+        return AgentMutation.receiver();
     }
     @Provides @Singleton static WorkspaceEventReceiver workspaceEventReceiver() {
-        return WindowWorkspaceEventBridge.receiver();
+        return WorkspaceEvent.receiver();
     }
     @Provides @Singleton static ToastContainer toastContainer() {
         return new ToastContainer();

@@ -29,12 +29,12 @@ sequenceDiagram
 
     Note over C: "캔버스 초기화 또는 상태 변경"
     C->>TP: "publish([Add, Undo, Redo, ...])"
-    TP->>B: "WindowToolPublisherBridge.publish(tools)"
+    TP->>B: "ToolPublisher.publish(tools)"
     B->>S: "window.dispatchEvent(published)"
     S->>S: "Tool Rail UI 갱신"
 
     Note over S: "사용자가 'Undo' 도구 클릭"
-    S->>B: "WindowToolSubscriberBridge.select('undo')"
+    S->>B: "ToolSubscriber.select('undo')"
     B->>TP: "이벤트 수신"
     TP->>C: "onSelect 핸들러 트리거"
     C->>C: "ActionManager.undo() 실행"
@@ -84,7 +84,7 @@ sequenceDiagram
     participant TL as TypeList
     participant Canvas as CanvasElement
 
-    Note over Agent,MR: "WindowMutationBridge (CustomEvent)"
+    Note over Agent,MR: "AgentMutation (CustomEvent)"
     Agent->>MR: "MutateCommand.changes[]"
     MR->>AMH: "mutations 구독"
     AMH->>AMH: "명령 파싱 (CREATE/DELETE/ADD/REMOVE/SET)"
@@ -391,7 +391,7 @@ sequenceDiagram
 | **선행조건** | type-ui 모듈 로딩 완료, MutationReceiver 브릿지 연결 |
 | **정상 흐름** | 1. 에이전트가 `TypeStateProvider.snapshot()`으로 현재 캔버스 상태를 JSON으로 조회한다.<br>2. LLM이 MutateCommand의 changes 배열을 생성한다.<br>3. `MutationReceiver`를 통해 `AgentMutationHandler`에 전달된다.<br>4. 핸들러가 changes 문자열을 파싱하여 `CreateTBoxAction`, `EditTBoxAction`, `DeleteTBoxAction` 등으로 변환한다.<br>5. `ActionManager`에서 실행되어 캔버스에 즉시 반영된다. |
 | **지원 명령** | CREATE type, DELETE type, ADD field, REMOVE field, SET type |
-| **브릿지** | `agent-bridge` 모듈의 `WindowMutationBridge`가 CustomEvent로 연결. |
+| **브릿지** | `agent-bridge` 모듈의 `AgentMutation`가 CustomEvent로 연결. |
 
 ## UC-T12: 에이전트에 의한 타입 검색
 
@@ -400,7 +400,7 @@ sequenceDiagram
 | **액터** | AI 에이전트 |
 | **선행조건** | type-ui 모듈 로딩 완료 |
 | **정상 흐름** | 1. 에이전트가 `TypeSearchProvider.search(query)`를 호출한다.<br>2. 쿼리가 비어있으면 전체 타입 목록을, 아니면 id/description/속성명으로 필터링한 결과를 JSON으로 반환한다. |
-| **브릿지** | `agent-bridge` 모듈의 `WindowSearchProviderBridge`가 window 속성으로 연결. |
+| **브릿지** | `agent-bridge` 모듈의 `AgentSearch`가 window 속성으로 연결. |
 
 ## 모바일 터치 조작 시퀀스
 
@@ -595,7 +595,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자, AI 에이전트 |
 | **선행조건** | 사용자가 타입 박스를 선택한 상태, 에이전트가 다른 타입을 수정 |
-| **정상 흐름** | 1. 사용자가 캔버스에서 타입 박스를 클릭하여 선택한다.<br>2. 에이전트가 `WindowMutationBridge`를 통해 다른 타입의 속성을 SET 명령으로 수정한다.<br>3. `AgentMutationHandler`가 Action을 실행하여 캔버스를 갱신한다.<br>4. 사용자가 선택한 박스의 `selected` 속성은 변경되지 않고 유지된다. |
+| **정상 흐름** | 1. 사용자가 캔버스에서 타입 박스를 클릭하여 선택한다.<br>2. 에이전트가 `AgentMutation`를 통해 다른 타입의 속성을 SET 명령으로 수정한다.<br>3. `AgentMutationHandler`가 Action을 실행하여 캔버스를 갱신한다.<br>4. 사용자가 선택한 박스의 `selected` 속성은 변경되지 않고 유지된다. |
 | **결과** | 에이전트의 동시 수정이 사용자의 현재 선택 상태에 영향을 주지 않는다. |
 
 ## UC-T20: 다중 사용자 PRESENCE 동시 수신
@@ -613,7 +613,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자, AI 에이전트 |
 | **선행조건** | 에이전트가 타입 생성 명령(CREATE)을 실행한 직후 |
-| **정상 흐름** | 1. 에이전트가 `WindowMutationBridge`를 통해 CREATE 명령으로 새 타입을 생성한다.<br>2. `AgentMutationHandler`가 `CreateTBoxAction`을 `ActionManager`에서 실행하여 캔버스에 박스가 추가된다.<br>3. 사용자가 즉시 Ctrl+Z를 누른다.<br>4. `ActionManager.undo()`가 실행되어 생성이 되돌려지고, 박스 수가 원래대로 복원된다. |
+| **정상 흐름** | 1. 에이전트가 `AgentMutation`를 통해 CREATE 명령으로 새 타입을 생성한다.<br>2. `AgentMutationHandler`가 `CreateTBoxAction`을 `ActionManager`에서 실행하여 캔버스에 박스가 추가된다.<br>3. 사용자가 즉시 Ctrl+Z를 누른다.<br>4. `ActionManager.undo()`가 실행되어 생성이 되돌려지고, 박스 수가 원래대로 복원된다. |
 | **결과** | 에이전트가 생성한 타입도 사용자의 Undo 스택에 포함되어 즉시 되돌릴 수 있다. |
 
 ## UC-T22: TYPE_CREATED 이벤트 연속 수신 (이벤트 폭주)
@@ -670,8 +670,8 @@ sequenceDiagram
 | UC-T8 (기간이동) | — | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | CanvasTest: Before/After 버튼 존재 확인 |
 | UC-T9 (Undo) | 에이전트 타입 조작 | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | CanvasTest: Undo/Redo 기능 검증 |
 | UC-T10 (저장) | 타입 생성 → 저장 | Action 계층, API 어댑터, 컨트롤러 | SaveAction, LoadAction, SaveButton, ReloadButton, ChangeTracker | CanvasTest: Save/Reload 버튼 존재 확인 |
-| UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, WindowMutationBridge | CollaborationTest: 에이전트 조작 검증 |
-| UC-T12 (검색) | — | 에이전트 연동 | TypeSearchProvider, WindowSearchProviderBridge | CollaborationTest: 검색 기능 연동 확인 |
+| UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, AgentMutation | CollaborationTest: 에이전트 조작 검증 |
+| UC-T12 (검색) | — | 에이전트 연동 | TypeSearchProvider, AgentSearch | CollaborationTest: 검색 기능 연동 확인 |
 | UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement, TypeElement, DragShapeElement, AttributeEditorDialog | CanvasTest: 컨트롤러 툴바 레이아웃 확인 |
 | UC-T14 (RBAC) | — | — | RbacGuard, CanvasMode | ❌ UI 연동 미구현 |
 | UC-T15 (실시간협업) | 실시간 협업 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList | CollaborationTest: 실시간 이벤트 수신 검증 |

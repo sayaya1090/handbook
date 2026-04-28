@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.usecase.WindowWorkspaceEventBridge;
+import dev.sayaya.handbook.usecase.WorkspaceEvent;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -37,7 +37,7 @@ public class SessionContext {
         else values.put(key, value);
         subject.next(new HashMap<>(values));
         if ("workspaceId".equals(key)) {
-            WindowWorkspaceEventBridge.publishWorkspace(value);
+            WorkspaceEvent.publishWorkspace(value);
         }
     }
 

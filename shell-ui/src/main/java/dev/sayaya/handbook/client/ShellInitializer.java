@@ -16,10 +16,10 @@ import dev.sayaya.handbook.client.usecase.WorkspaceOnboardingBootstrapper;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.handbook.usecase.WindowLabelBridge;
-import dev.sayaya.handbook.usecase.WindowProgressBridge;
-import dev.sayaya.handbook.usecase.WindowRenderBridge;
-import dev.sayaya.handbook.usecase.WindowUriBridge;
+import dev.sayaya.handbook.usecase.LabelSharing;
+import dev.sayaya.handbook.usecase.ProgressSharing;
+import dev.sayaya.handbook.usecase.RenderSharing;
+import dev.sayaya.handbook.usecase.UriSharing;
 import dev.sayaya.rx.Observer;
 import elemental2.dom.CustomEvent;
 import elemental2.dom.DomGlobal;
@@ -140,10 +140,10 @@ public class ShellInitializer {
     }
 
     private void publishBridges() {
-        WindowProgressBridge.register(value -> context.progressObserver.next(jsToProgress(value)));
-        WindowRenderBridge.register(value -> { Render r = jsinterop.base.Js.cast(value); context.renderObserver.next(r); });
-        WindowUriBridge.register(context.uriObserver::next);
-        context.labelProvider.subscribe(labels -> WindowLabelBridge.publish(labels));
+        ProgressSharing.register(value -> context.progressObserver.next(jsToProgress(value)));
+        RenderSharing.register(value -> { Render r = jsinterop.base.Js.cast(value); context.renderObserver.next(r); });
+        0.register(context.uriObserver::next);
+        context.labelProvider.subscribe(labels -> LabelSharing.publish(labels));
         DomGlobal.window.dispatchEvent(new CustomEvent<>("handbook-shell-ready"));
     }
 

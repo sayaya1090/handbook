@@ -1,26 +1,25 @@
 # Document 모듈
 
-문서 생명주기 도메인을 정의한다.
+백엔드(Kotlin)와 프론트엔드(GWT)가 공유하는 문서 도메인 모델 및 핵심 로직을 관리하는 공용 도메인 모듈.
 
-## 도메인 구조
+## 핵심 역할
+- **공용 도메인 모델**: `DocumentValue`, `TypeInfo`, `AttributeInfo` 등 Jackson과 JsInterop을 모두 지원하는 데이터 모델 정의.
+- **백엔드 로직**: `Document.kt` 엔티티 및 비즈니스 규칙 정의.
+- **저장소 계약**: `DocumentRepository` 인터페이스를 통해 서버와 클라이언트 간의 데이터 접근 계층 통일.
 
-```
-dev.sayaya.handbook.domain/
-├── Document           # 문서 (UUID 식별, 영속화 전 id=null 허용)
-└── ValidationTask     # 검증 워크플로우 상태 추적 (NEW → PROCESSING → DONE/FAILED)
-```
+## 주요 구성 요소
+| 클래스 | 설명 |
+|--------|------|
+| **DocumentValue** | 문서 데이터 VO. `@JsType` 및 `@JsonProperty` 병기로 양방향 호환. |
+| **DocumentRepository** | 문서 CUD 및 조회를 위한 포트 인터페이스. |
+| **ValidationTask** | 문서 유효성 검증 상태 관리. |
 
-## 불변 이력 모델
+## 에이전트 연동
+**에이전트 연동: 없음 (내부 전용).**
+도큐먼트 UI 및 커맨드 서비스의 기반 데이터 모델로 사용됨.
 
-Document는 변경 시 기존 버전을 수정하지 않고 **새 버전을 생성**한다.
-각 버전은 `effectDateTime ~ expireDateTime`으로 유효 기간을 관리한다.
-
-- `UUID`로 식별, 영속화 전에는 `id = null`
-- 타입 참조는 `type: String`으로 느슨한 결합 유지
-
-## 테스트
-
-```bash
-./gradlew :document:test
-./gradlew :document:koverVerify  # 커버리지 80% 이상 필수
-```
+## 개발 및 테스트
+- **GWT 라이브러리**: JAR에 Java 소스를 포함하여 모든 GWT 모듈에서 상속 가능.
+- **테스트 전략**: 
+    - 백엔드: Kotest 기반의 도메인 규칙 검증.
+    - 프론트엔드: `Application.java`와 `DocumentDomainTest.kt`를 통한 런타임 호환성 검증.
