@@ -1,5 +1,5 @@
 -- 001_workspace.sql : workspace 도메인 기본 테이블
--- persist-workspace 테스트 DDL 기반. FK/인덱스/감사 컬럼 추가.
+-- workspace-command 테스트 DDL 기반. FK/인덱스/감사 컬럼 추가.
 -- 멱등: 모든 CREATE 에 IF NOT EXISTS.
 
 CREATE TABLE IF NOT EXISTS workspace (

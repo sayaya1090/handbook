@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.client.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeTypeValue;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.IsElement;
 

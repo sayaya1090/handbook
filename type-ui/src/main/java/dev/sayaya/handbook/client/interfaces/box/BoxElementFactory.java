@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
 import dagger.assisted.AssistedFactory;
-import dev.sayaya.handbook.client.domain.Position;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
 
 /**
  * {@link TypeElement}의 Dagger AssistedFactory.

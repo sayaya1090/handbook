@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.DocumentValue;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -21,7 +21,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link dev.sayaya.rx.subject.BehaviorSubject} — 최신 값 캐싱과 구독 관리</li>
- *   <li>{@link dev.sayaya.handbook.client.domain.DocumentValue} — 관리 대상 문서 도메인 객체</li>
+ *   <li>{@link dev.sayaya.handbook.domain.DocumentValue} — 관리 대상 문서 도메인 객체</li>
  * </ul></p>
  *
  * <p><b>주의:</b> 초기값은 빈 리스트(Collections.emptyList())이다.

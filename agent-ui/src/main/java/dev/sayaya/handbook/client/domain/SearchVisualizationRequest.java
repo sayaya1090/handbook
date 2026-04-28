@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain;
+package dev.sayaya.handbook.domain;
 
 /**
  * 검색 시각화 요청 값 객체.

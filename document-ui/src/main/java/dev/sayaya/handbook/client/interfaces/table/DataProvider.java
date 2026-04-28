@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
 import dev.sayaya.handbook.client.domain.ColumnDef;
-import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.DocumentValue;
 import jsinterop.base.JsPropertyMap;
 
 import java.util.ArrayList;
@@ -10,14 +10,14 @@ import java.util.List;
 /**
  * DocumentValue 도메인 객체와 Handsontable 2D 배열 간 양방향 변환을 담당한다.
  *
- * <p><b>책임:</b> {@link dev.sayaya.handbook.client.domain.DocumentValue} 목록을
+ * <p><b>책임:</b> {@link dev.sayaya.handbook.domain.DocumentValue} 목록을
  * Handsontable이 요구하는 {@code Object[][]} 형식으로 변환(toData)하고,
  * 반대로 2D 배열을 DocumentValue 목록으로 역변환(fromData)한다.</p>
  *
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link dev.sayaya.handbook.client.domain.ColumnDef} — 컬럼 이름을 기준으로 필드 매핑</li>
- *   <li>{@link dev.sayaya.handbook.client.domain.DocumentValue} — 변환 대상 도메인 객체</li>
+ *   <li>{@link dev.sayaya.handbook.domain.DocumentValue} — 변환 대상 도메인 객체</li>
  * </ul></p>
  *
  * <p><b>주의:</b> 유틸리티 클래스이므로 인스턴스를 생성할 수 없다.

@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client;
 
 import dagger.Module;
 import dagger.Provides;
-import dev.sayaya.handbook.client.domain.User;
+import dev.sayaya.handbook.domain.User;
 import dev.sayaya.handbook.client.interfaces.AgentSessionImpl;
 import dev.sayaya.handbook.client.interfaces.CommandRouter;
 import dev.sayaya.handbook.client.interfaces.frame.FrameContainer;

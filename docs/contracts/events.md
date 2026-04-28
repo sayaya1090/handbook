@@ -4,9 +4,9 @@ Kafka `handbook-events` 토픽을 통한 도메인 이벤트의 스키마·발�
 
 ## 공급자 (Providers)
 
-- **persist-document** — `DOCUMENT_CREATED`, `DOCUMENT_DELETED`, `DOCUMENT_STATUS_CHANGED`, `VALIDATION_REQUESTED`
+- **document-command** — `DOCUMENT_CREATED`, `DOCUMENT_DELETED`, `DOCUMENT_STATUS_CHANGED`, `VALIDATION_REQUESTED`
   - `interfaces/event/KafkaDocumentEventPublisher.kt`
-- **persist-type** — `TYPE_CREATED`, `TYPE_DELETED`
+- **type-command** — `TYPE_CREATED`, `TYPE_DELETED`
   - `interfaces/event/KafkaTypeEventPublisher.kt`
 - **assistant** — `AGENT_COMMAND`
   - `interfaces/event/KafkaAgentCommandEventPublisher.kt`
@@ -21,7 +21,7 @@ Kafka `handbook-events` 토픽을 통한 도메인 이벤트의 스키마·발�
   - `interfaces/event/EventMessageListener.kt`
 - **assistant** — `VALIDATION_REQUESTED` 수신하여 품질 검증 실행
   - `interfaces/event/ValidationEventListener.kt`
-- **search-document** — `DOCUMENT_CREATED`, `DOCUMENT_DELETED` 수신하여 ES 인덱스 동기화
+- **document-query** — `DOCUMENT_CREATED`, `DOCUMENT_DELETED` 수신하여 ES 인덱스 동기화
 - **webhook-service** (신규) — 전체 이벤트 → 웹훅 필터 매칭 → HTTP POST
 
 ### 프론트엔드 (SSE 경유)
@@ -52,8 +52,8 @@ Kafka `handbook-events` 토픽을 통한 도메인 이벤트의 스키마·발�
 
 ```mermaid
 flowchart LR
-    PD["persist-document"] -->|"DOCUMENT_CREATED, DELETED, STATUS_CHANGED"| K["Kafka handbook-events"]
-    PT["persist-type"] -->|"TYPE_CREATED, DELETED"| K
+    PD["document-command"] -->|"DOCUMENT_CREATED, DELETED, STATUS_CHANGED"| K["Kafka handbook-events"]
+    PT["type-command"] -->|"TYPE_CREATED, DELETED"| K
     AS["assistant"] -->|"AGENT_COMMAND"| K
     Browser -->|"POST /presence"| PC["PresenceController"]
     PC -->|"PRESENCE"| K
@@ -70,12 +70,12 @@ flowchart LR
 
 | EventType | 발행 서비스 | 페이로드 | 구독자 |
 |-----------|-----------|---------|--------|
-| `DOCUMENT_CREATED` | persist-document | Document (id, type, serial, data) | DocumentEventHandler |
-| `DOCUMENT_DELETED` | persist-document | Document (id, type, serial) | DocumentEventHandler |
-| `DOCUMENT_STATUS_CHANGED` | persist-document | Document (id, status, previousStatus) | DocumentEventHandler |
-| `TYPE_CREATED` | persist-type | Type (id, version, attributes) | TypeEventHandler |
-| `TYPE_DELETED` | persist-type | Type (id, version) | TypeEventHandler |
-| `VALIDATION_REQUESTED` | persist-document | ValidationPayload (typeId, typeVersion, documentId) | assistant QualityMonitor |
+| `DOCUMENT_CREATED` | document-command | Document (id, type, serial, data) | DocumentEventHandler |
+| `DOCUMENT_DELETED` | document-command | Document (id, type, serial) | DocumentEventHandler |
+| `DOCUMENT_STATUS_CHANGED` | document-command | Document (id, status, previousStatus) | DocumentEventHandler |
+| `TYPE_CREATED` | type-command | Type (id, version, attributes) | TypeEventHandler |
+| `TYPE_DELETED` | type-command | Type (id, version) | TypeEventHandler |
+| `VALIDATION_REQUESTED` | document-command | ValidationPayload (typeId, typeVersion, documentId) | assistant QualityMonitor |
 | `AGENT_COMMAND` | assistant | AgentCommandPayload (→ [agent-commands.md](agent-commands.md)) | AgentCommandHandler |
 | `PRESENCE` | event-broadcaster | PresencePayload (user, userName, type, serial, field) | DocumentEventHandler / TypeEventHandler |
 
@@ -109,8 +109,8 @@ interface Event<T : Serializable> {
 
 | EventType | 발행 서비스 | 페이로드 | 구독자 |
 |-----------|-----------|---------|--------|
-| `WORKSPACE_CREATED` | persist-workspace | `{workspaceId, name}` | (현재 없음 — shell-ui 후속 반복에서 추가 예정) |
-| `WORKSPACE_DELETED` | persist-workspace | `{workspaceId}` | (현재 없음 — cascade 로 관련 row 제거 시 클라이언트 캐시 purge 가 필요해지는 시점에 추가) |
+| `WORKSPACE_CREATED` | workspace-command | `{workspaceId, name}` | (현재 없음 — shell-ui 후속 반복에서 추가 예정) |
+| `WORKSPACE_DELETED` | workspace-command | `{workspaceId}` | (현재 없음 — cascade 로 관련 row 제거 시 클라이언트 캐시 purge 가 필요해지는 시점에 추가) |
 
 **cascade 정책 (1차 구현):** `WORKSPACE_DELETED` 는 `WorkspaceService.delete` 내부에서 cascade 로 그룹·그룹 멤버·웹훅 row 를 삭제한 뒤 트랜잭션 커밋 후에 단일 이벤트로 발행된다. 세부 건수나 하위 엔티티별 이벤트 재발행은 하지 않는다 (YAGNI). `document`/`type` cascade 로 범위가 확장될 때 `cascade: { groups, members, webhooks, documents, types }` 같은 선택적 하위 객체로 페이로드를 확장할 여지를 남겨둔다.
 
@@ -140,8 +140,8 @@ spring.cloud.stream.kafka.bindings.event-in-0.consumer:
 
 | 패턴 | 예시 서비스 | key.serializer | value.serializer | 이유 |
 |------|-----------|----------------|------------------|------|
-| `KafkaTemplate<String, String>` + ObjectMapper pre-serialize | persist-document, persist-type, assistant | StringSerializer | StringSerializer | 애플리케이션이 문자열 JSON 을 직접 넣음 |
-| `StreamBridge` / `@Bean Function` (Spring Cloud Stream) | persist-workspace | StringSerializer | **ByteArraySerializer** | MessageConverter(application/json) 가 이미 byte[] 로 직렬화 |
+| `KafkaTemplate<String, String>` + ObjectMapper pre-serialize | document-command, type-command, assistant | StringSerializer | StringSerializer | 애플리케이션이 문자열 JSON 을 직접 넣음 |
+| `StreamBridge` / `@Bean Function` (Spring Cloud Stream) | workspace-command | StringSerializer | **ByteArraySerializer** | MessageConverter(application/json) 가 이미 byte[] 로 직렬화 |
 
 StreamBridge 쪽에서 StringSerializer 를 쓰려면 `useNativeEncoding: true` + 커스텀 Serializer 구성이 필요하지만 채택하지 않는다 (기본 MessageConverter 체인 유지가 단순).
 

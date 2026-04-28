@@ -81,7 +81,7 @@ GWT 개발 시에는 각 UI 모듈의 `src/test/webapp` 디렉토리에 있는 H
 # 특정 모듈 테스트
 ./gradlew :assistant:test
 ./gradlew :login:test
-./gradlew :persist-workspace:test
+./gradlew :workspace-command:test
 ./gradlew :dashboard-ui:test
 
 # 커버리지 리포트 생성

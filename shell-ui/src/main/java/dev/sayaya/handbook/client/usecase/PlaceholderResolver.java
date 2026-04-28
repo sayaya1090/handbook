@@ -25,8 +25,8 @@ public class PlaceholderResolver {
 
     /**
      * 문자열 내의 모든 {key} 패턴을 컨텍스트 값으로 치환한다.
-     * @param template 원본 문자열 (예: "/workspace/{workspaceId}/type")
-     * @return 치환된 문자열 (예: "/workspace/abc-123/type")
+     * @param template 원본 문자열 (예: "/workspaces/{workspaceId}/type")
+     * @return 치환된 문자열 (예: "/workspaces/abc-123/type")
      */
     public String resolve(String template) {
         if (template == null) return null;

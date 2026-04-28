@@ -1,0 +1,13 @@
+name: 타입 영속화 모듈 배포
+on:
+  push:
+    paths:
+      - type-command/**
+      - activity/**
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: type-command
+    secrets: inherit

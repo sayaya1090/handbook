@@ -1,0 +1,56 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: workspace-command
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: workspace-command
+data:
+  # /app/resources/application.yml 에 subPath 마운트되어 jar 의 application.yml 을
+  # 파일 단위로 덮어쓴다. 머지가 아니라 완전 대체이므로 운영 환경에서 필요한 모든
+  # 설정은 jar 와 중복되더라도 이 파일에 다 적는다. (jar 의 application.yml 은
+  # 로컬 IDE 실행용 default 로만 사용)
+  application.yml: |
+    spring:
+      application:
+        name: workspace-command
+      main:
+        web-application-type: reactive
+      threads:
+        virtual:
+          enabled: true
+      config:
+        import:
+          - classpath:observability.yaml
+          - classpath:authentication.yaml
+          - classpath:postgresql.yaml
+          - classpath:kafka.yaml
+      r2dbc:
+        pool:
+          max-size: 20
+          initial-size: 5
+          max-idle-time: 30m
+          validation-query: SELECT 1
+      cloud:
+        stream:
+          bindings:
+            workspace-out-0:
+              # docs/contracts/events.md — WORKSPACE_* 는 별개 토픽 workspace-events 로 발행
+              destination: workspace-events
+          kafka:
+            binder:
+              brokers: ${KAFKA_BROKERS}
+              # StreamBridge 는 MessageConverter(application/json) 로 이미 payload 를 byte[] 로
+              # 직렬화해 binder 에 전달하므로 producer value serializer 는 byte[] 를 그대로 통과시키는
+              # ByteArraySerializer 여야 한다. StringSerializer 로 두면 `byte[] cannot be cast to String`
+              # ClassCastException 발생 (document-command / type-command 은 KafkaTemplate<String,String>
+              # 에 pre-serialize 한 문자열을 직접 넣는 다른 패턴이라 StringSerializer 로도 정상).
+              configuration:
+                value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+                key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      kafka:
+        bootstrap-servers: ${KAFKA_BROKERS}
+        producer:
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+    # management / logging / metrics 는 observability fragment 에서 import 됨

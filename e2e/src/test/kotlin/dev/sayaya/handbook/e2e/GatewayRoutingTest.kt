@@ -47,7 +47,7 @@ class GatewayRoutingTest : BehaviorSpec({
 
     Given("타입 조회 라우트 (GET /workspace/*/types/**)") {
         When("GET /workspace/{id}/types를 호출하면") {
-            Then("search-type 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("type-query 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = get("/workspace/$workspaceId/types?effect_date_time=2026-01-01T00:00:00Z&expire_date_time=2026-12-31T23:59:59Z")
                 // 인증 필요하므로 401, 서비스 없으면 502
                 (response.statusCode() in listOf(401, 502)) shouldBe true
@@ -57,7 +57,7 @@ class GatewayRoutingTest : BehaviorSpec({
 
     Given("타입 저장 라우트 (PUT /workspace/*/types/**)") {
         When("PUT /workspace/{id}/types를 호출하면") {
-            Then("persist-type 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("type-command 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = request("PUT", "/workspace/$workspaceId/types")
                 (response.statusCode() in listOf(401, 502)) shouldBe true
             }
@@ -66,7 +66,7 @@ class GatewayRoutingTest : BehaviorSpec({
 
     Given("문서 조회 라우트 (GET /workspace/*/documents/**)") {
         When("GET /workspace/{id}/documents를 호출하면") {
-            Then("search-document 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("document-query 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = get("/workspace/$workspaceId/documents")
                 (response.statusCode() in listOf(401, 502)) shouldBe true
             }
@@ -75,7 +75,7 @@ class GatewayRoutingTest : BehaviorSpec({
 
     Given("문서 저장 라우트 (PUT /workspace/*/documents/**)") {
         When("PUT /workspace/{id}/documents를 호출하면") {
-            Then("persist-document 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("document-command 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = request("PUT", "/workspace/$workspaceId/documents")
                 (response.statusCode() in listOf(401, 502)) shouldBe true
             }
@@ -84,7 +84,7 @@ class GatewayRoutingTest : BehaviorSpec({
 
     Given("워크스페이스 관리 라우트 (POST /workspace)") {
         When("POST /workspace를 호출하면") {
-            Then("persist-workspace 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("workspace-command 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = request("POST", "/workspace")
                 (response.statusCode() in listOf(401, 502)) shouldBe true
             }
@@ -112,14 +112,14 @@ class GatewayRoutingTest : BehaviorSpec({
 
     Given("레이아웃 라우트") {
         When("GET /workspace/{id}/layouts를 호출하면") {
-            Then("search-type 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("type-query 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = get("/workspace/$workspaceId/layouts")
                 (response.statusCode() in listOf(401, 502)) shouldBe true
             }
         }
 
         When("PUT /workspace/{id}/layouts를 호출하면") {
-            Then("persist-type 서비스로 라우팅된다 (401: 인증 필요)") {
+            Then("type-command 서비스로 라우팅된다 (401: 인증 필요)") {
                 val response = request("PUT", "/workspace/$workspaceId/layouts")
                 (response.statusCode() in listOf(401, 502)) shouldBe true
             }

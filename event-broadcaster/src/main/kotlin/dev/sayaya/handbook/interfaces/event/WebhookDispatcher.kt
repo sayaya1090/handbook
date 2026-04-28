@@ -13,7 +13,7 @@ import java.util.function.Consumer
  *
  * <p><b>책임:</b> Spring Cloud Stream Consumer 바인딩("webhook")으로 Kafka 이벤트를 수신하고,
  * 이벤트 JSON을 파싱하여 workspace/eventType을 추출한 뒤,
- * persist-workspace API로 매칭 웹훅을 조회하고 [WebhookSender]에 전송을 위임한다.</p>
+ * workspace-command API로 매칭 웹훅을 조회하고 [WebhookSender]에 전송을 위임한다.</p>
  *
  * <p><b>의존관계:</b>
  * <ul>
@@ -22,7 +22,7 @@ import java.util.function.Consumer
  *   <li>[WebhookSender] — HTTP POST 콜백 전송 (재시도 포함)</li>
  * </ul></p>
  *
- * <p><b>주의:</b> webhook.service.url 프로퍼티로 persist-workspace API 기본 URL을 설정한다.
+ * <p><b>주의:</b> webhook.service.url 프로퍼티로 workspace-command API 기본 URL을 설정한다.
  * 이벤트 파싱 실패 시 해당 이벤트를 무시하고 로그를 남긴다.</p>
  */
 @Component("webhook")
@@ -59,7 +59,7 @@ class WebhookDispatcher(
     }
 
     /**
-     * persist-workspace API에서 매칭되는 웹훅 URL 목록을 조회한다.
+     * workspace-command API에서 매칭되는 웹훅 URL 목록을 조회한다.
      */
     private fun fetchWebhooks(workspace: String, eventType: String) = webClient
         .get()
@@ -75,7 +75,7 @@ class WebhookDispatcher(
         }
 
     /**
-     * persist-workspace 웹훅 API 응답 매핑용 내부 DTO.
+     * workspace-command 웹훅 API 응답 매핑용 내부 DTO.
      *
      * **책임:** WebClient로 조회한 웹훅 JSON 응답을 역직렬화한다.
      *

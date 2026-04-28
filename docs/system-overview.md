@@ -13,12 +13,14 @@ flowchart TB
         AGENT_UI[agent-ui]
         DASH[dashboard-ui]
         WS_UI[workspace-ui]
+        ONBOARD_UI[onboarding-ui]
         LOGIN_UI[login-ui]
         APP --- DOC_UI
         APP --- TYPE_UI
         APP --- AGENT_UI
         APP --- DASH
         APP --- WS_UI
+        APP --- ONBOARD_UI
         APP --- LOGIN_UI
     end
 
@@ -29,14 +31,14 @@ flowchart TB
     LOGIN[login :8081<br/>OAuth2 + JWT]
 
     subgraph Write ["Write Side - CUD + Kafka Producer"]
-        P_TYPE[persist-type :8083]
-        P_DOC[persist-document :8085]
-        P_WS[persist-workspace :8086]
+        P_TYPE[type-command :8083]
+        P_DOC[document-command :8085]
+        P_WS[workspace-command :8086]
     end
 
     subgraph Read ["Read Side - CQRS"]
-        S_TYPE[search-type :8082]
-        S_DOC[search-document :8084]
+        S_TYPE[type-query :8082]
+        S_DOC[document-query :8084]
     end
 
     subgraph Realtime ["Realtime and AI"]
@@ -81,11 +83,11 @@ flowchart TB
 |--------|------|------|--------|
 | gateway | 8080 | API Gateway, 라우팅, `/menus` 집계, CircuitBreaker | - |
 | login | 8081 | OAuth2(Google) + JWT 발급 | PostgreSQL |
-| search-type | 8082 | 타입 조회 (CQRS Read) | PostgreSQL |
-| persist-type | 8083 | 타입 CUD + 이벤트 발행 | PostgreSQL, Kafka |
-| search-document | 8084 | 문서 조회 (CQRS Read) | Elasticsearch |
-| persist-document | 8085 | 문서 CUD + 이벤트 발행 | PostgreSQL, Kafka |
-| persist-workspace | 8086 | 워크스페이스 CUD + 이벤트 발행 | PostgreSQL, Kafka |
+| type-query | 8082 | 타입 조회 (CQRS Read) | PostgreSQL |
+| type-command | 8083 | 타입 CUD + 이벤트 발행 | PostgreSQL, Kafka |
+| document-query | 8084 | 문서 조회 (CQRS Read) | Elasticsearch |
+| document-command | 8085 | 문서 CUD + 이벤트 발행 | PostgreSQL, Kafka |
+| workspace-command | 8086 | 워크스페이스 CUD + 이벤트 발행 | PostgreSQL, Kafka |
 | assistant | 8087 | AI 에이전트 (OpenAI) — optional | Kafka |
 | event-broadcaster | 8088 | Kafka → SSE 실시간 브로드캐스트 | Kafka |
 
@@ -107,14 +109,14 @@ flowchart TB
 
 ```
 /auth/**, /user                     -> login
-/workspace/*/types/** (GET)         -> search-type
-/workspace/*/types/** (PUT/DELETE)  -> persist-type
-/workspace/*/documents/** (GET)     -> search-document
-/workspace/*/documents/** (PUT/DEL) -> persist-document
-/workspace/** (POST/PUT/DELETE)     -> persist-workspace
+/workspace/*/types/** (GET)         -> type-query
+/workspace/*/types/** (PUT/DELETE)  -> type-command
+/workspace/*/documents/** (GET)     -> document-query
+/workspace/*/documents/** (PUT/DEL) -> document-command
+/workspace/** (POST/PUT/DELETE)     -> workspace-command
 /workspace/*/messages (SSE)         -> event-broadcaster
 /assistant/**                       -> assistant (CircuitBreaker)
-/menus                              -> gateway aggregates search-type + search-document
+/menus                              -> gateway aggregates type-query + document-query
 ```
 
 ### Kafka 토픽
@@ -122,7 +124,7 @@ flowchart TB
 단일 도메인 이벤트 토픽 `handbook-events` 로 모든 이벤트가 통합 발행된다 (파티션 키: 워크스페이스 UUID).
 
 - **handbook-events** — 도메인 이벤트 통합 토픽
-  - Producer: persist-document, persist-type, persist-workspace, assistant
+  - Producer: document-command, type-command, workspace-command, assistant
   - Consumer: event-broadcaster, assistant
   - 재시도 3회 후 `handbook-events-dlq`
 - **handbook-events-dlq** — Dead Letter Queue
@@ -149,7 +151,7 @@ persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Brow
 ## 헬름차트 구성 (`charts/handbook/`, `charts/handbook-lib/`)
 
 - **handbook-lib** (type: library) — 서비스 서브차트가 공유하는 named template 컬렉션. `handbook.jvm-backend.deployment` 는 JVM 백엔드 4개 차트의 Deployment 공통 구현, `handbook.frontend-sync-job` 은 프론트엔드 4개 차트의 ArgoCD Sync Hook Job 공통 구현. 각 서브차트가 `file://../../handbook-lib` dependency 로 참조, `helm dependency build` 가 Chart.lock + charts/handbook-lib-*.tgz 를 생성해 커밋
-- **gateway** / **event-broadcaster** / **login** / **persist-workspace** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독. `templates/deployment.yaml` 은 `handbook.jvm-backend.deployment` 한 줄 include 이고 서비스별 차이는 `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 흡수
+- **gateway** / **event-broadcaster** / **login** / **workspace-command** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독. `templates/deployment.yaml` 은 `handbook.jvm-backend.deployment` 한 줄 include 이고 서비스별 차이는 `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 흡수
 - **app** — SPA 루트 번들 차트 (kind: frontend). `app.html`, `manifest.json`, `service-worker.js`, 공용 `js/*.js`·`css/*.css`, app GWT 모듈 컴파일 출력(`/app/**`) 을 포함. HTTPRoute 가 `/` 와 `/app.html` 엔트리포인트 및 `/js/**`·`/css/**`·`/app/**`·`/manifest.json`·`/service-worker.js` 를 S3 `handbook-<stage>/static/` 으로 rewrite 하는 유일한 HTML 진입 차트
 - **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 전용 정적 자산 deploy 파이프라인 (kind: frontend, Warehouse + Stage + sync-job 만, Deployment 없음, HTTPRoute 도 없음). 각 모듈의 GWT 컴파일 출력만 동일한 S3 버킷의 `/static/js/<module>/**` 아래로 sync 하고, 브라우저 접근 경로는 app 차트의 `/js/` PathPrefix HTTPRoute 가 공통 처리
 - **landing-ui** — SEO 랜딩 전용 정적 HTML 배포 파이프라인 (kind: frontend). GWT 컴파일 결과를 Playwright 로 프리렌더한 `index.html` + `sitemap.xml`·`robots.txt`·`llms.txt`·`llms-full.txt` 를 S3 `static/landing/{locale}/index.html` 및 `static/` 루트에 sync. 전용 HTTPRoute (`/`, `/en/`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt`) 포함. sync-job 은 `handbook-lib` 의 `handbook.landing-sync-job` named template 사용
@@ -195,7 +197,7 @@ dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard 
 [gateway-dev]            ┐
 [event-broadcaster-dev]  ┤
 [login-dev]              ┤   release-staging              release-prod
-[persist-workspace-dev]  ┼─→ (모든 서비스 dev 통과     →  (release-staging
+[workspace-command-dev]  ┼─→ (모든 서비스 dev 통과     →  (release-staging
 [app-dev]                ┤    Freight 를 한 번에            통과 번들을 그대로
 [shell-ui-dev]           ┤    atomic 배포, 수동 trigger)    전진, 수동 trigger)
 [login-ui-dev]           ┤

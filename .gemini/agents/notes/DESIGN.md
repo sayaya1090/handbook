@@ -52,9 +52,9 @@
 | 에이전트 | 스코프 파일 | 전형적 작업 |
 |---------|-------------|-------------|
 | **auth-expert** | `login/`, `login-ui/`, `authentication/`, `docs/requirements/auth.md` | PAT 도입 영향, OAuth 제공자 추가, RBAC 확장 |
-| **schema-expert** | `schema/`, `type-ui/`, `persist-type/`, `search-type/`, `docs/requirements/schema.md` | 속성 타입 추가 절차, 타입 버전 생성 흐름 |
-| **document-expert** | `document/`, `document-ui/`, `persist-document/`, `search-document/`, `docs/requirements/document.md` | 더티 트래킹 규칙, JSONB 머지, import/export |
-| **workspace-expert** | `workspace/`, `workspace-ui/`, `persist-workspace/`, `docs/requirements/workspace.md` | 조인 흐름, 프레즌스, 그룹 관리 |
+| **schema-expert** | `schema/`, `type-ui/`, `type-command/`, `type-query/`, `docs/requirements/schema.md` | 속성 타입 추가 절차, 타입 버전 생성 흐름 |
+| **document-expert** | `document/`, `document-ui/`, `document-command/`, `document-query/`, `docs/requirements/document.md` | 더티 트래킹 규칙, JSONB 머지, import/export |
+| **workspace-expert** | `workspace/`, `workspace-ui/`, `workspace-command/`, `docs/requirements/workspace.md` | 조인 흐름, 프레즌스, 그룹 관리 |
 | **assistant-expert** | `assistant/`, `agent-protocol/`, `agent-ui/`, `docs/requirements/assistant.md` | 커맨드 처리, 감사 로그, 실행 계획 |
 | **landing-expert** | `landing-content/`, `landing-ui/`, `docs/requirements/landing.md`, `docs/requirements/external-ai.md` | SEO 메타, 프리렌더, MCP 서버(후속) |
 

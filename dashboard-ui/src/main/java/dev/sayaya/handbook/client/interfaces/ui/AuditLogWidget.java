@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
-import dev.sayaya.handbook.client.domain.AgentActivity;
+import dev.sayaya.handbook.domain.AgentActivity;
 import dev.sayaya.handbook.client.usecase.AgentActivityList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;

@@ -17,7 +17,7 @@ import java.time.LocalDateTime
  *
  * ### sub 와 id(jti) 의 역할 구분 (Phase 1a — 2026-04-18)
  * - [sub] : **사용자 식별자** (내부 `user.id` UUID). 재발급 시에도 불변.
- *   소비자(persist-workspace 등)는 항상 이 값으로 `user_id` 를 참조한다.
+ *   소비자(workspace-command 등)는 항상 이 값으로 `user_id` 를 참조한다.
  * - [id] : **토큰 식별자** (JWT `jti`). 매 토큰 발행마다 고유. 감사/블랙리스트용.
  *
  * Phase 1a 는 additive 변경 — [id] 필드를 남겨 둠으로써 기존 소비자가 깨지지 않도록

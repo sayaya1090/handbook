@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.DrawerState;
-import dev.sayaya.handbook.client.domain.MenuRailState;
-import dev.sayaya.handbook.client.domain.ToolRailState;
+import dev.sayaya.handbook.domain.DrawerState;
+import dev.sayaya.handbook.domain.MenuRailState;
+import dev.sayaya.handbook.domain.ToolRailState;
 import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
@@ -10,7 +10,7 @@ import lombok.experimental.Delegate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static dev.sayaya.handbook.client.domain.ToolRailState.*;
+import static dev.sayaya.handbook.domain.ToolRailState.*;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**

@@ -37,11 +37,11 @@ Handbook은 **운영 중 스키마 변경과 이력 관리를 지원하면서 �
 | **event-broadcaster** | Kafka 이벤트 수신 → SSE 실시간 브로드캐스트 |
 | **login** | OAuth2 로그인 + JWT 토큰 발행 백엔드 |
 | **login-ui** | 로그인/로그아웃 UI (GWT) |
-| **persist-workspace** | 워크스페이스 CUD 백엔드 |
-| **persist-type** | 타입 CRUD + 레이아웃 관리 백엔드 |
-| **persist-document** | 문서 CUD 백엔드 (저장/삭제 + Kafka 이벤트 발행) |
-| **search-type** | 타입 읽기 전용 백엔드 (CQRS 읽기 측) |
-| **search-document** | 문서 읽기 전용 백엔드 (검색/단건 조회 + 메뉴 제공) |
+| **workspace-command** | 워크스페이스 CUD 백엔드 |
+| **type-command** | 타입 CRUD + 레이아웃 관리 백엔드 |
+| **document-command** | 문서 CUD 백엔드 (저장/삭제 + Kafka 이벤트 발행) |
+| **type-query** | 타입 읽기 전용 백엔드 (CQRS 읽기 측) |
+| **document-query** | 문서 읽기 전용 백엔드 (검색/단건 조회 + 메뉴 제공) |
 | **assistant** | 자연어 요청 해석 + 실행 계획 생성 + Kafka 이벤트 발행 (LLM 연동) |
 | **shell-ui** | 웹 애플리케이션 프레임 (GWT) |
 | **activity** | 동적 로딩 UI 활동 모듈 (GWT) |
@@ -1645,7 +1645,7 @@ AI 에이전트가 function calling / tool use 로 Handbook REST API 를 호출�
 - 별도 모듈 **`mcp-server`** 를 신설하여 Anthropic Model Context Protocol (MCP) 규격에 맞는 서버를 제공한다.
 - Handbook REST API 를 MCP `tools` 로 래핑하여 Gemini Desktop, VS Code MCP 클라이언트 등에서 자연어로 Handbook 을 조작할 수 있도록 한다.
 - 노출 대상 tool (예시):
-  - `list_workspace_menu()` → `GET /menus` (search-workspace — 워크스페이스 기능 디스커버리)
+  - `list_workspace_menu()` → `GET /menus` (workspace-query — 워크스페이스 기능 디스커버리)
   - `create_workspace(name, description)` → `POST /workspace`
   - `list_types(workspace)` → `GET /workspace/{workspace}/types`
   - `create_type(workspace, name, attributes[])` → `PUT /workspace/{workspace}/types`
@@ -1798,7 +1798,7 @@ visible(menu, state) =
 
 기존 shell-ui `WorkspaceOnboardingBootstrapper` 는 `WorkspaceList` 가 empty 일 때 workspace-ui 스크립트를 client-side synthetic 메뉴로 주입해 "빈 워크스페이스 자동 온보딩" (UC-12) 을 수행한다. Phase 1 `allowedSessionStates` 도입 이후:
 
-- `search-workspace` 의 워크스페이스 관리 메뉴는 `allowedSessionStates = {AUTHENTICATED, IN_WORKSPACE}` 로 공급.
+- `workspace-query` 의 워크스페이스 관리 메뉴는 `allowedSessionStates = {AUTHENTICATED, IN_WORKSPACE}` 로 공급.
 - 워크스페이스 생성/참여 엔트리를 **별도 공급자** 가 `{AUTHENTICATED, IN_WORKSPACE}` 로 공급하면, `AUTHENTICATED` 상태 사용자에게도 enabled 로 노출 → 클릭 시 Create/Join 화면으로 자연 라우팅.
 - **onboarding bootstrapper 유지 (2026-04-23)** — `allowedSessionStates` 기반의 명시적 CTA (클릭 유도) 가 가능하더라도, 워크스페이스가 없는 신규 사용자를 위한 자동 진입 로직은 UX 마찰을 줄이기 위해 유지한다.
 

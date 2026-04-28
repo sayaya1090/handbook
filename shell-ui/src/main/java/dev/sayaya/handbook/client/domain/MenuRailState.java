@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain;
+package dev.sayaya.handbook.domain;
 
 /**
  * Menu rail 의 가시성 상태. 뷰포트(모바일/데스크톱) 와 직교하며,

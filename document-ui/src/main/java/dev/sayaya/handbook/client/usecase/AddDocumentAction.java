@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.DocumentValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,13 +9,13 @@ import java.util.List;
 /**
  * 새 문서를 DocumentList에 추가하는 Command 패턴 액션.
  *
- * <p><b>책임:</b> execute() 시 새 {@link dev.sayaya.handbook.client.domain.DocumentValue}를
+ * <p><b>책임:</b> execute() 시 새 {@link dev.sayaya.handbook.domain.DocumentValue}를
  * {@link DocumentList} 끝에 추가하고, rollback() 시 해당 문서를 제거하여 Undo를 지원한다.</p>
  *
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link DocumentList} — 문서 목록 상태 갱신 대상</li>
- *   <li>{@link dev.sayaya.handbook.client.domain.DocumentValue} — 추가할 문서 객체</li>
+ *   <li>{@link dev.sayaya.handbook.domain.DocumentValue} — 추가할 문서 객체</li>
  *   <li>{@link dev.sayaya.handbook.domain.Action} — Command 패턴 인터페이스</li>
  * </ul></p>
  *

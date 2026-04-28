@@ -2,9 +2,9 @@ package dev.sayaya.handbook.client.interfaces.box;
 
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
-import dev.sayaya.handbook.client.domain.AttributeValue;
-import dev.sayaya.handbook.client.domain.Position;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.interfaces.value.ValueListElement;

@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.WorkspaceStats;
+import dev.sayaya.handbook.domain.WorkspaceStats;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 

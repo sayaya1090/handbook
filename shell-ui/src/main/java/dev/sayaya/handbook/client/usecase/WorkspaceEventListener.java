@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 /**
  * 워크스페이스 SSE 클라이언트.
  * URI 변경을 감시하여 현재 워크스페이스 ID를 추출하고,
- * /workspace/{id}/messages 엔드포인트에 SSE 연결을 맺어
+ * /workspaces/{id}/messages 엔드포인트에 SSE 연결을 맺어
  * 수신된 도메인 이벤트를 window CustomEvent로 전파한다.
  *
  * <p>이벤트 이름: {@code handbook-workspace-event}
@@ -53,8 +53,8 @@ public class WorkspaceEventListener {
 
     private void connect(String wsId) {
         disconnect();
-        GWT.log("WorkspaceEventListener: connecting to /workspace/" + wsId + "/messages");
-        eventSource = new EventSource("/workspace/" + wsId + "/messages");
+        GWT.log("WorkspaceEventListener: connecting to /workspaces/" + wsId + "/messages");
+        eventSource = new EventSource("/workspaces/" + wsId + "/messages");
         // SSE 이벤트 타입별 리스너 등록
         addTypedListener("DOCUMENT_CREATED");
         addTypedListener("DOCUMENT_DELETED");
@@ -93,13 +93,13 @@ public class WorkspaceEventListener {
 
     /**
      * URL에서 워크스페이스 ID를 추출한다.
-     * 예: "/workspace/abc-123/type" -> "abc-123"
+     * 예: "/workspaces/abc-123/type" -> "abc-123"
      */
     public static String extractWorkspaceId(String url) {
         if (url == null) return null;
-        int idx = url.indexOf("/workspace/");
+        int idx = url.indexOf("/workspaces/");
         if (idx < 0) return null;
-        String rest = url.substring(idx + "/workspace/".length());
+        String rest = url.substring(idx + "/workspaces/".length());
         int slashIdx = rest.indexOf('/');
         String wsId = slashIdx >= 0 ? rest.substring(0, slashIdx) : rest;
         // 쿼리스트링 제거

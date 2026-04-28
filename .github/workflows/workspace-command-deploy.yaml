@@ -1,0 +1,13 @@
+name: 워크스페이스 영속화 모듈 배포
+on:
+  push:
+    paths:
+      - workspace-command/**
+      - activity/**
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: workspace-command
+    secrets: inherit

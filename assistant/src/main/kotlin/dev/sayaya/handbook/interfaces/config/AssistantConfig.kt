@@ -76,7 +76,7 @@ class AssistantConfig {
         AssistantService(intentParser, planExecutor, eventPublisher, auditRepository, executionContextManager, subAgentOrchestrator)
 
     @Bean
-    fun searchDocumentClient(@Value("\${handbook.search-document.base-url:http://localhost:8080}") baseUrl: String): WebClient =
+    fun searchDocumentClient(@Value("\${handbook.document-query.base-url:http://localhost:8080}") baseUrl: String): WebClient =
         WebClient.builder().baseUrl(baseUrl).build()
 
     @Bean

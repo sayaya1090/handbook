@@ -1,0 +1,13 @@
+name: 타입 검색 모듈 배포
+on:
+  push:
+    paths:
+      - type-query/**
+      - activity/**
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: type-query
+    secrets: inherit

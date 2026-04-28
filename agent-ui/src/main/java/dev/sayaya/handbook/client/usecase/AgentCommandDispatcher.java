@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.domain.*;
 import dev.sayaya.rx.Observable;
 

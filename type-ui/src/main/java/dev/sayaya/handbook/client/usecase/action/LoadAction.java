@@ -4,9 +4,10 @@ package dev.sayaya.handbook.client.usecase.action;
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.domain.Position;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.client.usecase.*;
 
 import java.util.Map;

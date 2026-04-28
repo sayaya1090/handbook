@@ -6,9 +6,9 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 - **login** — `/auth/*`, `/oauth2/*`, `/login/oauth2/*`, `/user`
 - **gateway** — `/menus` (집계)
-- **persist-type** / **search-type** — `/workspace/{ws}/types/**`
-- **persist-document** / **search-document** — `/workspace/{ws}/documents/**`, `/workspace/{ws}/{type}/**`
-- **persist-workspace** — `/workspace` (POST), `/workspace/{ws}/*/presence`
+- **type-command** / **type-query** — `/workspace/{ws}/types/**`
+- **document-command** / **document-query** — `/workspace/{ws}/documents/**`, `/workspace/{ws}/{type}/**`
+- **workspace-command** — `/workspace` (POST), `/workspace/{ws}/*/presence`
 - **event-broadcaster** — `/workspace/{ws}/messages` (SSE)
 - **assistant** — `/assistant/**`
 - **(후속) mcp-server** — `/mcp/**` (MCP 프로토콜)
@@ -169,7 +169,7 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 ### 레거시 호환 기간
 
-Phase 1a 배포 전에 발급된 토큰은 `sub` 없이 `jti` 에 사용자 UUID 가 심어진 형태다. `UserController` `/auth/refresh` `TokenPublisher.validateRefreshToken` 은 `sub ?: id` 폴백 정책으로 양 포맷을 수용한다. 소비자 전환(Phase 1b persist-workspace, 2a/2b search-*·shell-ui) 완료 후 폴백을 제거한다.
+Phase 1a 배포 전에 발급된 토큰은 `sub` 없이 `jti` 에 사용자 UUID 가 심어진 형태다. `UserController` `/auth/refresh` `TokenPublisher.validateRefreshToken` 은 `sub ?: id` 폴백 정책으로 양 포맷을 수용한다. 소비자 전환(Phase 1b workspace-command, 2a/2b search-*·shell-ui) 완료 후 폴백을 제거한다.
 
 ## Rate Limiting
 

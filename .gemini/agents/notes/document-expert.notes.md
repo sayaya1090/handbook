@@ -1,7 +1,7 @@
 ## 요청 로그
 
 - 2026-05-12: 문서 검색 엔진 전환 -> Elasticsearch 9.3.3 도입으로 검색 성능 강화
-- 2026-04-18: search-document MenuController allowedSessionStates -> IN_WORKSPACE 선언 + 테스트
+- 2026-04-18: document-query MenuController allowedSessionStates -> IN_WORKSPACE 선언 + 테스트
 
 ---
 

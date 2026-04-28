@@ -1,0 +1,13 @@
+name: 문서 검색 모듈 배포
+on:
+  push:
+    paths:
+      - document-query/**
+      - activity/**
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: document-query
+    secrets: inherit

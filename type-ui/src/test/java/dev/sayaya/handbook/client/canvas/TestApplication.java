@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.canvas;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.domain.*;
 
 import static org.jboss.elemento.Elements.body;
 import static org.jboss.elemento.Elements.div;

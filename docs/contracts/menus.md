@@ -6,9 +6,9 @@
 
 - **login** — Sign In / Sign Out 엔트리 (인증 여부에 따라 분기)
   - `interfaces/api/MenuController.kt`
-- **search-type** — 타입 메뉴
-- **search-document** — 문서 메뉴
-- **search-workspace** — 워크스페이스 메뉴 (Drawer 하단 고정, `bottom=true`)
+- **type-query** — 타입 메뉴
+- **document-query** — 문서 메뉴
+- **workspace-query** — 워크스페이스 메뉴 (Drawer 하단 고정, `bottom=true`)
   - `interfaces/api/MenuController.kt`
 - **(신규) landing-menu** — 앱 내부 랜딩 엔트리 (구현 위치 미정 — 별도 모듈 또는 gateway 로컬)
 
@@ -152,7 +152,7 @@ enum SessionStateKind {
 **기본값 규칙 요약**
 | 필드 | 공급자 누락/null 시 | 빈 배열 `[]` 시 | 비고 |
 |------|---------------------|-----------------|------|
-| `allowed_session_states` | **무제약 (모든 상태 노출)** | 어떤 상태에서도 숨김 | 기존 4개 공급자 (login · search-type · search-document · search-workspace) 는 마이그레이션 전까지 null default 로 상시 노출. |
+| `allowed_session_states` | **무제약 (모든 상태 노출)** | 어떤 상태에서도 숨김 | 기존 4개 공급자 (login · type-query · document-query · workspace-query) 는 마이그레이션 전까지 null default 로 상시 노출. |
 
 ## `MenuSupplier` 인터페이스
 
@@ -191,6 +191,6 @@ Accept: application/vnd.sayaya.handbook.v1+json
 |----------|------|------|
 | login | < 20ms | 인증 여부 분기만, I/O 없음 |
 | landing-menu | < 50ms | 정적 상수 (gateway 로컬 또는 별도 모듈) |
-| search-workspace | < 30ms | 정적 Menu 상수 1개 emit, DB 비접근 |
-| search-type | < 100ms | R2DBC read-only, cold start 시 pod 기동 지연 예외 |
-| search-document | < 100ms | R2DBC read-only |
+| workspace-query | < 30ms | 정적 Menu 상수 1개 emit, DB 비접근 |
+| type-query | < 100ms | R2DBC read-only, cold start 시 pod 기동 지연 예외 |
+| document-query | < 100ms | R2DBC read-only |

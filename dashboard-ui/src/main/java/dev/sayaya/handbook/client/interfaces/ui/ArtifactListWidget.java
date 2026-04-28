@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
-import dev.sayaya.handbook.client.domain.ArtifactData;
+import dev.sayaya.handbook.domain.ArtifactData;
 import dev.sayaya.handbook.client.usecase.ArtifactList;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;

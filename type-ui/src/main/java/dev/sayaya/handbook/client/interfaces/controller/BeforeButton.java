@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;

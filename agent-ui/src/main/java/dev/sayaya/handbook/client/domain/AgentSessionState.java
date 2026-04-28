@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain;
+package dev.sayaya.handbook.domain;
 
 /**
  * 에이전트 세션의 현재 상태를 나타내는 열거형.

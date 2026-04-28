@@ -188,8 +188,8 @@ erDiagram
 
 CQRS 패턴에 따라 쓰기 작업은 PostgreSQL에서 수행되고, 변경 사항은 Kafka를 통해 Elasticsearch로 실시간 동기화된다.
 
-1. **발행**: `persist-document` 서비스가 DB 저장 후 `DOCUMENT_CREATED` 또는 `DOCUMENT_DELETED` 이벤트를 Kafka 토픽(`handbook-events`)으로 발행한다.
-2. **소비**: `search-document` 서비스의 `KafkaDocumentEventListener`가 해당 이벤트를 구독한다.
+1. **발행**: `document-command` 서비스가 DB 저장 후 `DOCUMENT_CREATED` 또는 `DOCUMENT_DELETED` 이벤트를 Kafka 토픽(`handbook-events`)으로 발행한다.
+2. **소비**: `document-query` 서비스의 `KafkaDocumentEventListener`가 해당 이벤트를 구독한다.
 3. **인덱싱**: 수신된 문서 데이터를 Elasticsearch `documents` 인덱스에 `upsert`하거나 `delete`한다.
 4. **최종 일관성**: 네트워크 지연이나 서비스 일시 장애로 인해 DB와 검색 엔진 간에 약간의 시간차가 발생할 수 있으나, Kafka의 재시도 메커니즘을 통해 데이터 무결성을 보장한다.
 
@@ -280,11 +280,11 @@ CREATE INDEX idx_documents_deleted_at ON documents (deleted_at) WHERE deleted_at
 
 | 테이블 | 엔티티 파일 |
 |--------|-----------|
-| documents | `persist-document/interfaces/database/R2dbcDocumentEntity.kt` |
-| types | `persist-type/interfaces/database/R2dbcTypeEntity.kt` |
-| type_attributes | `persist-type/interfaces/database/R2dbcAttributeEntity.kt` |
-| type_layouts | `persist-type/interfaces/database/R2dbcLayoutEntity.kt` |
-| workspace | `persist-workspace/interfaces/database/R2dbcWorkspaceEntity.kt` |
-| group | `persist-workspace/interfaces/database/R2dbcGroupEntity.kt` |
-| group_member | `persist-workspace/interfaces/database/R2dbcGroupMemberEntity.kt` |
+| documents | `document-command/interfaces/database/R2dbcDocumentEntity.kt` |
+| types | `type-command/interfaces/database/R2dbcTypeEntity.kt` |
+| type_attributes | `type-command/interfaces/database/R2dbcAttributeEntity.kt` |
+| type_layouts | `type-command/interfaces/database/R2dbcLayoutEntity.kt` |
+| workspace | `workspace-command/interfaces/database/R2dbcWorkspaceEntity.kt` |
+| group | `workspace-command/interfaces/database/R2dbcGroupEntity.kt` |
+| group_member | `workspace-command/interfaces/database/R2dbcGroupMemberEntity.kt` |
 | users | `login/interfaces/database/R2dbcUserEntity.kt` |

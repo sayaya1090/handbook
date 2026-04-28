@@ -1,0 +1,42 @@
+{{- /* dev 만 서비스별 Stage 를 만들고 staging/prod 는 release-staging/release-prod 번들이 담당 */ -}}
+{{- if and .Values.stage.name (eq .Values.stage.name "dev") }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: type-query-{{ .Values.stage.name }}
+  namespace: handbook
+  annotations:
+    kargo.akuity.io/color: {{ .Values.stage.color }}
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: type-query
+      sources:
+        {{- if .Values.stage.prev }}
+        direct: false
+        stages:
+          - type-query-{{ .Values.stage.prev }}
+        {{- else }}
+        direct: true
+        {{- end }}
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: compose-output
+          as: type-query-image
+          config:
+            img: {{ printf `${{ imageFrom("image-registry.openshift-image-registry.svc:5000/handbook/type-query") }}` }}
+        - uses: argocd-update
+          as: sync
+          config:
+            apps:
+              - name: handbook-type-query-{{ .Values.stage.name }}
+                sources:
+                  - helm:
+                      images:
+                        - key: image.tag
+                          value: {{ printf `${{ outputs['type-query-image'].img.tag }}@${{ outputs['type-query-image'].img.digest }}` }}
+                    repoURL: https://github.com/sayaya1090/handbook.git
+{{- end }}

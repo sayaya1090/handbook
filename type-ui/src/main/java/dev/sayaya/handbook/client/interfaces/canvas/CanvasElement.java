@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
-import dev.sayaya.handbook.client.domain.Position;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.interfaces.box.BoxContextMenuElement;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementFactory;
 import dev.sayaya.handbook.client.interfaces.box.BoxReferenceElement;

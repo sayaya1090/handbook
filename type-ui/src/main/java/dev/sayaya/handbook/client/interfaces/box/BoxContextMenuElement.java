@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.client.domain.AttributeTypeValue;
-import dev.sayaya.handbook.client.domain.AttributeValue;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.interfaces.ContextMenuHelper;
 import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;

@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.interfaces.controller;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.DocumentList;
-import dev.sayaya.handbook.client.usecase.DocumentRepository;
+import dev.sayaya.handbook.usecase.DocumentRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.LabelProvider;

@@ -42,19 +42,19 @@ services:
     kind: backend
     color: purple
     stages: [dev, staging, prod]
-  - name: persist-workspace
+  - name: workspace-command
     kind: backend
     color: yellow
     stages: [dev, staging, prod]
-  - name: search-workspace
+  - name: workspace-query
     kind: backend
     color: gold
     stages: [dev, staging, prod]
-  - name: persist-type
+  - name: type-command
     kind: backend
     color: salmon
     stages: [dev, staging, prod]
-  - name: search-type
+  - name: type-query
     kind: backend
     color: coral
     stages: [dev, staging, prod]

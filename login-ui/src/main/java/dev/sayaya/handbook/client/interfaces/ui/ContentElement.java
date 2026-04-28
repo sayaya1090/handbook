@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
 import com.google.gwt.core.client.Scheduler;
-import dev.sayaya.handbook.client.domain.Log;
+import dev.sayaya.handbook.domain.Log;
 import elemental2.dom.DomGlobal;
 import jsinterop.base.JsPropertyMap;
 import org.jboss.elemento.EventType;

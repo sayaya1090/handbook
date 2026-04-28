@@ -11,8 +11,8 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 담당 모듈:
 - `document/` — 문서 생명주기 도메인 엔티티
 - `document-ui/` — Handsontable 기반 스프레드시트 에디터 (GWT)
-- `persist-document/` — 문서 CUD + Kafka 이벤트 발행
-- `search-document/` — 문서 검색·조회 (CQRS Read)
+- `document-command/` — 문서 CUD + Kafka 이벤트 발행
+- `document-query/` — 문서 검색·조회 (CQRS Read)
 
 담당 문서:
 - `docs/requirements.md` §3.6 문서, §3.7 이력, §3.10 검증 (Compliance 결과), §3.18 워크플로우(DRAFT/REVIEW/PUBLISHED)

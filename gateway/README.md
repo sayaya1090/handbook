@@ -84,28 +84,28 @@ spring:
               args:
                 name: eventBroadcasterCB
                 fallbackUri: forward:/fallback/empty
-        - id: search-type
-          uri: ${gateway.routes.search-type:http://localhost:8082}
+        - id: type-query
+          uri: ${gateway.routes.type-query:http://localhost:8082}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=GET
-        - id: persist-type
-          uri: ${gateway.routes.persist-type:http://localhost:8083}
+        - id: type-command
+          uri: ${gateway.routes.type-command:http://localhost:8083}
           predicates:
             - Path=/workspace/*/types/**,/workspace/*/layouts/**
             - Method=PUT,DELETE
-        - id: search-document
-          uri: ${gateway.routes.search-document:http://localhost:8084}
+        - id: document-query
+          uri: ${gateway.routes.document-query:http://localhost:8084}
           predicates:
             - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
             - Method=GET
-        - id: persist-document
-          uri: ${gateway.routes.persist-document:http://localhost:8085}
+        - id: document-command
+          uri: ${gateway.routes.document-command:http://localhost:8085}
           predicates:
             - Path=/workspace/*/documents/**
             - Method=PUT,DELETE
-        - id: persist-workspace
-          uri: ${gateway.routes.persist-workspace:http://localhost:8086}
+        - id: workspace-command
+          uri: ${gateway.routes.workspace-command:http://localhost:8086}
           predicates:
             - Path=/workspace,/workspace/**
             - Method=POST,PUT,DELETE
@@ -134,9 +134,9 @@ spring:
 ```yaml
 services:
   - name: service-login:8080
-  - name: service-search-type:8080
-  - name: service-search-document:8080
-  - name: service-persist-workspace:8080
+  - name: service-type-query:8080
+  - name: service-document-query:8080
+  - name: service-workspace-command:8080
 ```
 
 ## 인프라 기능

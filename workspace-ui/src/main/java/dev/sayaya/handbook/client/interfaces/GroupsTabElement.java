@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.domain.Group;
 import dev.sayaya.handbook.domain.User;
-import dev.sayaya.handbook.client.usecase.WorkspaceApi;
+import dev.sayaya.handbook.usecase.WorkspaceApi;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import elemental2.dom.HTMLDivElement;

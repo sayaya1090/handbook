@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain;
+package dev.sayaya.handbook.domain;
 
 /**
  * 에이전트 실행 완료 정보 값 객체.

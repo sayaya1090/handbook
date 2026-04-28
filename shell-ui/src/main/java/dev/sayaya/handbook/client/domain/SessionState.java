@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.client.domain;
+package dev.sayaya.handbook.domain;
 
 import dev.sayaya.handbook.domain.SessionStateKind;
 

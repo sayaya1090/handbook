@@ -326,7 +326,7 @@ Dagger 주입 시 생성자 인자가 5개 이상인 경우, 연관된 의존성
 ```mermaid
 flowchart LR
     C["Command (Write)"] --> PG[("PostgreSQL<br/>(Source of Truth)")]
-    PG -->|Kafka Event| S["search-document<br/>(Indexer)"]
+    PG -->|Kafka Event| S["document-query<br/>(Indexer)"]
     S --> ES[("Elasticsearch 9.3.3<br/>(Read Model)")]
     Q["Query (Read)"] --> ES
 ```
@@ -335,7 +335,7 @@ flowchart LR
 
 1. **데이터 저장 (Write)**: 모든 문서와 타입의 CUD 작업은 PostgreSQL을 통해 수행되며, 트랜잭션과 무결성을 보장한다.
 2. **이벤트 발행**: 변경 완료 시 Kafka를 통해 도메인 이벤트(`DOCUMENT_CREATED`, `DOCUMENT_DELETED` 등)를 발행한다.
-3. **데이터 동기화 (Sync)**: `search-document` 서비스가 이벤트를 수신하여 Elasticsearch 9.3.3 인덱스를 갱신한다. 이는 비동기로 처리되며 최종 일관성(Eventual Consistency)을 따른다.
+3. **데이터 동기화 (Sync)**: `document-query` 서비스가 이벤트를 수신하여 Elasticsearch 9.3.3 인덱스를 갱신한다. 이는 비동기로 처리되며 최종 일관성(Eventual Consistency)을 따른다.
 4. **검색 및 조회 (Read)**: 사용자의 검색 요청 및 대량 목록 조회는 Elasticsearch 9.3.3을 통해 처리한다. PostgreSQL은 단건 상세 조회 및 이력 추적용으로만 사용한다.
 
 ### 장점

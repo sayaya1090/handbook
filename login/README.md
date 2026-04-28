@@ -55,7 +55,7 @@ OAuth provider iss  ─┘                                             │
                                                           UUID.randomUUID()─ JWT jti
 ```
 
-소비자(persist-workspace, search-workspace, shell-ui 등) 는 JWT 의 `sub` 클레임(= `UserAuthentication.sub`) 을 사용자 식별자로 사용한다. `jti`는 토큰 감사용이며 사용자 ID 로 사용 금지.
+소비자(workspace-command, workspace-query, shell-ui 등) 는 JWT 의 `sub` 클레임(= `UserAuthentication.sub`) 을 사용자 식별자로 사용한다. `jti`는 토큰 감사용이며 사용자 ID 로 사용 금지.
 
 ### `users` 테이블 스키마
 

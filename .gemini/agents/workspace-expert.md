@@ -11,12 +11,12 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 담당 모듈:
 - `workspace/` — 워크스페이스·조직·권한 도메인
 - `workspace-ui/` — 워크스페이스 생성/참여 UI
-- `persist-workspace/` — 워크스페이스 CUD + 웹훅 등록 + 이벤트
-- `search-workspace/` — 워크스페이스 read-side + `/menus` 공급자 (MenuController)
+- `workspace-command/` — 워크스페이스 CUD + 웹훅 등록 + 이벤트
+- `workspace-query/` — 워크스페이스 read-side + `/menus` 공급자 (MenuController)
 
 담당 문서:
 - `docs/requirements.md` §3.1 워크스페이스, §3.2 사용자·그룹
-- `docs/contracts/menus.md` — `search-workspace` 공급자 (Drawer 하단 고정)
+- `docs/contracts/menus.md` — `workspace-query` 공급자 (Drawer 하단 고정)
 - `docs/contracts/permissions.md` — 소비자 (워크스페이스 스코프)
 - `docs/contracts/events.md` — `PRESENCE` (event-broadcaster 경유)
 - `docs/usecases.md` UC-04~UC-06, UC-10~UC-11, UC-20~UC-24

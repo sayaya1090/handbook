@@ -61,7 +61,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 | `templates/project-config.yaml` | ArgoCD `AppProject` 설정 |
 | `templates/job.yaml`, `rbac.yaml` | 초기화 Job · RBAC |
 
-### 서비스 서브차트 (`gateway/`, `event-broadcaster/`, `login/`, `persist-workspace/`)
+### 서비스 서브차트 (`gateway/`, `event-broadcaster/`, `login/`, `workspace-command/`)
 동일 패턴. 신규 JVM 백엔드 추가 시 이 구조를 복사한다. Deployment 는 `handbook-lib` 라이브러리 차트의 named template `handbook.jvm-backend.deployment` 로 통합되어 있어 서브차트 `templates/deployment.yaml` 은 한 줄 include (`{{ include "handbook.jvm-backend.deployment" . }}`) 로 끝난다. 운영 설정에 DB/Kafka 가 필요하면 `configmap.yaml` 의 `spring.config.import` 에 해당 fragment classpath 를 추가하고 `values.yaml` 의 `jvmBackend.fragments` 리스트에도 이름(postgresql / kafka) 을 추가한다.
 
 | 파일 | 역할 |
@@ -94,7 +94,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 [gateway-dev]           ┐
 [event-broadcaster-dev] ┤
 [login-dev]             ┤
-[persist-workspace-dev] ┼──→ release-staging ──→ release-prod
+[workspace-command-dev] ┼──→ release-staging ──→ release-prod
 [shell-ui-dev]          ┤   (모든 서비스 동시       (release-staging 통과 번들을
 [login-ui-dev]          ┤    atomic 배포)            그대로 prod 로 전진)
 [workspace-ui-dev]      ┘
@@ -156,7 +156,7 @@ handbook (ArgoCD 가 싱크하는 런타임 차트)
 
 | named template | 소비 차트 | 역할 |
 |----------------|-----------|------|
-| `handbook.jvm-backend.deployment` | gateway, event-broadcaster, login, persist-workspace | Spring Boot JVM Deployment 공통 템플릿. `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 서비스 차이 흡수 |
+| `handbook.jvm-backend.deployment` | gateway, event-broadcaster, login, workspace-command | Spring Boot JVM Deployment 공통 템플릿. `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 서비스 차이 흡수 |
 | `handbook.frontend-sync-job` | app, shell-ui, login-ui, workspace-ui | 정적 자산 ArgoCD Sync Hook Job. tag prefix / job 이름 / label 은 `.Chart.Name` 에서 자동 유도 |
 
 서브차트 `templates/deployment.yaml` 또는 `templates/sync-job.yaml` 은 한 줄 include 로 끝나고, 실제 manifest 는 모두 라이브러리가 소유. 추가 공통 패턴이 생기면 `handbook-lib/templates/_*.yaml` 에 named template 으로 추가.

@@ -1,12 +1,12 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.AgentActivity;
-import dev.sayaya.handbook.client.domain.ArtifactData;
-import dev.sayaya.handbook.client.domain.DistributionData;
-import dev.sayaya.handbook.client.domain.ExecutionStatusData;
-import dev.sayaya.handbook.client.domain.QualityIssue;
-import dev.sayaya.handbook.client.domain.TimelineData;
-import dev.sayaya.handbook.client.domain.WorkspaceStats;
+import dev.sayaya.handbook.domain.AgentActivity;
+import dev.sayaya.handbook.domain.ArtifactData;
+import dev.sayaya.handbook.domain.DistributionData;
+import dev.sayaya.handbook.domain.ExecutionStatusData;
+import dev.sayaya.handbook.domain.QualityIssue;
+import dev.sayaya.handbook.domain.TimelineData;
+import dev.sayaya.handbook.domain.WorkspaceStats;
 import dev.sayaya.rx.Observable;
 
 /**

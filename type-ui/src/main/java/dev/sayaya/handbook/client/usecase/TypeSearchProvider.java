@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.AttributeValue;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.usecase.SearchProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;

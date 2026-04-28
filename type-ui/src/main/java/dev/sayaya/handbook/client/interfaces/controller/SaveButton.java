@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;

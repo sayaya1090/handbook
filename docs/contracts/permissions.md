@@ -6,7 +6,7 @@
 
 - **login** (authentication 라이브러리) — JWT 토큰 발급 시 Role 을 claim 으로 포함
   - `authentication/src/main/kotlin/.../JwtAuthentication.kt`
-- **persist-workspace** — 그룹·역할 할당 관리
+- **workspace-command** — 그룹·역할 할당 관리
   - 워크스페이스 생성 시 Admin 그룹 자동 생성
 - **workspace domain** — Permission 매트릭스 소유
 
@@ -85,7 +85,7 @@
 
 ### 적용 지점
 
-- **API**: `persist-document` / `search-document` 가 응답 시 마스킹/필터링
+- **API**: `document-command` / `document-query` 가 응답 시 마스킹/필터링
 - **UI**: document-ui 스프레드시트가 셀 단위로 읽기 전용 / 마스킹 렌더링
 
 ## Workspace 자동 Admin 할당

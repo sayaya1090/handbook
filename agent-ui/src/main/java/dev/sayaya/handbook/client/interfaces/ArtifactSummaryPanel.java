@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces;
 
-import dev.sayaya.handbook.client.domain.CompleteInfo;
+import dev.sayaya.handbook.domain.CompleteInfo;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;

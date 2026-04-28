@@ -7,11 +7,11 @@ sequenceDiagram
     actor Client as 클라이언트 (shell-ui)
     participant GW as Gateway (MenuController)
     participant Svc as MenuService
-    participant SD1 as ServiceDiscovery (search-type)
-    participant SD2 as ServiceDiscovery (search-document)
+    participant SD1 as ServiceDiscovery (type-query)
+    participant SD2 as ServiceDiscovery (document-query)
     participant SDn as ServiceDiscovery (...)
-    participant Svc1 as search-type /menus
-    participant Svc2 as search-document /menus
+    participant Svc1 as type-query /menus
+    participant Svc2 as document-query /menus
 
     Client->>GW: GET /menus
     Note over Client,GW: Accept: application/vnd.sayaya.handbook.v1+json
@@ -76,7 +76,7 @@ sequenceDiagram
 | **액터** | 클라이언트 (브라우저, 외부 시스템) |
 | **선행조건** | Gateway 서버 구동 및 라우트 설정 완료 |
 | **정상 흐름** | 1. 클라이언트가 HTTP 요청을 Gateway로 전송한다.<br>2. Spring Cloud Gateway가 `application.yml`에 정의된 라우트 목록에서 Path/Method Predicate를 평가한다.<br>3. 매칭된 라우트의 대상 URI로 요청을 프록시한다.<br>4. 대상 서비스의 응답을 클라이언트에 전달한다. |
-| **라우트 목록** | `login` (/auth/**, /user), `event-broadcaster` (/workspace/*/messages GET), `search-type` (/workspace/*/types/**, /workspace/*/layouts/** GET), `persist-type` (PUT,DELETE), `search-document` (/workspace/*/documents/**, /workspace/*/*/*  GET), `persist-document` (PUT,DELETE), `persist-workspace` (POST,PUT,DELETE), `assistant` (/assistant/**), `static` (/js/**, /css/**, /icons/**) |
+| **라우트 목록** | `login` (/auth/**, /user), `event-broadcaster` (/workspace/*/messages GET), `type-query` (/workspace/*/types/**, /workspace/*/layouts/** GET), `type-command` (PUT,DELETE), `document-query` (/workspace/*/documents/**, /workspace/*/*/*  GET), `document-command` (PUT,DELETE), `workspace-command` (POST,PUT,DELETE), `assistant` (/assistant/**), `static` (/js/**, /css/**, /icons/**) |
 | **결과** | 클라이언트 요청이 적절한 마이크로서비스로 라우팅되어 응답을 수신 |
 
 ## UC-GW2: 메뉴 집계
@@ -105,7 +105,7 @@ sequenceDiagram
 | **액터** | 클라이언트 (shell-ui 경유) |
 | **선행조건** | event-broadcaster 서비스 구동 중 |
 | **정상 흐름** | 1. 클라이언트가 `GET /workspace/{id}/messages`를 요청한다.<br>2. Gateway의 라우트 설정에서 `event-broadcaster` 라우트가 매칭된다 (Path: `/workspace/*/messages`, Method: GET).<br>3. Gateway가 SSE 연결을 event-broadcaster로 프록시한다.<br>4. event-broadcaster의 `text/event-stream` 응답이 클라이언트에 그대로 전달된다.<br>5. SSE 스트림이 종료될 때까지 연결이 유지된다. |
-| **비고** | SSE 라우트는 `search-document` 라우트보다 먼저 정의되어 우선 매칭된다 |
+| **비고** | SSE 라우트는 `document-query` 라우트보다 먼저 정의되어 우선 매칭된다 |
 | **결과** | 클라이언트가 워크스페이스별 실시간 이벤트 스트림을 수신 |
 
 ---

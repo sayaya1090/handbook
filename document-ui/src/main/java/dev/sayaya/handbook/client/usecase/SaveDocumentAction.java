@@ -3,7 +3,8 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.usecase.DocumentRepository;
 
 import java.util.ArrayList;
 import java.util.List;

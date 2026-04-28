@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.selection;
 
-import dev.sayaya.handbook.client.domain.Position;
+import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.client.usecase.GridSnap;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import elemental2.dom.DomGlobal;

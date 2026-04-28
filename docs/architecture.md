@@ -25,11 +25,11 @@ graph TB
 
     subgraph "Backend Services"
         Login["login<br/>OAuth2 + JWT 발행"]
-        PersistWS["persist-workspace<br/>워크스페이스 CUD"]
-        PersistType["persist-type<br/>타입 CUD"]
-        PersistDoc["persist-document<br/>문서 CUD"]
-        SearchType["search-type<br/>타입 조회 (CQRS)"]
-        SearchDoc["search-document<br/>문서 조회 (CQRS)"]
+        PersistWS["workspace-command<br/>워크스페이스 CUD"]
+        PersistType["type-command<br/>타입 CUD"]
+        PersistDoc["document-command<br/>문서 CUD"]
+        SearchType["type-query<br/>타입 조회 (CQRS)"]
+        SearchDoc["document-query<br/>문서 조회 (CQRS)"]
         Assistant["assistant<br/>AI 어시스턴트"]
         EventBroadcaster["event-broadcaster<br/>실시간 이벤트"]
     end
@@ -76,6 +76,14 @@ graph TB
     LoginUI --> Activity
     DashboardUI --> Activity
     DashboardUI --> UiComponents
+
+    %% 런타임 브릿지 (Java 레벨 의존성 없음, Window 객체 공유)
+    ShellUI -.->|Event| AgentBridge
+    AgentUI -.->|Event| AgentBridge
+    TypeUI -.->|Event| AgentBridge
+    DocumentUI -.->|Event| AgentBridge
+    WorkspaceUI -.->|Event| AgentBridge
+    OnboardingUI -.->|Event| AgentBridge
 
     %% 런타임 HTTP 호출 (프론트엔드 → Gateway)
     App -.->|HTTP| Gateway
@@ -381,9 +389,11 @@ workspace, schema, document → (독립, 상호 의존 없음)
 
 ### 7. Activity 모듈
 
-**역할:** 프론트엔드 공유 도메인 라이브러리 (GWT). Shell-UI와 Agent-UI가 공통으로 의존한다.
+**역할:** 프론트엔드 공유 도메인 및 i18n 라이브러리 (GWT). 프로젝트의 모든 UI 모듈이 공통으로 의존하는 **프론트엔드 측 Single Source of Truth(SSOT)**이다.
 
-**도메인 클래스:** Menu, Tool, ToolFunction, Render, Progress, Labels
+**도메인 클래스:**
+- **UI 메타데이터**: Menu, Tool, ToolFunction, Render, Progress, Labels
+- **GWT 공용 DTO**: Workspace, Group, User (백엔드 도메인 모델의 JsType 프로젝션)
 
 **설계 결정:**
 
@@ -761,7 +771,7 @@ client/
 
 | 결정 | 이유 |
 |------|------|
-| persist-type과 읽기/쓰기 분리 (CQRS) | 읽기 전용 서비스를 독립 스케일링 가능 |
+| type-command과 읽기/쓰기 분리 (CQRS) | 읽기 전용 서비스를 독립 스케일링 가능 |
 | snake_case ObjectMapper | 프론트엔드 JSON 호환 |
 | 메뉴 제공 (MenuController) | Gateway가 수집하여 Shell에 "types" 메뉴 노출 |
 
@@ -802,7 +812,7 @@ client/
 
 ### 18. Search-Document 모듈
 
-**역할:** 문서 읽기 전용 백엔드 서비스 (CQRS 읽기 측). Elasticsearch를 기반으로 전문 검색(Full-text Search)과 필터링을 제공하며, Gateway에 "documents" 메뉴를 제공한다. Kafka를 통해 `persist-document`의 변경 이벤트를 수신하여 Elasticsearch 인덱스를 실시간 동기화한다.
+**역할:** 문서 읽기 전용 백엔드 서비스 (CQRS 읽기 측). Elasticsearch를 기반으로 전문 검색(Full-text Search)과 필터링을 제공하며, Gateway에 "documents" 메뉴를 제공한다. Kafka를 통해 `document-command`의 변경 이벤트를 수신하여 Elasticsearch 인덱스를 실시간 동기화한다.
 
 **계층 구조:**
 
@@ -820,9 +830,9 @@ client/
 
 | 결정 | 이유 |
 |------|------|
-| persist-document와 읽기/쓰기 분리 (CQRS) | 읽기 전용 서비스를 독립 스케일링 가능 |
+| document-command와 읽기/쓰기 분리 (CQRS) | 읽기 전용 서비스를 독립 스케일링 가능 |
 | Elasticsearch 도입 | PostgreSQL JSONB ILIKE의 성능 한계 극복 + 형태소 분석 기반 전문 검색 지원 |
-| Kafka 기반 실시간 동기화 | 쓰기 서비스(persist-document)의 부하를 분리하고 최종 일관성(Eventual Consistency) 모델로 검색 인덱스 갱신 |
+| Kafka 기반 실시간 동기화 | 쓰기 서비스(document-command)의 부하를 분리하고 최종 일관성(Eventual Consistency) 모델로 검색 인덱스 갱신 |
 | SearchArgumentResolver | 쿼리 파라미터를 Search 객체로 자동 변환 |
 | Elasticsearch Criteria 쿼리 | 복합 필터와 전문 검색 쿼리를 동적으로 조합 |
 | window function count(*) OVER() | (PostgreSQL 병행 사용 시) 단일 쿼리로 데이터 + 총 개수 동시 조회 |
@@ -1018,7 +1028,7 @@ sequenceDiagram
 - **실행 계획 보존**: ExecutionPlan 전체(intent, steps, confidence)를 이벤트 로그와 함께 보존하여, 사후에 에이전트의 판단 과정을 재현할 수 있다.
 - **시간순 감사 조회**: Dashboard-UI에서 AGENT_COMMAND 이벤트를 시간순으로 조회하여 에이전트 활동을 감사할 수 있다.
 
-**데이터 품질 감시 (구현 완료):** Assistant 모듈은 자연어 명령 처리 외에, 데이터 품질 감시 기능을 제공한다. `DefaultQualityMonitor`가 search-document API를 통해 문서를 조회하고 결측치(필수 필드 누락), 중복(동일 시리얼), 이상값(3σ 편차)을 검출한다. `QualityMonitorService`가 검출 결과를 `AgentCommand(NOTIFY)`로 Kafka에 발행하여 워크스페이스에 브로드캐스트한다. 심각도에 따라 info/warning/error를 차등 적용한다. `POST /assistant/quality/scan?workspace={id}`로 즉시 스캔을 트리거할 수 있다. `ScheduledQualityMonitor`가 cron 주기(`quality.monitor.cron`, 기본 매 시간)에 따라 `WebClientWorkspaceProvider`에서 활성 워크스페이스 목록을 조회하여 자동 스캔한다.
+**데이터 품질 감시 (구현 완료):** Assistant 모듈은 자연어 명령 처리 외에, 데이터 품질 감시 기능을 제공한다. `DefaultQualityMonitor`가 document-query API를 통해 문서를 조회하고 결측치(필수 필드 누락), 중복(동일 시리얼), 이상값(3σ 편차)을 검출한다. `QualityMonitorService`가 검출 결과를 `AgentCommand(NOTIFY)`로 Kafka에 발행하여 워크스페이스에 브로드캐스트한다. 심각도에 따라 info/warning/error를 차등 적용한다. `POST /assistant/quality/scan?workspace={id}`로 즉시 스캔을 트리거할 수 있다. `ScheduledQualityMonitor`가 cron 주기(`quality.monitor.cron`, 기본 매 시간)에 따라 `WebClientWorkspaceProvider`에서 활성 워크스페이스 목록을 조회하여 자동 스캔한다.
 
 **감사 추적 (구현 완료):** `AssistantService`가 자연어 요청 수신 시 `AuditEntry`를 생성하여 `AuditRepository`에 저장한다. 각 항목에는 사용자 원본 메시지, LLM 해석 결과(intent, confidence), 전체 실행 계획, 상태(REQUESTED/CONFIRMED/EXECUTING/COMPLETED/ABORTED)가 기록된다. `GET /assistant/audit?workspace={id}`로 워크스페이스별 감사 이력을 시간순 조회할 수 있다. 현재는 `InMemoryAuditRepository`로 구현되어 있으며, 향후 R2DBC 기반 영속 구현으로 교체 가능하다.
 
@@ -1194,8 +1204,8 @@ client/
 |----------|-------------|-----------|-----------|
 | login | Sign In / Sign Out | principal null 여부 | `login` 서비스의 `MenuController` |
 | (신규) landing-menu | 앱 내부 랜딩(이름 미정) | 항상 공급 (로그인·비로그인 동일) | 추후 결정 — 별도 모듈 또는 gateway 로컬 |
-| search-type | 타입 메뉴 | 인증 필요 | `search-type` |
-| search-document | 문서 메뉴 | 인증 필요 | `search-document` |
+| type-query | 타입 메뉴 | 인증 필요 | `type-query` |
+| document-query | 문서 메뉴 | 인증 필요 | `document-query` |
 
 ---
 
@@ -1265,7 +1275,7 @@ graph LR
 
     subgraph "경로 2: REST API 경유"
         GW["Gateway"]
-        BE["persist-workspace<br/>persist-type<br/>search-type"]
+        BE["workspace-command<br/>type-command<br/>type-query"]
         MC2["MutateCommand"] --> GW --> BE
     end
 
@@ -1278,9 +1288,9 @@ graph LR
 | 모듈 | 경로 | 읽기 | 쓰기 | 에이전트 작업 Undo |
 |------|------|------|------|-------------------|
 | **type-ui** | 메모리 직접 | `TypeStateProvider.snapshot()` | `AgentMutationHandler` -> `ActionManager` | O (같은 undo 스택) |
-| **persist-type** | REST API | "GET /workspace/{id}/types" | "PUT/DELETE /workspace/{id}/types" | X (DB 직접 변경) |
-| **persist-workspace** | REST API | "(shell-ui WorkspaceList)" | "POST/PUT/DELETE /workspace" | X (DB 직접 변경) |
-| **search-type** | REST API | "GET /workspace/{id}/types" | "읽기 전용" | - |
+| **type-command** | REST API | "GET /workspace/{id}/types" | "PUT/DELETE /workspace/{id}/types" | X (DB 직접 변경) |
+| **workspace-command** | REST API | "(shell-ui WorkspaceList)" | "POST/PUT/DELETE /workspace" | X (DB 직접 변경) |
+| **type-query** | REST API | "GET /workspace/{id}/types" | "읽기 전용" | - |
 | **onboarding-ui** | REST API | - | "POST /workspace (생성)" | X (DB 직접 변경) |
 | **workspace-ui** | REST API | "GET /workspace/{id}" | "PUT /workspace/{id}, POST /workspace/{id}/groups" | X (DB 직접 변경) |
 
@@ -1301,7 +1311,7 @@ graph LR
 ```
 사용자: "고객 타입에 전화번호 속성 추가해줘"
 
-1. Assistant가 search-type API로 현재 타입 조회 (또는 TypeStateProvider.snapshot() 활용)
+1. Assistant가 type-query API로 현재 타입 조회 (또는 TypeStateProvider.snapshot() 활용)
 2. LLM이 실행 계획 생성:
    - navigate: types 화면으로 이동
    - attention: customer 타입 박스 강조
@@ -1352,7 +1362,7 @@ agent-ui(app에서 컴파일)와 type-ui/workspace-ui(별도 GWT 모듈)는 서�
 ```
 1. progress: "타입 목록 조회 중..."
 2. navigate: types 화면으로 이동
-3. (내부) search-type API 또는 TypeSearchProvider로 데이터 조회
+3. (내부) type-query API 또는 TypeSearchProvider로 데이터 조회
 4. highlight: 검색된 타입 박스들을 순차적으로 강조
 5. attention: "customer 타입을 찾았습니다. 속성 3개: name, age, email"
 6. preview: 변경 계획 미리보기
@@ -1377,8 +1387,8 @@ agent-ui(app에서 컴파일)와 type-ui/workspace-ui(별도 GWT 모듈)는 서�
 ```mermaid
 graph LR
     subgraph "발행 측 (Backend)"
-        PD["persist-document"] -->|DOCUMENT_CREATED/DELETED| K["Kafka"]
-        PT["persist-type"] -->|TYPE_CREATED/DELETED| K
+        PD["document-command"] -->|DOCUMENT_CREATED/DELETED| K["Kafka"]
+        PT["type-command"] -->|TYPE_CREATED/DELETED| K
         AS["assistant"] -->|AGENT_COMMAND| K
     end
 
@@ -1409,7 +1419,7 @@ graph LR
 ```mermaid
 sequenceDiagram
     actor UserA as 사용자 A
-    participant PD as persist-document
+    participant PD as document-command
     participant K as Kafka
     participant EB as event-broadcaster
     participant WEL as WorkspaceEventListener (사용자 B)
@@ -1432,11 +1442,11 @@ sequenceDiagram
 
 | 이벤트 타입 | 발행자 | 구독자 | 동작 |
 |------------|--------|--------|------|
-| DOCUMENT_CREATED | persist-document | DocumentEventHandler | 문서 목록 갱신 |
-| DOCUMENT_DELETED | persist-document | DocumentEventHandler | 문서 목록 갱신 |
-| TYPE_CREATED | persist-type | TypeEventHandler | 타입 목록 갱신 |
-| TYPE_DELETED | persist-type | TypeEventHandler | 타입 목록 갱신 |
-| VALIDATION_REQUESTED | persist-document | assistant (ValidationEventListener → QualityMonitorService.validate()) | 이슈 발견 시 AGENT_COMMAND NOTIFY 발행 |
+| DOCUMENT_CREATED | document-command | DocumentEventHandler | 문서 목록 갱신 |
+| DOCUMENT_DELETED | document-command | DocumentEventHandler | 문서 목록 갱신 |
+| TYPE_CREATED | type-command | TypeEventHandler | 타입 목록 갱신 |
+| TYPE_DELETED | type-command | TypeEventHandler | 타입 목록 갱신 |
+| VALIDATION_REQUESTED | document-command | assistant (ValidationEventListener → QualityMonitorService.validate()) | 이슈 발견 시 AGENT_COMMAND NOTIFY 발행 |
 | AGENT_COMMAND | assistant | AgentSseClient (agent-ui) | 에이전트 커맨드 실행 |
 
 ### 설계 결정
@@ -1514,7 +1524,7 @@ flowchart LR
 
 ## Search 공유 라이브러리
 
-**역할:** 검색 관련 공유 도메인 라이브러리. 페이지네이션 + 필터를 표현하는 `Search` VO를 제공한다. search-document 등 읽기 전용 백엔드 서비스가 공통으로 의존한다.
+**역할:** 검색 관련 공유 도메인 라이브러리. 페이지네이션 + 필터를 표현하는 `Search` VO를 제공한다. document-query 등 읽기 전용 백엔드 서비스가 공통으로 의존한다.
 
 **도메인 클래스:**
 - `Search` — 페이지(`page`), 페이지 크기(`limit`), 정렬(`sortBy`, `asc`), 필터(`filters`) 를 포함하는 값 객체. page는 0 이상이어야 하며, `asc`가 지정되면 `sortBy`도 필수.
@@ -1548,11 +1558,11 @@ graph TD
 
     subgraph "Gateway → Backend Services (라우팅·부하분산)"
         gateway --> login
-        gateway --> persist-workspace
-        gateway --> persist-type
-        gateway --> search-type
-        gateway --> persist-document
-        gateway --> search-document
+        gateway --> workspace-command
+        gateway --> type-command
+        gateway --> type-query
+        gateway --> document-command
+        gateway --> document-query
         gateway --> assistant
         gateway --> event-broadcaster
     end
@@ -1572,24 +1582,24 @@ graph TD
         workspace-ui --> agent-bridge
         workspace-ui --> ui-components
         login-ui --> activity
-        search-type --> schema
-        search-type --> activity
-        search-type --> authentication
+        type-query --> schema
+        type-query --> activity
+        type-query --> authentication
         gateway --> activity
         login --> authentication
         login --> workspace
-        persist-workspace --> workspace
-        persist-workspace --> authentication
-        persist-type --> schema
-        persist-type --> event
-        persist-type --> authentication
-        persist-document --> document
-        persist-document --> event
-        persist-document --> authentication
-        search-document --> document
-        search-document --> search
-        search-document --> activity
-        search-document --> authentication
+        workspace-command --> workspace
+        workspace-command --> authentication
+        type-command --> schema
+        type-command --> event
+        type-command --> authentication
+        document-command --> document
+        document-command --> event
+        document-command --> authentication
+        document-query --> document
+        document-query --> search
+        document-query --> activity
+        document-query --> authentication
         document-ui --> activity
         document-ui --> agent-bridge
         document-ui --> ui-components
@@ -1613,7 +1623,7 @@ graph TD
     style authentication fill:#f3e5f5
     style gateway fill:#e8f5e9
     style event-broadcaster fill:#fff3e0
-    style persist-type fill:#fbe9e7
+    style type-command fill:#fbe9e7
     style activity fill:#fce4ec
     style agent-protocol fill:#fce4ec
     style agent-bridge fill:#fce4ec
@@ -1624,10 +1634,10 @@ graph TD
     style app fill:#e8eaf6
     style login fill:#f1f8e9
     style login-ui fill:#f1f8e9
-    style persist-workspace fill:#fbe9e7
-    style persist-document fill:#fbe9e7
-    style search-type fill:#fbe9e7
-    style search-document fill:#fbe9e7
+    style workspace-command fill:#fbe9e7
+    style document-command fill:#fbe9e7
+    style type-query fill:#fbe9e7
+    style document-query fill:#fbe9e7
     style search fill:#f3e5f5
     style workspace-ui fill:#e8eaf6
     style onboarding-ui fill:#e8eaf6

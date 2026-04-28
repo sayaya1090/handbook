@@ -46,11 +46,11 @@
 |--------|------|------|
 | gateway | 8080 | API Gateway, 라우팅, `/menus` 집계, CircuitBreaker |
 | login | 8081 | OAuth2 + JWT 발급 |
-| search-type | 8082 | 타입 조회 (CQRS Read) |
-| persist-type | 8083 | 타입 CUD + 이벤트 발행 |
-| search-document | 8084 | 문서 조회 (CQRS Read) |
-| persist-document | 8085 | 문서 CUD + 이벤트 발행 |
-| persist-workspace | 8086 | 워크스페이스 CUD + 이벤트 발행 |
+| type-query | 8082 | 타입 조회 (CQRS Read) |
+| type-command | 8083 | 타입 CUD + 이벤트 발행 |
+| document-query | 8084 | 문서 조회 (CQRS Read) |
+| document-command | 8085 | 문서 CUD + 이벤트 발행 |
+| workspace-command | 8086 | 워크스페이스 CUD + 이벤트 발행 |
 | assistant | 8087 | AI 에이전트 (OpenAI) |
 | event-broadcaster | 8088 | Kafka → SSE 실시간 브로드캐스트 |
 

@@ -5,8 +5,8 @@
 ## 공급자 (Providers)
 
 - **schema / document / workspace domain** — 엔티티 `@Version rev` 필드
-- **persist-type / persist-document / persist-workspace** — R2DBC 엔티티 → 도메인 변환 시 `rev` 유지
-- **search-type / search-document** — 조회 응답에 `rev` 포함
+- **type-command / document-command / workspace-command** — R2DBC 엔티티 → 도메인 변환 시 `rev` 유지
+- **type-query / document-query** — 조회 응답에 `rev` 포함
 
 ## 소비자 (Consumers)
 

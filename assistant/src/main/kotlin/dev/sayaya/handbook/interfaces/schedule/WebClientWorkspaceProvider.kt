@@ -6,7 +6,7 @@ import java.util.UUID
 /**
  * WebClient를 사용하여 활성 워크스페이스 목록을 조회하는 어댑터.
  *
- * **책임:** search-workspace 또는 persist-workspace 서비스에서
+ * **책임:** workspace-query 또는 workspace-command 서비스에서
  * 활성 워크스페이스 ID 목록을 HTTP로 조회한다.
  *
  * **의존관계:**

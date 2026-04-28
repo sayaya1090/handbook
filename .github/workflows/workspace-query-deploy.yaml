@@ -1,0 +1,13 @@
+name: 워크스페이스 검색 모듈 배포
+on:
+  push:
+    paths:
+      - workspace-query/**
+      - activity/**
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/_jvm-deploy.yaml
+    with:
+      submodule: workspace-query
+    secrets: inherit

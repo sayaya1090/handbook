@@ -37,7 +37,7 @@ public class WorkspaceApi implements WorkspaceRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<String> promise = fetchApi.request("workspace", init)
+        Promise<String> promise = fetchApi.request("workspaces", init)
                 .then(this::handleResponse)
                 .then(Response::text)
                 .catch_(err -> {

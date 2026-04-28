@@ -5,7 +5,7 @@ import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.domain.Group;
 import dev.sayaya.handbook.domain.User;
 import dev.sayaya.handbook.domain.Workspace;
-import dev.sayaya.handbook.client.usecase.WorkspaceApi;
+import dev.sayaya.handbook.usecase.WorkspaceApi;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
@@ -41,7 +41,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
                 {"Accept", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Workspace> promise = fetchApi.request("workspace/" + id, init)
+        Promise<Workspace> promise = fetchApi.request("workspaces/" + id, init)
                 .then(this::handleResponse)
                 .then(resp -> resp.json())
                 .then(json -> Promise.resolve(Js.<Workspace>cast(json)))
@@ -59,7 +59,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         init.setMethod("GET");
         init.setHeaders(new String[][]{{"Accept", "application/vnd.sayaya.handbook.v1+json"}});
 
-        Promise<Group[]> promise = fetchApi.request("workspace/" + workspaceId + "/groups", init)
+        Promise<Group[]> promise = fetchApi.request("workspaces/" + workspaceId + "/groups", init)
                 .then(this::handleResponse)
                 .then(resp -> resp.json())
                 .then(json -> Promise.resolve(Js.<Group[]>cast(json)))
@@ -85,7 +85,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
                 {"Accept", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Group> promise = fetchApi.request("workspace/" + workspaceId + "/groups", init)
+        Promise<Group> promise = fetchApi.request("workspaces/" + workspaceId + "/groups", init)
                 .then(this::handleResponse)
                 .then(resp -> resp.json())
                 .then(json -> Promise.resolve(Js.<Group>cast(json)))
@@ -102,7 +102,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId, init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId, init)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
@@ -119,7 +119,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         init.setMethod("GET");
         init.setHeaders(new String[][]{{"Accept", "application/vnd.sayaya.handbook.v1+json"}});
 
-        Promise<User[]> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId + "/members", init)
+        Promise<User[]> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId + "/members", init)
                 .then(this::handleResponse)
                 .then(resp -> resp.json())
                 .then(json -> Promise.resolve(Js.<User[]>cast(json)))
@@ -136,7 +136,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         RequestInit init = RequestInit.create();
         init.setMethod("POST");
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId + "/members/" + userId, init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId + "/members/" + userId, init)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
@@ -152,7 +152,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId + "/members/" + userId, init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId + "/members/" + userId, init)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
@@ -168,7 +168,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         RequestInit init = RequestInit.create();
         init.setMethod("GET");
 
-        Promise<String[]> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId + "/roles", init)
+        Promise<String[]> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId + "/roles", init)
                 .then(this::handleResponse)
                 .then(resp -> resp.json())
                 .then(json -> Promise.resolve(Js.<String[]>cast(json)))
@@ -190,7 +190,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         init.setBody(Global.JSON.stringify(body));
         init.setHeaders(new String[][]{{"Content-Type", "application/json"}});
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId + "/roles", init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId + "/roles", init)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
@@ -206,7 +206,7 @@ public class WorkspaceApiImpl implements WorkspaceApi {
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/groups/" + groupId + "/roles/" + roleName, init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspaceId + "/groups/" + groupId + "/roles/" + roleName, init)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {

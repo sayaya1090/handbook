@@ -28,11 +28,11 @@ docker-compose up -d  # PostgreSQL + Kafka
 |--------|------|------|
 | gateway | 8080 | API 게이트웨이 |
 | login | 8081 | OAuth2 인증 |
-| search-type | 8082 | 타입 조회 (CQRS) |
-| persist-type | 8083 | 타입 저장 |
-| search-document | 8084 | 문서 조회 (CQRS) |
-| persist-document | 8085 | 문서 저장 |
-| persist-workspace | 8086 | 워크스페이스 관리 |
+| type-query | 8082 | 타입 조회 (CQRS) |
+| type-command | 8083 | 타입 저장 |
+| document-query | 8084 | 문서 조회 (CQRS) |
+| document-command | 8085 | 문서 저장 |
+| workspace-command | 8086 | 워크스페이스 관리 |
 | assistant | 8087 | AI 에이전트 |
 | event-broadcaster | 8088 | Kafka → SSE |
 
@@ -90,11 +90,11 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:8080']
-  - job_name: 'persist-document'
+  - job_name: 'document-command'
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:8085']
-  - job_name: 'search-document'
+  - job_name: 'document-query'
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:8084']

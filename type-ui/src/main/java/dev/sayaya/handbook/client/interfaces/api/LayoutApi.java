@@ -2,8 +2,9 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.domain.Position;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.interfaces.api.LayoutNative;
 import dev.sayaya.handbook.client.usecase.LayoutRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
@@ -34,7 +35,7 @@ public class LayoutApi implements LayoutRepository {
 
     @Override
     public Observable<List<LayoutPeriod>> layouts() {
-        Promise<List<LayoutPeriod>> promise = fetchApi.request("workspace/" + workspace + "/layouts")
+        Promise<List<LayoutPeriod>> promise = fetchApi.request("workspaces/" + workspace + "/layouts")
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
@@ -55,7 +56,7 @@ public class LayoutApi implements LayoutRepository {
 
     @Override
     public Observable<Map<String, Position>> positions(LayoutPeriod period) {
-        Promise<Map<String, Position>> promise = fetchApi.request("workspace/" + workspace + "/layouts")
+        Promise<Map<String, Position>> promise = fetchApi.request("workspaces/" + workspace + "/layouts")
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
@@ -101,7 +102,7 @@ public class LayoutApi implements LayoutRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspace + "/layouts", init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/layouts", init)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("LayoutApi.savePositions failed: " + err);

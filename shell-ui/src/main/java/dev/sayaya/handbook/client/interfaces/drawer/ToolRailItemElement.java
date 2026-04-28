@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import dev.sayaya.handbook.client.components.TooltipCard;
-import dev.sayaya.handbook.client.domain.ToolRailState;
+import dev.sayaya.handbook.domain.ToolRailState;
 import dev.sayaya.handbook.client.usecase.ToolRailMode;
 import dev.sayaya.handbook.client.usecase.ToolSelected;
 import dev.sayaya.handbook.domain.Tool;

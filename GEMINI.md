@@ -169,9 +169,9 @@ Gemini 가 큰 문서를 메인 컨텍스트에 직접 적재하지 않고, 업�
 | 도메인 | 에이전트 | 주요 스코프 |
 |--------|---------|------------|
 | 인증·권한·JWT·RBAC·PAT | `auth-expert` | `login/`, `login-ui/`, `authentication/`, `docs/contracts/permissions.md` |
-| 타입·속성·검증·레이아웃 | `schema-expert` | `schema/`, `type-ui/`, `persist-type/`, `search-type/` |
-| 문서·이력·편집·임포트 | `document-expert` | `document/`, `document-ui/`, `persist-document/`, `search-document/` |
-| 워크스페이스·그룹·프레즌스 | `workspace-expert` | `workspace/`, `workspace-ui/`, `persist-workspace/`, `search-workspace/` |
+| 타입·속성·검증·레이아웃 | `schema-expert` | `schema/`, `type-ui/`, `type-command/`, `type-query/` |
+| 문서·이력·편집·임포트 | `document-expert` | `document/`, `document-ui/`, `document-command/`, `document-query/` |
+| 워크스페이스·그룹·프레즌스 | `workspace-expert` | `workspace/`, `workspace-ui/`, `workspace-command/`, `workspace-query/` |
 | 내부 AI·커맨드·감사 | `assistant-expert` | `assistant/`, `agent-protocol/`, `agent-ui/`, `docs/contracts/agent-commands.md` |
 | SEO 랜딩·외부 AI·MCP | `landing-expert` | `landing-content/`, `landing-ui/`, §3.22, §3.23 |
 | Shell·UI 공용·디자인·모바일·대시보드 | `ui-platform-expert` | `shell-ui/`, `ui-components/`, `app/`, `dashboard-ui/`, `docs/design.md` |
@@ -230,7 +230,7 @@ Gemini 는:
 
 사용자 요청을 받자마자 **코드/파일을 건드리기 전에** 아래 5개 항목을 평가한다.
 해당되면 즉시 서브에이전트를 병렬 호출. 이 체크포인트를 거르면 라우팅 규칙
-§3/§9/§10 이 사문화된다 (규칙 제정자가 스스로 위반하는 회귀 — 2026-04-17 search-workspace 사례).
+§3/§9/§10 이 사문화된다 (규칙 제정자가 스스로 위반하는 회귀 — 2026-04-17 workspace-query 사례).
 
 | # | 조건 | 위임 대상 | 근거 |
 |---|------|---------|------|

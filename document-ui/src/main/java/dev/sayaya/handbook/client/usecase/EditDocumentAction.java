@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.DocumentValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link DocumentList} — 문서 목록 상태 갱신 대상</li>
- *   <li>{@link dev.sayaya.handbook.client.domain.DocumentValue} — 편집 대상 문서의 data 맵</li>
+ *   <li>{@link dev.sayaya.handbook.domain.DocumentValue} — 편집 대상 문서의 data 맵</li>
  *   <li>{@link dev.sayaya.handbook.domain.Action} — Command 패턴 인터페이스</li>
  * </ul></p>
  *

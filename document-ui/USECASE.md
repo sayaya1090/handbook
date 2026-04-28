@@ -461,7 +461,7 @@ sequenceDiagram
 | UC-D9 (에이전트) | 에이전트 문서 조작 | AgentDocumentHandler, DocumentStateProvider, MutationReceiver, WindowMutationBridge | DocumentCollaborationTest: DOC_ADD → Undo 활성화, DOC_SELECT → 타입 탭 유지 |
 | UC-D10 (모바일) | 모바일 레이아웃 전환 | ViewportObserver, SpreadsheetElement(fixedColumnsLeft), CardViewElement, ControllerElement(flex-wrap), TypeTabsElement(overflow-x) | DocumentMobileTest: 모바일 뷰포트 컨트롤러 존재 확인 |
 | UC-D11 (RBAC) | — | RbacGuard (ui-components 구현 완료), SpreadsheetElement(readOnly) (UI 연동 미완) | ❌ UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
-| UC-D12 (이력조회) | — | DocumentApi(date param), search-document DocumentController.history() (백엔드 구현 완료), HistoryDialog (프론트엔드 미구현) | ❌ 프론트엔드 미구현 (백엔드 history API 구현 완료) |
+| UC-D12 (이력조회) | — | DocumentApi(date param), document-query DocumentController.history() (백엔드 구현 완료), HistoryDialog (프론트엔드 미구현) | ❌ 프론트엔드 미구현 (백엔드 history API 구현 완료) |
 | UC-D13 (실시간협업) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository, DocumentList, ToastContainer | DocumentCollaborationTest: DOCUMENT_CREATED/DELETED 이벤트 수신 → 셀 수/컬럼 수/탭 수 유지 검증, DocumentEdgeCaseTest: malformed DOCUMENT 이벤트 → 스프레드시트 에러 없이 유지 |
 | UC-D14 (충돌방지) | — | @Version 낙관적 잠금 (계획) | DocumentCollaborationTest: DOC_ADD→DOC_SAVE → 스프레드시트/컨트롤러/버튼 유지 검증 |
 | UC-D15 (프레즌스) | 프레즌스 시퀀스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentCollaborationTest: PRESENCE 이벤트 수신/해제 → 셀 수/컬럼 수 유지, 컨트롤러 버튼 유지 |

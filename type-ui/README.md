@@ -174,7 +174,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 특정 타입의 모든 버전을 타임라인으로 표시하고, 두 버전 간 diff 비교를 지원한다.
 
-- **버전 목록 조회**: `TypeRepository.versions(typeId)` → search-type `GET /workspace/{id}/types/{typeId}/versions`
+- **버전 목록 조회**: `TypeRepository.versions(typeId)` → type-query `GET /workspace/{id}/types/{typeId}/versions`
 - **diff 비교**: 두 버전을 클릭하면 diff API를 호출하여 속성 추가/삭제/변경 사항을 시각적으로 표시
 - **Escape/닫기**: Escape 키 또는 닫기 버튼으로 패널을 닫을 수 있다
 
@@ -232,7 +232,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ## API 연동
 
-`TypeRepository`와 `LayoutRepository` 포트를 통해 백엔드(`persist-type`)와 통신한다.
+`TypeRepository`와 `LayoutRepository` 포트를 통해 백엔드(`type-command`)와 통신한다.
 
 | 포트 메서드 | HTTP | 설명 |
 |------------|------|------|

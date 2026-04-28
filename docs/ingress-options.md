@@ -241,7 +241,7 @@ Istio gateway 컨트롤러가 **`ReferenceGrant` 를 올바로 인식하지 못�
 - `https://handbook.apps.sayaya.cloud/` → Ceph RGW `GET /handbook-dev/static/app.html` (root rewrite)
 - `https://handbook.apps.sayaya.cloud/app.html` → Ceph RGW `GET /handbook-dev/static/app.html`
 - `https://handbook.apps.sayaya.cloud/js/shell/shell.nocache.js` → `GET /handbook-dev/static/js/shell/shell.nocache.js`
-- `https://handbook.apps.sayaya.cloud/workspace/abc/types` → Spring Cloud Gateway → search-type
+- `https://handbook.apps.sayaya.cloud/workspace/abc/types` → Spring Cloud Gateway → type-query
 - `https://handbook.apps.sayaya.cloud/auth/login` → Spring Cloud Gateway → login
 - `https://handbook.apps.sayaya.cloud/workspace/abc/messages` (SSE) → Spring Cloud Gateway → event-broadcaster
 
@@ -249,7 +249,7 @@ Istio gateway 컨트롤러가 **`ReferenceGrant` 를 올바로 인식하지 못�
 
 다음 단계에서 backend API 를 Spring Cloud Gateway 에서 HTTPRoute 로 이전 가능:
 - `/auth/**` → login Service 직결
-- `/workspace/*/types/**` GET → search-type, PUT/DELETE → persist-type
+- `/workspace/*/types/**` GET → type-query, PUT/DELETE → type-command
 - … 등
 - CircuitBreaker 는 Istio `DestinationRule` (outlier detection) 으로 대체
 - JWT 검증은 Istio `RequestAuthentication` + `AuthorizationPolicy` 로 대체

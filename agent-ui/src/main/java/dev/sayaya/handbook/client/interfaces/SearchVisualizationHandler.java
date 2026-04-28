@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces;
 
-import dev.sayaya.handbook.client.domain.SearchVisualizationRequest;
+import dev.sayaya.handbook.domain.SearchVisualizationRequest;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Progress;

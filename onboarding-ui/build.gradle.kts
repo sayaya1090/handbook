@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     implementation(project(":activity"))
+    implementation(project(":workspace-api-gwt"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
@@ -23,7 +24,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Onboarding", "dev.sayaya.handbook.OnboardingTest")
+        modules = listOf("dev.sayaya.handbook.Onboarding")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
@@ -35,12 +36,6 @@ gwt {
 }
 
 tasks {
-    register<Copy>("copyTestResources") {
-        from("src/main/webapp")
-        into("src/test/webapp")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-    named("compileTestJava") { dependsOn("copyTestResources") }
     war {
         dependsOn("gwtCompile")
         from("build/gwt/war") {

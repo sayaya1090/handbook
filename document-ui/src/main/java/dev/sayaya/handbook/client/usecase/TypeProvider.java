@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.TypeInfo;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -19,13 +19,13 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link dev.sayaya.rx.subject.BehaviorSubject} — 최신 값 캐싱과 구독 관리</li>
- *   <li>{@link dev.sayaya.handbook.client.domain.TypeInfo} — 관리 대상 타입 도메인 객체</li>
+ *   <li>{@link dev.sayaya.handbook.domain.TypeValue} — 관리 대상 타입 도메인 객체</li>
  * </ul></p>
  *
  * <p><b>주의:</b> 초기값은 null이다. 타입이 선택되기 전까지 구독자는 null을 수신한다.</p>
  */
 @Singleton
 public class TypeProvider {
-    @Delegate private final BehaviorSubject<TypeInfo> _this = behavior(null);
+    @Delegate private final BehaviorSubject<TypeValue> _this = behavior(null);
     @Inject TypeProvider() {}
 }

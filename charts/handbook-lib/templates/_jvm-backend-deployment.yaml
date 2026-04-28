@@ -1,6 +1,6 @@
 {{- /*
   handbook.jvm-backend.deployment — Spring Boot JVM 백엔드(gateway, login,
-  event-broadcaster, persist-workspace, …)의 Deployment 공통 템플릿.
+  event-broadcaster, workspace-command, …)의 Deployment 공통 템플릿.
 
   서비스 차이는 values.yaml 의 jvmBackend 섹션으로 흡수:
     jvmBackend:

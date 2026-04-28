@@ -11,8 +11,8 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 담당 모듈:
 - `schema/` — 타입 시스템 도메인 엔티티 (Type, Attribute, Validator, Compliance)
 - `type-ui/` — 캔버스 기반 타입 스키마 편집기 (GWT)
-- `persist-type/` — 타입 CRUD + 레이아웃 관리 + 이벤트 발행
-- `search-type/` — 타입 읽기 전용
+- `type-command/` — 타입 CRUD + 레이아웃 관리 + 이벤트 발행
+- `type-query/` — 타입 읽기 전용
 
 담당 문서:
 - `docs/requirements.md` §3.4 타입, §3.5 시각화, §3.10 검증 (재검증 트리거), §3.20 필드 권한

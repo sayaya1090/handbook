@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.domain.MenuRailState;
+import dev.sayaya.handbook.domain.MenuRailState;
 import dev.sayaya.handbook.client.usecase.MenuList;
 import dev.sayaya.handbook.client.usecase.MenuRailMode;
 import dev.sayaya.handbook.domain.Menu;

@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * {@link WorkspaceRepository} 구현 — {@code GET /workspaces} 를 구독해 현재 사용자의
- * 소속 워크스페이스 목록을 반환한다. 응답 필터링은 search-workspace 가 principal.sub
+ * 소속 워크스페이스 목록을 반환한다. 응답 필터링은 workspace-query 가 principal.sub
  * 기반으로 수행하며, 프론트는 결과 그대로 소비한다.
  *
  * <p>{@link UserApi} 패턴 복제 — {@link FetchApi} 를 통한 HTTP 호출 + {@link Progress}

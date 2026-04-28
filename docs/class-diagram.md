@@ -14,11 +14,11 @@
 - [authentication](../authentication/CLASS-DIAGRAM.md) — JWT 인증
 - [login](../login/CLASS-DIAGRAM.md) — OAuth2 로그인 + JWT 발행
 - [gateway](../gateway/CLASS-DIAGRAM.md) — API 게이트웨이
-- [persist-workspace](../persist-workspace/CLASS-DIAGRAM.md) — 워크스페이스 CRUD
-- [persist-type](../persist-type/CLASS-DIAGRAM.md) — 타입 CRUD
-- [persist-document](../persist-document/CLASS-DIAGRAM.md) — 문서 CRUD
-- [search-type](../search-type/CLASS-DIAGRAM.md) — 타입 검색 (읽기 전용)
-- [search-document](../search-document/CLASS-DIAGRAM.md) — 문서 검색 (읽기 전용)
+- [workspace-command](../workspace-command/CLASS-DIAGRAM.md) — 워크스페이스 CRUD
+- [type-command](../type-command/CLASS-DIAGRAM.md) — 타입 CRUD
+- [document-command](../document-command/CLASS-DIAGRAM.md) — 문서 CRUD
+- [type-query](../type-query/CLASS-DIAGRAM.md) — 타입 검색 (읽기 전용)
+- [document-query](../document-query/CLASS-DIAGRAM.md) — 문서 검색 (읽기 전용)
 - [assistant](../assistant/CLASS-DIAGRAM.md) — AI 비서
 - [event-broadcaster](../event-broadcaster/CLASS-DIAGRAM.md) — 이벤트 브로드캐스트
 

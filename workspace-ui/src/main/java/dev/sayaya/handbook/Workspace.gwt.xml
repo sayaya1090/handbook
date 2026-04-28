@@ -6,6 +6,7 @@
     <inherits name="dev.sayaya.Rx"/>
     <inherits name="dagger.Dagger" />
     <inherits name="dev.sayaya.handbook.Activity"/>
+    <inherits name="dev.sayaya.handbook.WorkspaceApi"/>
     <inherits name="dev.sayaya.handbook.AgentBridge"/>
     <inherits name="dev.sayaya.handbook.UiComponents"/>
     <entry-point class="dev.sayaya.handbook.client.Application"/>

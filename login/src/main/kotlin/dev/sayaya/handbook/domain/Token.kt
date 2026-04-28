@@ -14,7 +14,7 @@ import java.time.Instant
  *
  * ### sub 와 id(jti) 의 역할 구분 (Phase 1a — 2026-04-18)
  * - `sub` : **사용자 식별자** (내부 `user.id` UUID). 재발급 시에도 불변.
- *   서비스 간 소비자(persist-workspace 등)는 항상 이 값으로 `user_id` 를 참조한다.
+ *   서비스 간 소비자(workspace-command 등)는 항상 이 값으로 `user_id` 를 참조한다.
  * - `id`  : **토큰 식별자** (`jti`). 매 토큰 발행마다 `UUID.randomUUID()` 로 새로 생성된다.
  *   감사/블랙리스트/일회성 식별용.
  *

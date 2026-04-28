@@ -2,9 +2,10 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.domain.TypeValue;
-import dev.sayaya.handbook.client.usecase.TypeRepository;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.interfaces.api.TypeNative;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
@@ -57,7 +58,7 @@ public class TypeApi implements TypeRepository {
         progress.next(Progress.indeterminate());
         String effectIso = new JsDate(period.effectDateTime).toISOString();
         String expireIso = new JsDate(period.expireDateTime).toISOString();
-        String url = "workspace/" + workspace + "/types?effect_date_time=" + effectIso + "&expire_date_time=" + expireIso;
+        String url = "workspaces/" + workspace + "/types?effect_date_time=" + effectIso + "&expire_date_time=" + expireIso;
         Promise<Set<TypeValue>> promise = fetchApi.request(url)
                 .then(this::handleResponse)
                 .then(Response::json)
@@ -93,7 +94,7 @@ public class TypeApi implements TypeRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Set<TypeValue>> promise = fetchApi.request("workspace/" + workspace + "/types", init)
+        Promise<Set<TypeValue>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
@@ -124,7 +125,7 @@ public class TypeApi implements TypeRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Set<TypeValue>> promise = fetchApi.request("workspace/" + workspace + "/types", init)
+        Promise<Set<TypeValue>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
@@ -159,7 +160,7 @@ public class TypeApi implements TypeRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspace + "/types", init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(resp -> {
                     progress.next(Progress.hide());
                     return Promise.resolve((Void) null);
@@ -176,7 +177,7 @@ public class TypeApi implements TypeRepository {
     @Override
     public Observable<Set<TypeValue>> versions(String typeId) {
         progress.next(Progress.indeterminate());
-        String url = "workspace/" + workspace + "/types/" + typeId + "/versions";
+        String url = "workspaces/" + workspace + "/types/" + typeId + "/versions";
         Promise<Set<TypeValue>> promise = fetchApi.request(url)
                 .then(this::handleResponse)
                 .then(Response::json)

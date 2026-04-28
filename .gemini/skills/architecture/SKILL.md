@@ -18,8 +18,8 @@ description: Handbook 프로젝트 아키텍처 및 모듈 구조 지침
 ## 백엔드 (Spring Boot 4.0.1 + Kotlin 2.3.0)
 - **gateway**: API 게이트웨이, 메뉴 집계
 - **login**: OAuth2 인증, JWT 발급
-- **persist-document / persist-type / persist-workspace**: CUD + Kafka 이벤트 발행
-- **search-document / search-type**: 읽기 전용 CQRS
+- **document-command / type-command / workspace-command**: CUD + Kafka 이벤트 발행
+- **document-query / type-query**: 읽기 전용 CQRS
 - **event-broadcaster**: Kafka → SSE 실시간 브로드캐스트
 - **assistant**: AI 에이전트 백엔드
 

@@ -1,6 +1,6 @@
 ## 요청 로그
 
-- 2026-04-18: Kafka 직렬화 수정 -> persist-workspace Kafka 500 에러 해결을 위해 StringSerializer를 ByteArraySerializer로 교체
+- 2026-04-18: Kafka 직렬화 수정 -> workspace-command Kafka 500 에러 해결을 위해 StringSerializer를 ByteArraySerializer로 교체
 
 ---
 

@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
-import dev.sayaya.handbook.client.domain.AttributeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 

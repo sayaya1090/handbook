@@ -1,0 +1,37 @@
+name: 영속화 모듈 테스트
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - type-command/**
+      - workspace-command/**
+      - document-command/**
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_USERNAME: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        module: [type-command, workspace-command, document-command]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Test
+        run: ./gradlew ${{ matrix.module }}:koverXmlReport
+      - name: Report
+        uses: ./.github/actions/coverage-summary
+        with:
+          module-name: ${{ matrix.module }}
+          good-threshold: 80
+          warn-threshold: 50

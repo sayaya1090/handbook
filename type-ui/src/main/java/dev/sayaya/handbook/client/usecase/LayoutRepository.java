@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.domain.Position;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.rx.Observable;
 
 import java.util.List;

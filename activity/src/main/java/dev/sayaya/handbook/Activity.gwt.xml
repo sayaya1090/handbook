@@ -8,4 +8,5 @@
     <inherits name="dev.sayaya.handbook.AgentBridge"/>
     <source path="domain"/>
     <source path="usecase"/>
-</module>
+    <source path="interfaces/api"/>
+    </module>

@@ -7,6 +7,10 @@
 - **워크스페이스 생성 (CREATE)**: 새로운 워크스페이스의 이름과 설명을 입력받아 생성합니다.
 - **워크스페이스 참여 (JOIN)**: 기존 워크스페이스의 ID나 초대 코드를 입력받아 참여를 요청합니다.
 
+## 도메인 모델 SSOT
+
+이 모듈은 `Workspace`, `User` 등 공통 도메인 DTO를 직접 소유하지 않습니다. 모든 UI 공용 도메인 모델은 **`:activity`** 모듈에서 상속받아 사용하며, 이를 통해 프론트엔드 전체의 데이터 정합성을 유지합니다.
+
 ## Mount 패턴
 
 `Application.onModuleLoad()` 은 `WindowRenderBridge.next(render)` 로 shell의 `FrameUpdater`에 Render를 위임합니다. body에 직접 append하지 않습니다. (계약 참조: `docs/contracts/frame.md`)

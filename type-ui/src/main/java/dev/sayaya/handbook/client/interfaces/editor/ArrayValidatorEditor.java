@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.client.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeTypeValue;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;

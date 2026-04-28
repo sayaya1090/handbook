@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.client.domain.AttributeValue;
-import dev.sayaya.handbook.client.domain.Position;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.arrow.Arrow;

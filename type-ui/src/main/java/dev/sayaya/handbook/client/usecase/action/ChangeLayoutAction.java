@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase.action;
 
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 
 /**

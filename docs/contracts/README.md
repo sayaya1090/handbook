@@ -35,10 +35,10 @@
 
 ```
               Menu  Event  Command  Permission  API  Audit  Version  SSE  Design  Frame
-auth           .      .      .        OWNER      .     O      .        .     .      .
+auth           .      .      .        O          .     O      .        .     .      .
 schema         .      O      .        O          O     .      O        .     .      O
 document       .      O      .        O          O     .      O        .     .      O
-workspace      O      O      .        O          O     .      O        .     .      O
+workspace      O      O      .        OWNER      O     .      O        .     .      O
 assistant      .      O      OWNER    O          O     OWNER  .        .     .      .
 landing        O      .      .        .          O     O      .        .     O      O
 events         .      OWNER  .        .          .     .      .        OWNER .      .

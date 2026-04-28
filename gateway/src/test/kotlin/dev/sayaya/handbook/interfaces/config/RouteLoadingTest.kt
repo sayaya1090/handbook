@@ -39,9 +39,9 @@ class RouteLoadingTest(
         it("필수 라우트 ID를 모두 포함한다") {
             val routeIds = gatewayProperties.routes.map { it.id }
             routeIds shouldContainAll listOf(
-                "login", "search-type", "persist-type",
-                "search-document", "persist-document",
-                "search-workspace", "persist-workspace",
+                "login", "type-query", "type-command",
+                "document-query", "document-command",
+                "workspace-query", "workspace-command",
                 "assistant", "static"
             )
         }

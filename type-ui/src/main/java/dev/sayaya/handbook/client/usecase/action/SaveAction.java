@@ -7,8 +7,9 @@ import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
-import dev.sayaya.handbook.client.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.client.usecase.*;
 
 import java.util.HashSet;

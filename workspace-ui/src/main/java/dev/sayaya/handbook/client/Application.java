@@ -97,9 +97,9 @@ public class Application implements EntryPoint {
 
     private static String extractWorkspaceId(String path) {
         if (path == null) return null;
-        int idx = path.indexOf("/workspace/");
+        int idx = path.indexOf("/workspaces/");
         if (idx < 0) return null;
-        String rest = path.substring(idx + "/workspace/".length());
+        String rest = path.substring(idx + "/workspaces/".length());
         int slashIdx = rest.indexOf('/');
         String wsId = slashIdx >= 0 ? rest.substring(0, slashIdx) : rest;
         return wsId.isEmpty() ? null : wsId;

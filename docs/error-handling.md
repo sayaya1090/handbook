@@ -25,7 +25,7 @@
 
 ### 낙관적 잠금 (@Version)
 
-`persist-document`, `persist-type`, `persist-workspace` 엔티티에 `@Version` 필드가 있다. 동시 수정 시:
+`document-command`, `type-command`, `workspace-command` 엔티티에 `@Version` 필드가 있다. 동시 수정 시:
 
 1. 첫 번째 저장 성공 → version 증가
 2. 두 번째 저장 시도 → version 불일치 → `DuplicateKeyException` → 409 Conflict
@@ -103,7 +103,7 @@ flowchart LR
 
 | 분류 | 서비스 | 장애 시 영향 |
 |------|--------|------------|
-| **핵심** | gateway, login, persist-document, persist-type, persist-workspace, search-document, search-type | 시스템 사용 불가 — 장애 허용 안 됨 |
+| **핵심** | gateway, login, document-command, type-command, workspace-command, document-query, type-query | 시스템 사용 불가 — 장애 허용 안 됨 |
 | **선택적** | assistant, event-broadcaster, webhook-service | 실시간 기능/AI 기능 중단, CRUD 유지 |
 
 ### 선택적 서비스 장애 시 동작

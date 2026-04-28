@@ -3,10 +3,10 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.client.domain.AttributeTypeValue;
-import dev.sayaya.handbook.client.domain.AttributeValue;
-import dev.sayaya.handbook.client.domain.Position;
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;

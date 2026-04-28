@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.client.domain.ToolRailState;
+import dev.sayaya.handbook.domain.ToolRailState;
 import dev.sayaya.handbook.client.usecase.ToolList;
 import dev.sayaya.handbook.client.usecase.ToolRailMode;
 import dev.sayaya.handbook.domain.Tool;

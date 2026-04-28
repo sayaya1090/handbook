@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: type-query
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:handbook}
+    username: ${DB_USER:handbook}
+    # Production: append ?sslMode=require to URL
+    password: ${DB_PASSWORD}
+    pool:
+      max-size: 20
+      initial-size: 5
+      max-idle-time: 30m
+      validation-query: SELECT 1
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+logging:
+  pattern:
+    console: "%d{ISO8601} [%X{correlationId}] [%thread] %-5level %logger{36} - %msg%n"

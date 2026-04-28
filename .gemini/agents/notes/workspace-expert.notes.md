@@ -4,13 +4,13 @@
 - 2026-04-23: WorkspaceController 500 에러 수정 -> 안전한 UUID 파싱 로직 추가 및 워크스페이스 이름에 공백 허용 (§6.5 준수)
 - 2026-04-23: 테스트 커버리지 달성 -> 내부 가시성 리팩토링 및 설정 클래스 제외로 80% 목표 충족
 - 2026-04-23: 자동 온보딩 복구 -> WorkspaceOnboardingBootstrapper 복원 및 ShellInitializer 연동으로 UX 개선
-- 2026-04-23: 영속화 실패 조사 -> persist-workspace 서비스의 영속화 실패 의심 지점 확인
-- 2026-04-18: search-workspace 권한 설계 -> allowedSessionStates = IN_WORKSPACE 단일 선언 및 테스트 설계안 제시
+- 2026-04-23: 영속화 실패 조사 -> workspace-command 서비스의 영속화 실패 의심 지점 확인
+- 2026-04-18: workspace-query 권한 설계 -> allowedSessionStates = IN_WORKSPACE 단일 선언 및 테스트 설계안 제시
 - 2026-04-18: Menu 도메인 확장 -> Menu.java 필드 및 헬퍼 추가 완료
 - 2026-04-18: 워크스페이스 생성 I18N 수정 -> LanguageDetector 및 LanguagePackRepository 교체 로직 설계
 - 2026-04-18: 모바일 UI 레이아웃 수정 -> ws-content 및 ws-dialog 스크롤 처리 및 safe-area 대응
 - 2026-04-18: 생성자 UUID 누락 수정 -> Principal 전달 로직 추가 및 UUID(0,0) 하드코딩 제거
-- 2026-04-18: UI/API 연동 수정 -> CSS inset:0 적용 및 search-workspace 필터링 로직 수정
+- 2026-04-18: UI/API 연동 수정 -> CSS inset:0 적용 및 workspace-query 필터링 로직 수정
 
 ---
 
@@ -28,7 +28,7 @@
 - **워크스페이스 이름 유효성 검사 (§6.5) (2026-04-23)**: 워크스페이스 이름에는 공백이 포함될 수 있어야 한다. 정규식 `^[a-zA-Z0-9가-힣\s\-_]+$` 를 사용하여 UX 를 개선한다.
 - `@AuthenticationPrincipal` 은 `Authentication` 전체가 아니라 `Authentication.getPrincipal()` 반환값을 주입한다. `UserAuthentication.getPrincipal()` 은 `String username` 이므로 `Principal`/`UserAuthentication` 타입 선언과 충돌. login/TokenRefreshController 가 `UserAuthentication` 으로 받아도 동작하려면 별도 resolver 또는 `getPrincipal()` override 가 `this` 를 반환해야 함 — 실제로는 하지 않아 잠재 회귀.
 - `.ws-content` 가 frame 내부에 append 되는데 `height: 100dvh` 로 viewport 전체 높이를 요청 → frame 영역(viewport - 16px*2 - appbar) 을 overflow. 배경이 frame 내부에서만 그려져 frame 경계에서 끊긴 것처럼 보임. FrameUpdater 는 자식을 `.frame` (position:absolute; inset:16px) 에 append 하므로 자식은 `inset:0` + `width:100%` + `min-height:100%` 가 정석.
-- `WebTestClient.bindToController` 만 쓰면 spring-security resolver 체인이 걸리지 않아 `@AuthenticationPrincipal UserAuthentication` 이 null 로 주입됨. 해당 엔드포인트는 메서드 직접 호출 (`controller.list(principal)`) 로 검증해야 함 (persist-workspace WorkspaceControllerTest 패턴).
+- `WebTestClient.bindToController` 만 쓰면 spring-security resolver 체인이 걸리지 않아 `@AuthenticationPrincipal UserAuthentication` 이 null 로 주입됨. 해당 엔드포인트는 메서드 직접 호출 (`controller.list(principal)`) 로 검증해야 함 (workspace-command WorkspaceControllerTest 패턴).
 - MockK `verify(exactly = 0) { ... }` 는 spec 전체 누적 호출을 보므로, 여러 Given 에서 같은 mock 을 공유하면 다른 Given 의 호출이 섞여 실패. 호출 0회 검증은 해당 Given 전용 mock 인스턴스로 격리.
 - `.ws-content` 가 `position:absolute; inset:0` 로 frame 영역에 고정되는데 모바일에서 dialog 를 `min-height:100dvh` 로 두고 스크롤 옵션을 안 주면 하단(버튼) 잘림. 컨테이너에 `overflow-y:auto` 필수. dialog 는 `min-height` 대신 `height:auto` + 충분한 padding-bottom(safe-area 포함) 으로 내용만큼만 차지 + 필요 시 컨테이너가 스크롤.
 - 신규 GWT UI 모듈의 Dagger Module 복사·붙여넣기 시 `LanguagePackRepository` 가 `behavior(Labels.empty()).asObservable()` 스텁인 채로 남으면 UI 전체가 영문 fallback 만 노출. `LabelProvider.subscribe` 구독은 되는데 emit 이 비어 있어 키 누락과 증상이 동일 — 로그에 HTTP 요청이 안 찍히는 것으로 구분. workspace-ui 의 회귀가 이 경로. 신규 모듈은 TypeModule/DocumentModule 의 fetchApi+AsyncSubject.await 패턴을 그대로 복사하고, LanguageDetector 도 `navigator.language.split("-")[0]` 처리 필요 (`ko-KR` → `ko`).

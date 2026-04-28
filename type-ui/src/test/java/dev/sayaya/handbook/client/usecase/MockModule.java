@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.usecase;
 import dagger.Module;
 import dagger.Provides;
 import dev.sayaya.handbook.client.components.*;
-import dev.sayaya.handbook.client.domain.*;
+import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.usecase.*;

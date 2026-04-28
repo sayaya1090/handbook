@@ -562,7 +562,7 @@ export const options = {
 }
 export default function () {
   group('menu-aggregate', () => {
-    // gateway → search-type/search-document/... 의 /menu 여러 개 집계
+    // gateway → type-query/document-query/... 의 /menu 여러 개 집계
     const r = http.get(`${__ENV.BASE_URL}/api/menus`)
     check(r, { 'menu 200': (r) => r.status === 200 })
   })
@@ -763,7 +763,7 @@ release-canary 실패 시 Kargo 가 `release-prod` 승격을 retrospectively "Un
 - [ ] **환경 모델 확정**: dev = 서비스별 기능 테스트, release-staging = 번들 통합 부하 테스트, release-prod = 번들 canary. 번들 단위는 staging/prod 양쪽 모두 동일
 - [ ] **기능 테스트 프레임워크**: Playwright E2E 권장. 현재 `e2e/` 디렉토리 시나리오가 dev 대상으로 재사용 가능한지, 전용 smoke 세트를 새로 쓸지
 - [ ] **부하 테스트 도구**: k6-operator 권장. Gatling/JMeter/Locust 선호 있으면 표시
-- [ ] **부하 시나리오 설계 초안**: 타깃 RPS(예: 200), 지속 시간(10m), 램프업/다운 곡선, 엔드포인트 조합. 최소 gateway `/menu` 집계 + persist-document 쓰기 정도는 포함해야 병목 노출 가능
+- [ ] **부하 시나리오 설계 초안**: 타깃 RPS(예: 200), 지속 시간(10m), 램프업/다운 곡선, 엔드포인트 조합. 최소 gateway `/menu` 집계 + document-command 쓰기 정도는 포함해야 병목 노출 가능
 - [ ] **Argo Workflows 설치 상태**: OpenShift GitOps / argocd operator 에 포함되어 있는 경우 있음. 이미 있으면 P2a 축소
 - [ ] **k6-operator 설치 주체**: helm chart 또는 manifest 로 별도 설치 예정
 - [ ] **Prometheus remote_write**: k6 부하 메트릭을 remote_write 로 수집할 수 있는 엔드포인트가 클러스터에 있는지 (또는 OTLP collector)

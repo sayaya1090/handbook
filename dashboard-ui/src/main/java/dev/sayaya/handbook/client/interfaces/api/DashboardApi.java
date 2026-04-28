@@ -2,13 +2,13 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
-import dev.sayaya.handbook.client.domain.AgentActivity;
-import dev.sayaya.handbook.client.domain.ArtifactData;
-import dev.sayaya.handbook.client.domain.DistributionData;
-import dev.sayaya.handbook.client.domain.ExecutionStatusData;
-import dev.sayaya.handbook.client.domain.QualityIssue;
-import dev.sayaya.handbook.client.domain.TimelineData;
-import dev.sayaya.handbook.client.domain.WorkspaceStats;
+import dev.sayaya.handbook.domain.AgentActivity;
+import dev.sayaya.handbook.domain.ArtifactData;
+import dev.sayaya.handbook.domain.DistributionData;
+import dev.sayaya.handbook.domain.ExecutionStatusData;
+import dev.sayaya.handbook.domain.QualityIssue;
+import dev.sayaya.handbook.domain.TimelineData;
+import dev.sayaya.handbook.domain.WorkspaceStats;
 import dev.sayaya.handbook.client.usecase.DashboardRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
@@ -52,7 +52,7 @@ public class DashboardApi implements DashboardRepository {
 
     @Override
     public Observable<WorkspaceStats> fetchStats() {
-        Promise<WorkspaceStats> promise = fetchApi.request("workspace/" + workspace + "/stats")
+        Promise<WorkspaceStats> promise = fetchApi.request("workspaces/" + workspace + "/stats")
                 .then(Response::json)
                 .then(json -> Promise.resolve(Js.<WorkspaceStats>cast(json)))
                 .catch_(err -> {
@@ -65,7 +65,7 @@ public class DashboardApi implements DashboardRepository {
 
     @Override
     public Observable<QualityIssue[]> fetchQualityIssues() {
-        Promise<QualityIssue[]> promise = fetchApi.request("workspace/" + workspace + "/quality-issues")
+        Promise<QualityIssue[]> promise = fetchApi.request("workspaces/" + workspace + "/quality-issues")
                 .then(Response::json)
                 .then(json -> Promise.resolve(Js.<QualityIssue[]>cast(json)))
                 .catch_(err -> {
@@ -78,7 +78,7 @@ public class DashboardApi implements DashboardRepository {
 
     @Override
     public Observable<AgentActivity[]> fetchAgentActivity() {
-        Promise<AgentActivity[]> promise = fetchApi.request("workspace/" + workspace + "/agent-activity")
+        Promise<AgentActivity[]> promise = fetchApi.request("workspaces/" + workspace + "/agent-activity")
                 .then(Response::json)
                 .then(json -> Promise.resolve(Js.<AgentActivity[]>cast(json)))
                 .catch_(err -> {
@@ -91,7 +91,7 @@ public class DashboardApi implements DashboardRepository {
 
     @Override
     public Observable<TimelineData[]> timeline(String from, String to, int interval) {
-        String url = "workspace/" + workspace + "/stats/timeline?from=" + from + "&to=" + to + "&interval=" + interval;
+        String url = "workspaces/" + workspace + "/stats/timeline?from=" + from + "&to=" + to + "&interval=" + interval;
         Promise<TimelineData[]> promise = fetchApi.request(url)
                 .then(Response::json)
                 .then(json -> Promise.resolve(Js.<TimelineData[]>cast(json)))
@@ -105,7 +105,7 @@ public class DashboardApi implements DashboardRepository {
 
     @Override
     public Observable<DistributionData[]> distribution() {
-        Promise<DistributionData[]> promise = fetchApi.request("workspace/" + workspace + "/stats/distribution")
+        Promise<DistributionData[]> promise = fetchApi.request("workspaces/" + workspace + "/stats/distribution")
                 .then(Response::json)
                 .then(json -> Promise.resolve(Js.<DistributionData[]>cast(json)))
                 .catch_(err -> {

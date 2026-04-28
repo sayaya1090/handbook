@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.client.domain.TypeValue;
-import dev.sayaya.handbook.client.usecase.TypeRepository;
+import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.DomGlobal;

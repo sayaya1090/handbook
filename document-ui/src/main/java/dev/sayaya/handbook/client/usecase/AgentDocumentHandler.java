@@ -2,7 +2,8 @@ package dev.sayaya.handbook.client.usecase;
 
 
 import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.client.domain.DocumentValue;
+import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.usecase.DocumentRepository;
 import dev.sayaya.handbook.usecase.MutationReceiver;
 import jsinterop.base.JsPropertyMap;
 
@@ -21,7 +22,7 @@ import java.util.List;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link TypeProvider} — DOC_SELECT 시 타입 선택 변경</li>
- *   <li>{@link TypeList} — 타입 이름으로 TypeInfo 조회</li>
+ *   <li>{@link TypeList} — 타입 이름으로 TypeValue 조회</li>
  *   <li>{@link dev.sayaya.handbook.client.components.ActionManager} — 액션 실행 및 Undo/Redo 관리</li>
  *   <li>{@link DocumentList} — 문서 목록 상태 조회/갱신</li>
  *   <li>{@link dev.sayaya.handbook.usecase.MutationReceiver} — 에이전트 명령 수신 채널</li>

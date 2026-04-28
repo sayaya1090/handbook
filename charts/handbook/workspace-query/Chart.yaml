@@ -1,0 +1,11 @@
+annotations:
+  charts.openshift.io/name: workspace-query
+apiVersion: v2
+kubeVersion: '>= 1.20.0-0'
+name: workspace-query
+version: 0.1.0
+description: Search workspace (read side + menu supplier) service for handbook application
+dependencies:
+  - name: handbook-lib
+    version: 0.1.0
+    repository: file://../../handbook-lib

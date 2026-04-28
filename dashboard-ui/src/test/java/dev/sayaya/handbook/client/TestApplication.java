@@ -1,11 +1,11 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.client.domain.AgentActivity;
-import dev.sayaya.handbook.client.domain.ArtifactData;
-import dev.sayaya.handbook.client.domain.ExecutionStatusData;
-import dev.sayaya.handbook.client.domain.QualityIssue;
-import dev.sayaya.handbook.client.domain.WorkspaceStats;
+import dev.sayaya.handbook.domain.AgentActivity;
+import dev.sayaya.handbook.domain.ArtifactData;
+import dev.sayaya.handbook.domain.ExecutionStatusData;
+import dev.sayaya.handbook.domain.QualityIssue;
+import dev.sayaya.handbook.domain.WorkspaceStats;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 

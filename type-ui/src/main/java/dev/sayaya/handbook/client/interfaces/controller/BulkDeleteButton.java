@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;

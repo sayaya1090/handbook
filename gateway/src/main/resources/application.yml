@@ -10,7 +10,7 @@ spring:
         - id: ui-clean-urls
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
-            - Path=/types,/documents,/workspaces,/dashboard,/workspace/*/**
+            - Path=/types,/documents,/workspaces,/dashboard,/workspaces/*/**
             - Method=GET
             - Header=Accept, ^(?!.*application/(json|vnd\.sayaya)).*text/html.*
           filters:
@@ -22,11 +22,11 @@ spring:
           predicates:
             - Path=/auth/**,/oauth2/**,/login/**,/user
           order: 1
-        # 실시간 이벤트 (SSE) — search-document보다 먼저 매칭해야 한다
+        # 실시간 이벤트 (SSE)
         - id: event-broadcaster
           uri: ${gateway.routes.event-broadcaster:http://localhost:8088}
           predicates:
-            - Path=/workspace/*/messages
+            - Path=/workspaces/*/messages
             - Method=GET
           filters:
             - name: CircuitBreaker
@@ -35,45 +35,45 @@ spring:
                 fallbackUri: forward:/fallback/empty
           order: 2
         # 타입 조회
-        - id: search-type
-          uri: ${gateway.routes.search-type:http://localhost:8082}
+        - id: type-query
+          uri: ${gateway.routes.type-query:http://localhost:8082}
           predicates:
-            - Path=/workspace/*/types/**,/workspace/*/layouts/**
+            - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
             - Method=GET
           order: 3
         # 타입 저장
-        - id: persist-type
-          uri: ${gateway.routes.persist-type:http://localhost:8083}
+        - id: type-command
+          uri: ${gateway.routes.type-command:http://localhost:8083}
           predicates:
-            - Path=/workspace/*/types/**,/workspace/*/layouts/**
+            - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
             - Method=PUT,DELETE
           order: 4
         # 문서 조회 + 대시보드 통계
-        - id: search-document
-          uri: ${gateway.routes.search-document:http://localhost:8084}
+        - id: document-query
+          uri: ${gateway.routes.document-query:http://localhost:8084}
           predicates:
-            - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
+            - Path=/workspaces/*/documents/**,/workspaces/*/*/*,/workspaces/*/stats,/workspaces/*/stats/**,/workspaces/*/quality-issues,/workspaces/*/agent-activity
             - Method=GET
           order: 5
         # 문서 저장
-        - id: persist-document
-          uri: ${gateway.routes.persist-document:http://localhost:8085}
+        - id: document-command
+          uri: ${gateway.routes.document-command:http://localhost:8085}
           predicates:
-            - Path=/workspace/*/documents/**
+            - Path=/workspaces/*/documents/**
             - Method=PUT,DELETE
           order: 6
-        # 워크스페이스 조회 (read-only, AI 에이전트 디스커버리 타겟)
-        - id: search-workspace
-          uri: ${gateway.routes.search-workspace:http://localhost:8089}
+        # 워크스페이스 조회 (CQRS Read)
+        - id: workspace-query
+          uri: ${gateway.routes.workspace-query:http://localhost:8089}
           predicates:
             - Path=/workspaces,/workspaces/**
             - Method=GET
           order: 7
-        # 워크스페이스
-        - id: persist-workspace
-          uri: ${gateway.routes.persist-workspace:http://localhost:8086}
+        # 워크스페이스 저장 (CQRS Write)
+        - id: workspace-command
+          uri: ${gateway.routes.workspace-command:http://localhost:8086}
           predicates:
-            - Path=/workspace,/workspace/**
+            - Path=/workspaces,/workspaces/**
             - Method=POST,PUT,DELETE
           order: 8
         # 에이전트
@@ -93,7 +93,7 @@ spring:
           predicates:
             - Path=/js/**,/css/**,/icons/**,/manifest.json,/service-worker.js,/wav/**,/favicon.ico
           order: 10
-        # SPA Fallback: API나 정적 파일이 아닌 모든 HTML 요청을 app.html로 연결
+        # SPA Fallback
         - id: ui-fallback
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:

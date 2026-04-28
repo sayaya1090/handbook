@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces;
 
-import dev.sayaya.handbook.client.domain.TypeValue;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;

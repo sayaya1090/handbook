@@ -6,6 +6,7 @@ plugins {
 }
 dependencies {
     implementation(project(":activity"))
+    implementation(project(":schema-api-gwt"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
@@ -30,7 +31,6 @@ gwt {
     test {
         webPort = 18081
     }
-    // 중요: modules 설정을 마지막에 두어 devMode/test 설정이 덮어쓰는 것을 방지
     modules = listOf("dev.sayaya.handbook.Type")
 }
 

@@ -643,7 +643,7 @@ sequenceDiagram
 | **선행조건** | 타입 선택 완료, 해당 타입에 2개 이상의 버전이 존재 |
 | **정상 흐름** | 1. 타입의 버전 히스토리를 열면 전체 버전 목록이 타임라인 또는 리스트 뷰로 표시된다.<br>2. 두 버전을 선택하여 diff 비교를 수행한다 (기존 diff API 활용).<br>3. 속성 추가/삭제/변경 사항이 시각적으로 표시된다. |
 | **요구사항** | 6.12 타입 버전 히스토리 UI |
-| **상태** | 구현 완료 (VersionHistoryPanel, search-type versions API) |
+| **상태** | 구현 완료 (VersionHistoryPanel, type-query versions API) |
 
 ## UC-T25: 워크스페이스 전환 (동적 데이터 재로딩)
 

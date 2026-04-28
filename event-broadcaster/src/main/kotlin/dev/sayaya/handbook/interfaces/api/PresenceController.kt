@@ -13,7 +13,7 @@ import java.util.*
 /**
  * 프레즌스(편집 위치 공유) REST 엔드포인트.
  *
- * **책임:** POST /workspace/{id}/presence 요청을 받아 PresenceEvent를 Kafka로 발행.
+ * **책임:** POST /workspaces/{id}/presence 요청을 받아 PresenceEvent를 Kafka로 발행.
  * 모든 event-broadcaster 인스턴스가 수신하여 SSE로 브로드캐스트한다.
  *
  * **의존관계:**
@@ -28,7 +28,7 @@ class PresenceController(
     private val kafkaTemplate: KafkaTemplate<String, String>,
     private val objectMapper: ObjectMapper,
 ) {
-    @PostMapping("/workspace/{workspace}/presence")
+    @PostMapping("/workspaces/{workspace}/presence")
     @ResponseStatus(HttpStatus.OK)
     fun publish(
         @PathVariable workspace: UUID,

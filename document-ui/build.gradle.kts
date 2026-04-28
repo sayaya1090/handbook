@@ -1,10 +1,15 @@
 plugins {
+    java
     kotlin("jvm")
-    war
+    id("war")
     id("dev.sayaya.gwt")
+    id("com.adarshr.test-logger")
 }
+
 dependencies {
     implementation(project(":activity"))
+    implementation(project(":document-api-gwt"))
+    implementation(project(":schema-api-gwt"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")

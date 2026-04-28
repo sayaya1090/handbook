@@ -15,7 +15,7 @@ import java.util.*
 /**
  * SSE(Server-Sent Events)를 통해 워크스페이스별 실시간 이벤트를 스트리밍하는 컨트롤러.
  *
- * **책임:** 클라이언트가 `/workspace/{workspace}/messages`로 SSE 연결을 맺으면,
+ * **책임:** 클라이언트가 `/workspaces/{workspace}/messages`로 SSE 연결을 맺으면,
  * 해당 워크스페이스의 이벤트를 실시간으로 스트리밍한다.
  * HTTP/1.1 연결 유지를 위해 10초 간격으로 ping 코멘트를 전송한다.
  *
@@ -34,7 +34,7 @@ class MessageController(
     private val ping = Flux.interval(Duration.ofSeconds(10))
         .map { ServerSentEvent.builder<String>().comment("ping").build() }
 
-    @GetMapping("/workspace/{workspace}/messages", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    @GetMapping("/workspaces/{workspace}/messages", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun messages(@PathVariable workspace: UUID): Flux<ServerSentEvent<String>> {
         logger.info("SSE connection requested for workspace: {}", workspace)
         return Flux.merge(

@@ -12,8 +12,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  *
  * ```yaml
  * services:
- *   - name: search-type
- *   - name: search-document
+ *   - name: type-query
+ *   - name: document-query
  * ```
  */
 @ConfigurationProperties(prefix = "services")
