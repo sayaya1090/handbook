@@ -10,8 +10,6 @@ dependencies {
     implementation(project(":workspace"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
-    implementation(project(":shell-ui"))
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
