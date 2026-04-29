@@ -37,7 +37,7 @@ public class SessionContext {
         else values.put(key, value);
         subject.next(new HashMap<>(values));
         if ("workspaceId".equals(key)) {
-            WorkspaceEvent.publishWorkspace(value);
+            WorkspaceEvent.publishId(value);
         }
     }
 

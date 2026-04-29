@@ -20,7 +20,7 @@ import dev.sayaya.handbook.domain.Workspace;
 public class WorkspaceOnboardingBootstrapper {
     private final UserProvider userProvider;
     private final WorkspaceList workspaceList;
-    private final BehaviorSubject<String> uri;
+    private final UriStore uri;
     private final MenuSelected menuSelected;
     private final ModuleScriptManager scriptManager;
     private boolean bootstrapped = false;
@@ -31,7 +31,7 @@ public class WorkspaceOnboardingBootstrapper {
     WorkspaceOnboardingBootstrapper(
             UserProvider userProvider,
             WorkspaceList workspaceList,
-            BehaviorSubject<String> uri,
+            UriStore uri,
             MenuSelected menuSelected,
             ModuleScriptManager scriptManager
     ) {

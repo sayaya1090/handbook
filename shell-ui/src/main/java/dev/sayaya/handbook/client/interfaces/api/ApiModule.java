@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 
 @Module
 public interface ApiModule {
-    @Provides static FetchApi fetch() { return new FetchApi() {}; }
+    @Provides static FetchApi fetch() { return (url, param) -> elemental2.dom.DomGlobal.fetch(url, param); }
     @Binds MenuRepository menuRepositoryProvider(MenuApi impl);
     @Binds UserRepository userRepositoryProvider(UserApi impl);
     @Binds WorkspaceRepository workspaceRepositoryProvider(WorkspaceApi impl);

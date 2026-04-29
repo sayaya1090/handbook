@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.domain.DrawerState;
+import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.client.interfaces.ShellStylesheet;
 import dev.sayaya.handbook.client.usecase.DrawerMode;
 import elemental2.dom.DomGlobal;

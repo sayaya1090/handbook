@@ -154,3 +154,20 @@ graph TB
 1.  **캡슐화된 네이티브 모델**: 모든 공용 모델은 `isNative = true` 설정을 가지며, 필드는 `private`으로 보호하고 Lombok 게터를 통해 접근한다.
 2.  **제로 카피(Zero-copy)**: 서버 응답 JSON을 프론트엔드에서 변환 없이 즉시 도메인 객체로 캐스팅하여 사용한다.
 3.  **DIP 준수**: UI 모듈은 도메인의 인터페이스(Port)에 의존하고, 실제 구현체는 런타임에 주입받는다.
+
+---
+
+## 5. 신규 엔지니어링 표준 (2026-04-28 반영)
+
+### 5.1 공용 도메인 모델 (Shared Domain) 전략
+- **SSOT(Single Source of Truth)**: 백엔드(JVM)와 프론트엔드(GWT)는 하나의 Java 소스를 공유한다.
+- **캡슐화된 네이티브 모델**: 
+    - `@JsType(isNative = true)` 사용.
+    - 필드는 `private`으로 캡슐화하고 `@JsProperty`로 노출.
+    - 자바 측 접근은 `@Getter(onMethod_ = {@JsOverlay, @JsIgnore})`를 사용하여 플루언트 API(`id()`)를 제공.
+- **제로 카피(Zero-copy)**: 데이터 변환 없이 JSON을 직접 도메인 객체로 캐스팅하여 사용한다.
+
+### 5.2 Dagger DI 및 상태 관리 표준
+- **Store 기반 상태 관리**: `BehaviorSubject`를 전용 `Store` 클래스로 캡슐화한다.
+- **인터페이스 기반 주입**: 컴포넌트에는 구체 Store가 아닌 `Observable`(읽기) 및 `Observer`(쓰기) 인터페이스를 주입한다.
+- **Composition Root**: 모든 컨테이너 생성은 EntryPoint에서만 수행한다.

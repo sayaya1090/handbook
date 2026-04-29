@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.DrawerState;
+import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;

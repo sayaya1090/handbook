@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.domain.DrawerState;
+import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.client.usecase.DrawerMode;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import elemental2.dom.DomGlobal;
@@ -13,8 +13,8 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static dev.sayaya.handbook.domain.DrawerState.COLLAPSE;
-import static dev.sayaya.handbook.domain.DrawerState.EXPAND;
+import static dev.sayaya.handbook.client.domain.DrawerState.COLLAPSE;
+import static dev.sayaya.handbook.client.domain.DrawerState.EXPAND;
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
 @Singleton

@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.api;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserProvider;
 import dev.sayaya.handbook.client.usecase.UserRepository;
-import dev.sayaya.rx.subject.BehaviorSubject;
+import dev.sayaya.handbook.client.usecase.UriStore;
 
 import javax.inject.Singleton;
 
@@ -13,5 +13,5 @@ public interface ApiTestComponent {
     UserRepository userRepository();
     MenuRepository menuRepository();
     UserProvider userProvider();
-    BehaviorSubject<String> uri();
+    UriStore uri();
 }

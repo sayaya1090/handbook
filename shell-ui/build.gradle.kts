@@ -4,6 +4,7 @@ plugins {
     id("dev.sayaya.gwt")
     id("com.adarshr.test-logger")
 }
+
 dependencies {
     implementation(project(":activity"))
     implementation(project(":workspace"))
@@ -23,7 +24,14 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Shell", "dev.sayaya.handbook.ApiTest", "dev.sayaya.handbook.DrawerTest", "dev.sayaya.handbook.FrameTest", "dev.sayaya.handbook.ProgressTest", "dev.sayaya.handbook.HistoryTest")
+        modules = listOf(
+            "dev.sayaya.handbook.Shell",
+            "dev.sayaya.handbook.ApiTest",
+            "dev.sayaya.handbook.DrawerTest",
+            "dev.sayaya.handbook.FrameTest",
+            "dev.sayaya.handbook.ProgressTest",
+            "dev.sayaya.handbook.HistoryTest"
+        )
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true
@@ -33,7 +41,6 @@ gwt {
     test {
         webPort = 18080
     }
-    // 중요: modules 설정을 마지막에 두어 devMode 설정이 덮어쓰는 것을 방지
     modules = listOf("dev.sayaya.handbook.Shell")
 }
 
@@ -46,5 +53,7 @@ tasks {
         archiveFileName.set("shell-ui.war")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-    test { useJUnitPlatform() }
+    test {
+        useJUnitPlatform()
+    }
 }

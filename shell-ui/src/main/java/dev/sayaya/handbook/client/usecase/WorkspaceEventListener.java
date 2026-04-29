@@ -29,7 +29,7 @@ public class WorkspaceEventListener {
     private String currentWorkspaceId;
 
     @Inject
-    WorkspaceEventListener(BehaviorSubject<String> uri, SessionContext sessionContext) {
+    WorkspaceEventListener(UriStore uri, SessionContext sessionContext) {
         this.uri = uri;
         this.sessionContext = sessionContext;
     }

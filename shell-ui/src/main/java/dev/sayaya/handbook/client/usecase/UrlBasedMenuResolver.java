@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.DrawerState;
+import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.rx.Observable;
 import elemental2.core.JsRegExp;
@@ -18,14 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UrlBasedMenuResolver {
     private final Map<JsRegExp, Menu> map = new ConcurrentHashMap<>();
     private final MenuList menu;
-    private final Observable<String> uri;
+    private final UriStore uri;
     private final MenuSelected select;
     private final DrawerMode drawer;
     private final PlaceholderResolver placeholderResolver;
     private final SessionContext sessionContext;
     private String lastKnownUri = null;
 
-    @Inject UrlBasedMenuResolver(MenuList menu, Observable<String> uri, MenuSelected select,
+    @Inject UrlBasedMenuResolver(MenuList menu, UriStore uri, MenuSelected select,
                                  DrawerMode drawer, PlaceholderResolver placeholderResolver,
                                  SessionContext sessionContext) {
         this.menu = menu;

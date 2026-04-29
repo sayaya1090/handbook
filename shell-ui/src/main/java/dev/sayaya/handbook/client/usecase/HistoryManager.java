@@ -27,7 +27,7 @@ public class HistoryManager {
     private final MenuSelected menuSelected;
     private final PlaceholderResolver placeholderResolver;
 
-    @Inject HistoryManager(BehaviorSubject<String> uri, MenuSelected menuSelected, PlaceholderResolver placeholderResolver) {
+    @Inject HistoryManager(UriStore uri, MenuSelected menuSelected, PlaceholderResolver placeholderResolver) {
         this.uri = uri;
         this.menuSelected = menuSelected;
         this.placeholderResolver = placeholderResolver;

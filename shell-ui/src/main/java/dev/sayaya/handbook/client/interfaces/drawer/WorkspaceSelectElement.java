@@ -3,6 +3,7 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 import dev.sayaya.handbook.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.SessionContext;
 import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
+import dev.sayaya.handbook.client.usecase.UriStore;
 import dev.sayaya.handbook.client.usecase.WorkspaceList;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.ui.elements.SelectElementBuilder.OutlinedSelectElementBuilder;
@@ -33,7 +34,9 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
     private List<Workspace> workspaces;
 
     @Inject
-    WorkspaceSelectElement(WorkspaceList workspaces, SessionContext sessionContext, BehaviorSubject<String> uri) {
+    WorkspaceSelectElement(WorkspaceList workspaces, SessionContext sessionContext, 
+                           UriStore uriStream, 
+                           dev.sayaya.rx.Observer<String> uriObserver) {
         workspaces.subscribe(this::update);
         sessionContext.subscribe(ctx -> {
             String wsId = ctx.get("workspaceId");
@@ -43,16 +46,16 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         });
         _this.on(EventType.change, evt -> {
             String wsId = _this.element().value;
-            String currentUri = uri.getValue();
+            String currentUri = uriStream.getValue();
             if (currentUri != null) {
                 // WorkspaceEventListener 의 정적 메서드를 활용해 현재 ID 추출
                 String oldWsId = WorkspaceEventListener.extractWorkspaceId(currentUri);
                 if (oldWsId != null && !oldWsId.equals(wsId)) {
                     String newUri = currentUri.replace("/workspaces/" + oldWsId, "/workspaces/" + wsId);
-                    uri.next(newUri);
+                    uriObserver.next(newUri);
                 } else if (oldWsId == null) {
                     // 워크스페이스 컨텍스트가 없는 URL에서 선택한 경우 대시보드로 이동
-                    uri.next("/workspaces/" + wsId + "/dashboard");
+                    uriObserver.next("/workspaces/" + wsId + "/dashboard");
                 }
             }
             sessionContext.set("workspaceId", wsId);
