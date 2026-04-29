@@ -34,17 +34,17 @@ public class SessionPollingService {
     private static final double REFRESH_THRESHOLD = 0.8;
     private static final String LOGIN_PATH = "/auth/login";
 
-    private final FetchApi fetchApi;
+    private final AuthRepository authRepository;
     private final ToastContainer toastContainer;
     private final LabelProvider labelProvider;
     private final SessionEnvironment env;
-    private Labels labels = Labels.empty();
+    private Labels labels = null;
     private boolean warningShown = false;
     private double timerHandle = -1;
 
     @Inject
-    SessionPollingService(FetchApi fetchApi, ToastContainer toastContainer, LabelProvider labelProvider, SessionEnvironment env) {
-        this.fetchApi = fetchApi;
+    SessionPollingService(AuthRepository authRepository, ToastContainer toastContainer, LabelProvider labelProvider, SessionEnvironment env) {
+        this.authRepository = authRepository;
         this.toastContainer = toastContainer;
         this.labelProvider = labelProvider;
         this.env = env;
@@ -81,9 +81,10 @@ public class SessionPollingService {
         if (remaining <= WARNING_BEFORE_EXPIRY_MS && !warningShown) {
             warningShown = true;
             int minutesLeft = (int) Math.ceil(remaining / 60_000.0);
+            String message = (labels != null ? labels.get("session_expiry_warning") : "Session Expiry Warning") + " (" + minutesLeft + " min)";
             toastContainer.show(
                 ToastLevel.WARNING,
-                labels.get("session_expiry_warning") + " (" + minutesLeft + " min)",
+                message,
                 (int) remaining
             );
         }
@@ -96,22 +97,14 @@ public class SessionPollingService {
     }
 
     private void refreshToken() {
-        var request = RequestInit.create();
-        request.setMethod("POST");
-        fetchApi.request("auth/refresh", request)
-            .then(response -> {
-                if (response.ok) {
-                    warningShown = false;
-                    GWT.log("SessionPollingService: token refreshed");
-                } else if (response.status == 401) {
-                    redirectToLogin();
-                }
-                return null;
-            })
-            .catch_(error -> {
-                GWT.log("SessionPollingService: refresh failed - " + error);
-                return null;
-            });
+        authRepository.refresh().subscribe(success -> {
+            if (success) {
+                warningShown = false;
+                GWT.log("SessionPollingService: token refreshed");
+            } else {
+                redirectToLogin();
+            }
+        });
     }
 
     private void redirectToLogin() {
@@ -124,16 +117,14 @@ public class SessionPollingService {
 
     /**
      * JWT 쿠키에서 만료 시각(ms)을 추출한다.
-     * JWT payload의 exp 클레임을 Base64 디코딩하여 읽는다.
      *
      * @return 만료 시각(ms), 실패 시 -1
      */
     private double getTokenExpiry() {
-        jsinterop.base.JsPropertyMap<?> payload = parseJwtPayload();
-        if (payload == null) return -1;
-        jsinterop.base.Any exp = (jsinterop.base.Any) payload.get("exp");
-        if (exp == null) return -1;
-        return exp.asDouble() * 1000;
+        String token = extractToken();
+        if (token == null) return -1;
+        Double exp = env.getJwtClaimAsDouble(token, "exp");
+        return exp != null ? exp * 1000 : -1;
     }
 
     /**
@@ -142,40 +133,28 @@ public class SessionPollingService {
      * @return 수명(ms), 실패 시 3600000 (기본 1시간)
      */
     private double getTokenDuration() {
-        jsinterop.base.JsPropertyMap<?> payload = parseJwtPayload();
-        if (payload == null) return 3600000;
-        jsinterop.base.Any exp = (jsinterop.base.Any) payload.get("exp");
-        jsinterop.base.Any iat = (jsinterop.base.Any) payload.get("iat");
+        String token = extractToken();
+        if (token == null) return 3600000;
+        Double exp = env.getJwtClaimAsDouble(token, "exp");
+        Double iat = env.getJwtClaimAsDouble(token, "iat");
         if (exp == null || iat == null) return 3600000;
-        return (exp.asDouble() - iat.asDouble()) * 1000;
+        return (exp - iat) * 1000;
     }
 
     /**
-     * 쿠키에서 JWT 토큰을 찾아 payload를 파싱한다.
-     * "token=" 또는 "Authorization=" 쿠키에서 JWT를 추출하고,
-     * Base64 디코딩 후 JSON.parse()로 payload를 반환한다.
+     * 쿠키에서 JWT 토큰 문자열을 추출한다.
      *
-     * @return JWT payload를 담은 JsPropertyMap, 실패 시 null
+     * @return JWT 문자열, 없으면 null
      */
-    private jsinterop.base.JsPropertyMap<?> parseJwtPayload() {
-        try {
-            String cookies = env.getCookies();
-            if (cookies == null || cookies.isEmpty()) return null;
-            String[] parts = cookies.split(";");
-            for (String part : parts) {
-                String cookie = part.trim();
-                if (cookie.startsWith("token=") || cookie.startsWith("Authorization=")) {
-                    String token = cookie.substring(cookie.indexOf('=') + 1);
-                    String[] jwtParts = token.split("\\.");
-                    if (jwtParts.length >= 2) {
-                        String decoded = env.decodeBase64(jwtParts[1]);
-                        Object parsed = env.parseJson(decoded);
-                        return jsinterop.base.Js.cast(parsed);
-                    }
-                }
+    private String extractToken() {
+        String cookies = env.getCookies();
+        if (cookies == null || cookies.isEmpty()) return null;
+        String[] parts = cookies.split(";");
+        for (String part : parts) {
+            String cookie = part.trim();
+            if (cookie.startsWith("token=") || cookie.startsWith("Authorization=")) {
+                return cookie.substring(cookie.indexOf('=') + 1);
             }
-        } catch (Exception e) {
-            // 파싱 실패
         }
         return null;
     }

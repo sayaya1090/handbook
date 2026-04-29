@@ -2,8 +2,8 @@ package dev.sayaya.handbook.client.usecase;
 
 public interface SessionEnvironment {
     String getCookies();
-    String decodeBase64(String encoded);
-    Object parseJson(String json);
+    Double getJwtClaimAsDouble(String token, String claim);
     void redirect(String path);
     void clearInterval(double handle);
 }
+

@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
+import dev.sayaya.handbook.client.usecase.AuthRepository;
 import dev.sayaya.handbook.client.usecase.ScriptInjector;
 import dev.sayaya.handbook.client.usecase.SessionEnvironment;
 import dev.sayaya.handbook.interfaces.api.BrowserLanguageDetector;
@@ -24,8 +25,10 @@ public interface ApiModule {
     @Binds MenuRepository menuRepositoryProvider(MenuApi impl);
     @Binds UserRepository userRepositoryProvider(UserApi impl);
     @Binds WorkspaceRepository workspaceRepositoryProvider(WorkspaceApi impl);
+    @Binds AuthRepository authRepositoryProvider(AuthApi impl);
 
     @Binds @Singleton LanguageDetector bindLanguageDetector(BrowserLanguageDetector impl);
+
     @Binds @Singleton LanguagePackRepository bindLanguagePackRepository(FetchLanguagePackRepository impl);
     @Binds @Singleton ScriptInjector bindScriptInjector(NativeScriptInjector impl);
     @Binds @Singleton SessionEnvironment bindSessionEnvironment(NativeSessionEnvironment impl);

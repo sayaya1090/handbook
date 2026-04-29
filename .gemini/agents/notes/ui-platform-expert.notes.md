@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-04-28: shell-ui 아키텍처 분석 → 의존성 단방향 흐름, Dagger 2 모범 사례 준수 확인 및 DOM 직접 접근 리팩토링 제안
 - 2026-04-27: 동적 툴 프로바이더 설계 및 구현 제안 → agent-bridge/activity 연동 설계 및 코드(ToolProvider, Bridges) 생성
 - 2026-04-27: 반응형 데이터 흐름 통제(Unidirectional Data Flow) → LayoutProvider, LayoutList 캡슐화 완료 (Scope 4)
 - 2026-04-27: 에이전트 커맨드 파싱 최적화 → AgentMutationHandler에 Strategy 패턴 도입 및 테스트 갱신 (Scope 3)

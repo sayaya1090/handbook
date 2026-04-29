@@ -39,8 +39,7 @@ public interface ApiTestModule {
     @Provides @Singleton static SessionEnvironment provideSessionEnvironment() {
         return new SessionEnvironment() {
             @Override public String getCookies() { return ""; }
-            @Override public String decodeBase64(String encoded) { return ""; }
-            @Override public Object parseJson(String json) { return null; }
+            @Override public Double getJwtClaimAsDouble(String token, String claim) { return null; }
             @Override public void redirect(String path) {}
             @Override public void clearInterval(double handle) {}
         };
