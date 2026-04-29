@@ -11,7 +11,7 @@ graph TB
         TypeUI["type-ui<br/>캔버스 타입 편집기"]
         DocumentUI["document-ui<br/>스프레드시트 문서 편집기"]
         WorkspaceUI["workspace-ui<br/>워크스페이스 관리 (대시보드)"]
-        OnboardingUI["onboarding-ui<br/>워크스페이스 생성/참여 (온보딩)"]
+        OnboardingUI["onboarding-ui<br/>워크스페이스 생성/참여<br/>(Presenter 패턴 적용)"]
         UiComponents["ui-components<br/>범용 UI 컴포넌트"]
         AgentBridge["agent-bridge<br/>모듈 간 브릿지"]
         LoginUI["login-ui<br/>로그인/로그아웃"]

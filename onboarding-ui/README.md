@@ -17,18 +17,29 @@
 
 ## 에이전트 연동
 
-에이전트는 shell의 `AGENT_COMMAND navigate`를 통해 `/workspaces` URL로 이 화면에 진입시킬 수 있습니다.
-또한 `AgentMutation`를 통해 `WS_MODE`, `WS_INPUT`, `WS_SUBMIT`, `WS_CREATE` 등의 명령어로 생성 UI를 원격 제어할 수 있습니다.
+에이전트는 shell의 `AGENT_COMMAND navigate`를 통해 `/workspaces` URL로 진입합니다.
+`onboarding-ui`의 `AgentWorkspaceHandler`는 `MutationReceiver`를 통해 에이전트의 커맨드를 수신하며, 내부적으로 Presenter를 통해 상태를 갱신합니다.
+
+- **연동 시퀀스**: `AgentMutation` -> `MutationReceiver` -> `AgentWorkspaceHandler` -> `Store` -> `Presenter` -> `View`
 
 ## 계층 구조
 
 ```text
 client/
-├── usecase/         CreateWorkspaceMode (CREATE/JOIN), CreateWorkspaceParam, WorkspaceRepository (포트)
-└── onboarding/      ContentElement, DialogElement, SectionElement (@AssistedFactory),
-                     SectionElementFactory, SubmitButton
-└── interfaces/
-    └── api/         WorkspaceApi (POST /workspace, POST /workspace/{id}/join), ApiModule
+├── OnboardingModule (DI Entry Point)
+│   ├── ApiModule
+│   ├── StateModule
+│   └── UiModule
+├── usecase/
+│   ├── AgentWorkspaceHandler (에이전트 연동)
+│   ├── CreateWorkspaceMode
+│   ├── CreateWorkspaceParam
+│   └── WorkspaceRepository
+└── onboarding/
+    ├── SectionBuilder (섹션 생성)
+    ├── SectionElement (Presenter 패턴 적용)
+    ├── DialogElement (Presenter 패턴 적용)
+    └── SubmitButton
 ```
 
 ## 기능

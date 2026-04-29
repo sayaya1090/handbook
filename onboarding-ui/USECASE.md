@@ -1,5 +1,29 @@
 # Onboarding-UI 유스케이스
 
+## 설계 결정 및 패턴
+
+- **Presenter 패턴**: `SectionElement`와 `DialogElement`에 Presenter를 도입하여 View와 로직을 분리.
+- **테스트 전략**: 
+  - **JVM Unit Test (Kotest)**: 비즈니스 로직 및 Presenter 검증.
+  - **GWT Integration Test**: UI 통합 및 컴포넌트 렌더링 검증.
+
+## 모듈 초기화 흐름
+
+```mermaid
+sequenceDiagram
+    participant Module as OnboardingModule
+    participant UI as UiModule
+    participant Presenter as DialogElementPresenter
+    participant View as DialogElement
+    participant Builder as SectionBuilder
+
+    Module->>UI: 의존성 주입 (DI)
+    UI->>Builder: 섹션 생성 요청
+    Builder->>Presenter: Presenter 생성
+    Presenter->>View: 뷰 바인딩
+    View-->>Module: 초기화 완료 (onModuleLoad)
+```
+
 ## 워크스페이스 생성 시퀀스
 
 ```mermaid
