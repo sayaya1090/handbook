@@ -75,7 +75,7 @@ public class SubmitButton implements IsElement<HTMLElement> {
                     if (id == null) return;
                     toastContainer.show(ToastLevel.SUCCESS,
                             currentLabels.getOrDefault("toast.workspace.created", "Workspace created"));
-                    0.navigate("/workspace/" + id + "/dashboard");
+                    UriSharing.navigate("/workspaces/" + id + "/dashboard");
                 });
             } else {
                 // join() 은 Observable<Void> — 성공 시 null emit, 실패 시 catch_ 에서 null resolve.
@@ -84,7 +84,7 @@ public class SubmitButton implements IsElement<HTMLElement> {
                 api.join(trimmed).subscribe(v -> {
                     toastContainer.show(ToastLevel.SUCCESS,
                             currentLabels.getOrDefault("toast.workspace.joined", "Joined workspace"));
-                    0.navigate("/workspace/" + trimmed + "/dashboard");
+                    UriSharing.navigate("/workspaces/" + trimmed + "/dashboard");
                 });
             }
         });

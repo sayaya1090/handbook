@@ -10,7 +10,6 @@ import elemental2.core.Global;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
-import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Inject;
