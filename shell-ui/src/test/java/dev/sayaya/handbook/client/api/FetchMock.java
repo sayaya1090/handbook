@@ -8,10 +8,11 @@ import jsinterop.annotations.JsFunction;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
- * FetchApi 구현체로서 URL별 모의 응답을 반환한다.
- * GWT 환경에서 elemental2 Response는 네이티브 JS 객체이므로
- * JsPropertyMap + Js.cast 패턴으로 생성한다.
+ * FetchApi 구현체로서 URL별 모의 응답을 동적으로 반환한다.
  */
 public class FetchMock implements FetchApi {
     @JsFunction
@@ -19,49 +20,58 @@ public class FetchMock implements FetchApi {
         Promise<Object> call();
     }
 
+    private final Map<String, Response> mocks = new LinkedHashMap<>();
+
+    public FetchMock() {
+        // 기존 하드코딩된 응답을 기본값으로 세팅 (하위 호환성 유지)
+        when("workspaces", 200, createWorkspacesJson());
+        when("user", 200, createUserJson());
+        when("menus", 200, createMenuJson());
+        when("auth/refresh", 200, null);
+    }
+
+    public FetchMock when(String pathContains, int status, Object jsonPayload) {
+        JsPropertyMap<Object> mock = JsPropertyMap.of();
+        mock.set("status", status);
+        mock.set("statusText", status == 200 ? "OK" : "Error");
+        mock.set("ok", status >= 200 && status < 300);
+        mock.set("json", (JsonSupplier) () -> Promise.resolve(jsonPayload));
+        mocks.put(pathContains, Js.cast(mock));
+        return this;
+    }
+
+    public FetchMock when(String pathContains, Response response) {
+        mocks.put(pathContains, response);
+        return this;
+    }
+
     @Override
     public Promise<Response> request(String url, RequestInit param) {
-        if (url != null && url.contains("workspaces")) {
-            return Promise.resolve(createWorkspacesResponse());
-        }
-        if (url != null && url.contains("user")) {
-            return Promise.resolve(createUserResponse());
-        }
-        if (url != null && url.contains("menus")) {
-            return Promise.resolve(createMenuResponse());
-        }
-        if (url != null && url.contains("auth/refresh")) {
-            return Promise.resolve(createRefreshResponse());
+        if (url != null) {
+            for (Map.Entry<String, Response> entry : mocks.entrySet()) {
+                if (url.contains(entry.getKey())) {
+                    return Promise.resolve(entry.getValue());
+                }
+            }
         }
         return Promise.resolve(createEmptyResponse(404));
     }
 
-    private static Response createUserResponse() {
+    private static Object createUserJson() {
         JsPropertyMap<Object> userObj = JsPropertyMap.of();
         userObj.set("id", "test-user-id");
         userObj.set("name", "TestUser");
-
-        JsPropertyMap<Object> mock = JsPropertyMap.of();
-        mock.set("status", 200);
-        mock.set("statusText", "OK");
-        mock.set("json", (JsonSupplier) () -> Promise.resolve(userObj));
-        return Js.cast(mock);
+        return userObj;
     }
 
-    private static Response createWorkspacesResponse() {
+    private static Object createWorkspacesJson() {
         JsPropertyMap<Object> ws = JsPropertyMap.of();
         ws.set("id", "ws-1");
         ws.set("name", "TestWorkspace");
-        Object[] arr = new Object[] { ws };
-
-        JsPropertyMap<Object> mock = JsPropertyMap.of();
-        mock.set("status", 200);
-        mock.set("statusText", "OK");
-        mock.set("json", (JsonSupplier) () -> Promise.resolve(arr));
-        return Js.cast(mock);
+        return new Object[] { ws };
     }
 
-    private static Response createMenuResponse() {
+    private static Object createMenuJson() {
         JsPropertyMap<Object> menu1 = JsPropertyMap.of();
         menu1.set("title", "TestMenu");
         menu1.set("order", "A");
@@ -76,28 +86,16 @@ public class FetchMock implements FetchApi {
         tool1.set("iconType", "sharp");
         menu1.set("tools", new Object[] { tool1 });
 
-        Object[] menus = new Object[] { menu1 };
-
-        JsPropertyMap<Object> mock = JsPropertyMap.of();
-        mock.set("status", 200);
-        mock.set("statusText", "OK");
-        mock.set("json", (JsonSupplier) () -> Promise.resolve(menus));
-        return Js.cast(mock);
-    }
-
-    private static Response createRefreshResponse() {
-        JsPropertyMap<Object> mock = JsPropertyMap.of();
-        mock.set("status", 200);
-        mock.set("statusText", "OK");
-        mock.set("json", (JsonSupplier) () -> Promise.resolve((Object) null));
-        return Js.cast(mock);
+        return new Object[] { menu1 };
     }
 
     private static Response createEmptyResponse(int status) {
         JsPropertyMap<Object> mock = JsPropertyMap.of();
         mock.set("status", status);
         mock.set("statusText", "Not Found");
+        mock.set("ok", false);
         mock.set("json", (JsonSupplier) () -> Promise.resolve((Object) null));
         return Js.cast(mock);
     }
 }
+

@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.api;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
-import dev.sayaya.handbook.client.ShellModule;
+import dev.sayaya.handbook.client.StateModule;
 import dev.sayaya.handbook.client.interfaces.api.MenuApi;
 import dev.sayaya.handbook.client.interfaces.api.UserApi;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
@@ -20,8 +20,9 @@ import javax.inject.Singleton;
 
 /**
  * 테스트 전용 독립적인 Dagger 모듈.
+ * 불필요한 UI 엘리먼트 의존성을 배제하기 위해 ShellModule 대신 StateModule만 포함한다.
  */
-@Module(includes = ShellModule.class)
+@Module(includes = StateModule.class)
 public interface ApiTestModule {
     @Provides @Singleton static FetchApi provideFetchApi() { return new FetchMock(); }
     
@@ -45,4 +46,5 @@ public interface ApiTestModule {
         };
     }
 }
+
 
