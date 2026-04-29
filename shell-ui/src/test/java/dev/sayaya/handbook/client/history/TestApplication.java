@@ -2,24 +2,26 @@ package dev.sayaya.handbook.client.history;
 
 import com.google.gwt.core.client.EntryPoint;
 import dev.sayaya.handbook.client.usecase.HistoryManager;
-import dev.sayaya.handbook.domain.Menu;
-import dev.sayaya.rx.subject.BehaviorSubject;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import dagger.Component;
-import static elemental2.dom.DomGlobal.window;
+import dev.sayaya.handbook.client.usecase.UriStore;
+import dev.sayaya.handbook.domain.Menu;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 
+import static elemental2.dom.DomGlobal.window;
+
 public class TestApplication implements EntryPoint {
-    @Inject HistoryManager historyManager;
-    @Inject BehaviorSubject<String> uri;
-    @Inject MenuSelected menuSelected;
+    private HistoryManager historyManager;
+    private UriStore uri;
+    private MenuSelected menuSelected;
 
     @Override
     public void onModuleLoad() {
-        DaggerTestApplication_TestComponent.create().inject(this);
+        var components = DaggerTestComponent.create();
+        this.historyManager = components.historyManager();
+        this.uri = components.uri();
+        this.menuSelected = components.menuSelected();
+
         historyManager.initialize();
         publishToWindow();
     }
@@ -47,11 +49,5 @@ public class TestApplication implements EntryPoint {
     @jsinterop.annotations.JsFunction
     interface Arg1<T> {
         void on(T val);
-    }
-
-    @Singleton
-    @Component(modules = { dev.sayaya.handbook.client.HostSharedModule.class, dev.sayaya.handbook.client.Module.class })
-    interface TestComponent {
-        void inject(TestApplication app);
     }
 }

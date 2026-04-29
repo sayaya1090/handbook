@@ -1,27 +1,16 @@
 package dev.sayaya.handbook.client.drawer;
 
 import dagger.Provides;
-import dev.sayaya.handbook.domain.User;
-import dev.sayaya.handbook.usecase.LanguageDetector;
-import dev.sayaya.handbook.usecase.LanguagePackRepository;
-import dev.sayaya.handbook.usecase.ViewportObserver;
-import dev.sayaya.handbook.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
-import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.Menu;
-import dev.sayaya.handbook.domain.Progress;
-import dev.sayaya.handbook.domain.Tool;
+import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.usecase.LanguageDetector;
+import dev.sayaya.handbook.usecase.LanguagePackRepository;
+import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
-
-import javax.inject.Singleton;
-import java.util.List;
-
-import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
-
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 

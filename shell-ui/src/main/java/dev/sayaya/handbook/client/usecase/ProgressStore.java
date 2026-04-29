@@ -1,7 +1,9 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Progress;
+import dev.sayaya.handbook.usecase.ProgressSharing;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import jsinterop.base.Js;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,5 +19,7 @@ public class ProgressStore extends BehaviorSubject<Progress> {
     @Inject
     public ProgressStore() {
         super(null);
+        ProgressSharing.register(value -> this.next((Progress)Js.cast(value)));
     }
 }
+

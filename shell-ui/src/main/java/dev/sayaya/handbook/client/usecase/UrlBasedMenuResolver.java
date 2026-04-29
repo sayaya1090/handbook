@@ -2,13 +2,14 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.domain.Menu;
-import dev.sayaya.rx.Observable;
 import elemental2.core.JsRegExp;
 import elemental2.dom.DomGlobal;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

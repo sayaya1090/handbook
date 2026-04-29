@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.usecase.WorkspaceEvent;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -36,9 +35,6 @@ public class SessionContext {
         if (value == null) values.remove(key);
         else values.put(key, value);
         subject.next(new HashMap<>(values));
-        if ("workspaceId".equals(key)) {
-            WorkspaceEvent.publishId(value);
-        }
     }
 
     /**

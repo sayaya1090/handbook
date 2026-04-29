@@ -15,7 +15,6 @@ import javax.inject.Singleton;
 
 import static dev.sayaya.handbook.client.domain.DrawerState.COLLAPSE;
 import static dev.sayaya.handbook.client.domain.DrawerState.EXPAND;
-import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
 @Singleton
 public class MenuToggleButton implements IsElement<HTMLElement> {

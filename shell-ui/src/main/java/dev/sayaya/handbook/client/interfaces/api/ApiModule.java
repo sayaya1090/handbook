@@ -3,16 +3,16 @@ package dev.sayaya.handbook.client.interfaces.api;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
-import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
+import dev.sayaya.handbook.interfaces.api.BrowserLanguageDetector;
+import dev.sayaya.handbook.interfaces.api.FetchLanguagePackRepository;
+import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.ViewportObserver;
-import dev.sayaya.handbook.interfaces.api.BrowserLanguageDetector;
-import dev.sayaya.handbook.interfaces.api.FetchLanguagePackRepository;
-import dev.sayaya.handbook.client.components.ToastContainer;
 
 import javax.inject.Singleton;
 

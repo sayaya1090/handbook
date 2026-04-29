@@ -8,7 +8,6 @@ import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
-import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static dev.sayaya.ui.elements.FocusRingElementBuilder.focusRing;
 import static dev.sayaya.ui.elements.RippleElementBuilder.ripple;
 import static org.jboss.elemento.Elements.*;

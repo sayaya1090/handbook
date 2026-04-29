@@ -1,11 +1,10 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
-import dev.sayaya.handbook.domain.Workspace;
 import dev.sayaya.handbook.client.usecase.SessionContext;
-import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
 import dev.sayaya.handbook.client.usecase.UriStore;
+import dev.sayaya.handbook.client.usecase.WorkspaceEventListener;
 import dev.sayaya.handbook.client.usecase.WorkspaceList;
-import dev.sayaya.rx.subject.BehaviorSubject;
+import dev.sayaya.handbook.domain.Workspace;
 import dev.sayaya.ui.elements.SelectElementBuilder.OutlinedSelectElementBuilder;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.EventType;

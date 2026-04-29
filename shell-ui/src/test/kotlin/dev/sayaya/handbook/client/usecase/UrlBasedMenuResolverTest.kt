@@ -17,22 +17,22 @@ class UrlBasedMenuResolverTest : DescribeSpec({
     describe("WorkspaceEventListener.extractWorkspaceId는") {
 
         it("표준 워크스페이스 URL에서 ID를 추출한다") {
-            val result = WorkspaceEventListener.extractWorkspaceId("/workspace/abc-123/type")
+            val result = WorkspaceEventListener.extractWorkspaceId("/workspaces/abc-123/type")
             result shouldBe "abc-123"
         }
 
         it("하위 경로 없이 워크스페이스 ID만 있는 URL을 처리한다") {
-            val result = WorkspaceEventListener.extractWorkspaceId("/workspace/ws-001")
+            val result = WorkspaceEventListener.extractWorkspaceId("/workspaces/ws-001")
             result shouldBe "ws-001"
         }
 
         it("쿼리스트링이 포함된 URL에서 ID를 추출한다") {
-            val result = WorkspaceEventListener.extractWorkspaceId("/workspace/ws-002?tab=settings")
+            val result = WorkspaceEventListener.extractWorkspaceId("/workspaces/ws-002?tab=settings")
             result shouldBe "ws-002"
         }
 
         it("전체 URL(프로토콜 + 호스트 포함)에서 ID를 추출한다") {
-            val result = WorkspaceEventListener.extractWorkspaceId("https://example.com/workspace/ws-003/document")
+            val result = WorkspaceEventListener.extractWorkspaceId("https://example.com/workspaces/ws-003/document")
             result shouldBe "ws-003"
         }
 
@@ -47,18 +47,18 @@ class UrlBasedMenuResolverTest : DescribeSpec({
         }
 
         it("워크스페이스 ID가 비어있는 URL에서 null을 반환한다") {
-            val result = WorkspaceEventListener.extractWorkspaceId("/workspace/")
+            val result = WorkspaceEventListener.extractWorkspaceId("/workspaces/")
             result shouldBe null
         }
 
         it("UUID 형식의 워크스페이스 ID를 추출한다") {
-            val result = WorkspaceEventListener.extractWorkspaceId("/workspace/550e8400-e29b-41d4-a716-446655440000/type")
+            val result = WorkspaceEventListener.extractWorkspaceId("/workspaces/550e8400-e29b-41d4-a716-446655440000/type")
             result shouldBe "550e8400-e29b-41d4-a716-446655440000"
         }
 
         it("에이전트 navigate 커맨드에서 사용되는 URL 패턴을 처리한다") {
             // agent-ui의 NavigateHandler가 발행하는 URL 형태
-            val result = WorkspaceEventListener.extractWorkspaceId("/workspace/agent-ws/type-management")
+            val result = WorkspaceEventListener.extractWorkspaceId("/workspaces/agent-ws/type-management")
             result shouldBe "agent-ws"
         }
     }

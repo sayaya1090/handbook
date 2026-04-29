@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.client.interfaces.ShellStylesheet;
-import dev.sayaya.handbook.client.usecase.DrawerMode;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -19,7 +18,7 @@ import static org.jboss.elemento.Elements.nav;
 /**
  * 좌측 Drawer 네비게이션 컨테이너.
  *
- * <p><b>책임:</b> {@link DrawerMode} 상태(EXPAND/COLLAPSE/HIDE/OVERLAY) 에 따라 Drawer 의
+ * <p><b>책임:</b> {@link dev.sayaya.handbook.client.usecase.DrawerMode} 상태(EXPAND/COLLAPSE/HIDE/OVERLAY) 에 따라 Drawer 의
  * {@code [open]/[hide]/[overlay]} 속성을 토글하고, 하단 MenuRail / ToolRail 을 자식으로 담는다.
  * OVERLAY 모드에서는 배경 스크림을 노출하며, 스크림 클릭으로 overlay 를 닫는다.</p>
  *
@@ -32,7 +31,6 @@ import static org.jboss.elemento.Elements.nav;
  *
  * <p><b>의존관계:</b>
  * <ul>
- *   <li>{@link DrawerMode} — Drawer 상태 구독</li>
  *   <li>{@link MenuRailElement} / {@link ToolRailElement} — rail 자식</li>
  *   <li>{@link MenuToggleButton} — drawer 상단 햄버거 (rail 과 독립)</li>
  *   <li>{@link ShellStylesheet} — 생성자 주입으로 shell.css 로드 강제</li>
@@ -49,13 +47,12 @@ public class DrawerElement implements IsElement<HTMLElement> {
     @Delegate private final HTMLContainerBuilder<HTMLElement> _this = nav();
     private final HTMLDivElement scrim;
 
-    @Inject DrawerElement(DrawerMode mode, MenuRailElement navMenu, ToolRailElement navTools,
+    @Inject DrawerElement(MenuRailElement navMenu, ToolRailElement navTools,
                           MenuToggleButton navToggle, ShellStylesheet shellStylesheet) {
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
         // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
         assert shellStylesheet != null;
         scrim = div().css("drawer-scrim").element();
-        scrim.addEventListener("click", e -> mode.toggleOverlay());
 
         // AppBar / MobileTabs 는 viewport 최상단 fixed 요소로서 body 직속에 배치된다 —
         // {@link dev.sayaya.handbook.client.ShellInitializer} 가 Composition Root 에서
@@ -66,10 +63,13 @@ public class DrawerElement implements IsElement<HTMLElement> {
                 .add(navToggle)
                 .add(div().css("body")
                         .add(navMenu).add(navTools));
-        mode.subscribe(this::state);
     }
 
-    private void state(DrawerState state) {
+    public void onOverlayClick(Runnable action) {
+        scrim.addEventListener("click", e -> action.run());
+    }
+
+    public void setState(DrawerState state) {
         switch (state) {
             case EXPAND -> {
                 element().setAttribute("open", true);
@@ -112,3 +112,4 @@ public class DrawerElement implements IsElement<HTMLElement> {
         }
     }
 }
+

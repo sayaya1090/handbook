@@ -1,10 +1,10 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.rx.subject.BehaviorSubject;
+import dev.sayaya.handbook.domain.Workspace;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-import dev.sayaya.handbook.domain.Workspace;
 
 /**
  * 사용자가 로그인했을 때 워크스페이스 컨텍스트로 자동 안내하는 부트스트래퍼.

@@ -6,20 +6,16 @@ import dev.sayaya.handbook.client.components.HighlightEffect;
 import dev.sayaya.handbook.client.components.TooltipCard;
 import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.domain.SessionState;
-import dev.sayaya.handbook.client.usecase.MenuHover;
-import dev.sayaya.handbook.client.usecase.MenuList;
-import dev.sayaya.handbook.client.usecase.MenuRailMode;
-import dev.sayaya.handbook.client.usecase.MenuSelected;
-import dev.sayaya.handbook.client.usecase.SessionStateProvider;
+import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.domain.SessionStateKind;
 import dev.sayaya.handbook.usecase.LabelProvider;
-
-import java.util.List;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
+
+import java.util.List;
 
 import static org.jboss.elemento.Elements.div;
 

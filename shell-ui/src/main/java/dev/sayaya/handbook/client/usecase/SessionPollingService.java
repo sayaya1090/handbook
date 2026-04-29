@@ -2,10 +2,10 @@ package dev.sayaya.handbook.client.usecase;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ToastContainer;
+import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.handbook.domain.Labels;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.RequestInit;
 

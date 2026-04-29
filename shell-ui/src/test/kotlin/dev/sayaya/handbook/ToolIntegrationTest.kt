@@ -2,9 +2,7 @@ package dev.sayaya.handbook
 
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 
 @GwtHtml("drawer.html")
 internal class ToolIntegrationTest: GwtTestSpec({

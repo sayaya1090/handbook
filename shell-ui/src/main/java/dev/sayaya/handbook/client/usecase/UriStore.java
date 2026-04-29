@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
+import dev.sayaya.handbook.usecase.UriSharing;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Inject;
@@ -19,5 +20,7 @@ public class UriStore extends BehaviorSubject<String> {
     @Inject
     public UriStore() {
         super(null);
+        UriSharing.register(this::next);
     }
 }
+

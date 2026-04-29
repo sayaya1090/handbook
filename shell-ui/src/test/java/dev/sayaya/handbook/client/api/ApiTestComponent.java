@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.api;
 
 import dev.sayaya.handbook.client.usecase.MenuRepository;
+import dev.sayaya.handbook.client.usecase.UriStore;
 import dev.sayaya.handbook.client.usecase.UserProvider;
 import dev.sayaya.handbook.client.usecase.UserRepository;
-import dev.sayaya.handbook.client.usecase.UriStore;
 
 import javax.inject.Singleton;
 

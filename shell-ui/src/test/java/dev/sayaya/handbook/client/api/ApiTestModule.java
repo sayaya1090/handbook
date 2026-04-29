@@ -6,19 +6,20 @@ import dagger.Provides;
 import dev.sayaya.handbook.client.ShellModule;
 import dev.sayaya.handbook.client.interfaces.api.MenuApi;
 import dev.sayaya.handbook.client.interfaces.api.UserApi;
-import dev.sayaya.handbook.client.usecase.*;
-import dev.sayaya.handbook.domain.Progress;
-import dev.sayaya.handbook.domain.Render;
-import dev.sayaya.handbook.usecase.*;
-import dev.sayaya.rx.Observable;
-import dev.sayaya.rx.Observer;
+import dev.sayaya.handbook.client.usecase.MenuRepository;
+import dev.sayaya.handbook.client.usecase.UserRepository;
+import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
+import dev.sayaya.handbook.usecase.FetchApi;
+import dev.sayaya.handbook.usecase.LanguageDetector;
+import dev.sayaya.handbook.usecase.LanguagePackRepository;
+import dev.sayaya.handbook.usecase.ViewportObserver;
 
 import javax.inject.Singleton;
 
 /**
  * 테스트 전용 독립적인 Dagger 모듈.
  */
-@Module(includes = Module.class)
+@Module(includes = ShellModule.class)
 public interface ApiTestModule {
     @Provides @Singleton static FetchApi provideFetchApi() { return new FetchMock(); }
     

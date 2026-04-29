@@ -18,11 +18,7 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.jboss.elemento.Elements.div;
