@@ -4,6 +4,8 @@ import dagger.Provides;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
+import dev.sayaya.handbook.client.usecase.ScriptInjector;
+import dev.sayaya.handbook.client.usecase.SessionEnvironment;
 import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
@@ -125,4 +127,16 @@ public class DrawerMock {
     @Provides @Singleton Observable<Progress> provideProgressObservable(BehaviorSubject<Progress> p) {
         return p.asObservable();
     }
+    
+    @Provides @Singleton ScriptInjector provideScriptInjector() { return src -> {}; }
+    @Provides @Singleton SessionEnvironment provideSessionEnvironment() {
+        return new SessionEnvironment() {
+            @Override public String getCookies() { return ""; }
+            @Override public String decodeBase64(String encoded) { return ""; }
+            @Override public Object parseJson(String json) { return null; }
+            @Override public void redirect(String path) {}
+            @Override public void clearInterval(double handle) {}
+        };
+    }
 }
+

@@ -9,6 +9,8 @@ import dev.sayaya.handbook.client.interfaces.api.UserApi;
 import dev.sayaya.handbook.client.usecase.MenuRepository;
 import dev.sayaya.handbook.client.usecase.UserRepository;
 import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
+import dev.sayaya.handbook.client.usecase.ScriptInjector;
+import dev.sayaya.handbook.client.usecase.SessionEnvironment;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
@@ -31,4 +33,16 @@ public interface ApiTestModule {
     @Provides @Singleton static ViewportObserver provideViewport() { return new ViewportObserver(); }
     @Provides @Singleton static LanguageDetector provideLanguageDetector() { return () -> "en"; }
     @Provides @Singleton static LanguagePackRepository provideLanguagePackRepository() { return lang -> dev.sayaya.rx.subject.BehaviorSubject.behavior(dev.sayaya.handbook.domain.Labels.empty()); }
+    
+    @Provides @Singleton static ScriptInjector provideScriptInjector() { return src -> {}; }
+    @Provides @Singleton static SessionEnvironment provideSessionEnvironment() {
+        return new SessionEnvironment() {
+            @Override public String getCookies() { return ""; }
+            @Override public String decodeBase64(String encoded) { return ""; }
+            @Override public Object parseJson(String json) { return null; }
+            @Override public void redirect(String path) {}
+            @Override public void clearInterval(double handle) {}
+        };
+    }
 }
+

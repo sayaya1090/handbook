@@ -6,7 +6,6 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.RequestInit;
 
 import javax.inject.Inject;
@@ -38,15 +37,17 @@ public class SessionPollingService {
     private final FetchApi fetchApi;
     private final ToastContainer toastContainer;
     private final LabelProvider labelProvider;
+    private final SessionEnvironment env;
     private Labels labels = Labels.empty();
     private boolean warningShown = false;
     private double timerHandle = -1;
 
     @Inject
-    SessionPollingService(FetchApi fetchApi, ToastContainer toastContainer, LabelProvider labelProvider) {
+    SessionPollingService(FetchApi fetchApi, ToastContainer toastContainer, LabelProvider labelProvider, SessionEnvironment env) {
         this.fetchApi = fetchApi;
         this.toastContainer = toastContainer;
         this.labelProvider = labelProvider;
+        this.env = env;
         this.labelProvider.subscribe(l -> this.labels = l);
     }
 
@@ -115,10 +116,10 @@ public class SessionPollingService {
 
     private void redirectToLogin() {
         if (timerHandle >= 0) {
-            DomGlobal.clearInterval(timerHandle);
+            env.clearInterval(timerHandle);
             timerHandle = -1;
         }
-        DomGlobal.window.location.assign(LOGIN_PATH);
+        env.redirect(LOGIN_PATH);
     }
 
     /**
@@ -127,7 +128,7 @@ public class SessionPollingService {
      *
      * @return 만료 시각(ms), 실패 시 -1
      */
-    private static double getTokenExpiry() {
+    private double getTokenExpiry() {
         jsinterop.base.JsPropertyMap<?> payload = parseJwtPayload();
         if (payload == null) return -1;
         jsinterop.base.Any exp = (jsinterop.base.Any) payload.get("exp");
@@ -140,7 +141,7 @@ public class SessionPollingService {
      *
      * @return 수명(ms), 실패 시 3600000 (기본 1시간)
      */
-    private static double getTokenDuration() {
+    private double getTokenDuration() {
         jsinterop.base.JsPropertyMap<?> payload = parseJwtPayload();
         if (payload == null) return 3600000;
         jsinterop.base.Any exp = (jsinterop.base.Any) payload.get("exp");
@@ -156,9 +157,9 @@ public class SessionPollingService {
      *
      * @return JWT payload를 담은 JsPropertyMap, 실패 시 null
      */
-    private static jsinterop.base.JsPropertyMap<?> parseJwtPayload() {
+    private jsinterop.base.JsPropertyMap<?> parseJwtPayload() {
         try {
-            String cookies = ((elemental2.dom.HTMLDocument) DomGlobal.document).cookie;
+            String cookies = env.getCookies();
             if (cookies == null || cookies.isEmpty()) return null;
             String[] parts = cookies.split(";");
             for (String part : parts) {
@@ -167,8 +168,8 @@ public class SessionPollingService {
                     String token = cookie.substring(cookie.indexOf('=') + 1);
                     String[] jwtParts = token.split("\\.");
                     if (jwtParts.length >= 2) {
-                        String decoded = atob(jwtParts[1]);
-                        Object parsed = elemental2.core.Global.JSON.parse(decoded);
+                        String decoded = env.decodeBase64(jwtParts[1]);
+                        Object parsed = env.parseJson(decoded);
                         return jsinterop.base.Js.cast(parsed);
                     }
                 }
@@ -178,15 +179,5 @@ public class SessionPollingService {
         }
         return null;
     }
-
-    /** window.atob()를 호출하여 Base64 문자열을 디코딩한다. */
-    private static String atob(String encoded) {
-        return jsinterop.base.Js.<AtobWindow>cast(DomGlobal.window).atob(encoded);
-    }
-
-    /** window.atob() 접근용 JsInterop 타입. */
-    @jsinterop.annotations.JsType(isNative = true, namespace = jsinterop.annotations.JsPackage.GLOBAL, name = "Window")
-    private static class AtobWindow {
-        public native String atob(String encoded);
-    }
 }
+
