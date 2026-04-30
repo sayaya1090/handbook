@@ -75,8 +75,8 @@ sequenceDiagram
 |------|------|
 | **액터** | 클라이언트 (브라우저, 외부 시스템) |
 | **선행조건** | Gateway 서버 구동 및 라우트 설정 완료 |
-| **정상 흐름** | 1. 클라이언트가 HTTP 요청을 Gateway로 전송한다.<br>2. Spring Cloud Gateway가 `application.yml`에 정의된 라우트 목록에서 Path/Method Predicate를 평가한다.<br>3. 매칭된 라우트의 대상 URI로 요청을 프록시한다.<br>4. 대상 서비스의 응답을 클라이언트에 전달한다. |
-| **라우트 목록** | `login` (/auth/**, /user), `event-broadcaster` (/workspaces/*/messages GET), `type-query` (/workspaces/*/types/**, /workspaces/*/layouts/** GET), `type-command` (PUT,DELETE), `document-query` (/workspaces/*/documents/**, /workspaces/*/*/*  GET), `document-command` (PUT,DELETE), `workspace-command` (POST,PUT,DELETE), `assistant` (/assistant/**), `static` (/js/**, /css/**, /icons/**) |
+| **정상 흐름** | 1. 클라이언트가 HTTP 요청을 Gateway로 전송한다.<br>2. Spring Cloud Gateway가 `application.yml`에 정의된 라우트 목록에서 Path/Method Predicate를 평가한다.<br>3. 매칭된 라우트의 대상 URI로 요청 을 프록시한다.<br>4. 대상 서비스의 응답을 클라이언트에 전달한다. |
+| **라우트 목록** | `login` (/auth/**, /user), `event-broadcaster` (/workspaces/*/messages GET), `type-query` (/workspaces/*/types/**, /workspaces/*/layouts/** GET), `type-command` (PUT,PATCH,DELETE), `document-query` (/workspaces/*/documents/**, /workspaces/*/*/* GET), `document-command` (PUT,PATCH,POST,DELETE), `workspace-command` (POST,PUT,DELETE), `workspace-query` (/workspaces, /workspaces/**, /menus GET), `assistant` (/assistant/**), `static` (/js/**, /css/**, /icons/**) |
 | **결과** | 클라이언트 요청이 적절한 마이크로서비스로 라우팅되어 응답을 수신 |
 
 ## UC-GW2: 메뉴 집계
@@ -85,7 +85,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 클라이언트 (shell-ui 경유) |
 | **선행조건** | `ServiceListProperties`에 메뉴 제공 서비스 목록이 등록되어 있음 |
-| **정상 흐름** | 1. 클라이언트가 `GET /menus`를 요청한다.<br>2. `MenuController`가 요청 헤더를 추출하여 `MenuService.menus(headers)`를 호출한다.<br>3. `MenuService`가 등록된 모든 `MenuSupplier`에 병렬로 `/menus`를 요청한다.<br>4. 각 `ServiceDiscovery`가 WebClient로 대상 서비스의 `/menus`를 호출한다 (타임아웃 1200ms).<br>5. 개별 서비스 실패 시 `onErrorResume`으로 빈 결과를 반환하여 graceful degradation한다.<br>6. 수집된 메뉴를 `order` 기준으로 정렬하여 반환한다. |
+| **정상 흐름** | 1. 클라이언트가 `GET /menus`를 요청한다.<br>2. `MenuController`가 요청 헤더를 추출하여 `MenuService.menus(headers)`를 호출한다.<br>3. `MenuService`가 등록된 모든 `MenuSupplier`에 병렬로 `/menus`를 요청한다.<br>4. 각 `ServiceDiscovery`가 WebClient로 대상 서비스의 `/menus`를 호출한다 (타임아웃 1200ms).<br>5. 개별 서비스 실패 시 `onErrorResume`으로 빈 결과를 반환하여 graceful degradation한다.<br>6. 수 집된 메뉴를 `order` 기준으로 정렬하여 반환한다. |
 | **결과** | 200 OK + 전체 서비스의 메뉴를 통합·정렬한 목록 |
 
 ## UC-GW3: 인증 필터

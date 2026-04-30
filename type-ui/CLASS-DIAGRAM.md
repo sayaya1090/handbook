@@ -193,20 +193,20 @@ classDiagram
         +execute()
         +rollback()
     }
-    class CreateBoxAction {
+    class CreateTBoxAction {
         -TypeList typeList
         -PositionMap positionMap
         -ChangeTracker tracker
         -TypeValue type
         -Position position
     }
-    class DeleteBoxAction {
+    class DeleteTBoxAction {
         -TypeList typeList
         -ChangeTracker tracker
         -TypeValue type
         -ChangeState previousState
     }
-    class EditBoxAction {
+    class EditTBoxAction {
         -TypeList typeList
         -ChangeTracker tracker
         -TypeValue before
@@ -249,9 +249,9 @@ classDiagram
         -ActionManager, LayoutProvider
     }
 
-    Action <|.. CreateBoxAction
-    Action <|.. DeleteBoxAction
-    Action <|.. EditBoxAction
+    Action <|.. CreateTBoxAction
+    Action <|.. DeleteTBoxAction
+    Action <|.. EditTBoxAction
     Action <|.. MoveBoxAction
     Action <|.. ResizeBoxAction
     Action <|.. PushOutOverlapAction
