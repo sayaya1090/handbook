@@ -39,6 +39,52 @@ sequenceDiagram
     Session-->>Input: "입력 활성화 + 아티팩트 요약 표시"
 ```
 
+## 변경 미리보기 → 확인 → Mutation 시퀀스
+
+```mermaid
+sequenceDiagram
+    participant SSE as "SSE /workspaces/{id}/messages"
+    participant Router as CommandRouter
+    participant Preview as PreviewPanelElement
+    participant Confirm as ConfirmDialogElement
+    participant Session as AgentSession
+    participant Client as AgentSseClient
+    participant GW as Gateway
+    participant Mutate as MutateHandler
+
+    SSE-->>Router: "AGENT_COMMAND {'type':'preview','changes':[...]}"
+    Router->>Preview: "previewRequests.next()"
+    Preview-->>Preview: "diff 패널 표시"
+
+    SSE-->>Router: "AGENT_COMMAND {'type':'await_confirm','options':['확인','취소']}"
+    Router->>Session: "state → AWAITING_CONFIRM"
+    Router->>Confirm: "confirmRequests.next()"
+    Confirm-->>Confirm: "다이얼로그 표시"
+
+    actor User as 사용자
+    User->>Confirm: "'확인' 선택"
+    Confirm->>Client: "respond(workspace, '확인')"
+    Client->>GW: "POST /assistant/respond"
+
+    SSE-->>Router: "AGENT_COMMAND {'type':'mutate','changes':['ADD field:...']}"
+    Router->>Mutate: "mutations.next()"
+    Mutate-->>Mutate: "변경 로그 표시 (3초 후 페이드아웃)"
+    Note over Mutate: "WindowMutationBridge.publish()"
+```
+
+## 에이전트 UX 원칙 — 시각적 실행
+
+에이전트 커맨드는 단순히 데이터로 처리되는 것이 아니라, **프론트엔드에서 시각적 애니메이션으로 실행**되어 "동료가 내 화면을 대신 조작해주는 느낌"을 제공한다:
+
+| 커맨드 | 시각적 실행 |
+|--------|------------|
+| `navigate` | 화면 전환 애니메이션 (페이드아웃 인디케이터 + 모듈 로딩) |
+| `mutate` | 셀이 하나씩 채워지는 효과 (순차 변경 로그, 3초 후 페이드아웃) |
+| `highlight` | 시선 유도 (대상 요소 펄스 애니메이션 + 자동 스크롤) |
+| `attention` | 코치마크/스포트라이트로 설명 동반 안내 |
+| `scroll` | 대상 요소로 부드러운 스크롤 이동 |
+| `preview` | diff 패널로 변경 전후 비교 표시 |
+
 ## AGENT_COMMAND 프로토콜 스펙
 
 에이전트는 `agent-protocol` 모듈에 정의된 표준 커맨드를 사용하여 UI를 조작한다.

@@ -40,6 +40,105 @@ sequenceDiagram
     C->>C: "ActionManager.undo() 실행"
 ```
 
+## 타입 조회 (초기 로딩 및 전환) 시퀀스
+
+```mermaid
+sequenceDiagram
+    participant Shell as Shell (WorkspaceSelect)
+    participant Bridge as WindowWorkspaceEventBridge
+    participant App as Application
+    participant LA as LayoutApi
+    participant LL as LayoutList
+    participant LP as LayoutProvider
+    participant TA as TypeApi
+    participant TL as TypeList
+    participant PM as PositionMap
+    participant PRS as PeriodRecalculationService
+    participant Canvas as CanvasElement
+
+    Shell->>Bridge: "publishWorkspace(id)"
+    Note over Bridge: "CustomEvent('handbook-workspace-context')"
+    
+    App->>Bridge: "receiver().workspaceId().subscribe()"
+    Bridge-->>App: "workspaceId 발행"
+    
+    App->>TA: "setWorkspace(id)"
+    App->>LA: "setWorkspace(id)"
+    
+    Note over App: "LoadAction 실행"
+    App->>LA: "layouts()"
+    LA-->>LL: "LayoutPeriod[] 발행"
+    LP->>LP: "selectBestMatch(periods)"
+    App->>TA: "list(selectedPeriod)"
+    TA-->>TL: "Set<TypeValue> 발행"
+    App->>LA: "positions(selectedPeriod)"
+    LA-->>PM: "Map<String,Position> 발행"
+    
+    TL-->>PRS: "타입 변경 감지"
+    PRS->>PRS: "기간 경계 재계산"
+    TL-->>Canvas: "syncElements() → 카드 렌더링"
+```
+
+## 드래그 & 드롭 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant Canvas as CanvasElement
+    participant Drag as DragShapeElement
+    participant Snap as GridSnap
+    participant AM as ActionManager
+    participant PM as PositionMap
+
+    User->>Canvas: "mousedown (LAYOUT 모드)"
+    Canvas->>Drag: "show(선택된 박스들)"
+    loop "mousemove"
+        User->>Canvas: "마우스 이동"
+        Canvas->>Snap: "snapDelta(dx, dy)"
+        Snap-->>Canvas: "정렬된 delta"
+        Canvas->>Drag: "move(delta)"
+    end
+    User->>Canvas: "mouseup"
+    Canvas->>Drag: "drop()"
+    Canvas->>AM: "execute(ComplexAction)"
+    Note over AM: "MoveTBoxAction + PushOutOverlapAction"
+    AM->>PM: "위치 업데이트"
+    PM-->>Canvas: "박스 이동 + 겹침 해소"
+```
+
+## 속성 편집 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant TBox as TypeElement
+    participant Menu as TBoxContextMenuElement
+    participant Dialog as AttributeEditorDialog
+    participant VE as ValidatorEditor
+    participant AM as ActionManager
+    participant TL as TypeList
+
+    alt "컨텍스트 메뉴로 추가"
+        User->>TBox: "우클릭"
+        TBox->>Menu: "show(x, y, typeKey)"
+        User->>Menu: "'Add Attribute' 클릭"
+        Menu->>Dialog: "show(null, onApply)"
+    else "기존 속성 편집 (TYPE 모드)"
+        User->>TBox: "속성 행 클릭"
+        TBox->>Dialog: "show(attribute, onApply)"
+    end
+
+    Dialog-->>Dialog: "이름/타입/설명 입력"
+    User->>Dialog: "타입 버튼 선택 (예: number)"
+    Dialog->>VE: "NumberValidatorEditor 활성화"
+    VE-->>VE: "min/max 입력"
+    User->>Dialog: "Apply 클릭"
+    Dialog->>VE: "collect() → AttributeTypeValue"
+    Dialog->>AM: "execute(EditTBoxAction)"
+    AM->>TL: "타입 업데이트"
+    TL-->>TBox: "속성 목록 다시 그리기"
+```
+
 ## 타입 생성 → 저장 시퀀스
 
 ```mermaid
