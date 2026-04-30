@@ -77,7 +77,7 @@ spring:
         - id: event-broadcaster
           uri: ${gateway.routes.event-broadcaster:http://localhost:8088}
           predicates:
-            - Path=/workspace/*/messages
+            - Path=/workspaces/*/messages
             - Method=GET
           filters:
             - name: CircuitBreaker
@@ -87,27 +87,27 @@ spring:
         - id: type-query
           uri: ${gateway.routes.type-query:http://localhost:8082}
           predicates:
-            - Path=/workspace/*/types/**,/workspace/*/layouts/**
+            - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
             - Method=GET
         - id: type-command
           uri: ${gateway.routes.type-command:http://localhost:8083}
           predicates:
-            - Path=/workspace/*/types/**,/workspace/*/layouts/**
+            - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
             - Method=PUT,DELETE
         - id: document-query
           uri: ${gateway.routes.document-query:http://localhost:8084}
           predicates:
-            - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
+            - Path=/workspaces/*/documents/**,/workspaces/*/*/*,/workspaces/*/stats,/workspaces/*/stats/**,/workspaces/*/quality-issues,/workspaces/*/agent-activity
             - Method=GET
         - id: document-command
           uri: ${gateway.routes.document-command:http://localhost:8085}
           predicates:
-            - Path=/workspace/*/documents/**
+            - Path=/workspaces/*/documents/**
             - Method=PUT,DELETE
         - id: workspace-command
           uri: ${gateway.routes.workspace-command:http://localhost:8086}
           predicates:
-            - Path=/workspace,/workspace/**
+            - Path=/workspace,/workspaces/**
             - Method=POST,PUT,DELETE
         - id: assistant
           uri: ${gateway.routes.assistant:http://localhost:8087}
@@ -124,7 +124,7 @@ spring:
             - Path=/js/**,/css/**,/icons/**
 
 ### SPA 클린 URL 지원 (Fallback)
-`shell-ui`의 클린 URL 내비게이션 지원을 위해, API 경로가 아닌 UI 경로 요청(예: `/workspace/123/types`) 시 SPA 진입점인 `app.html`을 반환하도록 설정해야 한다.
+`shell-ui`의 클린 URL 내비게이션 지원을 위해, API 경로가 아닌 UI 경로 요청(예: `/workspaces/123/types`) 시 SPA 진입점인 `app.html`을 반환하도록 설정해야 한다.
 - **방법**: Ingress/Gateway API 레벨에서 UI 경로 패턴을 `app.html`로 rewrite 하거나, Gateway 내부에 API 이외의 모든 HTML 요청을 `app.html`로 연결하는 Fallback 필터를 적용한다. 상세 설계는 `docs/architecture.md` 참조.
 
 ```

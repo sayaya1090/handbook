@@ -568,7 +568,7 @@ export default function () {
   })
   group('sse', () => {
     // event-broadcaster 로 라우팅되는 SSE 연결
-    const r = http.get(`${__ENV.BASE_URL}/workspace/demo/messages`, {
+    const r = http.get(`${__ENV.BASE_URL}/workspaces/demo/messages`, {
       headers: { Accept: 'text/event-stream' },
       timeout: '5s',
     })
@@ -651,7 +651,7 @@ spec:
 
 **서비스별 확장:**
 - event-broadcaster: `kafka_consumer_records_lag < 100` 추가 (부하 중에도 consumer 가 뒤쳐지지 않는지)
-- persist-*: `r2dbc_pool_acquired / r2dbc_pool_max < 0.9` 추가 (풀 고갈 방지)
+- command-*: `r2dbc_pool_acquired / r2dbc_pool_max < 0.9` 추가 (풀 고갈 방지)
 
 ### 7.3 `<svc>-canary` (prod canary)
 목적: Istio subset 기준 canary vs stable 비교. 2 분 × 3 회 = 6 분.

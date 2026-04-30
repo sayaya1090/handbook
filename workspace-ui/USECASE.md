@@ -11,7 +11,7 @@ sequenceDiagram
 
     Admin->>UI: 이름/설명 수정 및 "저장" 클릭
     UI->>API: update(id, name, description)
-    API->>GW: PUT /workspace/{id}
+    API->>GW: PUT /workspaces/{id}
     GW-->>API: 200 OK
     API-->>UI: 완료
     UI->>UI: 성공 토스트 표시
@@ -41,7 +41,7 @@ sequenceDiagram
 - **정상 흐름**:
     1. 관리자가 Info 탭에서 정보를 수정한다.
     2. "저장" 버튼을 클릭한다.
-    3. 시스템이 `PUT /workspace/{id}` API를 호출한다.
+    3. 시스템이 `PUT /workspaces/{id}` API를 호출한다.
     4. 성공 시 목록을 최신화하고 성공 알림을 표시한다.
 
 ## UC-WM2: 그룹 생성 및 삭제

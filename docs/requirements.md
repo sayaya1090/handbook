@@ -20,7 +20,7 @@ Handbook은 **운영 중 스키마 변경과 이력 관리를 지원하면서 �
 - **이벤트 드리븐**: 도메인 변경 사항을 이벤트로 발행하고, 구독자가 비동기로 처리한다.
 - **리액티브**: WebFlux 기반의 비동기·논블로킹 처리를 사용한다.
 - **클린 아키텍처**: 각 모듈은 domain → usecase → interfaces 방향으로 의존한다. domain과 usecase는 프레임워크(Spring, Jackson 등)에 의존하지 않으며, 프레임워크 관련 설정은 interfaces 계층에 위치한다.
-- **실시간 협업**: 같은 워크스페이스의 모든 참여자(사용자 + AI 에이전트)는 동일한 Kafka 이벤트 채널(`/workspace/{id}/messages` SSE)을 공유한다. 한 사용자의 문서 저장, 다른 사용자의 타입 변경, 에이전트의 커맨드가 모두 같은 스트림으로 전달되어 전원이 실시간으로 변경사항을 관찰한다.
+- **실시간 협업**: 같은 워크스페이스의 모든 참여자(사용자 + AI 에이전트)는 동일한 Kafka 이벤트 채널(`/workspaces/{id}/messages` SSE)을 공유한다. 한 사용자의 문서 저장, 다른 사용자의 타입 변경, 에이전트의 커맨드가 모두 같은 스트림으로 전달되어 전원이 실시간으로 변경사항을 관찰한다.
 - **에이전트 = 협업자**: AI 에이전트는 별도의 시스템이 아니라 워크스페이스의 또 다른 참여자이다. 에이전트의 커맨드는 프론트엔드에서 시각적으로 실행되어, 마치 동료가 내 화면을 대신 조작해주는 것처럼 느껴진다. 모든 액션은 워크스페이스 이벤트로 기록되어 감사 추적이 가능하다.
 
 ### 시스템 구성
@@ -398,27 +398,27 @@ flowchart LR
 | GET    | `/menus`                                    | 메뉴 목록 조회 (서비스 집계)     |
 | GET    | `/user`                                     | 현재 사용자 정보 조회            |
 | POST   | `/workspace`                                | 워크스페이스 생성               |
-| GET    | `/workspace/{workspace}/types`              | 타입 목록 조회 (날짜 필터링)     |
-| GET    | `/workspace/{workspace}/types/{type}?version=` | 특정 타입 버전 조회           |
-| PUT    | `/workspace/{workspace}/types`              | 타입 일괄 저장 (새 버전 생성)    |
-| PATCH  | `/workspace/{workspace}/types`              | 타입 부분 업데이트 (변경 속성만) |
-| DELETE | `/workspace/{workspace}/types`              | 타입 일괄 삭제                  |
-| GET    | `/workspace/{workspace}/types/{type}/diff?v1=&v2=` | 타입 두 버전 간 diff       |
-| GET    | `/workspace/{workspace}/documents`          | 문서 검색 (페이지네이션)         |
-| GET    | `/workspace/{workspace}/{type}/{serial}`    | 특정 문서 조회                  |
-| GET    | `/workspace/{workspace}/{type}/{serial}?date=` | 특정 시점 문서 조회 (이력)    |
-| PUT    | `/workspace/{workspace}/documents`          | 문서 일괄 저장 (새 버전 생성)    |
-| PATCH  | `/workspace/{workspace}/documents`          | 문서 부분 업데이트 (변경 필드만) |
-| DELETE | `/workspace/{workspace}/documents`          | 문서 일괄 삭제                  |
-| GET    | `/workspace/{workspace}/{type}/{serial}/diff?date1=&date2=` | 문서 두 시점 간 diff |
-| GET    | `/workspace/{workspace}/compliance`         | 호환성 검증 결과 조회           |
-| GET    | `/workspace/{workspace}/layouts`            | 레이아웃 목록 조회              |
-| GET    | `/workspace/{workspace}/messages`           | SSE 실시간 이벤트 스트림        |
-| POST   | `/workspace/{workspace}/presence`           | 프레즌스 (편집 중 셀/타입 공유)  |
-| POST   | `/workspace/{workspace}/documents/import`   | 문서 일괄 임포트 (CSV/JSON)     |
-| GET    | `/workspace/{workspace}/documents/export`   | 문서 일괄 익스포트 (CSV/JSON)   |
-| GET    | `/workspace/{workspace}/dashboard`          | 워크스페이스 현황 대시보드       |
-| GET    | `/workspace/{workspace}/audit-logs`         | 감사 로그 조회                  |
+| GET    | `/workspaces/{workspace}/types`              | 타입 목록 조회 (날짜 필터링)     |
+| GET    | `/workspaces/{workspace}/types/{type}?version=` | 특정 타입 버전 조회           |
+| PUT    | `/workspaces/{workspace}/types`              | 타입 일괄 저장 (새 버전 생성)    |
+| PATCH  | `/workspaces/{workspace}/types`              | 타입 부분 업데이트 (변경 속성만) |
+| DELETE | `/workspaces/{workspace}/types`              | 타입 일괄 삭제                  |
+| GET    | `/workspaces/{workspace}/types/{type}/diff?v1=&v2=` | 타입 두 버전 간 diff       |
+| GET    | `/workspaces/{workspace}/documents`          | 문서 검색 (페이지네이션)         |
+| GET    | `/workspaces/{workspace}/{type}/{serial}`    | 특정 문서 조회                  |
+| GET    | `/workspaces/{workspace}/{type}/{serial}?date=` | 특정 시점 문서 조회 (이력)    |
+| PUT    | `/workspaces/{workspace}/documents`          | 문서 일괄 저장 (새 버전 생성)    |
+| PATCH  | `/workspaces/{workspace}/documents`          | 문서 부분 업데이트 (변경 필드만) |
+| DELETE | `/workspaces/{workspace}/documents`          | 문서 일괄 삭제                  |
+| GET    | `/workspaces/{workspace}/{type}/{serial}/diff?date1=&date2=` | 문서 두 시점 간 diff |
+| GET    | `/workspaces/{workspace}/compliance`         | 호환성 검증 결과 조회           |
+| GET    | `/workspaces/{workspace}/layouts`            | 레이아웃 목록 조회              |
+| GET    | `/workspaces/{workspace}/messages`           | SSE 실시간 이벤트 스트림        |
+| POST   | `/workspaces/{workspace}/presence`           | 프레즌스 (편집 중 셀/타입 공유)  |
+| POST   | `/workspaces/{workspace}/documents/import`   | 문서 일괄 임포트 (CSV/JSON)     |
+| GET    | `/workspaces/{workspace}/documents/export`   | 문서 일괄 익스포트 (CSV/JSON)   |
+| GET    | `/workspaces/{workspace}/dashboard`          | 워크스페이스 현황 대시보드       |
+| GET    | `/workspaces/{workspace}/audit-logs`         | 감사 로그 조회                  |
 | GET    | `/openapi.json`                             | OpenAPI 3.0 스펙               |
 | POST   | `/assistant/request`                        | 자연어 요청 → 실행 계획 생성     |
 | POST   | `/assistant/execute`                        | 실행 계획 확인 후 실행 (Kafka 발행) |
@@ -426,12 +426,12 @@ flowchart LR
 | POST   | `/assistant/respond`                        | 에이전트 확인 요청에 대한 사용자 응답    |
 | GET    | `/assistant/executions`                     | 실행 상태/진행률 조회 (워크스페이스별)   |
 | GET    | `/assistant/artifacts`                      | 실행 결과 아티팩트 조회                 |
-| PATCH  | `/workspace/{workspace}/documents/{id}/status` | 문서 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
-| POST   | `/workspace/{workspace}/webhooks`           | 웹훅 등록                               |
-| GET    | `/workspace/{workspace}/webhooks`           | 웹훅 목록 조회                           |
-| DELETE | `/workspace/{workspace}/webhooks/{id}`      | 웹훅 삭제                               |
-| GET    | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 조회              |
-| GET    | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 조회                    |
+| PATCH  | `/workspaces/{workspace}/documents/{id}/status` | 문서 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
+| POST   | `/workspaces/{workspace}/webhooks`           | 웹훅 등록                               |
+| GET    | `/workspaces/{workspace}/webhooks`           | 웹훅 목록 조회                           |
+| DELETE | `/workspaces/{workspace}/webhooks/{id}`      | 웹훅 삭제                               |
+| GET    | `/workspaces/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 조회              |
+| GET    | `/workspaces/{workspace}/stats/distribution` | 타입별 문서 분포 조회                    |
 | GET    | `/`                                         | SEO 랜딩 (ko, §3.22.2)                   |
 | GET    | `/en/`                                      | SEO 랜딩 (en, §3.22.2)                   |
 | GET    | `/sitemap.xml`                              | 사이트맵 (§3.22.2)                       |
@@ -724,7 +724,7 @@ AI 에이전트가 백그라운드에서 워크스페이스 내 데이터의 패
 ##### 전송 방식
 
 - 에이전트는 UI 커맨드를 **Kafka 이벤트** (`AGENT_COMMAND`)로 발행한다.
-- `event-broadcaster`가 Kafka 이벤트를 수신하여 워크스페이스별 SSE 스트림(`/workspace/{id}/messages`)으로 브로드캐스트한다.
+- `event-broadcaster`가 Kafka 이벤트를 수신하여 워크스페이스별 SSE 스트림(`/workspaces/{id}/messages`)으로 브로드캐스트한다.
 - 같은 워크스페이스의 **모든 멤버**가 에이전트 액션을 실시간으로 관찰할 수 있다.
 - 에이전트는 제3의 협업자로서 다른 사용자의 변경 이벤트(DOCUMENT_CREATED, TYPE_CREATED)와 동일한 채널로 행동한다.
 - 에이전트가 사용자 확인을 기다리는 구간에서는 `await_confirm` 커맨드로 스트림을 일시 정지한다.
@@ -1294,7 +1294,7 @@ seq  type           payload
   - REVIEW → PUBLISHED: 승인자가 승인
   - REVIEW → DRAFT: 승인자가 반려
   - PUBLISHED → DRAFT: 재편집 요청 (권한 필요)
-- API: `PATCH /workspace/{workspace}/documents/{id}/status`
+- API: `PATCH /workspaces/{workspace}/documents/{id}/status`
   - 요청 바디: `{ "status": "REVIEW" }`
   - 권한 검증 후 상태 전이 수행. 유효하지 않은 전이 시 400 응답.
 
@@ -1303,9 +1303,9 @@ seq  type           payload
 문서·타입 변경 시 외부 시스템에 HTTP 콜백으로 알림을 전송한다.
 
 - 워크스페이스별로 웹훅 URL을 등록할 수 있다.
-  - `POST /workspace/{workspace}/webhooks` — 웹훅 등록
-  - `GET /workspace/{workspace}/webhooks` — 웹훅 목록 조회
-  - `DELETE /workspace/{workspace}/webhooks/{id}` — 웹훅 삭제
+  - `POST /workspaces/{workspace}/webhooks` — 웹훅 등록
+  - `GET /workspaces/{workspace}/webhooks` — 웹훅 목록 조회
+  - `DELETE /workspaces/{workspace}/webhooks/{id}` — 웹훅 삭제
 - 이벤트 발생 시 등록된 URL로 HTTP POST 콜백을 전송한다.
   - 페이로드: 이벤트 타입, 워크스페이스, 페이로드, 타임스탬프
 - 이벤트 필터링을 지원한다 (DOCUMENT_CREATED, DOCUMENT_DELETED, TYPE_CREATED, TYPE_DELETED 등 선택 가능).
@@ -1331,7 +1331,7 @@ seq  type           payload
 
 #### API
 
-- 기존 타입 저장(`PUT /workspace/{workspace}/types`) 및 패치(`PATCH /workspace/{workspace}/types`) 시 속성의 `read_roles`/`write_roles`를 포함하여 전송한다.
+- 기존 타입 저장(`PUT /workspaces/{workspace}/types`) 및 패치(`PATCH /workspaces/{workspace}/types`) 시 속성의 `read_roles`/`write_roles`를 포함하여 전송한다.
 - 타입 조회 시 각 속성의 `read_roles`/`write_roles`가 응답에 포함된다.
 
 ### 3.21 대시보드 차트
@@ -1359,8 +1359,8 @@ seq  type           payload
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 (문서 생성, 검증 실패율, 에이전트 사용량) |
-| GET | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 |
+| GET | `/workspaces/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 (문서 생성, 검증 실패율, 에이전트 사용량) |
+| GET | `/workspaces/{workspace}/stats/distribution` | 타입별 문서 분포 |
 
 ### 3.22 랜딩 페이지
 
@@ -1646,11 +1646,11 @@ AI 에이전트가 function calling / tool use 로 Handbook REST API 를 호출�
 - Handbook REST API 를 MCP `tools` 로 래핑하여 Gemini Desktop, VS Code MCP 클라이언트 등에서 자연어로 Handbook 을 조작할 수 있도록 한다.
 - 노출 대상 tool (예시):
   - `list_workspace_menu()` → `GET /menus` (workspace-query — 워크스페이스 기능 디스커버리)
-  - `create_workspace(name, description)` → `POST /workspace`
-  - `list_types(workspace)` → `GET /workspace/{workspace}/types`
-  - `create_type(workspace, name, attributes[])` → `PUT /workspace/{workspace}/types`
-  - `search_documents(workspace, type, query, limit, page)` → `GET /workspace/{workspace}/documents`
-  - `patch_document(workspace, type, serial, changes)` → `PATCH /workspace/{workspace}/documents`
+  - `create_workspace(name, description)` → `POST /workspaces`
+  - `list_types(workspace)` → `GET /workspaces/{workspace}/types`
+  - `create_type(workspace, name, attributes[])` → `PUT /workspaces/{workspace}/types`
+  - `search_documents(workspace, type, query, limit, page)` → `GET /workspaces/{workspace}/documents`
+  - `patch_document(workspace, type, serial, changes)` → `PATCH /workspaces/{workspace}/documents`
 - MCP `resources` 로 워크스페이스의 타입 스키마·문서 샘플을 조회할 수 있게 한다.
 - MCP `prompts` 로 "새 워크스페이스 설계" 같은 재사용 가능한 프롬프트 템플릿을 제공.
 - 인증은 PAT 를 MCP 세션 초기화 시 전달하는 방식으로 간소화.
@@ -1856,13 +1856,13 @@ visible(menu, state) =
 
 ### 6.1 워크스페이스 참여 (JOIN)
 - 사용자는 워크스페이스 ID를 입력하여 기존 워크스페이스에 참여할 수 있어야 한다.
-- POST /workspace/{id}/join 엔드포인트 필요.
+- POST /workspaces/{id}/join 엔드포인트 필요.
 - workspace-ui SubmitButton에서 JOIN 모드 처리 구현.
 
 ### 6.2 대시보드 API 통합
 - 대시보드 프론트엔드 API URL을 워크스페이스 기반으로 수정.
-- 품질 이슈 조회 엔드포인트 구현 (GET /workspace/{id}/quality-issues).
-- 에이전트 활동 이력 조회 엔드포인트 구현 (GET /workspace/{id}/agent-activity).
+- 품질 이슈 조회 엔드포인트 구현 (GET /workspaces/{id}/quality-issues).
+- 에이전트 활동 이력 조회 엔드포인트 구현 (GET /workspaces/{id}/agent-activity).
 
 ### 6.3 에러 핸들링 개선
 - 프론트엔드 API 호출 실패 시 사용자에게 토스트 알림 표시 (사일런트 실패 금지).

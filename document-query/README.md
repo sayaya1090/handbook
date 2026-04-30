@@ -1,39 +1,39 @@
-# Search-Document 모듈
+# Document-Query 모듈
 
-문서 읽기 전용 백엔드 서비스. Gateway가 메뉴를 수집하여 Shell에 "documents" 메뉴를 노출한다.
+문서 읽기 전용 백엔드 서비스 (CQRS Read). Gateway가 메뉴를 수집하여 Shell에 "documents" 메뉴를 노출한다.
 
 ## 계층 구조
 
 ```
 ├── usecase/         DocumentService, DocumentRepository
 └── interfaces/
-    ├── api/         DocumentController (GET), ExportController (내보내기), MenuController
-    ├── serializer/  CsvSerializer (CSV 직렬화)
-    ├── database/    R2dbcDocumentEntity, R2dbcDocumentRepository
-    └── config/      SearchDocumentConfig (Bean 등록, ObjectMapper)
+    ├── api/         DocumentController (GET), ExportController (내보내기), MenuController, StatsController
+    ├── database/    R2dbcDocumentEntity, R2dbcDocumentRepository, ElasticsearchDocumentRepository
+    └── config/      SearchDocumentConfig (Bean 등록, ObjectMapper), ElasticsearchConfig
 ```
 
 ## API
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{workspaceId}/documents` | 문서 검색 (페이지네이션, 필터) |
-| GET | `/workspace/{workspaceId}/documents/search?q=` | 전문 검색 (data 필드 내 텍스트 매칭) |
-| GET | `/workspace/{workspaceId}/{type}/{serial}` | 특정 문서 조회 |
-| GET | `/workspace/{workspaceId}/{type}/{serial}/history` | 문서 이력 조회 (전체 버전) |
-| GET | `/workspace/{workspaceId}/{type}/{serial}/diff?date1=&date2=` | 두 시점 간 문서 diff |
-| GET | `/workspace/{workspaceId}/documents/export` | 문서 내보내기 (CSV/JSON, Content-Disposition: attachment) |
+| GET | `/workspaces/{workspace}/documents` | 문서 검색 (페이지네이션, 필터) |
+| GET | `/workspaces/{workspace}/documents/search?q=` | 전문 검색 (Elasticsearch 기반) |
+| GET | `/workspaces/{workspace}/{type}/{serial}` | 특정 문서 조회 |
+| GET | `/workspaces/{workspace}/{type}/{serial}/history` | 문서 이력 조회 (전체 버전) |
+| GET | `/workspaces/{workspace}/{type}/{serial}/diff?date1=&date2=` | 두 시점 간 문서 diff |
+| GET | `/workspaces/{workspace}/documents/export` | 문서 내보내기 (CSV/JSON, 스트리밍 방식) |
+| GET | `/workspaces/{workspace}/stats/**` | 대시보드용 통계 API |
 | GET | `/menus` | 문서 메뉴 정보 (Gateway 수집용) |
 
-## document-command와의 역할 분리
+## Document-Command와의 역할 분리
 
-| 역할 | document-command | document-query |
+| 역할 | Document-Command | Document-Query |
 |------|-----------------|-----------------|
-| 읽기 | - | GET (검색, 단건 조회) |
-| 쓰기 | PUT/DELETE | - |
+| 읽기 | - | GET (검색, 단건 조회, 통계) |
+| 쓰기 | PUT/PATCH/DELETE | - |
 | 메뉴 | - | 제공 |
 
-읽기/쓰기 분리(CQRS)로 읽기 전용 서비스를 독립 스케일링할 수 있다.
+읽기/쓰기 분리(CQRS)로 읽기 전용 서비스를 독립 스케일링하고, 검색 최적화(Elasticsearch)를 적용할 수 있다.
 
 ## 검색 파라미터
 
@@ -63,7 +63,7 @@
 - document (Document 도메인)
 - activity (Menu, Tool)
 - authentication (JWT 검증)
-- R2DBC PostgreSQL
+- R2DBC PostgreSQL, Elasticsearch 9.3.3
 - SpringDoc OpenAPI (WebFlux)
 - Log4j2
 

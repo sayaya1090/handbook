@@ -196,12 +196,12 @@ sequenceDiagram
     participant SheetB as SpreadsheetElement (B)
 
     UserA->>SheetA: 셀 [CUST-001, name] 선택
-    SheetA->>GW: POST /workspace/{id}/presence {user:"A", type:"customer", serial:"CUST-001", field:"name"}
+    SheetA->>GW: POST /workspaces/{id}/presence {user:"A", type:"customer", serial:"CUST-001", field:"name"}
     GW-->>SheetB: SSE PRESENCE 이벤트
     SheetB->>SheetB: 해당 셀에 프레즌스 표시 ("A님 편집 중")
 
     UserA->>SheetA: 셀 이동 또는 포커스 해제
-    SheetA->>GW: POST /workspace/{id}/presence {user:"A", type:null}
+    SheetA->>GW: POST /workspaces/{id}/presence {user:"A", type:null}
     GW-->>SheetB: SSE PRESENCE 이벤트 (해제)
     SheetB->>SheetB: 프레즌스 제거
 ```

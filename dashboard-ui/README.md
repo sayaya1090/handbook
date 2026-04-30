@@ -77,8 +77,8 @@ Shell이 `ModuleScriptManager`로 `js/dashboard/dashboard.nocache.js`를 동적 
 | `DashboardRepository.qualityIssues()` | `GET /dashboard/quality-issues` | 품질 이슈 목록 |
 | `DashboardRepository.agentActivity()` | `GET /dashboard/agent-activity` | 에이전트 활동 로그 |
 
-| `DashboardRepository.timeline()` | `GET /workspace/{workspaceId}/stats/timeline?from=&to=&interval=` | 시계열 통계 |
-| `DashboardRepository.distribution()` | `GET /workspace/{workspaceId}/stats/distribution` | 타입별 문서 분포 |
+| `DashboardRepository.timeline()` | `GET /workspaces/{workspaceId}/stats/timeline?from=&to=&interval=` | 시계열 통계 |
+| `DashboardRepository.distribution()` | `GET /workspaces/{workspaceId}/stats/distribution` | 타입별 문서 분포 |
 
 > 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.
 

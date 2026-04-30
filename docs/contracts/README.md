@@ -19,7 +19,7 @@
 | REST API 엔드포인트 | [api.md](api.md) | 공개 REST 경로 카탈로그 (인증 스코프 포함) |
 | Audit Trail | [audit.md](audit.md) | `AuditEntry` 구조, `caller_type` (user/internal_agent/external_agent/mcp_client) |
 | 낙관적 잠금 / 버전 전파 | [versioning.md](versioning.md) | `@Version rev` 필드의 도메인→API→프론트엔드 전파 규약 |
-| SSE 스트림 시맨틱스 | [sse.md](sse.md) | `/workspace/{id}/messages` 이벤트 포맷, keep-alive, 재연결 |
+| SSE 스트림 시맨틱스 | [sse.md](sse.md) | `/workspaces/{id}/messages` 이벤트 포맷, keep-alive, 재연결 |
 | MD3 디자인 토큰 | [design-tokens.md](design-tokens.md) | 색상·타이포·엘리베이션·셰이프·모션 공용 토큰 |
 | Shell Frame Mount | [frame.md](frame.md) | 자식 GWT 모듈이 `WindowRenderBridge` 로 shell FrameUpdater 에 컨텐츠 위임 — body 직접 append 금지 |
 

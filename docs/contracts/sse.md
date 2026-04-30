@@ -6,7 +6,7 @@
 
 - **event-broadcaster** — Kafka 이벤트를 워크스페이스별 SSE 스트림으로 변환
   - `interfaces/api/MessagesController.kt` 또는 유사
-  - `GET /workspace/{workspace}/messages` 엔드포인트
+  - `GET /workspaces/{workspace}/messages` 엔드포인트
 
 ## 소비자 (Consumers)
 
@@ -29,7 +29,7 @@
 
 | Method | Path | Content-Type |
 |--------|------|--------------|
-| GET | `/workspace/{workspace}/messages` | `text/event-stream` |
+| GET | `/workspaces/{workspace}/messages` | `text/event-stream` |
 
 인증 필요 — 워크스페이스 접근 권한 있는 사용자만.
 

@@ -6,10 +6,10 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 - **login** — `/auth/*`, `/oauth2/*`, `/login/oauth2/*`, `/user`
 - **gateway** — `/menus` (집계)
-- **type-command** / **type-query** — `/workspace/{ws}/types/**`
-- **document-command** / **document-query** — `/workspace/{ws}/documents/**`, `/workspace/{ws}/{type}/**`
-- **workspace-command** — `/workspace` (POST), `/workspace/{ws}/*/presence`
-- **event-broadcaster** — `/workspace/{ws}/messages` (SSE)
+- **type-command** / **type-query** — `/workspaces/{ws}/types/**`
+- **document-command** / **document-query** — `/workspaces/{ws}/documents/**`, `/workspaces/{ws}/{type}/**`
+- **workspace-command** — `/workspace` (POST), `/workspaces/{ws}/*/presence`
+- **event-broadcaster** — `/workspaces/{ws}/messages` (SSE)
 - **assistant** — `/assistant/**`
 - **(후속) mcp-server** — `/mcp/**` (MCP 프로토콜)
 
@@ -44,51 +44,52 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 | Method | Path | 설명 |
 |--------|------|------|
-| POST | `/workspace` | 워크스페이스 생성 |
-| POST | `/workspace/{id}/join` | 워크스페이스 조인 |
-| POST | `/workspace/{ws}/groups` | 그룹 생성 |
-| GET | `/workspace/{ws}/groups` | 그룹 목록 조회 |
-| DELETE | `/workspace/{ws}/groups/{gid}` | 그룹 삭제 |
-| POST | `/workspace/{ws}/groups/{gid}/members/{uid}` | 그룹 멤버 추가 |
-| DELETE | `/workspace/{ws}/groups/{gid}/members/{uid}` | 그룹 멤버 삭제 |
-| GET | `/workspace/{ws}/groups/{gid}/roles` | 그룹의 역할 조회 |
-| POST | `/workspace/{ws}/groups/{gid}/roles` | 그룹에 역할 부여 |
-| DELETE | `/workspace/{ws}/groups/{gid}/roles/{role}` | 그룹의 역할 제거 |
+| POST | /workspaces | 워크스페이스 생성 |
+| POST | /workspaces/{id}/join | 워크스페이스 조인 |
+| POST | /workspaces/{ws}/groups | 그룹 생성 |
+| GET | /workspaces/{ws}/groups | 그룹 목록 조회 |
+| DELETE | /workspaces/{ws}/groups/{gid} | 그룹 삭제 |
+| POST | /workspaces/{ws}/groups/{gid}/members/{uid} | 그룹 멤버 추가 |
+| DELETE | /workspaces/{ws}/groups/{gid}/members/{uid} | 그룹 멤버 삭제 |
+| GET | /workspaces/{ws}/groups/{gid}/roles | 그룹의 역할 조회 |
+| POST | /workspaces/{ws}/groups/{gid}/roles | 그룹에 역할 부여 |
+| DELETE | /workspaces/{ws}/groups/{gid}/roles/{role} | 그룹의 역할 제거 |
+
 
 ## 타입
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{ws}/types` | 타입 목록 (날짜 필터링) |
-| GET | `/workspace/{ws}/types/{type}?version=` | 특정 타입 버전 |
-| PUT | `/workspace/{ws}/types` | 타입 일괄 저장 (새 버전) |
-| PATCH | `/workspace/{ws}/types` | 타입 부분 업데이트 |
-| DELETE | `/workspace/{ws}/types` | 타입 일괄 삭제 |
-| GET | `/workspace/{ws}/types/{type}/diff?v1=&v2=` | 버전 간 diff |
-| GET | `/workspace/{ws}/layouts` | 레이아웃 목록 |
+| GET | `/workspaces/{ws}/types` | 타입 목록 (날짜 필터링) |
+| GET | `/workspaces/{ws}/types/{type}?version=` | 특정 타입 버전 |
+| PUT | `/workspaces/{ws}/types` | 타입 일괄 저장 (새 버전) |
+| PATCH | `/workspaces/{ws}/types` | 타입 부분 업데이트 |
+| DELETE | `/workspaces/{ws}/types` | 타입 일괄 삭제 |
+| GET | `/workspaces/{ws}/types/{type}/diff?v1=&v2=` | 버전 간 diff |
+| GET | `/workspaces/{ws}/layouts` | 레이아웃 목록 |
 
 ## 문서
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{ws}/documents` | 문서 검색 (페이지네이션) |
-| GET | `/workspace/{ws}/{type}/{serial}` | 특정 문서 조회 |
-| GET | `/workspace/{ws}/{type}/{serial}?date=` | 특정 시점 문서 |
-| PUT | `/workspace/{ws}/documents` | 일괄 저장 (새 버전) |
-| PATCH | `/workspace/{ws}/documents` | 부분 업데이트 |
-| DELETE | `/workspace/{ws}/documents` | 일괄 삭제 |
-| GET | `/workspace/{ws}/{type}/{serial}/diff?date1=&date2=` | 시점 간 diff |
-| PATCH | `/workspace/{ws}/documents/{id}/status` | 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
-| POST | `/workspace/{ws}/documents/import` | 일괄 임포트 (CSV/JSON) |
-| GET | `/workspace/{ws}/documents/export` | 일괄 익스포트 |
+| GET | `/workspaces/{ws}/documents` | 문서 검색 (페이지네이션) |
+| GET | `/workspaces/{ws}/{type}/{serial}` | 특정 문서 조회 |
+| GET | `/workspaces/{ws}/{type}/{serial}?date=` | 특정 시점 문서 |
+| PUT | `/workspaces/{ws}/documents` | 일괄 저장 (새 버전) |
+| PATCH | `/workspaces/{ws}/documents` | 부분 업데이트 |
+| DELETE | `/workspaces/{ws}/documents` | 일괄 삭제 |
+| GET | `/workspaces/{ws}/{type}/{serial}/diff?date1=&date2=` | 시점 간 diff |
+| PATCH | `/workspaces/{ws}/documents/{id}/status` | 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
+| POST | `/workspaces/{ws}/documents/import` | 일괄 임포트 (CSV/JSON) |
+| GET | `/workspaces/{ws}/documents/export` | 일괄 익스포트 |
 
 ## 실시간 / 정합성
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{ws}/messages` | SSE 이벤트 스트림 ([sse.md](sse.md)) |
-| POST | `/workspace/{ws}/presence` | 프레즌스 (편집 위치 공유) |
-| GET | `/workspace/{ws}/compliance` | 호환성 검증 결과 |
+| GET | `/workspaces/{ws}/messages` | SSE 이벤트 스트림 ([sse.md](sse.md)) |
+| POST | `/workspaces/{ws}/presence` | 프레즌스 (편집 위치 공유) |
+| GET | `/workspaces/{ws}/compliance` | 호환성 검증 결과 |
 
 ## AI 어시스턴트 (내부)
 
@@ -107,12 +108,12 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{ws}/dashboard` | 워크스페이스 현황 |
-| GET | `/workspace/{ws}/stats/timeline?from=&to=&interval=` | 시계열 통계 |
-| GET | `/workspace/{ws}/stats/distribution` | 타입별 문서 분포 |
-| GET | `/workspace/{ws}/quality-issues` | 품질 이슈 목록 |
-| GET | `/workspace/{ws}/agent-activity` | 에이전트 활동 |
-| GET | `/workspace/{ws}/audit-logs` | 감사 로그 |
+| GET | `/workspaces/{ws}/dashboard` | 워크스페이스 현황 |
+| GET | `/workspaces/{ws}/stats/timeline?from=&to=&interval=` | 시계열 통계 |
+| GET | `/workspaces/{ws}/stats/distribution` | 타입별 문서 분포 |
+| GET | `/workspaces/{ws}/quality-issues` | 품질 이슈 목록 |
+| GET | `/workspaces/{ws}/agent-activity` | 에이전트 활동 |
+| GET | `/workspaces/{ws}/audit-logs` | 감사 로그 |
 
 ## 웹훅
 
@@ -169,7 +170,7 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 ### 레거시 호환 기간
 
-Phase 1a 배포 전에 발급된 토큰은 `sub` 없이 `jti` 에 사용자 UUID 가 심어진 형태다. `UserController` `/auth/refresh` `TokenPublisher.validateRefreshToken` 은 `sub ?: id` 폴백 정책으로 양 포맷을 수용한다. 소비자 전환(Phase 1b workspace-command, 2a/2b search-*·shell-ui) 완료 후 폴백을 제거한다.
+Phase 1a 배포 전에 발급된 토큰은 `sub` 없이 `jti` 에 사용자 UUID 가 심어진 형태다. `UserController` `/auth/refresh` `TokenPublisher.validateRefreshToken` 은 `sub ?: id` 폴백 정책으로 양 포맷을 수용한다. 소비자 전환(Phase 1b workspace-command, 2a/2b query-*·shell-ui) 완료 후 폴백을 제거한다.
 
 ## Rate Limiting
 

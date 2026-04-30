@@ -39,7 +39,7 @@
   - `interfaces/api/MenuController.kt` → `GET /menus`
 - **shell-ui** — `UrlBasedMenuResolver` 가 URL의 **정규화된 pathname**을 정규식으로 매칭하여 자동 선택
   - `client/usecase/UrlBasedMenuResolver.java`
-  - 정규화 로직: `origin`, `port`, `protocol` 을 제거한 순수 경로(예: `/workspace/123/types`) 만 남겨 매칭.
+  - 정규화 로직: `origin`, `port`, `protocol` 을 제거한 순수 경로(예: `/workspaces/123/types`) 만 남겨 매칭.
 
 ## 변경 시 체크 대상
 
@@ -77,8 +77,8 @@ interface Menu {
 `url` 및 `urlRegex` 필드에는 `{key}` 형태의 예약어를 사용할 수 있다. 이들은 렌더링(url) 및 라우팅 매칭(urlRegex) 시점에 현재 세션 컨텍스트 값으로 치환된다.
 
 - **`{workspaceId}`**: 현재 선택된 워크스페이스의 고유 식별자로 치환된다.
-  - 예 (url): `/workspace/{workspaceId}/types` → `/workspace/ws-777/types`
-  - 예 (urlRegex): `^/workspace/\{workspaceId\}/types$` → `^/workspace/ws-777/types$`
+  - 예 (url): `/workspaces/{workspaceId}/types` → `/workspaces/ws-777/types`
+  - 예 (urlRegex): `^/workspaces/\{workspaceId\}/types$` → `^/workspaces/ws-777/types$`
 - **치환 시점**:
   - `url`: 메뉴 아이템 렌더링 직전 및 클릭 시점에 치환되어 브라우저 주소창에 반영된다.
   - `urlRegex`: `UrlBasedMenuResolver`가 현재 브라우저 URL과 비교하기 직전에 현재 워크스페이스 컨텍스트 값을 사용하여 정규식 문자열 내의 예약어를 실제 값으로 치환한 후 매칭을 수행한다.

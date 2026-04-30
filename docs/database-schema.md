@@ -266,7 +266,7 @@ CREATE INDEX idx_webhooks_ws_active ON webhooks (workspace, active);
 | DocumentRepository | `DELETE` → `UPDATE SET deleted_at = NOW()` |
 | DocumentSearchService | 조회 쿼리에 `WHERE deleted_at IS NULL` 조건 추가 |
 | 하드 삭제 배치 | 스케줄 잡 추가: `DELETE FROM documents WHERE deleted_at < NOW() - INTERVAL '30 days'` |
-| 복구 API | `PATCH /workspace/{ws}/documents/{id}/restore` — `deleted_at = NULL` |
+| 복구 API | `PATCH /workspaces/{ws}/documents/{id}/restore` — `deleted_at = NULL` |
 | 인덱스 | `idx_documents_ws_type_serial`에 `WHERE deleted_at IS NULL` 부분 인덱스 고려 |
 
 ### 마이그레이션 예시

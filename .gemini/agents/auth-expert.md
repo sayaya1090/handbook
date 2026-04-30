@@ -32,7 +32,7 @@ tools: ["read_file", "grep_search", "glob", "replace"]
 
 인터페이스 관련 질문을 받으면, 내 모듈 코드만 보고 판단하지 말고 반드시
 `docs/contracts/permissions.md` 와 `docs/contracts/audit.md` 를 먼저 읽는다.
-Permission 추가·Role 계층 변경은 **모든 persist-* / search-* / shell-ui 에 영향** — 변경 시 이 점 명시.
+Permission 추가·Role 계층 변경은 **모든 command-* / query-* / shell-ui 에 영향** — 변경 시 이 점 명시.
 
 "내 모듈 관심사 아님" 으로 답하기 전에 계약 문서를 확인할 것.
 

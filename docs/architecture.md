@@ -10,8 +10,8 @@ graph TB
         AgentUI["agent-ui<br/>에이전트 커맨드 UI"]
         TypeUI["type-ui<br/>캔버스 타입 편집기"]
         DocumentUI["document-ui<br/>스프레드시트 문서 편집기"]
-        WorkspaceUI["workspace-ui<br/>워크스페이스 관리 (대시보드)"]
-        OnboardingUI["onboarding-ui<br/>워크스페이스 생성/참여<br/>(Presenter 패턴 적용)"]
+        WorkspaceUI["workspace-ui<br/>워크스페이스 관리"]
+        OnboardingUI["onboarding-ui<br/>워크스페이스 생성/참여<br/>(Presenter 패턴)"]
         UiComponents["ui-components<br/>범용 UI 컴포넌트"]
         AgentBridge["agent-bridge<br/>모듈 간 브릿지"]
         LoginUI["login-ui<br/>로그인/로그아웃"]
@@ -150,10 +150,67 @@ graph TB
 | **document** | DocumentValue, TypeInfo, AttributeInfo | 문서 데이터 모델 및 상태 관리 |
 | **event** | Event, DocumentEvent, TypeEvent, ValidationEvent | 시스템 전반의 도메인 이벤트 |
 
+**핵심 설계 결정:**
+
+| 결정 | 이유 |
+|------|------|
+| 엔티티는 ID 기반 equals/hashCode | 비즈니스 식별자로 동등성 판단 |
+| 값 객체는 data class 기본 equals | 모든 속성이 동일해야 같은 값 |
+| Type은 id+version 복합키 | 불변 이력 모델에서 버전별 고유 식별 |
+| Document.id는 nullable | 영속화 전(new) 상태 표현 |
+| Document.rev / Type.rev 전파 | DB `@Version` 값을 도메인 → API 응답 → 프론트엔드로 전달하여 패치 기반 낙관적 잠금 지원 |
+| sealed interface로 다형성 표현 | 컴파일 타임 안전성 + 패턴 매칭 |
+| Event에 UPDATE 타입 없음 | 불변 이력 모델: 변경 = 새 버전 생성 |
+| Compliance에 compatible/violations 일관성 검증 | 호환이면 violations 비어야 하고, 비호환이면 사유 필수 |
+| 관심사별 모듈 분리 | 백엔드 서비스가 필요한 도메인만 의존. 패키지명으로 도메인 계층 식별 |
+
 **핵심 아키텍처 원칙 (Shared Domain):**
 1.  **캡슐화된 네이티브 모델**: 모든 공용 모델은 `isNative = true` 설정을 가지며, 필드는 `private`으로 보호하고 Lombok 게터를 통해 접근한다.
 2.  **제로 카피(Zero-copy)**: 서버 응답 JSON을 프론트엔드에서 변환 없이 즉시 도메인 객체로 캐스팅하여 사용한다.
 3.  **DIP 준수**: UI 모듈은 도메인의 인터페이스(Port)에 의존하고, 실제 구현체는 런타임에 주입받는다.
+
+---
+
+### 11. Type-UI 모듈
+
+**역할:** 캔버스 기반 타입 스키마 편집기 (GWT).
+
+**계층 구조:**
+
+```
+client/
+├── TypeModule.java  Dagger 모듈 (Repository, Provider 바인딩)
+├── usecase/         상태 관리 (TypeList, LayoutList, PositionMap, CanvasMode, GridSnap, ...)
+│                    액션 핸들러 (AgentMutationHandler, TypeStateProvider, TypeToolManager)
+│   ├── action/      CreateTBox, DeleteTBox, EditTBox, MoveTBox, ResizeTBox, PushOutOverlap (BFS),
+│                    ChangeLayout, ComplexAction, LoadAction, SaveAction
+│   └── arrow/       ArrowFactory, Arrow (approachAngle), Point, Rectangle
+└── interfaces/
+    ├── api/         TypeApi, LayoutApi (REST), Native 변환
+    ├── canvas/      CanvasElement (드래그/드롭/키보드), CanvasContextMenuElement
+    ├── box/         TypeElement (인라인 편집/리사이즈), BoxContextMenuElement, BoxReferenceElement (SVG 화살표)
+    ├── controller/  StatusHeaderElement, ModeToggle, SnapCheckbox (쉘 통합 시 숨김 처리)
+    ├── editor/      AttributeEditorDialog + ValidatorEditorFactory + ValidatorEditor 8종
+    ├── selection/   SelectedBoxElement, DragShapeElement (드래그 고스트)
+    └── value/       ValueElement (편집/삭제), ValueListElement
+```
+
+**설계 결정:**
+
+| 결정 | 이유 |
+|------|------|
+| TypeToolManager 도입 | 로컬 도구들을 쉘의 전역 툴 레일로 통합 발행 및 이벤트 수신 관리 |
+| PositionMap으로 레이아웃 분리 | 백엔드 TypeLayout과 일치. 도메인에 캔버스 좌표 혼합 방지 |
+| ChangeTracker로 변경 추적 분리 | 도메인 순수성 유지 |
+| ActionManager는 순수 undo/redo 스택 | 도메인 로직은 caller(버튼, 메뉴, 에이전트)에 위임. 단일 책임 |
+| VIEW/LAYOUT/TYPE 3모드 | LAYOUT: 이동/리사이즈, TYPE: 인라인 편집. 모드 분리로 이벤트 충돌 방지 |
+| BFS 연쇄 충돌 해소 | 최소 이동 방향 선택 + 큐 기반 연쇄 처리 |
+| AgentMutationHandler | 에이전트 MutateCommand를 Action으로 변환. DB 없이 메모리 직접 조작 |
+| TypeStateProvider | 현재 캔버스 상태를 JSON으로 제공. 에이전트가 편집 중 데이터를 읽을 수 있음 |
+| style.setProperty() 사용 | GWT에서 Elemento의 style.set()이 비-builder DOM에서 동작 안 함 |
+| Shell과 독립 모듈 | shell-ui에 의존 없음. 런타임 스크립트 로딩 |
+
+**의존성:** activity (Menu, Progress, Labels, FetchApi, MutationReceiver, StateProvider), ui-components
 
 ---
 

@@ -46,7 +46,7 @@ spring:
           uri: ${gateway.routes.type-command:http://localhost:8083}
           predicates:
             - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
-            - Method=PUT,DELETE
+            - Method=PUT,PATCH,DELETE
           order: 4
         # 문서 조회 + 대시보드 통계
         - id: document-query
@@ -55,12 +55,12 @@ spring:
             - Path=/workspaces/*/documents/**,/workspaces/*/*/*,/workspaces/*/stats,/workspaces/*/stats/**,/workspaces/*/quality-issues,/workspaces/*/agent-activity
             - Method=GET
           order: 5
-        # 문서 저장
+        # 문서 저장 및 파일 업로드
         - id: document-command
           uri: ${gateway.routes.document-command:http://localhost:8085}
           predicates:
-            - Path=/workspaces/*/documents/**
-            - Method=PUT,DELETE
+            - Path=/workspaces/*/documents/**,/workspaces/*/files/**
+            - Method=PUT,PATCH,DELETE,POST
           order: 6
         # 워크스페이스 조회 (CQRS Read)
         - id: workspace-query

@@ -174,7 +174,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 특정 타입의 모든 버전을 타임라인으로 표시하고, 두 버전 간 diff 비교를 지원한다.
 
-- **버전 목록 조회**: `TypeRepository.versions(typeId)` → type-query `GET /workspace/{id}/types/{typeId}/versions`
+- **버전 목록 조회**: `TypeRepository.versions(typeId)` → type-query `GET /workspaces/{id}/types/{typeId}/versions`
 - **diff 비교**: 두 버전을 클릭하면 diff API를 호출하여 속성 추가/삭제/변경 사항을 시각적으로 표시
 - **Escape/닫기**: Escape 키 또는 닫기 버튼으로 패널을 닫을 수 있다
 
@@ -236,13 +236,13 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 | 포트 메서드 | HTTP | 설명 |
 |------------|------|------|
-| `TypeRepository.list(period)` | `GET /workspace/{id}/types` | 기간별 타입 조회 |
-| `TypeRepository.save(types)` | `PUT /workspace/{id}/types` | 타입 저장 (신규) |
-| `TypeRepository.patch(patches)` | `PATCH /workspace/{id}/types` | 타입 부분 업데이트 (변경 속성만) |
-| `TypeRepository.delete(types)` | `DELETE /workspace/{id}/types` | 삭제된 타입 제거 |
-| `LayoutRepository.layouts()` | `GET /workspace/{id}/layouts` | 레이아웃 기간 목록 |
-| `LayoutRepository.positions(period)` | `GET /workspace/{id}/layouts/{period}` | 기간별 위치 조회 |
-| `LayoutRepository.savePositions(...)` | `PUT /workspace/{id}/layouts` | 위치 저장 |
+| `TypeRepository.list(period)` | `GET /workspaces/{id}/types` | 기간별 타입 조회 |
+| `TypeRepository.save(types)` | `PUT /workspaces/{id}/types` | 타입 저장 (신규) |
+| `TypeRepository.patch(patches)` | `PATCH /workspaces/{id}/types` | 타입 부분 업데이트 (변경 속성만) |
+| `TypeRepository.delete(types)` | `DELETE /workspaces/{id}/types` | 삭제된 타입 제거 |
+| `LayoutRepository.layouts()` | `GET /workspaces/{id}/layouts` | 레이아웃 기간 목록 |
+| `LayoutRepository.positions(period)` | `GET /workspaces/{id}/layouts/{period}` | 기간별 위치 조회 |
+| `LayoutRepository.savePositions(...)` | `PUT /workspaces/{id}/layouts` | 위치 저장 |
 
 ---
 

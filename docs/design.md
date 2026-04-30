@@ -562,7 +562,7 @@ Handsontable 6.2.4 (MIT) 기반의 문서 편집기. MD3 디자인 토큰으로 
 | 전송 버튼 | `border-radius: 22px`, `background: primary`, `padding: 10px 20px` |
 | 중단 버튼 | `border-radius: 22px`, `background: error` |
 
-**Kafka 이벤트 브로드캐스트**: 에이전트 응답은 Kafka AGENT_COMMAND 이벤트로 발행되어 event-broadcaster를 통해 워크스페이스 SSE(`/workspace/{id}/messages`)로 브로드캐스트된다. 별도 SSE 연결 없이 기존 워크스페이스 이벤트 스트림에서 수신하며, 진행 상황은 상단 Progress Bar에 표시.
+**Kafka 이벤트 브로드캐스트**: 에이전트 응답은 Kafka AGENT_COMMAND 이벤트로 발행되어 event-broadcaster를 통해 워크스페이스 SSE(`/workspaces/{id}/messages`)로 브로드캐스트된다. 별도 SSE 연결 없이 기존 워크스페이스 이벤트 스트림에서 수신하며, 진행 상황은 상단 Progress Bar에 표시.
 
 **에이전트 UX 원칙 — "동료가 내 화면을 대신 조작해주는 느낌"**: 에이전트 커맨드 수신 시 단순히 결과를 표시하는 것이 아니라, 시각적 애니메이션으로 실행하여 마치 동료가 화면을 조작하는 듯한 경험을 제공한다:
 - `navigate` 수신 → 화면 전환 애니메이션 (페이드아웃 + 모듈 로딩 인디케이터)
@@ -650,7 +650,7 @@ Handsontable 6.2.4 (MIT) 기반의 문서 편집기. MD3 디자인 토큰으로 
 | 품질 차트 영역 | MD3 Card, `min-height: 240px` |
 | 타임라인 아이템 | `padding: 8px 12px`, `border-left: 2px solid outline-variant` |
 | 에이전트 로그 아이템 | `padding: 8px 16px`, 아이콘 + 타입 배지 + 설명, hover 시 `surface-container-high` |
-| 실시간 갱신 | `/workspace/{id}/messages` SSE 구독, 이벤트 수신 시 카운터/로그 자동 갱신 |
+| 실시간 갱신 | `/workspaces/{id}/messages` SSE 구독, 이벤트 수신 시 카운터/로그 자동 갱신 |
 
 ---
 

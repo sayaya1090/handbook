@@ -1,4 +1,4 @@
-# Persist-Type 모듈
+# Type-Command 모듈
 
 타입 CRUD + 레이아웃 관리 백엔드 서비스.
 
@@ -6,12 +6,12 @@
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{id}/types?effect_date_time=&expire_date_time=` | 기간별 타입 목록 |
-| PUT | `/workspace/{id}/types` | 타입 저장 (upsert) |
-| PATCH | `/workspace/{id}/types` | 타입 부분 업데이트 (속성 upsert) |
-| DELETE | `/workspace/{id}/types` | 타입 삭제 |
-| GET | `/workspace/{id}/layouts` | 레이아웃 기간 목록 |
-| PUT | `/workspace/{id}/layouts` | 캔버스 위치 저장 |
+| GET | `/workspaces/{id}/types?effect_date_time=&expire_date_time=` | 기간별 타입 목록 |
+| PUT | `/workspaces/{id}/types` | 타입 저장 (upsert) |
+| PATCH | `/workspaces/{id}/types` | 타입 부분 업데이트 (속성 upsert) |
+| DELETE | `/workspaces/{id}/types` | 타입 삭제 |
+| GET | `/workspaces/{id}/layouts` | 레이아웃 기간 목록 |
+| PUT | `/workspaces/{id}/layouts` | 캔버스 위치 저장 |
 
 ## 구조
 

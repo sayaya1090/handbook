@@ -10,7 +10,7 @@
 
 ## 소비자 (Consumers)
 
-- **persist-*** 의 저장 핸들러 — 요청 본문의 `rev` 로 낙관적 잠금 검증
+- **command-*** 의 저장 핸들러 — 요청 본문의 `rev` 로 낙관적 잠금 검증
 - **프론트엔드 ChangeTracker / Action** — 로컬 상태에 `rev` 보관, 저장 시 서버 전송
 - **프론트엔드 EventHandler** — 이벤트 수신 시 `rev` 갱신
 

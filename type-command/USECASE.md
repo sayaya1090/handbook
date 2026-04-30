@@ -14,7 +14,7 @@ sequenceDiagram
     participant Pub as TypeEventPublisher
     participant Kafka as Kafka
 
-    Client->>GW: "PUT /workspace/{id}/types"
+    Client->>GW: "PUT /workspaces/{id}/types"
     Note over Client,GW: "Content-Type: application/vnd.sayaya.handbook.v1+json"
     GW->>Ctrl: "@RequestBody List<Type>"
     Ctrl->>Svc: "save(workspace, types)"
@@ -54,7 +54,7 @@ sequenceDiagram
     participant Pub as TypeEventPublisher
     participant Kafka as Kafka
 
-    Client->>GW: "DELETE /workspace/{id}/types"
+    Client->>GW: "DELETE /workspaces/{id}/types"
     Note over Client,GW: "Content-Type: application/vnd.sayaya.handbook.v1+json"
     GW->>Ctrl: "@RequestBody List<Type>"
     Ctrl->>Svc: "delete(workspace, types)"
@@ -84,7 +84,7 @@ sequenceDiagram
     participant Repo as LayoutRepository
     participant DB as PostgreSQL
 
-    Client->>GW: "PUT /workspace/{id}/layouts"
+    Client->>GW: "PUT /workspaces/{id}/layouts"
     Note over Client,GW: "Content-Type: application/vnd.sayaya.handbook.v1+json"
     GW->>Ctrl: "@RequestBody TypeLayout"
     Ctrl->>Svc: "save(workspace, layout)"
@@ -112,7 +112,7 @@ sequenceDiagram
     participant AttrRepo as R2dbcAttributeEntityRepository
     participant DB as PostgreSQL
 
-    Client->>GW: "GET /workspace/{id}/types?effect_date_time=&expire_date_time="
+    Client->>GW: "GET /workspaces/{id}/types?effect_date_time=&expire_date_time="
     GW->>Ctrl: "@RequestParam effectDateTime, expireDateTime"
     Ctrl->>Svc: "findByPeriod(workspace, effectDateTime, expireDateTime)"
     Svc->>Repo: "findByWorkspaceAndPeriod(workspace, effectDateTime, expireDateTime)"

@@ -3,7 +3,7 @@
 도메인 이벤트를 수신하여 워크스페이스별로 실시간 브로드캐스트하는 서비스.
 Kafka에서 이벤트를 소비하고, SSE(Server-Sent Events)를 통해 클라이언트에 전달한다.
 
-**실시간 협업의 중심 허브:** 같은 워크스페이스의 모든 참여자(사용자 + AI 에이전트)가 동일한 SSE 스트림(`/workspace/{id}/messages`)을 구독한다. 사용자의 데이터 변경(DOCUMENT_CREATED, TYPE_CREATED 등)과 에이전트 커맨드(AGENT_COMMAND)가 모두 같은 Kafka 토픽("handbook-events")을 통해 동일한 SSE 스트림으로 전달되므로, 다른 사용자나 에이전트의 변경사항이 즉시 반영된다.
+**실시간 협업의 중심 허브:** 같은 워크스페이스의 모든 참여자(사용자 + AI 에이전트)가 동일한 SSE 스트림(`/workspaces/{id}/messages`)을 구독한다. 사용자의 데이터 변경(DOCUMENT_CREATED, TYPE_CREATED 등)과 에이전트 커맨드(AGENT_COMMAND)가 모두 같은 Kafka 토픽("handbook-events")을 통해 동일한 SSE 스트림으로 전달되므로, 다른 사용자나 에이전트의 변경사항이 즉시 반영된다.
 
 ## 아키텍처
 
@@ -15,7 +15,7 @@ usecase/                         # 유스케이스 (프레임워크 의존성 �
 
 interfaces/                      # 인프라 어댑터 (Spring 의존)
 ├── api/
-│   └── MessageController       # SSE 엔드포인트 (/workspace/{ws}/messages, retry 5초 힌트)
+│   └── MessageController       # SSE 엔드포인트 (/workspaces/{ws}/messages, retry 5초 힌트)
 ├── event/
 │   ├── EventMessageListener    # Kafka Consumer → Broadcaster 위임
 │   ├── WebhookSender           # 웹훅 HTTP POST 발신 (지수 백오프 재시도 + Micrometer 모니터링)
@@ -41,7 +41,7 @@ flowchart LR
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/workspace/{workspace}/messages` | SSE 실시간 이벤트 스트림 |
+| GET | `/workspaces/{workspace}/messages` | SSE 실시간 이벤트 스트림 |
 
 - Content-Type: `text/event-stream`
 - 10초 간격 ping으로 HTTP/1.1 연결 유지

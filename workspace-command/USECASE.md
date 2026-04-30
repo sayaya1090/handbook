@@ -14,7 +14,7 @@ sequenceDiagram
     participant Pub as WorkspaceEventPublisher
     participant Kafka as Kafka
 
-    Client->>GW: POST /workspace
+    Client->>GW: POST /workspaces
     Note over Client,GW: Content-Type: application/vnd.sayaya.handbook.v1+json
     GW->>Ctrl: @RequestBody CreateWorkspaceRequest, @AuthenticationPrincipal UserAuthentication
     Note over Ctrl: UserAuthentication.getPrincipal()=this 여야<br/>@AuthenticationPrincipal UserAuthentication 이 주입됨
@@ -47,7 +47,7 @@ sequenceDiagram
     participant Pub as WorkspaceEventPublisher
     participant Kafka as Kafka
 
-    Client->>GW: DELETE /workspace/{id}
+    Client->>GW: DELETE /workspaces/{id}
     GW->>Ctrl: @PathVariable id
     Ctrl->>Svc: delete(id)
     Svc->>WRepo: delete(id)
@@ -70,7 +70,7 @@ sequenceDiagram
     GW->>Ctrl: GET /menus (WebClient)
     Note over Ctrl: 정적 Menu 객체 반환
     Ctrl-->>GW: 200 OK + workspaces 메뉴
-    Note over Ctrl: title="workspaces", order="S",<br/>icon="fa-briefcase", script="js/workspace/workspace.nocache.js",<br/>tools: workspace info, groups, permissions
+    Note over Ctrl: title="workspaces", order="S",<br/>icon="fa-briefcase", script="js/workspaces/workspace.nocache.js",<br/>tools: workspace info, groups, permissions
 ```
 
 ## 그룹 및 멤버 관리 시퀀스
@@ -84,7 +84,7 @@ sequenceDiagram
     participant GRepo as GroupRepository
     participant DB as PostgreSQL
 
-    Admin->>GW: POST /workspace/{ws}/groups {name, description}
+    Admin->>GW: POST /workspaces/{ws}/groups {name, description}
     GW->>Ctrl: createGroup
     Ctrl->>Svc: createGroup(workspaceId, name, description)
     Svc->>GRepo: save(group)
@@ -93,7 +93,7 @@ sequenceDiagram
     Svc-->>Ctrl: Group
     Ctrl-->>Admin: 201 Created
 
-    Admin->>GW: POST /workspace/{ws}/groups/{gid}/members/{uid}
+    Admin->>GW: POST /workspaces/{ws}/groups/{gid}/members/{uid}
     GW->>Ctrl: addMember
     Ctrl->>Svc: addMember(workspaceId, groupId, userId)
     Svc->>GRepo: addMember(groupId, userId)
@@ -114,7 +114,7 @@ sequenceDiagram
     participant RRepo as RoleRepository
     participant DB as PostgreSQL
 
-    Admin->>GW: POST /workspace/{ws}/groups/{gid}/roles {roleName}
+    Admin->>GW: POST /workspaces/{ws}/groups/{gid}/roles {roleName}
     GW->>Ctrl: assignRole
     Ctrl->>Svc: assignRole(groupId, roleName)
     Svc->>RRepo: saveMapping(groupId, roleName)
@@ -132,7 +132,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 인증된 사용자 (workspace-ui 경유) |
 | **선행조건** | 사용자가 인증된 상태 (JWT) |
-| **정상 흐름** | 1. 클라이언트가 `POST /workspace`로 name, description을 전송한다.<br>2. `WorkspaceController`가 `@AuthenticationPrincipal`로 인증된 사용자를 추출한다.<br>3. `WorkspaceService.create()`가 새 UUID를 생성하고 `WorkspaceRepository.save()`로 워크스페이스를 저장한다.<br>4. `GroupRepository.createAndAssign()`으로 "Admin" 그룹을 자동 생성하고, 생성자를 해당 그룹에 배정한다.<br>5. `WorkspaceEventPublisher.publishCreated()`로 생성 이벤트를 Kafka에 발행한다.<br>6. 생성된 워크스페이스가 응답으로 반환된다. |
+| **정상 흐름** | 1. 클라이언트가 `POST /workspaces`로 name, description을 전송한다.<br>2. `WorkspaceController`가 `@AuthenticationPrincipal`로 인증된 사용자를 추출한다.<br>3. `WorkspaceService.create()`가 새 UUID를 생성하고 `WorkspaceRepository.save()`로 워크스페이스를 저장한다.<br>4. `GroupRepository.createAndAssign()`으로 "Admin" 그룹을 자동 생성하고, 생성자를 해당 그룹에 배정한다.<br>5. `WorkspaceEventPublisher.publishCreated()`로 생성 이벤트를 Kafka에 발행한다.<br>6. 생성된 워크스페이스가 응답으로 반환된다. |
 | **결과** | 200 OK + 생성된 워크스페이스 (Admin 그룹 자동 생성 및 생성자 배정 완료) |
 
 ## UC-PW2: 워크스페이스 목록 조회
@@ -161,7 +161,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 워크스페이스 관리자 (workspace-ui 경유) |
 | **선행조건** | 삭제 대상 워크스페이스가 존재 |
-| **정상 흐름** | 1. 클라이언트가 `DELETE /workspace/{id}`를 요청한다.<br>2. `WorkspaceController`가 `WorkspaceService.delete(id)`를 호출한다.<br>3. `WorkspaceRepository.delete()`로 워크스페이스를 삭제한다 (관련 데이터 cascade 삭제).<br>4. `WorkspaceEventPublisher.publishDeleted(id)`로 삭제 이벤트를 Kafka에 발행한다.<br>5. 204 No Content가 반환된다. |
+| **정상 흐름** | 1. 클라이언트가 `DELETE /workspaces/{id}`를 요청한다.<br>2. `WorkspaceController`가 `WorkspaceService.delete(id)`를 호출한다.<br>3. `WorkspaceRepository.delete()`로 워크스페이스를 삭제한다 (관련 데이터 cascade 삭제).<br>4. `WorkspaceEventPublisher.publishDeleted(id)`로 삭제 이벤트를 Kafka에 발행한다.<br>5. 204 No Content가 반환된다. |
 | **결과** | 204 No Content |
 
 ## UC-PW5: 그룹 생성

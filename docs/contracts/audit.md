@@ -9,12 +9,12 @@
   - `interfaces/api/AuditController.kt` → `GET /assistant/audit`
 - **gateway** — 외부 AI 에이전트 호출 시 `caller_type=external_agent` 로 감사 엔트리 생성
 - **(후속) mcp-server** — `caller_type=mcp_client` 로 감사 엔트리 생성
-- **persist-*** — (예정) 사용자 직접 액션도 감사 추적 확대 (§6.9)
+- **command-*** — (예정) 사용자 직접 액션도 감사 추적 확대 (§6.9)
 
 ## 소비자 (Consumers)
 
 - **dashboard-ui** — 감사 이력 조회 UI (타임라인, 필터)
-- **워크스페이스 관리자** — `/workspace/{ws}/audit-logs` 조회
+- **워크스페이스 관리자** — `/workspaces/{ws}/audit-logs` 조회
 - **외부 감사 시스템** — (향후) 이벤트 export
 
 ## 변경 시 체크 대상
@@ -74,7 +74,7 @@ enum class CallerType {
 | Method | Path | 설명 |
 |--------|------|------|
 | GET | `/assistant/audit?workspace={id}` | 에이전트 감사 추적 |
-| GET | `/workspace/{ws}/audit-logs` | 전체 감사 로그 (사용자 + 에이전트) |
+| GET | `/workspaces/{ws}/audit-logs` | 전체 감사 로그 (사용자 + 에이전트) |
 
 ## 대시보드 / 조회 UI
 

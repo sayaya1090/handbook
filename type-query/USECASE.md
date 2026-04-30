@@ -11,7 +11,7 @@ sequenceDiagram
     participant Repo as TypeRepository
     participant DB as PostgreSQL
 
-    Client->>GW: "GET /workspace/{workspaceId}/types?effect_date_time=&expire_date_time="
+    Client->>GW: "GET /workspaces/{workspaceId}/types?effect_date_time=&expire_date_time="
     GW->>Ctrl: "@PathVariable workspace, @RequestParam effectDateTime?, expireDateTime?"
     alt "effectDateTime이 존재"
         Ctrl->>Svc: "findByRange(workspace, effectDateTime, expireDateTime)"
@@ -40,7 +40,7 @@ sequenceDiagram
     participant Repo as LayoutRepository
     participant DB as PostgreSQL
 
-    Client->>GW: "GET /workspace/{workspaceId}/layouts"
+    Client->>GW: "GET /workspaces/{workspaceId}/layouts"
     GW->>Ctrl: "@PathVariable workspace"
     Ctrl->>Svc: "findByWorkspace(workspace)"
     Svc->>Repo: "findByWorkspace(workspace)"
@@ -61,7 +61,7 @@ sequenceDiagram
     GW->>Ctrl: "GET /menus (WebClient)"
     Note over Ctrl: "정적 Menu 객체 반환"
     Ctrl-->>GW: "200 OK + types 메뉴"
-    Note over Ctrl: "title='types', order='B',<br/>icon='fa-cubes', script='js/type/type.nocache.js',<br/>url='/workspace/{workspaceId}/types',<br/>urlRegex='^/workspace/\\{workspaceId\\}/types$'"
+    Note over Ctrl: "title='types', order='B',<br/>icon='fa-cubes', script='js/type/type.nocache.js',<br/>url='/workspaces/{workspaceId}/types',<br/>urlRegex='^/workspaces/\\{workspaceId\\}/types$'"
 ```
 
 ---

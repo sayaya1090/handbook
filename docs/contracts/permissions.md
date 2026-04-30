@@ -13,7 +13,7 @@
 ## 소비자 (Consumers)
 
 - **gateway** — 라우트별 권한 필터 (Spring Security)
-- **persist-*** / **search-*** — 각 API 핸들러에서 Permission 검증
+- **command-*** / **query-*** — 각 API 핸들러에서 Permission 검증
 - **assistant** — 에이전트 실행 시 사용자 권한 승계해 적용
 - **shell-ui** — 메뉴 표시 필터링 (읽기 권한 기반)
 

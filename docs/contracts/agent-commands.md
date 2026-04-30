@@ -117,7 +117,7 @@ assistant 실행 계획
     → GroupedPlanExecutor (단계별 발행)
     → Kafka AGENT_COMMAND event
     → event-broadcaster
-    → SSE /workspace/{id}/messages
+    → SSE /workspaces/{id}/messages
     → shell-ui EventSource
     → AgentSseClient
     → AgentCommandHandler

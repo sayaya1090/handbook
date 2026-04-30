@@ -2,7 +2,7 @@
 
 AI 에이전트 오케스트레이터. 자연어 명령을 파싱하여 실행 계획을 생성하고, Kafka 이벤트를 통해 UI 커맨드를 워크스페이스 멤버에게 브로드캐스트한다. 또한 백그라운드 데이터 품질 감시를 수행하여 결측치, 중복, 이상값을 탐지하고 워크스페이스에 실시간 알림한다.
 
-에이전트는 "세 번째 협업자"로서 워크스페이스 이벤트 채널을 공유한다. AGENT_COMMAND 이벤트는 DOCUMENT_CREATED, TYPE_CREATED 등 다른 도메인 이벤트와 동일한 Kafka 토픽("handbook-events")으로 발행되어, event-broadcaster를 통해 워크스페이스 SSE(`/workspace/{id}/messages`)로 전달된다. 같은 워크스페이스의 모든 참여자(사용자 + 에이전트)가 동일한 SSE 스트림을 구독하므로, 에이전트의 작업 과정이 모든 멤버에게 실시간으로 공유된다.
+에이전트는 "세 번째 협업자"로서 워크스페이스 이벤트 채널을 공유한다. AGENT_COMMAND 이벤트는 DOCUMENT_CREATED, TYPE_CREATED 등 다른 도메인 이벤트와 동일한 Kafka 토픽("handbook-events")으로 발행되어, event-broadcaster를 통해 워크스페이스 SSE(`/workspaces/{id}/messages`)로 전달된다. 같은 워크스페이스의 모든 참여자(사용자 + 에이전트)가 동일한 SSE 스트림을 구독하므로, 에이전트의 작업 과정이 모든 멤버에게 실시간으로 공유된다.
 
 ### UX 원칙
 
@@ -75,7 +75,7 @@ IntentParser (LLM) ──→ ExecutionPlan
     │                          Kafka ("handbook-events")
     │                                      │
     │                                      ▼
-    └──────────────── event-broadcaster → SSE /workspace/{id}/messages
+    └──────────────── event-broadcaster → SSE /workspaces/{id}/messages
 ```
 
 1. 사용자가 자연어 메시지를 전송한다.

@@ -37,7 +37,7 @@ sequenceDiagram
 | **선행조건** | 워크스페이스 선택 완료, Shell이 dashboard-ui 모듈을 로딩 |
 | **정상 흐름** | 1. Shell이 `js/dashboard/dashboard.nocache.js`를 동적 로딩한다.<br>2. `DashboardApi.fetchStats()`로 워크스페이스 통계를 조회한다.<br>3. `StatsProvider`에 통계가 발행되고 `StatsCardElement`가 타입 수, 문서 수, 사용자 수를 MD3 Card로 표시한다. |
 | **결과** | 3개의 통계 카드(타입 수, 문서 수, 사용자 수)가 대시보드 상단에 표시된다. |
-| **요구사항** | 6.2 대시보드 API 통합 — API URL을 워크스페이스 기반으로 구성 (GET /workspace/{workspaceId}/quality-issues, GET /workspace/{workspaceId}/agent-activity) |
+| **요구사항** | 6.2 대시보드 API 통합 — API URL을 워크스페이스 기반으로 구성 (GET /workspaces/{workspaceId}/quality-issues, GET /workspaces/{workspaceId}/agent-activity) |
 
 ## UC-DB2: 품질 현황 조회
 
@@ -64,7 +64,7 @@ sequenceDiagram
     participant App as Application
     participant API as DashboardApi
     participant AEW as ActiveExecutionsWidget
-    participant SSE as SSE /workspace/{id}/messages
+    participant SSE as SSE /workspaces/{id}/messages
     participant AEL as ActiveExecutionList
 
     App->>API: fetchActiveExecutions()

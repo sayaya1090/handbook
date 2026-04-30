@@ -14,7 +14,7 @@
 | 타입 (스키마) | 캔버스 기반 타입 정의, 필드·관계·레이아웃, 이력 | 부분 구현 (CQRS 분리, UI) |
 | 문서 | 스프레드시트 편집, 타입 정합성 검증, 이력 | 부분 구현 (CUD + 조회) |
 | 인증·권한 | OAuth2 (Google) + JWT RS256, RBAC | 기본 구현 |
-| 실시간 이벤트 | Kafka → SSE 브로드캐스트 (`/workspace/{id}/messages`) | 구현 |
+| 실시간 이벤트 | Kafka → SSE 브로드캐스트 (`/workspaces/{id}/messages`) | 구현 |
 | AI 어시스턴트 | 자연어 변경 제안, 커맨드 프로토콜 | 부분 구현 |
 
 상세 요구사항은 [docs/requirements.md](docs/requirements.md),

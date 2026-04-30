@@ -12,7 +12,7 @@ sequenceDiagram
     participant WS as WorkspaceSink
     participant Kafka as Kafka
 
-    Client->>GW: "GET /workspace/{id}/messages"
+    Client->>GW: "GET /workspaces/{id}/messages"
     GW->>Ctrl: "SSE 연결 요청"
     Ctrl->>BC: "listen(workspace)"
     BC->>SM: "listen(workspace)"
@@ -71,7 +71,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 클라이언트 (shell-ui 경유) |
 | **선행조건** | 워크스페이스에 참여 중 |
-| **정상 흐름** | 1. 클라이언트가 `GET /workspace/{id}/messages`로 SSE 연결을 요청한다.<br>2. `MessageController`가 `Broadcaster.listen(workspace)`를 호출한다.<br>3. `WorkspaceSinkManager`가 `ConcurrentHashMap.compute()`로 원자적으로 처리한다.<br>4. 해당 워크스페이스에 기존 Sink가 없으면 새로 생성한다 (lazy 생성).<br>5. 구독자 카운트를 증가시키고 `Flux<Event>`를 반환한다.<br>6. `MessageController`가 이벤트를 `ServerSentEvent`로 변환하여 `text/event-stream`으로 응답한다. |
+| **정상 흐름** | 1. 클라이언트가 `GET /workspaces/{id}/messages`로 SSE 연결을 요청한다.<br>2. `MessageController`가 `Broadcaster.listen(workspace)`를 호출한다.<br>3. `WorkspaceSinkManager`가 `ConcurrentHashMap.compute()`로 원자적으로 처리한다.<br>4. 해당 워크스페이스에 기존 Sink가 없으면 새로 생성한다 (lazy 생성).<br>5. 구독자 카운트를 증가시키고 `Flux<Event>`를 반환한다.<br>6. `MessageController`가 이벤트를 `ServerSentEvent`로 변환하여 `text/event-stream`으로 응답한다. |
 | **결과** | SSE 연결 수립, 워크스페이스별 이벤트 수신 시작 |
 
 ## UC-EB2: Kafka → SSE 변환

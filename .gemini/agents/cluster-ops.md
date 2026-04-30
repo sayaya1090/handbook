@@ -11,7 +11,7 @@ tools: ["read_file", "grep_search", "glob", "run_shell_command", "replace"]
 ## 스코프
 
 담당 영역:
-- `charts/handbook/` — 서비스별 Helm 차트 (gateway, login, persist-*, search-* 등)
+- `charts/handbook/` — 서비스별 Helm 차트 (gateway, login, command-*, query-* 등)
 - `charts/handbook/infrastructure/` — 공용 인프라 (cloudnative-pg, kafka, authentication, s3, observability, gateway)
 - `charts/handbook-lib/` — 공용 named template
 - `charts/handbook-operator/` — 클러스터 스코프 리소스 (Kargo Project, GHA runner set)

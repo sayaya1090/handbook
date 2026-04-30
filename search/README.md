@@ -32,7 +32,7 @@ Spring WebFlux `HandlerMethodArgumentResolver` 구현체.
 ## 사용 예시
 
 ```kotlin
-@GetMapping("/workspace/{id}/types")
+@GetMapping("/workspaces/{id}/types")
 fun search(@PathVariable id: UUID, search: Search): Flux<Type> = ...
 ```
 

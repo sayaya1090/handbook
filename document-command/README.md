@@ -1,4 +1,4 @@
-# Persist-Document 모듈
+# Document-Command 모듈
 
 문서 CRUD 백엔드 서비스. 문서의 생성, 수정, 삭제를 처리하고 Kafka 이벤트를 발행한다.
 
@@ -6,12 +6,12 @@
 
 | Method | Path | 설명 |
 |--------|------|------|
-| PUT | `/workspace/{id}/documents` | 문서 저장 (upsert) |
-| PATCH | `/workspace/{id}/documents` | 문서 부분 업데이트 (JSONB 머지) |
-| DELETE | `/workspace/{id}/documents` | 문서 삭제 |
-| POST | `/workspace/{id}/documents/import` | 문서 일괄 임포트 (JSON). DocumentService.save()를 재사용하여 이벤트도 발행된다 |
-| GET | `/workspace/{id}/documents/export` | 문서 일괄 익스포트 (JSON). 선택적 `type` 쿼리 파라미터로 타입별 필터링 가능 |
-| POST | `/workspace/{id}/files` | 파일 업로드 (multipart/form-data). 허용 확장자 검증 후 저장소에 저장, URL 반환 |
+| PUT | `/workspaces/{id}/documents` | 문서 저장 (upsert) |
+| PATCH | `/workspaces/{id}/documents` | 문서 부분 업데이트 (JSONB 머지) |
+| DELETE | `/workspaces/{id}/documents` | 문서 삭제 |
+| POST | `/workspaces/{id}/documents/import` | 문서 일괄 임포트 (JSON). DocumentService.save()를 재사용하여 이벤트도 발행된다 |
+| GET | `/workspaces/{id}/documents/export` | 문서 일괄 익스포트 (JSON). **주의:** Gateway에서 `document-query`로 우선 라우팅되므로, 스트리밍 방식인 query 쪽이 주로 사용된다. |
+| POST | `/workspaces/{id}/files` | 파일 업로드 (multipart/form-data). 허용 확장자 검증 후 저장소에 저장, URL 반환 |
 
 모든 엔드포인트는 `application/vnd.sayaya.handbook.v1+json` Content-Type을 사용한다. Import/Export 엔드포인트는 `application/json`을 사용한다.
 

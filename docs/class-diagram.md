@@ -4,7 +4,7 @@
 
 ## 도메인 모듈
 
-- [workspace](../workspace/CLASS-DIAGRAM.md) — 워크스페이스, 사용자, 그룹
+- [workspace](../workspaces/CLASS-DIAGRAM.md) — 워크스페이스, 사용자, 그룹
 - [schema](../schema/CLASS-DIAGRAM.md) — 타입 시스템, 속성, 검증기
 - [document](../document/CLASS-DIAGRAM.md) — 문서, 타입 레이아웃, 정합성
 - [event](../event/CLASS-DIAGRAM.md) — 이벤트 시스템

@@ -1,26 +1,34 @@
-# Persist-Workspace 모듈
+# Workspace-Command 모듈
 
 워크스페이스 CRUD 백엔드 서비스. 워크스페이스 생성 시 Admin 그룹을 자동 생성하고 생성자를 배정한다.
 
 ## 계층 구조
 
 ```
-├── usecase/         WorkspaceService, WorkspaceRepository, GroupRepository, WorkspaceEventPublisher
+├── usecase/         WorkspaceService, WorkspaceRepository, GroupRepository, RoleRepository, WebhookService, WorkspaceEventPublisher
 └── interfaces/
-    ├── api/         WorkspaceController (POST/PUT/DELETE /workspace), MenuController
-    ├── database/    R2dbcWorkspaceEntity (@Version), R2dbcGroupEntity, R2dbcGroupMemberEntity
+    ├── api/         WorkspaceController (POST/PUT/DELETE /workspaces), GroupController, RoleController, WebhookController
+    ├── database/    R2dbcWorkspaceEntity (@Version), R2dbcGroupEntity, R2dbcGroupMemberEntity, R2dbcWebhookEntity
     ├── event/       KafkaWorkspaceEventPublisher
     └── config/      WorkspaceConfig (Bean 등록, @EnableR2dbcAuditing)
 ```
 
-## API
+## API 엔드포인트
 
 | Method | Path | 설명 |
 |--------|------|------|
-| POST | `/workspace` | 워크스페이스 생성 (자동 Admin 그룹 + 생성자 배정) |
-| PUT | `/workspace/{id}` | 워크스페이스 수정 (이름, 설명) |
-| DELETE | `/workspace/{id}` | 워크스페이스 삭제 |
-| GET | `/menus` | 워크스페이스 메뉴 정보 (Gateway 수집용) |
+| POST | `/workspaces` | 워크스페이스 생성 (자동 Admin 그룹 + 생성자 배정) |
+| PUT | `/workspaces/{id}` | 워크스페이스 수정 (이름, 설명) |
+| DELETE | `/workspaces/{id}` | 워크스페이스 삭제 |
+| POST | `/workspaces/{id}/join` | 워크스페이스 참여 요청 |
+| POST | `/workspaces/{ws}/groups` | 그룹 생성 |
+| DELETE | `/workspaces/{ws}/groups/{gid}` | 그룹 삭제 |
+| POST | `/workspaces/{ws}/groups/{gid}/members/{uid}` | 그룹 멤버 추가 |
+| DELETE | `/workspaces/{ws}/groups/{gid}/members/{uid}` | 그룹 멤버 삭제 |
+| POST | `/workspaces/{ws}/groups/{gid}/roles` | 역할 부여 |
+| DELETE | `/workspaces/{ws}/groups/{gid}/roles/{role}` | 역할 제거 |
+| POST | `/workspaces/{workspace}/webhooks` | 웹훅 등록 |
+| DELETE | `/workspaces/{workspace}/webhooks/{id}` | 웹훅 삭제 |
 
 ## 설계 결정
 
@@ -34,4 +42,17 @@
 
 ## 의존성
 
-workspace (도메인), authentication, Spring WebFlux, R2DBC PostgreSQL, Kafka, SpringDoc OpenAPI (WebFlux), Log4j2
+- workspace (도메인)
+- authentication (JWT 검증)
+- R2DBC PostgreSQL, Kafka
+- SpringDoc OpenAPI (WebFlux)
+- Log4j2
+
+## 실행
+
+```bash
+./gradlew :workspace-command:bootRun
+./gradlew :workspace-command:test
+```
+
+> 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.

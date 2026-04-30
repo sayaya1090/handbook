@@ -440,7 +440,7 @@ flowchart TD
 
 **기본 흐름:**
 1. 사용자가 조인할 워크스페이스 ID를 입력한다.
-2. `POST /workspace/{id}/join` 엔드포인트로 참여 요청을 전송한다.
+2. `POST /workspaces/{id}/join` 엔드포인트로 참여 요청을 전송한다.
 3. 시스템이 워크스페이스 관리자에게 조인 요청을 전달한다.
 4. 관리자가 승인하면 사용자가 해당 워크스페이스에 배정된다.
 5. 해당 워크스페이스로 자동 진입한다.
@@ -448,7 +448,7 @@ flowchart TD
 **대안 흐름:**
 - 4a. 관리자가 거부하면 사용자에게 거부 사유를 알린다.
 
-> **요구사항 참조:** 6.1 워크스페이스 참여 (JOIN) — POST /workspace/{id}/join 엔드포인트, workspace-ui SubmitButton JOIN 모드 처리
+> **요구사항 참조:** 6.1 워크스페이스 참여 (JOIN) — POST /workspaces/{id}/join 엔드포인트, workspace-ui SubmitButton JOIN 모드 처리
 
 ---
 
@@ -526,7 +526,7 @@ sequenceDiagram
 1. 사용자가 로그인하면 Shell 이 `WorkspaceList` 를 구독한다.
 2. `WorkspaceList` 가 빈 목록을 방출한다.
 3. `WorkspaceOnboardingBootstrapper` 가 이를 감지하고 `loaded` 플래그로 중복 실행을 가드한다.
-4. 가상 onboarding `Menu` (title=`workspace.onboarding`, script=`js/workspace/workspace.nocache.js`, icon=`fa-circle-plus`, iconType=`solid`, order=`0`) 를 `MenuSelected` 에 1회 push 한다.
+4. 가상 onboarding `Menu` (title=`workspace.onboarding`, script=`js/workspaces/workspace.nocache.js`, icon=`fa-circle-plus`, iconType=`solid`, order=`0`) 를 `MenuSelected` 에 1회 push 한다.
 5. `ModuleScriptManager` 가 기존 파이프라인에 따라 `workspace.nocache.js` 를 로드하고 프레임을 렌더한다.
 6. 사용자는 UC-10 (생성) 또는 UC-06 (조인) 을 수행한다.
 
@@ -562,7 +562,7 @@ sequenceDiagram
     Admin->>UI: "그룹 추가" 버튼 클릭
     UI->>Admin: 이름/설명 입력 폼 표시
     Admin->>UI: 정보 입력 후 "저장"
-    UI->>GW: POST /workspace/{ws}/groups {name, description}
+    UI->>GW: POST /workspaces/{ws}/groups {name, description}
     GW->>API: 그룹 생성 요청
     API->>API: 이름 중복 검증
     API->>API: DB 저장
@@ -614,7 +614,7 @@ sequenceDiagram
     Admin->>UI: "멤버 추가" 버튼 클릭
     UI->>Admin: 사용자 검색 폼 표시
     Admin->>UI: 사용자 선택 후 "추가"
-    UI->>GW: POST /workspace/{ws}/groups/{gid}/members/{uid}
+    UI->>GW: POST /workspaces/{ws}/groups/{gid}/members/{uid}
     GW->>API: 배정 요청
     API->>API: 중복 배정 확인
     API->>API: DB 저장
@@ -651,7 +651,7 @@ sequenceDiagram
     Admin->>UI: 역할 선택 (예: TYPE_MANAGER)
     UI->>UI: 해당 역할의 Permission 미리보기 표시
     Admin->>UI: "부여" 요청
-    UI->>GW: POST /workspace/{ws}/groups/{gid}/roles {roleName}
+    UI->>GW: POST /workspaces/{ws}/groups/{gid}/roles {roleName}
     GW->>API: 역할 매핑 저장
     API->>API: DB 저장 (group_roles)
     API-->>GW: 204 No Content
@@ -695,7 +695,7 @@ sequenceDiagram
 1. 타입 관리자가 캔버스에서 "Add Type"을 클릭한다.
 2. `CreateBoxAction`이 실행되어 타입 카드가 캔버스에 추가되고, `ChangeTracker`에 CHANGED로 마킹된다.
 3. 타입 이름, 설명, effectDateTime을 입력하고, 속성(Attribute)을 추가한다. 속성 타입은 9종(text, number, date, enum, bool, array, map, file, document)이며, array/map은 `ValidatorEditorFactory`를 통해 재귀적 서브 타입 에디터를 제공한다 (최대 3단계).
-4. Save 버튼 클릭 시 `PUT /workspace/{id}/types`로 원자적 저장된다.
+4. Save 버튼 클릭 시 `PUT /workspaces/{id}/types`로 원자적 저장된다.
 5. TYPE_CREATED 이벤트가 발행된다.
 
 **대안 흐름:**
@@ -726,7 +726,7 @@ sequenceDiagram
     participant Kafka
     participant V as 검증 시스템
 
-    TM->>GW: "PUT /workspace/{ws}/types"
+    TM->>GW: "PUT /workspaces/{ws}/types"
     GW->>API: "라우팅"
     API->>DB: "기존 버전 expireDateTime 설정"
     API->>DB: "새 버전 저장 (새 effectDateTime)"
@@ -1016,7 +1016,7 @@ sequenceDiagram
     participant Pub as DocumentEventPublisher
     participant K as Kafka
 
-    U->>GW: "POST /workspace/{id}/documents/import"
+    U->>GW: "POST /workspaces/{id}/documents/import"
     Note over U,GW: "Content-Type: application/json"
     Note over U,GW: "Body: List<Document> (JSON)"
     GW->>Ctrl: "@RequestBody List<Document>"
@@ -1032,7 +1032,7 @@ sequenceDiagram
 ```
 
 **기본 흐름:**
-1. 사용자가 JSON 형식의 문서 목록을 `POST /workspace/{id}/documents/import`로 전송한다.
+1. 사용자가 JSON 형식의 문서 목록을 `POST /workspaces/{id}/documents/import`로 전송한다.
 2. `ImportExportController`가 `DocumentService.save()`를 호출하여 문서를 일괄 저장한다.
 3. 저장된 각 문서에 대해 DOCUMENT_CREATED 이벤트가 Kafka로 발행된다.
 4. 저장된 문서 목록이 201 Created와 함께 응답으로 반환된다.
@@ -1061,7 +1061,7 @@ sequenceDiagram
     participant Repo as DocumentRepository
     participant DB as PostgreSQL
 
-    U->>GW: "GET /workspace/{id}/documents/export?format=csv"
+    U->>GW: "GET /workspaces/{id}/documents/export?format=csv"
     Note over U,GW: "선택적 쿼리 파라미터: ?type={typeId}&format=csv|json"
     GW->>Ctrl: "@PathVariable workspace, @RequestParam type, format"
     Ctrl->>Svc: "findAllForExport(workspace, type)"
@@ -1080,7 +1080,7 @@ sequenceDiagram
 ```
 
 **기본 흐름:**
-1. 사용자가 `GET /workspace/{id}/documents/export`를 호출한다. 선택적으로 `type` 쿼리 파라미터로 타입별 필터링, `format` 파라미터로 출력 형식(csv/json)을 지정할 수 있다.
+1. 사용자가 `GET /workspaces/{id}/documents/export`를 호출한다. 선택적으로 `type` 쿼리 파라미터로 타입별 필터링, `format` 파라미터로 출력 형식(csv/json)을 지정할 수 있다.
 2. `ExportController`가 `DocumentSearchService.findAllForExport()`를 호출하여 문서를 조회한다.
 3. CSV 형식이면 `CsvSerializer`로, JSON 형식이면 ObjectMapper로 직렬화하여 파일로 반환한다.
 
@@ -1096,7 +1096,7 @@ sequenceDiagram
 
 **기본 흐름:**
 1. 사용자 A가 스프레드시트에서 셀을 선택하거나, 캔버스에서 타입 박스를 선택한다.
-2. 200ms 디바운스 후 `POST /workspace/{id}/presence`로 현재 위치를 전송한다.
+2. 200ms 디바운스 후 `POST /workspaces/{id}/presence`로 현재 위치를 전송한다.
    - 문서: `{user, type, serial, field}`
    - 타입: `{user, typeKey}`
 3. SSE를 통해 PRESENCE 이벤트가 다른 사용자에게 전달된다.
@@ -1274,12 +1274,12 @@ sequenceDiagram
 
     UI->>UI: "불일치 문서에 경고 표시"
     U->>UI: "경고 문서 확인"
-    UI->>GW: "GET /workspace/{ws}/compliance"
+    UI->>GW: "GET /workspaces/{ws}/compliance"
     GW->>API: "라우팅"
     API-->>GW: "불일치 사유 반환"
     GW-->>UI: "불일치 사유"
     U->>UI: "데이터 보정 입력"
-    UI->>GW: "PUT /workspace/{ws}/documents (새 버전)"
+    UI->>GW: "PUT /workspaces/{ws}/documents (새 버전)"
     GW->>API: "라우팅"
     API-->>GW: "200 OK"
     GW-->>UI: "200 OK"
@@ -1417,7 +1417,7 @@ sequenceDiagram
     L-->>A: "타입 구조"
     A->>K: "AGENT_COMMAND (preview: 환자, 진료기록, 의사)"
     K->>EB: "이벤트 수신"
-    EB-->>F: "SSE /workspace/{id}/messages"
+    EB-->>F: "SSE /workspaces/{id}/messages"
     A->>K: "AGENT_COMMAND (attention: '이 구조로 시작할까요?')"
     K->>EB: "이벤트 수신"
     EB-->>F: "SSE"
@@ -1438,7 +1438,7 @@ sequenceDiagram
     U->>F: confirm
     F->>GW: "POST /assistant/respond"
     GW->>A: "응답 전달"
-    A->>GW: "PUT /workspace/{ws}/types (일괄 생성)"
+    A->>GW: "PUT /workspaces/{ws}/types (일괄 생성)"
     GW->>S: "라우팅"
     S-->>GW: "생성 완료"
     GW-->>A: "결과"
@@ -1555,10 +1555,10 @@ sequenceDiagram
     Note over EA: "사용자 자연어: '주문 타입에 배송일 필드 추가'"
     EA->>EA: "OpenAPI / MCP tool 스펙 참조"
     alt OpenAPI function calling 경로
-        EA->>GW: "PATCH /workspace/{id}/types (Bearer PAT)"
+        EA->>GW: "PATCH /workspaces/{id}/types (Bearer PAT)"
     else MCP 경로 (후속)
         EA->>MCP: "tool call: patch_type(workspace, type, changes)"
-        MCP->>GW: "PATCH /workspace/{id}/types (Bearer PAT)"
+        MCP->>GW: "PATCH /workspaces/{id}/types (Bearer PAT)"
     end
     GW->>GW: "PAT 검증 + RBAC 적용 (§3.3)"
     GW->>SVC: "라우팅"
@@ -1621,9 +1621,9 @@ sequenceDiagram
 **기본 흐름:**
 1. 사용자가 워크스페이스 대시보드를 조회한다.
 2. 시스템이 현황 요약을 반환한다 (타입 수, 문서 수, 검증 상태 요약, 최근 변경 이력).
-3. 품질 이슈를 `GET /workspace/{id}/quality-issues`로 조회한다.
-4. 에이전트 활동 이력을 `GET /workspace/{id}/agent-activity`로 조회한다.
-5. SSE(`/workspace/{id}/messages`)를 구독하여 실시간으로 카운터와 타임라인을 갱신한다.
+3. 품질 이슈를 `GET /workspaces/{id}/quality-issues`로 조회한다.
+4. 에이전트 활동 이력을 `GET /workspaces/{id}/agent-activity`로 조회한다.
+5. SSE(`/workspaces/{id}/messages`)를 구독하여 실시간으로 카운터와 타임라인을 갱신한다.
 
 > **요구사항 참조:** 6.2 대시보드 API 통합 — 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트
 
@@ -1682,7 +1682,7 @@ sequenceDiagram
     QM-->>A: "감시 결과 (이슈 목록 + 심각도)"
     A->>K: "AGENT_COMMAND (notify: 이슈 알림)"
     K->>EB: "이벤트 수신"
-    EB-->>C: "SSE /workspace/{id}/messages"
+    EB-->>C: "SSE /workspaces/{id}/messages"
     Note over C: "대시보드 품질 현황 자동 갱신"
 ```
 
@@ -1775,7 +1775,7 @@ sequenceDiagram
 | **후행 조건** | 문서의 상태가 변경되고, 상태 변경 이벤트가 발행된다 |
 
 **기본 흐름:**
-1. 작성자가 DRAFT 문서를 REVIEW 상태로 전환 요청한다 (PATCH /workspace/{workspace}/documents/{id}/status).
+1. 작성자가 DRAFT 문서를 REVIEW 상태로 전환 요청한다 (PATCH /workspaces/{workspace}/documents/{id}/status).
 2. 시스템이 현재 상태와 요청 상태의 전이 유효성을 검증한다.
 3. 시스템이 요청자의 권한을 검증한다 (작성자/승인자).
 4. 상태를 변경하고 DOCUMENT_STATUS_CHANGED 이벤트를 발행한다.
@@ -1830,7 +1830,7 @@ sequenceDiagram
 | **후행 조건** | 웹훅이 등록되고, 이벤트 발생 시 등록된 URL로 HTTP POST가 전송된다 |
 
 **기본 흐름:**
-1. 관리자가 웹훅 URL과 구독 이벤트를 등록한다 (POST /workspace/{workspace}/webhooks).
+1. 관리자가 웹훅 URL과 구독 이벤트를 등록한다 (POST /workspaces/{workspace}/webhooks).
 2. 시스템이 URL 유효성을 검증하고 웹훅을 저장한다.
 3. 이벤트가 발생하면 webhook-service가 Kafka에서 이벤트를 수신한다.
 4. 해당 워크스페이스의 활성 웹훅 중 이벤트 필터가 일치하는 웹훅을 조회한다.
@@ -1850,7 +1850,7 @@ sequenceDiagram
     participant Ext as 외부 시스템
 
     Note over Admin,Ext: "웹훅 등록"
-    Admin->>API: "POST /workspace/{ws}/webhooks {url, events}"
+    Admin->>API: "POST /workspaces/{ws}/webhooks {url, events}"
     API->>DB: "INSERT webhooks"
     API-->>Admin: "201 Created"
 
@@ -1884,7 +1884,7 @@ sequenceDiagram
 
 **기본 흐름:**
 1. 타입 관리자가 타입 정의 화면에서 속성의 `read_roles`/`write_roles`를 설정한다.
-2. PATCH `/workspace/{ws}/types`로 속성 권한을 포함하여 저장한다.
+2. PATCH `/workspaces/{ws}/types`로 속성 권한을 포함하여 저장한다.
 3. 서버가 `type_attributes` 테이블의 `read_roles`/`write_roles` 컬럼을 업데이트한다.
 4. 사용자가 해당 타입의 문서를 스프레드시트에서 연다.
 5. 클라이언트가 타입 조회 시 각 속성의 권한 정보를 수신한다.
@@ -1903,12 +1903,12 @@ sequenceDiagram
     participant DB as type_attributes
 
     Note over TM,DB: "권한 설정"
-    TM->>API: "PATCH /workspace/{ws}/types<br/>{attributes: [{name:'salary', write_roles:['MANAGER']}]}"
+    TM->>API: "PATCH /workspaces/{ws}/types<br/>{attributes: [{name:'salary', write_roles:['MANAGER']}]}"
     API->>DB: "UPDATE type_attributes SET write_roles='[\"MANAGER\"]'"
     API-->>TM: "200 OK"
 
     Note over U,DB: "문서 편집 시 적용"
-    U->>API: "GET /workspace/{ws}/types/{type}"
+    U->>API: "GET /workspaces/{ws}/types/{type}"
     API-->>U: "{attributes: [{name:'salary', write_roles:['MANAGER'], read_roles:[]}]}"
     Note over U: "사용자 역할 = VIEWER → salary 셀 읽기 전용"
     U->>U: "스프레드시트에서 salary 셀 편집 차단 (readOnly)"
@@ -1926,9 +1926,9 @@ sequenceDiagram
 
 **기본 흐름:**
 1. 사용자가 대시보드에서 차트 영역을 확인한다.
-2. 클라이언트가 `GET /workspace/{ws}/stats/timeline?from=&to=&interval=day`로 시계열 데이터를 조회한다.
+2. 클라이언트가 `GET /workspaces/{ws}/stats/timeline?from=&to=&interval=day`로 시계열 데이터를 조회한다.
 3. 문서 생성 추이, 검증 실패율 추이, 에이전트 사용량 추이를 라인 차트로 표시한다.
-4. 클라이언트가 `GET /workspace/{ws}/stats/distribution`으로 타입별 문서 분포를 조회한다.
+4. 클라이언트가 `GET /workspaces/{ws}/stats/distribution`으로 타입별 문서 분포를 조회한다.
 5. 타입별 문서 분포를 파이 차트로 표시한다.
 6. 사용자가 기간이나 집계 간격을 변경하면 차트가 갱신된다.
 
@@ -1942,16 +1942,16 @@ sequenceDiagram
     participant API as Gateway
 
     U->>Dash: "대시보드 차트 탭 선택"
-    Dash->>API: "GET /workspace/{ws}/stats/timeline?from=2026-03-01&to=2026-04-08&interval=day"
+    Dash->>API: "GET /workspaces/{ws}/stats/timeline?from=2026-03-01&to=2026-04-08&interval=day"
     API-->>Dash: "{documentCreations: [...], validationFailures: [...], agentUsage: [...]}"
     Dash->>Dash: "라인 차트 렌더링 (문서 생성, 검증 실패율, 에이전트 사용량)"
 
-    Dash->>API: "GET /workspace/{ws}/stats/distribution"
+    Dash->>API: "GET /workspaces/{ws}/stats/distribution"
     API-->>Dash: "{types: [{name:'customer', count:120}, {name:'order', count:85}]}"
     Dash->>Dash: "파이 차트 렌더링 (타입별 문서 분포)"
 
     U->>Dash: "기간 변경 (주별)"
-    Dash->>API: "GET /workspace/{ws}/stats/timeline?from=2026-01-01&to=2026-04-08&interval=week"
+    Dash->>API: "GET /workspaces/{ws}/stats/timeline?from=2026-01-01&to=2026-04-08&interval=week"
     API-->>Dash: "{documentCreations: [...], ...}"
     Dash->>Dash: "차트 갱신"
 ```
@@ -1962,7 +1962,7 @@ sequenceDiagram
 
 | 요구사항 | 관련 UC | 모듈 UC | 설명 |
 |----------|---------|---------|------|
-| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspace/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 |
+| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspaces/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 |
 | 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 |
 | 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 |
 | 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI |

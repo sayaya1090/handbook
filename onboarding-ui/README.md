@@ -48,8 +48,8 @@ client/
 
 두 가지 모드를 라디오 버튼으로 전환합니다:
 
-- **CREATE**: 새 워크스페이스 이름 입력 -> 생성 버튼 클릭 -> `POST /workspace`
-- **JOIN**: 기존 워크스페이스 ID 입력 -> 참여 요청 -> `POST /workspace/{id}/join`
+- **CREATE**: 새 워크스페이스 이름 입력 -> 생성 버튼 클릭 -> `POST /workspaces`
+- **JOIN**: 기존 워크스페이스 ID 입력 -> 참여 요청 -> `POST /workspaces/{id}/join`
 
 ### UI 구성
 
@@ -68,8 +68,8 @@ ContentElement (전체 화면, 중앙 정렬)
 
 | Method | Path | 설명 |
 |--------|------|------|
-| POST | `/workspace` | 새로운 워크스페이스 생성 |
-| POST | `/workspace/{id}/join` | 기존 워크스페이스 참여 요청 |
+| POST | `/workspaces` | 새로운 워크스페이스 생성 |
+| POST | `/workspaces/{id}/join` | 기존 워크스페이스 참여 요청 |
 
 > 상세 유스케이스는 [USECASE.md](USECASE.md) 참조.
 

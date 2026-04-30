@@ -21,7 +21,8 @@
 ### 유스케이스 작성 규칙
 - **모든 유스케이스에는 시퀀스 다이어그램(mermaid)과 대응 테스트가 있어야 한다.**
 - 테스트가 없는 UC는 매트릭스에 "미구현"으로 표시.
-### 커밋 전 체크리스트 (수정)
+
+### 커밋 전 체크리스트
 - Co-Authored-By 태그 사용 금지
 - 커밋 메시지 한국어, conventional commits (feat/fix/docs/refactor/chore/test)
 - **GWT 빌드 규칙 준수**: `gwt { ... }` 블록이 최상위(top-level)에 있으며, `test { modules = [...] }`가 제거되었는가?
@@ -29,8 +30,7 @@
 - **신규 모듈 배포**: 신규 모듈 추가 시 Helm Chart(`charts/`)와 GitHub Actions 워크플로가 세트로 생성되었는가?
 - **로컬 테스트 필수**: 수정한 모듈은 `./gradlew :<module>:test` 로 그린 확인 후 커밋.
 
-### 클래스 Javadoc (필수)
-... (rest of content)
+### I18N (다국어)
 - **UI 텍스트는 LabelProvider를 통해 다국어 처리.** 한국어 하드코딩 금지.
 - 언어 파일: `src/main/i18n/language.{ko,en}.json` → 빌드 시 머지
 
@@ -158,8 +158,6 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | Clean URL 직접 접속 시 404 또는 API 충돌 | 1) Gateway 라우트 누락 2) Accept 헤더 기반 분리 미흡 3) Helm ConfigMap 미동기화 | Gateway에 `ui-clean-urls` 라우트 추가 (order:0). Accept 헤더 정규식(`^(?!.*application/json).*text/html.*`)으로 API와 분리. Helm 차트 ConfigMap 동기화 필수 |
 | UI 모듈 렌더 안 됨 / 뷰포트 밖으로 밀림 | `Application.onModuleLoad()` 에서 `body().add(container)` 직접 호출. 전역 `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 y=100dvh 위치에 렌더됨 | `WindowRenderBridge.next(render)` 경유로 shell FrameUpdater 에 Render 전달 → Frame 엘리먼트 내부에 mount. 계약 상세는 `docs/contracts/frame.md` |
 
-상세 패턴/코드 예시는 `.gemini/skills/debugging.md` 참조.
-
 ---
 
 ## 에이전트 라우팅 (Gemini 내부용)
@@ -241,7 +239,7 @@ Gemini 는:
 | 2 | `docs/contracts/<X>.md` 중 하나라도 touch | 매트릭스 OWNER·O 전원 **병렬** | §3 계약 변경 강제 절차 |
 | 3 | `charts/` 수정 or 신규 Spring Boot 모듈 추가 or 배포 동반 | `cluster-ops` **필수 1회 이상** (+ 관련 도메인 병렬) | §9, §10 |
 | 4 | 파일 3개 이상 Read 예정 or keyword 광역 탐색 | 내장 `Explore` 위임 | §6 + 컨텍스트 절약 |
-| 5 | 기존 모듈 패턴을 새 모듈로 이식 (예: login → search-*) | 패턴 소유 도메인 에이전트에 "최소 의존성·설정 템플릿" 선제 질의 | 빌드 재시도 회귀 방지 |
+| 5 | 기존 모듈 패턴을 새 모듈로 이식 (예: login → query-*) | 패턴 소유 도메인 에이전트에 "최소 의존성·설정 템플릿" 선제 질의 | 빌드 재시도 회귀 방지 |
 
 #### 체크포인트 스킵 허용
 

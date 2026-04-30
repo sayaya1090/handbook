@@ -6,7 +6,11 @@
 
 ## 1. 공용 도메인 모델 (Shared Domain) 전략
 
-(중략)
+백엔드(JVM)와 프론트엔드(GWT)가 동일한 Java 소스 파일을 공유하여 **단일 출처(SSOT)**를 유지하고 **제로 카피(Zero-copy)** 통신을 실현한다.
+
+- **Java 단일화**: GWT의 Kotlin 지원 미흡을 고려하여 공용 도메인은 **Java**로 작성한다.
+- **애너테이션 병기**: Jackson(`@JsonProperty`)과 JsInterop(`@JsType`) 애너테이션을 한 클래스에 공존시킨다.
+- **제로 카피(Zero-copy)**: 서버 응답 JSON을 프론트엔드에서 데이터 변환 없이 직접 도메인 객체로 캐스팅하여 사용한다.
 
 ---
 
@@ -38,4 +42,38 @@ public final class MyDomain {
     }
 }
 ```
-(이후 생략)
+
+---
+
+## 3. Dagger DI 및 상태 관리 표준
+
+### 3.1 컴파일 타임 검증 원칙
+- **제로 런타임 리플렉션**: 런타임에 리플렉션 비용을 없애기 위해 Dagger의 컴파일 타임 DI를 활용한다.
+- **Composition Root**: 모든 컨테이너(`DaggerComponent`) 생성은 오직 `EntryPoint`(`Application.java` 등)에서만 1회 수행되어야 한다. 컴포넌트 내부에서 컨테이너를 직접 생성해서는 안 된다.
+
+### 3.2 5가지 Reactive 규율 (sayaya-rx)
+상태 전파의 복잡성을 줄이기 위해 다음 규율을 준수한다.
+1. **단일 Store 방출**: 상태는 오직 `Store` 클래스의 `BehaviorSubject`에서만 발생해야 한다.
+2. **Two-Door 패턴**: Store는 읽기(`Observable.subscribe()`)와 쓰기(커맨드 메서드) 인터페이스만 노출하며, `@Delegate`를 통해 내부 Subject 구현을 은닉한다.
+3. **연산자 체인 제한**: `map` (변환), `filter` (조건), `distinctUntilChanged` (중복 방지) 위주로 사용하며 과도한 파이프라인은 지양한다.
+4. **경계에서만 subscribe**: 화면 마운트 시 등 명확한 라이프사이클 경계에서만 구독한다.
+5. **반드시 구독 해제**: `Subscription.unsubscribe()`를 통해 메모리 누수를 방지한다.
+
+---
+
+## 4. UI 렌더링 및 통신 표준
+
+### 4.1 Shell Frame Mount 계약
+`Application.onModuleLoad()`에서 절대 `body().add(container)`를 직접 호출해서는 안 된다. 이는 전역 CSS에 의해 뷰포트 밖으로 요소가 밀려나는 회귀 버그를 유발한다. 반드시 다음과 같이 `WindowRenderBridge`를 사용해야 한다.
+```java
+Render render = frame -> {
+    frame.append(container.element());
+    return true;
+};
+WindowRenderBridge.next(render);
+```
+
+### 4.2 이벤트 및 DOM 규칙
+- **선언적 DOM (Elemento)**: HTML 문자열이나 네이티브 HTML 조작 대신 `div()`, `button()` 등 Elemento 빌더와 `sayaya-ui` MD3 컴포넌트 래퍼를 사용한다.
+- **이벤트 1회 등록**: 이벤트 리스너는 동적으로 여러 번 달고 제거하지 않으며, 초기 생성 시 1회만 등록하고 핸들러 내부에서 조건문으로 동작을 제어한다.
+- **모듈 간 통신**: 모듈 간 통신은 SSE 메시지를 `WindowToolPublisherBridge` 등이 수신하여 `DomGlobal.window.dispatchEvent(CustomEvent)` 형태로 브로드캐스트하는 방식을 따른다.

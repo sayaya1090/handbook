@@ -11,231 +11,108 @@ flowchart TB
         DOC_UI[document-ui]
         TYPE_UI[type-ui]
         AGENT_UI[agent-ui]
-        DASH[dashboard-ui]
         WS_UI[workspace-ui]
-        ONBOARD_UI[onboarding-ui]
-        LOGIN_UI[login-ui]
-        APP --- DOC_UI
-        APP --- TYPE_UI
-        APP --- AGENT_UI
-        APP --- DASH
-        APP --- WS_UI
-        APP --- ONBOARD_UI
-        APP --- LOGIN_UI
+        ONB_UI[onboarding-ui]
+        DASH_UI[dashboard-ui]
     end
 
-    GW[gateway :8080<br/>Spring Cloud Gateway]
-
-    Client -->|HTTPS| GW
-
-    LOGIN[login :8081<br/>OAuth2 + JWT]
-
-    subgraph Write ["Write Side - CUD + Kafka Producer"]
-        P_TYPE[type-command :8083]
-        P_DOC[document-command :8085]
-        P_WS[workspace-command :8086]
+    subgraph "API Gateway (Istio + Spring Cloud Gateway)"
+        GW[gateway]
     end
 
-    subgraph Read ["Read Side - CQRS"]
-        S_TYPE[type-query :8082]
-        S_DOC[document-query :8084]
+    subgraph "Messaging"
+        Kafka[(Kafka Cluster)]
+        EB[event-broadcaster]
     end
 
-    subgraph Realtime ["Realtime and AI"]
-        EB[event-broadcaster :8088<br/>Kafka to SSE]
-        ASSIST[assistant :8087<br/>OpenAI Agent]
+    subgraph "Persistence"
+        PG[(PostgreSQL Cluster)]
+        ES[(Elasticsearch 9.3.3)]
     end
 
-    GW -->|/auth, /user| LOGIN
-    GW -->|GET /types| S_TYPE
-    GW -->|PUT DELETE /types| P_TYPE
-    GW -->|GET /documents| S_DOC
-    GW -->|PUT DELETE /documents| P_DOC
-    GW -->|/workspace CUD| P_WS
-    GW -->|SSE /messages| EB
-    GW -.->|optional / circuit breaker| ASSIST
+    subgraph "Backend Services"
+        Login[login]
+        WSC[workspace-command]
+        TPC[type-command]
+        DOC[document-command]
+        TPQ[type-query]
+        DOQ[document-query]
+        WSQ[workspace-query]
+        AS[assistant]
+    end
 
-    PG[(PostgreSQL 17<br/>R2DBC)]
-    KAFKA[[Kafka Strimzi KRaft<br/>handbook-events<br/>handbook-events-dlq]]
-    S3[(MinIO / S3)]
+    %% Client -> Gateway
+    Client -- "REST API" --> GW
+    Client -- "SSE Stream" --> EB
 
-    LOGIN --> PG
-    P_TYPE --> PG
-    P_DOC --> PG
-    P_WS --> PG
-    S_TYPE --> PG
-    S_DOC --> PG
+    %% Gateway -> Backends
+    GW --> Login & WSC & TPC & DOC & TPQ & DOQ & WSQ & AS
 
-    P_TYPE -->|produce| KAFKA
-    P_DOC -->|produce| KAFKA
-    P_WS -->|produce| KAFKA
-    ASSIST -->|agent commands| KAFKA
+    %% Backends -> DB/Cache
+    Login & WSC & TPC & DOC -- "JDBC/R2DBC" --> PG
+    DOQ -- "Search API" --> ES
+    DOC -- "Indexing" --> ES
 
-    KAFKA -->|consume| EB
-    KAFKA -->|validation| ASSIST
+    %% Event Flow
+    WSC & TPC & DOC -- "Produce Events" --> Kafka
+    Kafka -- "Consume" --> EB & AS
+    EB -- "Push via SSE" --> Client
 
-    EB -.->|SSE push| Client
+    %% Assistant -> API
+    AS -- "Invoke Actions" --> GW
 ```
 
-## 서비스 카탈로그
+## 핵심 설계 원칙
 
-| 서비스 | 포트 | 역할 | 저장소 |
-|--------|------|------|--------|
-| gateway | 8080 | API Gateway, 라우팅, `/menus` 집계, CircuitBreaker | - |
-| login | 8081 | OAuth2(Google) + JWT 발급 | PostgreSQL |
-| type-query | 8082 | 타입 조회 (CQRS Read) | PostgreSQL |
-| type-command | 8083 | 타입 CUD + 이벤트 발행 | PostgreSQL, Kafka |
-| document-query | 8084 | 문서 조회 (CQRS Read) | Elasticsearch |
-| document-command | 8085 | 문서 CUD + 이벤트 발행 | PostgreSQL, Kafka |
-| workspace-command | 8086 | 워크스페이스 CUD + 이벤트 발행 | PostgreSQL, Kafka |
-| assistant | 8087 | AI 에이전트 (OpenAI) — optional | Kafka |
-| event-broadcaster | 8088 | Kafka → SSE 실시간 브로드캐스트 | Kafka |
+### 1. CQRS (Command Query Responsibility Segregation)
+- **명령(Command)**: `*-command` 모듈이 담당. PostgreSQL(R2DBC)에 데이터를 영속화하고 Kafka 이벤트를 발행한다.
+- **조회(Query)**: `*-query` 모듈이 담당. Elasticsearch나 PostgreSQL 읽기 전용 복제본을 사용하여 고성능 검색 및 조회를 수행한다.
+- **메뉴 집계**: `gateway`가 각 `*-query` 모듈의 `/menus` 엔드포인트를 호출하여 전체 메뉴 구조를 동적으로 구성한다.
 
-## 프론트엔드 모듈 (GWT)
+### 2. 이벤트 드리븐 & 실시간 협업
+- 모든 상태 변경은 `handbook-events` 토픽을 통해 전파된다.
+- `event-broadcaster`가 이 이벤트를 수신하여 SSE(Server-Sent Events) 스트림으로 변환, 브라우저에 실시간으로 푸시한다.
+- 참여 중인 모든 사용자(및 에이전트)는 동일한 스트림을 공유하여 타인의 편집 상태(Presence)를 실시간으로 관찰한다.
 
-- **app / shell-ui**: SPA 엔트리, Drawer / MenuRail, 동적 모듈 로딩
-- **document-ui**: Handsontable 기반 스프레드시트 에디터
-- **type-ui**: Canvas 기반 타입 스키마 에디터
-- **agent-ui**: AI 에이전트 채팅 UI
-- **dashboard-ui / workspace-ui / login-ui**: 대시보드, 워크스페이스, 로그인
-- **landing-content**: SEO 랜딩 / 앱 내부 랜딩 공통 기능 설명 카드 DOM 라이브러리 (§3.22.1)
-- **landing-ui**: SEO 랜딩 페이지. 빌드 타임 프리렌더 → 언어별 정적 HTML (§3.22.2)
-- **ui-components**: Action / ActionManager / ChangeTracker / ToastContainer 공용
-- **agent-bridge**: CustomEvent 기반 모듈 간 브리지
+### 3. Shared Domain (Java-GWT 공유)
+- 백엔드와 프론트엔드가 동일한 Java 도메인 소스를 공유한다.
+- **캡슐화된 네이티브 모델**: `private` 필드 + `@JsProperty` + `@JsOverlay` 게터를 통해 자바의 캡슐화와 JS의 성능을 동시에 확보한다.
 
-## 통신 패턴
+## 외부 설정 및 인프라 매핑
 
-### HTTP (Gateway 경유)
+| 설정 구분 | 파일/경로 | 비고 |
+|-----------|----------|------|
+| **DB 연결** | `infrastructure/templates/cloudnative-pg/postgresql.yaml` | `handbook-postgresql` 프래그먼트. 모든 CUD/조회 서비스 공통 |
+| **Kafka 연결** | `infrastructure/templates/kafka/kafka.yaml` | `handbook-kafka` 프래그먼트. 이벤트 발행/구독 서비스 공통 |
+| **인증/보안** | `infrastructure/templates/authentication/authentication.yaml` | `handbook-authentication` 프래그먼트. JWT 검증 및 OAuth2 설정 |
+| **관측성** | `infrastructure/templates/observability/configmap.yaml` | Prometheus 메트릭, 구조화 로깅 패턴 설정 |
 
-```
-/auth/**, /user                     -> login
-/workspace/*/types/** (GET)         -> type-query
-/workspace/*/types/** (PUT/DELETE)  -> type-command
-/workspace/*/documents/** (GET)     -> document-query
-/workspace/*/documents/** (PUT/DEL) -> document-command
-/workspace/** (POST/PUT/DELETE)     -> workspace-command
-/workspace/*/messages (SSE)         -> event-broadcaster
-/assistant/**                       -> assistant (CircuitBreaker)
-/menus                              -> gateway aggregates type-query + document-query
+### Spring Boot 설정 로딩 규칙
+1. 서비스 Jar 내부의 `application.yml`에서 `spring.config.import: [classpath:postgresql.yaml, ...]` 로 필요한 인프라 프래그먼트를 선언한다.
+2. Helm ConfigMap이 `/app/resources/application.yml`에 마운트되어 Jar 내부 설정을 덮어쓴다 (머지가 아닌 파일 단위 교체).
+3. 운영 환경의 민감 정보(DB 패스워드 등)는 Secret을 통해 환경변수로 주입받는다.
+
+## 배포 및 프로모션 (Kargo + ArgoCD)
+
+전체 시스템은 **GitOps** 기반의 Kargo 파이프라인을 통해 배포된다.
+
+```mermaid
+graph LR
+    Dev[handbook-dev] -- "Freight (Commit SHA)" --> Staging[handbook-staging]
+    Staging -- "Promotion (Manual)" --> Prod[handbook-prod]
 ```
 
-### Kafka 토픽
+1. **Build**: GitHub Actions가 이미지를 빌드하여 `handbook-dev`에 자동 배포한다.
+2. **Freight**: Kargo가 성공적인 빌드를 'Freight' 번들로 묶는다.
+3. **Promotion**: 
+    - `argocd-update` 스텝이 ArgoCD Application의 Helm 파라미터(`freight.commit`)를 갱신한다.
+    - `handbook-lib`의 `handbook.frontend-sync-job`이 실행되어 S3 버킷(`handbook-{stage}/static/`)의 정적 자산을 동기화한다.
 
-단일 도메인 이벤트 토픽 `handbook-events` 로 모든 이벤트가 통합 발행된다 (파티션 키: 워크스페이스 UUID).
+## Clean URL 및 라우팅 전략
 
-- **handbook-events** — 도메인 이벤트 통합 토픽
-  - Producer: document-command, type-command, workspace-command, assistant
-  - Consumer: event-broadcaster, assistant
-  - 재시도 3회 후 `handbook-events-dlq`
-- **handbook-events-dlq** — Dead Letter Queue
+Gateway(Istio) 레벨에서 `Accept` 헤더와 경로를 기반으로 요청을 분리한다.
 
-Kafka 브로커는 OpenShift 에 설치된 **Streams for Apache Kafka** 오퍼레이터(Strimzi) 가 KRaft 모드로 운영. Helm 차트는 `Kafka` / `KafkaNodePool` / `KafkaTopic` CR 만 선언한다.
-
-### 실시간 경로
-
-```
-persist-*  ->  Kafka (handbook-events)  ->  event-broadcaster  ->  SSE  ->  Browser
-```
-
-사용자 변경과 AI 에이전트 커맨드가 동일한 SSE 스트림(`/workspace/{id}/messages`)으로 통합 전달된다.
-
-## 기술 스택
-
-- **Frontend**: GWT 2.13, Kotlin 2.3, Elemento 2.4.9, Handsontable 6.2.4
-- **Backend**: Spring Boot 4.0.1, Spring Cloud 2025.1.1, Spring WebFlux
-- **Data**: PostgreSQL 17, R2DBC
-- **Messaging**: Kafka (Spring Cloud Stream)
-- **Auth**: OAuth2 (Google), JWT RS256, JJWT 0.13
-- **Test**: Kotest 6.1.3, MockK, Testcontainers, Playwright 1.52
-
-## 헬름차트 구성 (`charts/handbook/`, `charts/handbook-lib/`)
-
-- **handbook-lib** (type: library) — 서비스 서브차트가 공유하는 named template 컬렉션. `handbook.jvm-backend.deployment` 는 JVM 백엔드 4개 차트의 Deployment 공통 구현, `handbook.frontend-sync-job` 은 프론트엔드 4개 차트의 ArgoCD Sync Hook Job 공통 구현. 각 서브차트가 `file://../../handbook-lib` dependency 로 참조, `helm dependency build` 가 Chart.lock + charts/handbook-lib-*.tgz 를 생성해 커밋
-- **gateway** / **event-broadcaster** / **login** / **workspace-command** — Spring Boot JVM 백엔드 배포 (kind: backend). image 기반 Kargo Warehouse 구독. `templates/deployment.yaml` 은 `handbook.jvm-backend.deployment` 한 줄 include 이고 서비스별 차이는 `values.jvmBackend.{deploymentName, fragments, extraEnv}` 로 흡수
-- **app** — SPA 루트 번들 차트 (kind: frontend). `app.html`, `manifest.json`, `service-worker.js`, 공용 `js/*.js`·`css/*.css`, app GWT 모듈 컴파일 출력(`/app/**`) 을 포함. HTTPRoute 가 `/` 와 `/app.html` 엔트리포인트 및 `/js/**`·`/css/**`·`/app/**`·`/manifest.json`·`/service-worker.js` 를 S3 `handbook-<stage>/static/` 으로 rewrite 하는 유일한 HTML 진입 차트
-- **shell-ui** / **login-ui** / **workspace-ui** — GWT 서브 모듈 전용 정적 자산 deploy 파이프라인 (kind: frontend, Warehouse + Stage + sync-job 만, Deployment 없음, HTTPRoute 도 없음). 각 모듈의 GWT 컴파일 출력만 동일한 S3 버킷의 `/static/js/<module>/**` 아래로 sync 하고, 브라우저 접근 경로는 app 차트의 `/js/` PathPrefix HTTPRoute 가 공통 처리
-- **landing-ui** — SEO 랜딩 전용 정적 HTML 배포 파이프라인 (kind: frontend). GWT 컴파일 결과를 Playwright 로 프리렌더한 `index.html` + `sitemap.xml`·`robots.txt`·`llms.txt`·`llms-full.txt` 를 S3 `static/landing/{locale}/index.html` 및 `static/` 루트에 sync. 전용 HTTPRoute (`/`, `/en/`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt`) 포함. sync-job 은 `handbook-lib` 의 `handbook.landing-sync-job` named template 사용
-- **infrastructure** — 공용 인프라
-  - `cloudnative-pg/` — PostgreSQL Cluster CR + `handbook-postgresql` 공통 Spring fragment
-  - `kafka/` — Strimzi `Kafka` / `KafkaNodePool` / `KafkaTopic` CR + `handbook-kafka` 공통 Spring fragment
-  - `authentication/` — `handbook-authentication` 공통 Spring fragment (JWT)
-  - `s3/` · `observability/` — 기존 공용 인프라
-  - `gateway/` — **Kubernetes Gateway API 진입점** (Gateway + OpenShift Route + catch-all HTTPRoute). Istio GatewayClass 가 `handbook-istio` Service 를 자동 프로비저닝하고, OpenShift Route 가 `handbook-<stage>.sayaya.cloud` 호스트로 TLS edge 노출. catch-all HTTPRoute 는 나머지 경로를 Spring Cloud Gateway 로 포워딩
-- **handbook-operator** — github-actions-runner-set (CI/CD)
-
-### 외부 진입점 (Ingress)
-
-```
-Browser ──TLS──▶ DNS *.apps.sayaya.cloud → 192.168.1.9 (nginx LB, L4 stream)
-                    │
-                    ▼
-               OpenShift Router (cluster nodes :443, wildcard cert)
-                    │  Route `handbook` (TLS edge)
-                    ▼
-               handbook-istio Service (Gateway API 자동 프로비저닝, MetalLB)
-                    │
-               ┌─────────┬──────────┐
-               ▼         ▼          ▼
-      HTTPRoute "landing"   HTTPRoute "app"      HTTPRoute "gateway" (catch-all)
-      (/, /en/,             (/app.html,           (/*)
-       /sitemap.xml,         /js/**, /css/**,
-       /robots.txt,          /app/**,
-       /llms.txt,            /manifest.json,
-       /llms-full.txt)       /service-worker.js)
-               │                   │                    │
-               ▼                   ▼                    ▼
-       Service `ceph-rgw`  Service `ceph-rgw`     service-gateway:8080 (Spring Cloud Gateway)
-       → static/landing/   → static/*              → 백엔드 서비스
-         {ko,en}/index.html
-```
-
-dev 호스트는 `handbook.apps.sayaya.cloud` (OpenShift Router 기본 wildcard cert 자동 적용). HTTPRoute 더 구체적인 path 가 catch-all 보다 우선. 상세는 `docs/ingress-options.md` 참조.
-
-### Kargo Promotion 파이프라인 — Release Train (v2)
-
-```
-[gateway-dev]            ┐
-[event-broadcaster-dev]  ┤
-[login-dev]              ┤   release-staging              release-prod
-[workspace-command-dev]  ┼─→ (모든 서비스 dev 통과     →  (release-staging
-[app-dev]                ┤    Freight 를 한 번에            통과 번들을 그대로
-[shell-ui-dev]           ┤    atomic 배포, 수동 trigger)    전진, 수동 trigger)
-[login-ui-dev]           ┤
-[workspace-ui-dev]       ┘
-   (auto promote)
-```
-
-- **dev**: 서비스별 독립 `<svc>-dev` Stage. 자기 Warehouse 만 구독 + autoPromotion=true → Freight 발행 즉시 dev 환경 자동 배포
-- **release-staging**: 모든 서비스 Warehouse 를 multi-source 로 구독 (`sources.stages: [<svc>-dev]`). 사람이 릴리즈 후보 결정 시점에 수동 승격 → 모든 서비스의 staging Application 동시 update
-- **release-prod**: release-staging 단일 upstream 구독 → 동일 digest/commit 번들이 그대로 prod 로 전파, 수동 승격
-- **promotionTemplate 분기**: values.yaml `services[].kind` 로 구분. `backend` 는 `compose-output(imageFrom)` + `argocd-update.helm.images[image.tag]`, `frontend` 는 `argocd-update.helm.images[freight.commit, bucket]` 로 같은 release-* Stage 에서 두 패턴이 공존
-
-**ApplicationSet** 은 (service × stage) 매트릭스로 staging/prod Application 도 계속 생성 — Kargo Stage 가 그 Application 들의 helm parameter 를 update 해야 하므로 deployment manifest 가 필요. Stage CR 자체는 dev 만 서비스별로 생성.
-
-### 정적 자산 배포 모델 (GWT 프론트엔드)
-
-JVM 백엔드와 동일한 Release Train 흐름을 따르되, deploy 액션은 ArgoCD Sync Hook Job 이 수행한다.
-
-1. **Build** (`<module>-deploy.yaml`): `:<module>:build` → 정적 자산 추출 → tar → `gh release create <module>-<sha> --prerelease`. GHA 는 빌드 + publish 까지만, deploy 액션 0번
-2. **Warehouse**: git 구독, `commitSelectionStrategy: Lexical` + `includeTags: ^<module>-` + `strictSemvers: false` 로 새 prerelease 감지 → Freight. (Lexical 은 sha 기반 tag 에 대해 사전순 정렬이라 "최신" 을 보장 못 하므로 publish 시 이전 release 를 정리하는 것이 전제)
-3. **Stage**: `<module>-dev` 만 서비스 subchart 가 만들고, staging/prod 는 release-staging/release-prod 번들 Stage 가 처리. promotion 시 `argocd-update.helm.images[freight.commit, bucket]` 으로 chart 의 sync-job 에 commit SHA + 환경별 bucket 주입
-4. **Sync Job**: 각 서브차트의 `templates/sync-job.yaml` 은 `handbook-lib` 라이브러리 차트의 `handbook.frontend-sync-job` named template 을 한 줄로 include. ArgoCD reconcile 시 매 freight commit 마다 새 Job 으로 인스턴스화 (`argocd.argoproj.io/hook: Sync` + `BeforeHookCreation` 정리). Job 컨테이너(`amazon/aws-cli`)가 **unauthenticated** `curl` 로 GitHub release asset 다운로드(public repo) → `aws s3 sync s3://${bucket}/static/` 후 종료. `ttlSecondsAfterFinished` 로 자동 정리
-
-⚠️ **Kargo argocd-update 표현식 함정**: `helm` 블록은 `parameters` 를 허용하지 않고 `images` 배열만 받는다. key 에 임의 helm path 지정 가능. commit SHA 는 `${{ commitFrom("...").ID }}` (Go struct 필드명 대문자) — `.id`/`.tag` 는 `has no field` 에러.
-
-### Spring 설정 주입 모델
-
-운영 환경의 모든 Spring 설정은 ConfigMap 이 소유한다. jar 의 `src/main/resources/application.yml` 은 로컬 IDE 실행용 default 로만 사용한다.
-
-- **서비스 ConfigMap** 의 `application.yml` 키가 jar 의 동명 파일을 **파일 단위로 overwrite** 한다 (`/app/resources/application.yml` 에 subPath 마운트). 머지가 아니므로 jar 와 중복되더라도 운영에 필요한 모든 설정(application.name, routes, cloud.stream bindings, kafka producer 등)을 서비스 ConfigMap 안에 다 적는다.
-- `SPRING_CONFIG_ADDITIONAL_LOCATION` 은 사용하지 않는다 — 머지 우선순위가 모호해진다.
-- DB / Kafka / JWT / observability 처럼 여러 서비스가 공통으로 쓰는 설정은 `infrastructure/` 서브차트의 **fragment ConfigMap** 으로 선언되고, 각 서비스 ConfigMap 의 `spring.config.import: [classpath:observability.yaml, ...]` 로 import 된다. fragment ConfigMap 도 `/app/resources/<name>.yaml` 에 subPath 마운트되어 classpath 에 노출.
-
-| Fragment ConfigMap | classpath 리소스 | 소유 리소스 | 대상 서비스 |
-|--------------------|-----------------|-------------|-------------|
-| `handbook-postgresql` | `classpath:postgresql.yaml` | `infrastructure/templates/cloudnative-pg/postgresql.yaml` | persist-\*, search-\*, login |
-| `handbook-kafka` | `classpath:kafka.yaml` | `infrastructure/templates/kafka/kafka.yaml` | persist-\*, event-broadcaster, assistant |
-| `handbook-authentication` | `classpath:authentication.yaml` | `infrastructure/templates/authentication/authentication.yaml` | gateway, event-broadcaster, persist-\*, search-\* |
-| `observability` | `classpath:observability.yaml` | `infrastructure/templates/observability/configmap.yaml` | 모든 Spring 서비스 (management/health probes/metrics tags/prometheus exposure/console 로깅 패턴 — correlationId 포함) |
-tionId 포함) |
-posure/console 로깅 패턴 — correlationId 포함) |
+- **SEO 랜딩**: `/` 또는 `/en/` 요청 시 S3의 프리렌더링된 정적 HTML을 반환한다.
+- **앱 셸 (SPA)**: `Accept: text/html` 요청 시 `/app.html`을 반환하며, 인라인 스크립트가 로그인 여부를 판단하여 리다이렉트한다.
+- **REST API**: `/workspaces/**`, `/auth/**` 등 API 경로는 백엔드 서비스로 라우팅한다.
+- **정적 자산**: `/js/**`, `/css/**` 경로는 S3 버킷의 모듈별 디렉토리로 매핑된다.

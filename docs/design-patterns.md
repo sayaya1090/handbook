@@ -134,7 +134,7 @@ public class SomeStore {
 
 같은 워크스페이스에서 다른 사용자가 편집 중인 요소를 실시간으로 표시한다.
 
-- **API**: `POST /workspace/{id}/presence`
+- **API**: `POST /workspaces/{id}/presence`
 - **디바운스**: 200ms (빠른 이동 시 이벤트 억제)
 - **타임아웃**: 30초 (갱신 없으면 자동 해제)
 - **시각**: 사용자별 고유 색상 2px 보더 + 이름 라벨 (3초 후 fade-out)

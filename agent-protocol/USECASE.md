@@ -9,7 +9,7 @@ sequenceDiagram
     participant Jackson as Jackson
     participant K as Kafka ("handbook-events")
     participant EB as event-broadcaster
-    participant SSE as SSE /workspace/{id}/messages
+    participant SSE as SSE /workspaces/{id}/messages
     participant Router as CommandRouter (agent-ui)
     participant Handler as 핸들러
 
@@ -69,7 +69,7 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | 백엔드 Assistant 서비스 |
-| **정상 흐름** | 1. Assistant가 LLM 응답을 `AgentCommand` 서브클래스로 구성한다.<br>2. Jackson이 `@JsonTypeInfo`로 JSON 직렬화한다 (`{"type":"mutate","changes":[...]}`).<br>3. Kafka AGENT_COMMAND 이벤트로 발행되어 event-broadcaster를 통해 워크스페이스 SSE(`/workspace/{id}/messages`)로 브로드캐스트된다.<br>4. agent-ui의 `CommandRouter`가 AGENT_COMMAND 이벤트에서 JSON을 파싱하여 해당 핸들러에 라우팅한다. |
+| **정상 흐름** | 1. Assistant가 LLM 응답을 `AgentCommand` 서브클래스로 구성한다.<br>2. Jackson이 `@JsonTypeInfo`로 JSON 직렬화한다 (`{"type":"mutate","changes":[...]}`).<br>3. Kafka AGENT_COMMAND 이벤트로 발행되어 event-broadcaster를 통해 워크스페이스 SSE(`/workspaces/{id}/messages`)로 브로드캐스트된다.<br>4. agent-ui의 `CommandRouter`가 AGENT_COMMAND 이벤트에서 JSON을 파싱하여 해당 핸들러에 라우팅한다. |
 
 ## UC-AP2: 에이전트 화면 네비게이션
 
