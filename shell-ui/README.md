@@ -208,15 +208,21 @@ stateDiagram-v2
 | MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuView` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
 | NavEntryFactory + MenuTabBuilder 분리 | 도메인 → 엔트리 매핑(NavEntryFactory)과 엔트리 시각 구조 조립(MenuTabBuilder)을 책임 단위로 분리. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중, Factory 는 Menu/Tool 매핑만, Builder 는 호스트(md-primary-tab / md-menu-item)별 조립 정적 팩토리만 |
 
-## 에이전트 연동
+## 사용자 상태 모델 및 메뉴 가시성 (SessionStateKind)
 
-### 내부 assistant
-- 호출 경로: `AGENT_COMMAND` navigate 수신 및 처리
-- 시나리오: Assistant 가 `navigate` 커맨드 발행 → `shell-ui` 가 메뉴 전환 및 모듈 로딩 수행
+메뉴/기능의 가시·활성 여부는 `Menu.allowedSessionStates` 선언에 따라 결정된다.
 
-### Agent Command 타겟
-- navigate: `shell`, `menu`, `workspace-select`
-- highlight/mutate selector 패턴: `.menu-rail-item`, `.shell-app-bar`, `.workspace-select`
+- **ANONYMOUS**: 비인증 상태. 로그인 유도 메뉴만 노출.
+- **AUTHENTICATED**: 인증되었으나 워크스페이스 미선택. 워크스페이스 목록 및 생성 메뉴 노출.
+- **IN_WORKSPACE**: 특정 워크스페이스 진입 상태. 타입/문서 관리 등 모든 도메인 메뉴 노출.
+
+### UI 컴포넌트 가시성 제어 로직
+
+- `shell-ui`의 `MenuRail` 및 `MobileTabs`는 현재 `SessionStateKind`를 상시 관찰한다.
+- 각 `Menu` 객체의 `allowedSessionStates` 집합에 현재 상태가 포함되지 않으면:
+  - **메뉴 레일**: 아이템을 렌더링하지 않거나(Hide), 설정에 따라 비활성화(Disabled) 처리한다.
+  - **AppBar**: 승격된 메뉴(`appBarSlot`)의 경우 상태 불일치 시 자동으로 다른 로케일/상태의 메뉴로 교체된다 (예: Sign In ↔ Sign Out).
+- 상태 전이(`Anonymous → Authenticated`) 시 `UrlBasedMenuResolver`가 트리거되어 현재 URL에 적합한 메뉴를 재평가한다.
 
 ## 테스트
 

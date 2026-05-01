@@ -92,7 +92,7 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 ### Java (GWT 프론트엔드)
 - **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.gemini/skills/sayaya-ui.md` 참조.
 - `@JsOverlay` 인스턴스 메서드에서 재귀 호출 금지 → static 헬퍼로 우회
-- **Java record 사용 가능** (GWT 2.12+). 단, 다중 생성자 금지 → static 팩토리 메서드(`of()`)로 대체.
+- **Java record 사용 제한**: GWT 2.12 이상에서 Java Record를 지원하나, 특정 빌드 환경에서 컴파일 오류가 발생할 수 있으므로 가급적 일반 class 사용을 권장한다. (다중 생성자 금지 → static 팩토리 메서드 `of()`로 대체 필수)
 - Dagger `@Module`에 새 의존성 추가 시 `@Provides` 누락 주의
 - 테스트 Mock에서 인터페이스 메서드 추가 시 구현도 함께 추가
 - **UI 모듈 `Application.onModuleLoad()` 는 `body().add()` 금지 — `WindowRenderBridge.next(render)` 경유 필수.** 전역 CSS `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 뷰포트 밖으로 밀려나 보이지 않는 회귀가 반복적으로 발생. shell `FrameUpdater` 가 Frame 엘리먼트를 배치·여백 관리하고 모듈은 `frame.append(container)` 로 Frame 내부에만 mount. 계약은 `docs/contracts/frame.md`. 예외: login-ui 의 `LogoutApplication` 처럼 전면 리다이렉트 페이지만 허용.
@@ -247,9 +247,21 @@ Gemini 는:
 - 사용자가 명시적으로 "빠르게" / "직접" 지시한 경우
 - 스킵할 때도 **왜 스킵했는지** 응답 앞부분에 한 줄 명시 (예: "단일 문서 오타 수정 — 체크포인트 스킵")
 
-#### 작업 마무리 자기 감사
+### 자동 감사 (Automated Audit) 규칙
+모든 작업 마무리 단계에서 아래 항목을 스스로 검증한다.
 
+- **문서-구현 일치성**: 변경된 코드가 `docs/architecture.md`, `docs/requirements.md` 등에 기술된 설계와 일치하는지 확인한다. 불일치 시 `docs/discrepancies.md`에 기록하거나 문서를 수정한다.
+- **계약 동기화**: `docs/contracts/*.md`에 정의된 API, 이벤트 스펙이 실제 코드의 엔티티/컨트롤러와 일치하는지 `grep`으로 확인한다.
+- **테스트 파일 실재 확인**: `USECASE.md`의 매트릭스에 ✅로 표시된 항목은 반드시 실제 테스트 파일(`*Test.kt`, `*Test.java`)이 존재하는지 확인한다.
+- **에이전트 연동 누락 방지**: 신규 모듈 추가 시 `README.md`와 `USECASE.md`에 "에이전트 연동" 섹션이 포함되었는지 확인한다.
+
+### 불일치 기록 (Discrepancy Log)
+- 기술적 제약이나 우선순위로 인해 설계와 다르게 구현된 부분은 `docs/discrepancies.md`에 상세히 기록한다.
+- 불일치 항목은 향후 리팩토링 및 기술 부채 관리의 최우선 순위가 된다.
+
+#### 작업 마무리 자기 감사
 커밋 직전 자문:
+
 - 이번 작업에서 서브에이전트 호출 수는? 0이면 왜 0이었는지 정당화 가능한가?
 - 계약 매트릭스 행을 변경했는데 OWNER·O 중 병렬 호출 안 한 에이전트가 있나?
 - 빌드·배포 재시도가 2회 이상 발생했다면, 도메인 에이전트에 선제 질의했으면 막을 수 있었나?

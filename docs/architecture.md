@@ -256,6 +256,7 @@ workspace, schema, document → (독립, 상호 의존 없음)
 | Event에 UPDATE 타입 없음 | 불변 이력 모델: 변경 = 새 버전 생성 |
 | Compliance에 compatible/violations 일관성 검증 | 호환이면 violations 비어야 하고, 비호환이면 사유 필수 |
 | 관심사별 모듈 분리 | 백엔드 서비스가 필요한 도메인만 의존. 패키지명으로 도메인 계층 식별 |
+| CQRS 서비스 명명 규칙 | 동일 도메인의 조회/명령 모듈 간 클래스 충돌 방지를 위해 `Search/Command` 접두사(또는 접미사)를 사용한다 (예: `DocumentSearchService`, `DocumentCommandService`). |
 
 **의존성:** 없음 (순수 Kotlin + Jackson 어노테이션)
 

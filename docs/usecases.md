@@ -1962,19 +1962,19 @@ sequenceDiagram
 
 | 요구사항 | 관련 UC | 모듈 UC | 설명 | 상태 |
 |----------|---------|---------|------|------|
-| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspaces/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 | 🚧 부분 구현 (API 완료, UI 미연동) |
-| 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 | 🚧 부분 구현 (API 완료, UI 진행 중) |
+| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspaces/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 | ✅ 구현 완료 (API + UI 연동) |
+| 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 | ✅ 구현 완료 |
 | 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 | ✅ 구현 완료 (ToastContainer, SSE retry) |
 | 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI | ✅ 구현 완료 |
 | 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (onboarding-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/공백/하이픈/언더스코어, 최대 255자 | ✅ 구현 완료 |
 | 6.6 접근성 (Accessibility) | 전체 UI UC | 전체 프론트엔드 모듈 | role 속성, aria-label, 키보드 네비게이션 (Tab/Enter/Escape) | ✅ 구현 완료 |
 | 6.7 파일 업로드 | UC-50 (문서 생성/편집) | UC-PD6 (document-command) | File 속성 multipart/form-data 업로드 엔드포인트, S3/로컬 저장소 연동 | ✅ 구현 완료 |
 | 6.8 사용자 설정 | — | UC-S15, UC-S16 (shell-ui) | 언어/테마 퍼시스턴스, 설정 패널 UI | ✅ 구현 완료 |
-| 6.9 감사 로그 UI | UC-91, UC-92 | UC-DB6 (dashboard-ui) | 감사 이력 통합 타임라인, 기간/사용자/이벤트 타입 필터 | 🚧 부분 구현 (API 완료, UI 미연동) |
+| 6.9 감사 로그 UI | UC-91, UC-92 | UC-DB6 (dashboard-ui) | 감사 이력 통합 타임라인, 기간/사용자/이벤트 타입 필터 | ✅ 구현 완료 |
 | 6.10 벌크 작업 | UC-50, UC-51, UC-30 | UC-D21 (document-ui), UC-T23 (type-ui) | 문서 다중 선택 일괄 삭제/상태 변경, 타입 다중 선택 일괄 삭제 | 🚧 부분 구현 (UI 구현, 테스트 미작성) |
 | 6.11 세션 관리 | UC-01 (인증) | UC-S17 (shell-ui) | 토큰 자동 갱신, 만료 경고, 로그인 리다이렉트 | ✅ 구현 완료 |
 | 6.12 타입 버전 히스토리 UI | UC-30, UC-31 | UC-T24 (type-ui), UC-ST4 (type-query) | 타입 버전 목록 브라우징, 두 버전 간 diff 비교 | 🚧 부분 구현 (API 완료, UI 테스트 미작성) |
-| 6.13 워크스페이스 관리 | UC-20~UC-24 | UC-PW5~PW8, UC-WM1~WM4 | 그룹 생성/삭제, 멤버 배정, 역할 부여 (workspace-ui, workspace-command) | 🚧 부분 구현 (API 완료, UI 미구현) |
+| 6.13 워크스페이스 관리 | UC-20~UC-24 | UC-PW5~PW8, UC-WM1~WM4 | 그룹 생성/삭제, 멤버 배정, 역할 부여 (workspace-ui, workspace-command) | ✅ 구현 완료 |
 
 ---
 
@@ -1989,6 +1989,7 @@ sequenceDiagram
 | 7.1 검색 쿼리 제한 | UC-54 (문서 검색) | UC-SD7 (document-query) | 전문 검색 쿼리 최대 1000자, 초과 시 400 반환 | ✅ 구현 완료 — `DocumentController.MAX_QUERY_LENGTH` |
 | 7.2 DB 인덱스 | UC-54 (문서 검색) | UC-SD8 (document-query) | documents/types 복합 인덱스 4건 | ✅ 구현 완료 — `V2__add_indexes.sql` |
 | 7.2 Export 스트리밍 | UC-57 (문서 익스포트) | UC-SD9 (document-query) | chunked transfer encoding. 메모리 일괄 적재 금지 | ✅ 구현 완료 — `ExportController` (스트리밍 방식) |
+| 7.2 Elasticsearch 연동 | UC-54 | UC-SD7 | ES 9.3.3 인덱싱 및 전문 검색 최적화 | ✅ 구현 완료 |
 | 7.3 SSE 재연결 | UC-EB1 (SSE 연결) | UC-EB6 (event-broadcaster) | SSE 이벤트에 retry(5초) 힌트 포함 | ✅ 구현 완료 — `MessageController.retry(Duration.ofSeconds(5))` |
 | 7.3 Kafka DLQ | UC-EB2 (Kafka→SSE) | UC-EB7 (event-broadcaster) | 실패 이벤트를 handbook-events-dlq 토픽에 저장 | ✅ 구현 완료 — `application.yml` (enableDlq, dlqName) |
 | 7.3 Webhook 실패 모니터링 | UC-65 (웹훅) | — | 실패한 웹훅 호출을 Micrometer 카운터로 기록. 지수 백오프 3회 재시도 | ✅ 구현 완료 — `WebhookSender` (MeterRegistry, webhook_failures_total) |
@@ -1998,6 +1999,9 @@ sequenceDiagram
 | 7.4 구조화 로깅 | — | 전 모듈 | 로그 패턴에 correlationId 포함 | ✅ 구현 완료 — 전 모듈 `application.yml` (logging.pattern.console) |
 | 7.5 빈 상태 UI | UC-53, UC-54 (문서 조회/검색) | 전체 프론트엔드 | "결과 없음" 오버레이 | ✅ 구현 완료 — `SpreadsheetElement` (empty overlay) |
 | 7.5 삭제 확인 | UC-52 (문서 삭제), UC-32 (타입 삭제) | 전체 프론트엔드 | 파괴적 작업 전 ConfirmDialog 필수 | ✅ 구현 완료 — `ConfirmDialog` (document-ui, type-ui) |
+| 7.5 Soft Delete | - | - | 즉시 삭제 대신 30일 보존 후 하드 삭제 | ❌ 미구현 |
+| 7.6 테스트 커버리지 80% | - | - | Kover 최소 커버리지 충족 | ❌ 미구현 |
+| 7.6 누락 Javadoc 보완 | - | - | 헬퍼/유틸리티 클래스 문서화 | ❌ 미구현 |
 | 7.5 성공 피드백 | UC-50, UC-51 (문서 생성/변경) | 전체 프론트엔드 | 저장/삭제/생성 완료 시 SUCCESS 토스트 표시 | ✅ 구현 완료 — `SaveButton`, `SubmitButton` |
 | 7.5 Soft Delete | UC-52 (문서 삭제) | UC-PD8 (document-command) | 즉시 삭제 대신 30일 보존 후 하드 삭제. 복구 가능 | ❌ 미구현 (계획) |
 | 7.6 AssistantService 분리 | UC-80~UC-84 (AI 어시스턴트) | UC-A12 (assistant) | SubAgentOrchestrator를 AssistantService에서 분리 | ✅ 부분 구현 — `SubAgentOrchestrator` (usecase 계층 추출 완료) |

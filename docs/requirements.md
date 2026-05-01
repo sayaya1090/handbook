@@ -1950,5 +1950,7 @@ visible(menu, state) =
 
 ### 7.6 코드 품질
 - **AssistantService 분리**: 255줄 → SubAgentOrchestrator, ExecutionLifecycleManager, AuditingService 3클래스.
-- **테스트 커버리지 80%**: 전 모듈 Kover 최소 커버리지 충족. 에러 경로/타임아웃 테스트 보강.
-- **누락 Javadoc 보완**: 헬퍼/유틸리티 클래스 문서화.
+- **테스트 커버리지 80% (미구현)**: 전 모듈 Kover 최소 커버리지 충족. 에러 경로/타임아웃 테스트 보강.
+- **누락 Javadoc 보완 (미구현)**: 헬퍼/유틸리티 클래스 문서화.
+문서화.
+�.

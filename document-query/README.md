@@ -25,6 +25,22 @@
 | GET | `/workspaces/{workspace}/stats/**` | 대시보드용 통계 API |
 | GET | `/menus` | 문서 메뉴 정보 (Gateway 수집용) |
 
+## Elasticsearch 9.3.3 연동 및 검색 최적화
+
+`document-query`는 대용량 문서 검색을 위해 Elasticsearch 9.3.3을 활용한다.
+
+### 인덱싱 전략
+
+- **Nori 분석기**: 한국어 형태소 분석을 위해 `nori` 플러그인을 기본 사용한다.
+- **동적 매핑**: `data` 필드(JSONB)의 각 속성을 검색 가능하도록 자동 매핑하되, 날짜 및 수치형은 스키마 정의를 참조하여 정확한 타입을 부여한다.
+- **실시간성**: PostgreSQL의 `DOCUMENT_CREATED` 이벤트를 구독하여 평균 1초 이내에 ES 인덱스를 동기화한다.
+
+### 검색 최적화
+
+- **복합 필터링**: `bool` 쿼리를 사용하여 워크스페이스, 타입, 시리얼, 유효 기간 필터를 결합한다.
+- **전문 검색**: `multi_match`를 통해 여러 필드에 걸친 키워드 검색을 수행하며, 중요도(Boost)를 조정한다.
+- **성공률 유지**: 대량의 요청 시에도 서킷 브레이커를 통해 검색 성능 저하가 전체 시스템으로 전파되는 것을 방지한다.
+
 ## Document-Command와의 역할 분리
 
 | 역할 | Document-Command | Document-Query |

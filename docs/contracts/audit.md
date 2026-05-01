@@ -54,6 +54,13 @@ enum class CallerType {
 }
 ```
 
+## Caller Type 구분 로직
+
+- **INTERNAL_AGENT**: 내부 `assistant` 모듈이 Kafka 이벤트를 통해 액션을 수행할 때 발행. `executionId` 가 필수로 동반됨.
+- **EXTERNAL_AGENT**: 외부 시스템이 Personal Access Token(PAT)을 사용하여 REST API를 호출할 때 Gateway의 `AuditFilter`가 생성. `caller_id` 에는 토큰의 식별자가 기록됨.
+- **USER**: 사용자가 브라우저(UI)를 통해 직접 API를 호출할 때 생성. `caller_id` 는 사용자의 UUID.
+- **MCP_CLIENT**: MCP 서버를 통해 인입된 요청에 대해 부여.
+
 ## 불변성 보장
 
 - `audit_logs` 테이블은 **INSERT-only**
