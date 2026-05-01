@@ -208,6 +208,16 @@ stateDiagram-v2
 | MobileTabs 의 responsive overflow 3단계 폴백 | `ResponsiveOverflow.compute` 순수 계산기가 결과를 반환하고, DOM 조정은 `OverflowMenuView` 가 전담. 탭 레이아웃 결정과 overflow UI 제어를 SRP 로 분리 |
 | NavEntryFactory + MenuTabBuilder 분리 | 도메인 → 엔트리 매핑(NavEntryFactory)과 엔트리 시각 구조 조립(MenuTabBuilder)을 책임 단위로 분리. MobileTabs 는 partition/정렬/recomputeLayout 에만 집중, Factory 는 Menu/Tool 매핑만, Builder 는 호스트(md-primary-tab / md-menu-item)별 조립 정적 팩토리만 |
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: `AGENT_COMMAND` navigate 수신 및 처리
+- 시나리오: Assistant 가 `navigate` 커맨드 발행 → `shell-ui` 가 메뉴 전환 및 모듈 로딩 수행
+
+### Agent Command 타겟
+- navigate: `shell`, `menu`, `workspace-select`
+- highlight/mutate selector 패턴: `.menu-rail-item`, `.shell-app-bar`, `.workspace-select`
+
 ## 테스트
 
 Shell UI 테스트는 GWT → JavaScript 컴파일 → Playwright 브라우저 테스트 방식으로 동작한다.

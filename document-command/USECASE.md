@@ -241,6 +241,26 @@ sequenceDiagram
 
 ---
 
+## 에이전트 연동 시나리오
+
+### UC-DOC-A1: Assistant를 통한 문서 요약 저장
+Assistant가 사용자의 요약 요청을 받아 처리한 후, 요약된 내용을 `document-command`의 API를 호출하여 새 문서로 저장한다.
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant Ast as Assistant
+    participant DC as document-command
+
+    User->>Ast: "이 회의록 요약해서 새 문서로 저장해줘"
+    Note over Ast: LLM 요약 수행
+    Ast->>DC: PUT /workspaces/{id}/documents {type: "Summary", data: {...}}
+    DC-->>Ast: 200 OK (Document Info)
+    Ast-->>User: "요약본이 'Summary' 타입 문서로 저장되었습니다."
+```
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
@@ -253,3 +273,4 @@ sequenceDiagram
 | UC-PD6 (파일 업로드) | — | FileUploadController, FileStorageService, LocalFileStorageAdapter, FileConfig | FileUploadControllerTest, LocalFileStorageAdapterTest |
 | UC-PD7 (크기 제한) | — | FileUploadController (maxFileSize 검증) | FileUploadControllerTest |
 | UC-PD8 (Soft Delete) | Soft Delete | DocumentRepository, DocumentService, 배치 잡 | ❌ 미구현 (계획) |
+| UC-DOC-A1 (AI 저장) | UC-DOC-A1 | Assistant, DocumentController | - |

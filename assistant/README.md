@@ -94,6 +94,20 @@ IntentParser (LLM) ──→ ExecutionPlan
 - **실행 방식**: 사용자 자연어 요청, 주기적 스케줄 (`ScheduledQualityMonitor`, cron 설정 `quality.monitor.cron`), 또는 DOCUMENT_CREATED 이벤트 트리거
 - **알림**: 심각도(info/warning/error)에 따라 AGENT_COMMAND(notify) 이벤트로 워크스페이스에 브로드캐스트
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: 자기 자신 호출 (`POST /assistant/request`)
+- 시나리오: 사용자가 입력창에 메시지 입력 → `assistant` 가 `request` 수신하여 `ExecutionPlan` 수립
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `POST /assistant/request` (다른 에이전트가 오케스트레이션 요청 시)
+- OpenAPI `summary` / `description` 기입 위치: `AssistantController.request`
+
+### Agent Command 타겟
+- navigate: `assistant` (채트창 포커스)
+- highlight/mutate selector 패턴: `.agent-input`, `.execution-plan-step`
+
 ## 설계 결정
 
 | 결정 | 이유 |

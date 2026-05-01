@@ -178,14 +178,68 @@ sequenceDiagram
 
 ## 트레이서빌리티 매트릭스
 
-| UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
-|----|---|---|---|
-| UC-SD1 (검색) | 문서 검색 | DocumentController, DocumentService, DocumentRepository, R2dbcDocumentRepository, Search | DocumentServiceTest, DocumentControllerTest |
-| UC-SD2 (단건) | 문서 단건 조회 | DocumentController, DocumentService, DocumentRepository | DocumentControllerTest |
-| UC-SD3 (메뉴) | 메뉴 제공 | MenuController, Menu, Tool | MenuControllerTest |
-| UC-SD4 (전문검색) | — | DocumentController.fullTextSearch(), DocumentSearchService.fullTextSearch() | DocumentControllerTest |
-| UC-SD5 (내보내기) | — | ExportController, DocumentSearchService.findAllForExport(), CsvSerializer | CsvSerializerTest, ExportControllerTest |
-| UC-SD6 (이력 조회) | — | DocumentController.history(), DocumentSearchService.findHistory() | DocumentControllerTest |
-| UC-SD7 (쿼리 제한) | — | DocumentController (MAX_QUERY_LENGTH = 1000) | DocumentControllerTest |
-| UC-SD8 (DB 인덱스) | — | V2__add_indexes.sql (4개 인덱스) | - |
-| UC-SD9 (Export 스트리밍) | Export 스트리밍 | ExportController (exportJsonStreaming, exportCsvStreaming) | ExportControllerTest |
+| UC | 제목 | 구현체 | 테스트 | 상태 |
+|----|------|--------|--------|------|
+| UC-SD1 | 문서 검색 | `DocumentController.search()` | `DocumentControllerTest`, `DocumentServiceTest` | 구현 |
+| UC-SD2 | 문서 단건 조회 | `DocumentController.find()` | `DocumentControllerTest` | 구현 |
+| UC-SD3 | 메뉴 제공 | `MenuController.menus()` | `MenuControllerTest` | 구현 |
+| UC-SD4 | 전문 검색 | `DocumentController.fullTextSearch()` | `DocumentControllerTest` | 구현 |
+| UC-SD5 | 문서 내보내기 | `ExportController` | `ExportControllerTest`, `CsvSerializerTest` | 구현 |
+| UC-SD6 | 이력 조회 | `DocumentController.history()` | `DocumentControllerTest`, `DocumentHistoryAndSearchTest` | 구현 |
+| UC-SD7 | 검색 쿼리 제한 | `DocumentController.MAX_QUERY_LENGTH` | `DocumentControllerTest` | 구현 |
+| UC-SD8 | DB 인덱스 | `V2__add_indexes.sql` | - | 구현 |
+| UC-SD9 | Export 스트리밍 | `ExportController.export*Streaming` | `ExportControllerTest` | 구현 |
+| UC-81 | 에이전트 navigate | `MenuController` | `MenuControllerTest` | 구현 |
+| UC-85 | 외부 AI Tool Use | `DocumentController` (OpenAPI) | 통합 테스트 예정 | 구현 |
+
+---
+
+## 에이전트 연동 시나리오
+
+### 시나리오 1 — 내부 assistant 의 navigate
+
+사용자가 assistant 에게 **"최근 수정한 문서 목록 보여줘"** 요청 → assistant 가 `navigate` 발행.
+
+```mermaid
+sequenceDiagram
+    participant U as 사용자
+    participant AS as assistant
+    participant SU as shell-ui
+    participant DQ as document-query
+
+    U->>AS: "최근 문서 목록 보여줘"
+    AS->>AS: 실행 계획 — navigate{menu:"documents"}
+    AS-->>U: (AGENT_COMMAND 발행)
+    SU->>SU: navigate 수신 → /workspaces/{id}/documents 이동
+    SU->>DQ: GET /workspaces/{id}/documents?page=0&limit=50
+    DQ-->>SU: 최근 문서 목록 반환
+    SU-->>U: 문서 목록 화면 렌더링
+```
+
+### 시나리오 2 — 외부 AI 의 Tool Use (전문 검색 연계)
+
+외부 AI 가 `/openapi.json` 을 통해 전문 검색 API 를 인지하고, 사용자의 질문에 답하기 위해 문서를 검색.
+
+```mermaid
+sequenceDiagram
+    participant ExtAI as 외부 AI
+    participant GW as gateway
+    participant DQ as document-query
+
+    ExtAI->>GW: GET /workspaces/{id}/documents?q="전략 보고서"
+    GW->>DQ: forward search request
+    DQ->>DQ: fullTextSearch("전략 보고서")
+    DQ-->>GW: Page<Document>
+    GW-->>ExtAI: 검색 결과 (JSON)
+    ExtAI-->>사용자: "찾으시는 전략 보고서 내용은 다음과 같습니다..."
+```
+
+## 에이전트 연동 체크리스트
+
+| # | 항목 | 값 | 비고 |
+|---|------|---|------|
+| 1 | 내부 assistant 연동 | `AGENT_COMMAND` navigate / mutate 타겟 | 문서 목록 및 상세 화면 진입 |
+| 2 | 외부 AI Tool Use | `search_documents`, `get_document` | OpenAPI operationId 기반 |
+| 3 | OpenAPI 어노테이션 | `@Operation` 적용 완료 | `DocumentController`, `MenuController` |
+| 4 | 감사 경로 | `AuditEntry` (caller_type=EXTERNAL_AGENT) | `gateway` 및 서비스 진입점 |
+| 5 | Agent Command 타겟 | URL 패턴: `^/workspaces/\{workspaceId\}/documents$` | `shell-ui` 메뉴 정규식과 동기화 |

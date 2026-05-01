@@ -8,6 +8,26 @@ DOM 팩토리만 노출하고 EntryPoint·SEO·CTA·외부 앵커는 포함하�
 
 ---
 
+---
+
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: 해당 없음
+- 시나리오: 해당 없음 (정적 콘텐츠 제공 모듈)
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `/llms.txt`, `/llms-full.txt` (빌드 산출물이 배포됨)
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음
+- 감사 경로: 해당 없음
+
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
+
+### Agent Command 타겟
+- navigate: 해당 없음
+- highlight/mutate selector 패턴: 해당 없음
+
 ## 역할
 
 - **단일 원소스(Single Source of Truth)**: 기능 설명 콘텐츠를 `landing-ui` (SEO 프리렌더) 와 앱 내부 랜딩 activity 양쪽에 동일하게 공급.

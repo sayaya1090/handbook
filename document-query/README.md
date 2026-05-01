@@ -35,6 +35,20 @@
 
 읽기/쓰기 분리(CQRS)로 읽기 전용 서비스를 독립 스케일링하고, 검색 최적화(Elasticsearch)를 적용할 수 있다.
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: `AGENT_COMMAND` navigate (`target.menu="documents"`)
+- 시나리오: "어제 작성한 기획서 찾아줘" → `GET /workspaces/{ws}/documents` 로 검색 후 `navigate`
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `GET /workspaces/{workspace}/documents/search`
+- OpenAPI `summary` / `description` 기입 위치: `DocumentController.searchDocuments`
+
+### Agent Command 타겟
+- navigate: `documents`, `search`
+- highlight/mutate selector 패턴: `.search-result-item`, `.document-list-row`
+
 ## 검색 파라미터
 
 | 파라미터 | 설명 |

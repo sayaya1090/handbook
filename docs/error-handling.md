@@ -90,7 +90,20 @@ flowchart TD
 | **선택** | assistant | 자연어 명령 사용 불가. 기존 UI 편집은 가능. 회로 차단(Circuit Breaker) 적용 |
 | **선택** | event-broadcaster | 실시간 업데이트 불가. 수동 새로고침으로 데이터 갱신 유도 |
 
-### SSE 재연결 로직
+### Gateway 레벨 처리 (구현 완료)
+
+```
+Gateway → 선택적 서비스 호출 실패
+  → CircuitBreaker 필터 → FallbackController (빈 JSON 응답 반환)
+  → onErrorResume: 빈 결과 반환 (메뉴 집계)
+  → 클라이언트: 기능 비활성화 (핵심 CRUD는 유지)
+```
+
+- assistant, event-broadcaster 라우트에 `CircuitBreaker` 필터 적용
+- 폴백 URI: `forward:/fallback/empty` → `FallbackController`가 `{"fallback": true, "data": []}` 반환
+- 경고 로그 기록 (모니터링 시스템에서 추적)
+
+### SSE 재연결 전략 (7.3) — 서버 측 구현 완료
 
 서버 측: `MessageController`가 각 SSE 이벤트에 `retry(Duration.ofSeconds(5))` 힌트를 포함하여 전송한다. 브라우저의 EventSource가 연결 끊김 시 5초 후 자동 재연결을 시도한다.
 
@@ -113,6 +126,43 @@ stateDiagram-v2
 - **재연결 중** Toast WARNING: "실시간 연결이 끊어졌습니다. 재연결 시도 중..."
 - **재연결 성공** 시 Toast INFO: "실시간 연결이 복구되었습니다"
 - **최대 재시도 후 실패** 시: Toast ERROR + 수동 새로고침 안내
+
+---
+
+## DLQ 에러 복구 흐름 (7.3 회복성 강화)
+
+Kafka 이벤트 처리 실패 시 Dead Letter Queue(DLQ)에 저장하여 데이터 유실을 방지한다.
+
+### DLQ 흐름
+
+```mermaid
+flowchart LR
+    K["Kafka\nhandbook-events"] --> C["Consumer\n(event-broadcaster)"]
+    C -->|처리 성공| SSE["SSE 브로드캐스트"]
+    C -->|처리 실패\n(역직렬화 에러, 런타임 예외)| DLQ["handbook-events-dlq\n(Dead Letter Topic)"]
+    DLQ --> Monitor["DLQ 모니터링\n(Prometheus 메트릭)"]
+    DLQ --> Replay["수동 재처리\n(운영 도구)"]
+    Replay -->|재발행| K
+```
+
+### DLQ 이벤트 구조
+
+| 헤더 | 값 | 설명 |
+|------|------|------|
+| `x-original-topic` | `handbook-events` | 원본 토픽 |
+| `x-exception-message` | 에러 메시지 | 실패 원인 |
+| `x-exception-stacktrace` | 스택 트레이스 | 디버깅용 |
+| `x-original-timestamp` | ISO-8601 | 원본 이벤트 발행 시각 |
+| `x-correlation-id` | UUID | 요청 추적 ID (7.4) |
+
+### 재처리 정책
+
+| 항목 | 값 |
+|------|------|
+| 최대 재시도 | 3회 (원본 토픽에서) |
+| 재시도 백오프 | 1초, 2초, 4초 (지수 백오프) |
+| DLQ 보존 기간 | 7일 |
+| 재처리 방법 | 운영 도구를 통한 수동 재발행 또는 자동화 스크립트 |
 
 ---
 

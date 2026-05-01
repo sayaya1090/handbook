@@ -65,6 +65,24 @@ sequenceDiagram
 
 ---
 
+## 에이전트 연동 시나리오
+
+외부 AI 에이전트가 사이트의 정체성과 기능을 발견할 수 있도록 메타데이터와 요약 문서를 제공한다.
+
+```mermaid
+sequenceDiagram
+    participant Agent as 외부 AI
+    participant S3 as S3 (Static)
+    participant UI as landing-ui
+
+    UI->>S3: /sitemap.xml, /llms.txt, /llms-full.txt 배포
+    UI->>S3: index.html (JSON-LD 포함) 배포
+    Agent->>S3: GET /llms.txt
+    Note over Agent: Handbook 기능 발견
+    Agent->>S3: GET / (index.html)
+    Note over Agent: JSON-LD (WebApplication) 해석
+```
+
 ## 테스트 전략
 
 | 대상 | 도구 | 검증 |

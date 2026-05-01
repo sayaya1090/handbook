@@ -75,7 +75,7 @@ sequenceDiagram
 
 | UC | 설명 | 상태 | 주요 클래스 |
 |----|------|------|------------|
-| UC-WM1 | 정보 수정 | 🚧 개발 예정 | InfoTabElement, WorkspaceApi |
-| UC-WM2 | 그룹 관리 | ❌ 미구현 | GroupsTabElement, WorkspaceApi |
-| UC-WM3 | 사용자 배정 | ❌ 미구현 | GroupsTabElement, WorkspaceApi |
-| UC-WM4 | 권한 부여 | ❌ 미구현 | PermissionsTabElement, WorkspaceApi |
+| UC-WM1 | 정보 수정 | 🚧 부분 구현 (API 완료, UI 진행 중) | InfoTabElement, WorkspaceApi |
+| UC-WM2 | 그룹 관리 | 🚧 부분 구현 (API 완료, UI 미구현) | GroupsTabElement, WorkspaceApi |
+| UC-WM3 | 사용자 배정 | 🚧 부분 구현 (API 완료, UI 미구현) | GroupsTabElement, WorkspaceApi |
+| UC-WM4 | 권한 부여 | 🚧 부분 구현 (API 완료, UI 미구현) | PermissionsTabElement, WorkspaceApi |

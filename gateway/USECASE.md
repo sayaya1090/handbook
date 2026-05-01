@@ -198,6 +198,28 @@ sequenceDiagram
     GW-->>Client: 응답 + X-Correlation-Id: uuid
 ```
 
+## 에이전트 연동 시나리오
+
+외부 에이전트 또는 내부 Assistant가 API를 발견하고 호출하는 관문 역할을 한다.
+
+```mermaid
+sequenceDiagram
+    participant Agent as 외부 에이전트
+    participant GW as Gateway
+    participant Asst as Assistant
+    participant Discovery as OpenAPI (각 서비스)
+
+    Agent->>GW: GET /openapi.json
+    GW->>Discovery: OpenAPI 스펙 수집 및 병합
+    Discovery-->>GW: 개별 스펙
+    GW-->>Agent: 통합 OpenAPI 스펙
+
+    Agent->>GW: POST /assistant/request
+    GW->>Asst: 요청 라우팅
+    Asst-->>GW: 실행 계획
+    GW-->>Agent: 실행 계획 반환
+```
+
 ---
 
 ## 트레이서빌리티 매트릭스

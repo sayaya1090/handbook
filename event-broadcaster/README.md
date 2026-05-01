@@ -78,6 +78,24 @@ flowchart LR
 | Prometheus | `application.yml` | `/actuator/prometheus` 메트릭 노출 |
 | 구조화 로깅 | `application.yml` | 로그 패턴에 correlationId 포함 |
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: AGENT_COMMAND Kafka 이벤트를 수신하여 SSE로 브로드캐스트
+- 시나리오: Assistant가 실행 계획을 확정하고 Kafka로 커맨드를 발행하면, 이 모듈이 이를 수신하여 해당 워크스페이스의 모든 참여자(사용자 및 agent-ui)에게 실시간으로 전달함
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: 없음
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음
+- 감사 경로: `caller_type=EXTERNAL_AGENT` → `AuditEntry` (Gateway에서 수행)
+
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
+
+### Agent Command 타겟
+- navigate: 해당 없음
+- highlight/mutate selector 패턴: 해당 없음 (전달자 역할)
+
 ## 테스트
 
 ```bash

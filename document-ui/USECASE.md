@@ -460,17 +460,17 @@ sequenceDiagram
 | UC-D8 (페이지) | 페이지네이션 | PaginationElement, PageState, DocumentApi, DocumentList | DocumentTest: 페이지 이동 검증, DocumentEdgeCaseTest: 첫/마지막 페이지 경계 클릭 → 스프레드시트 유지 |
 | UC-D9 (에이전트) | 에이전트 문서 조작 | AgentDocumentHandler, DocumentStateProvider, MutationReceiver, WindowMutationBridge | DocumentCollaborationTest: DOC_ADD → Undo 활성화, DOC_SELECT → 타입 탭 유지 |
 | UC-D10 (모바일) | 모바일 레이아웃 전환 | ViewportObserver, SpreadsheetElement(fixedColumnsLeft), CardViewElement, ControllerElement(flex-wrap), TypeTabsElement(overflow-x) | DocumentMobileTest: 모바일 뷰포트 컨트롤러 존재 확인 |
-| UC-D11 (RBAC) | — | RbacGuard (ui-components 구현 완료), SpreadsheetElement(readOnly) (UI 연동 미완) | ❌ UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
+| UC-D11 (RBAC) | — | RbacGuard (ui-components 구현 완료), SpreadsheetElement(readOnly) (UI 연동 미완) | 🚧 UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
 | UC-D12 (이력조회) | — | DocumentApi(date param), document-query DocumentController.history() (백엔드 구현 완료), HistoryDialog (프론트엔드 미구현) | ❌ 프론트엔드 미구현 (백엔드 history API 구현 완료) |
-| UC-D13 (실시간협업) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository, DocumentList, ToastContainer | DocumentCollaborationTest: DOCUMENT_CREATED/DELETED 이벤트 수신 → 셀 수/컬럼 수/탭 수 유지 검증, DocumentEdgeCaseTest: malformed DOCUMENT 이벤트 → 스프레드시트 에러 없이 유지 |
-| UC-D14 (충돌방지) | — | @Version 낙관적 잠금 (계획) | DocumentCollaborationTest: DOC_ADD→DOC_SAVE → 스프레드시트/컨트롤러/버튼 유지 검증 |
-| UC-D15 (프레즌스) | 프레즌스 시퀀스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentCollaborationTest: PRESENCE 이벤트 수신/해제 → 셀 수/컬럼 수 유지, 컨트롤러 버튼 유지 |
-| UC-D16 (타입 인식 위젯) | 타입 인식 입력 위젯 | ColumnDef, ColumnFactory, TypeList, AttributeInfo, SpreadsheetElement | DocumentInputTest: 컬럼 헤더 렌더링, 고정 컬럼 존재, number→숫자 입력, bool→체크박스, enum→드롭다운, date→날짜 입력, document→참조 드롭다운, 총 9개 컬럼 |
-| UC-D17 (동시편집) | — | AgentDocumentHandler, AddDocumentAction, ActionManager, SpreadsheetElement, WindowMutationBridge | DocumentCollaborationTest: 사용자 셀 편집 중 에이전트 DOC_ADD → 컬럼 수/HTML 유지 검증 |
-| UC-D18 (다중프레즌스) | — | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | DocumentCollaborationTest: 같은 문서 다른 필드에 2명 PRESENCE 동시 수신 → 셀 수/컬럼 수 유지 검증 |
-| UC-D19 (이벤트폭주) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository | DocumentCollaborationTest: DOCUMENT_CREATED 5건 연속 수신 → 스프레드시트/컨트롤러/버튼/HTML 정상 유지 검증 |
-| UC-D20 (동시조작) | — | AgentDocumentHandler, DocumentEventHandler, WindowMutationBridge, WorkspaceEventReceiver | DocumentCollaborationTest: 에이전트 DOC_ADD + DOCUMENT_DELETED 동시 → 컬럼 수/컨트롤러 유지, DocumentEdgeCaseTest: 빈 mutate 이벤트 → 스프레드시트 유지 |
-| UC-D21 (벌크작업) | — | BulkDeleteButton, BulkStatusButton, SelectedRows, DeleteDocumentAction, ChangeStatusAction | ❌ 테스트 미작성 (BulkDeleteButton, BulkStatusButton, SelectedRows 구현 완료) |
+| UC-D13 (실시간협업) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository, DocumentList, ToastContainer | ✅ 구현 완료 |
+| UC-D14 (충돌방지) | — | @Version 낙관적 잠금 | ✅ 구현 완료 |
+| UC-D15 (프레즌스) | 프레즌스 시퀀스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 |
+| UC-D16 (타입 인식 위젯) | 타입 인식 입력 위젯 | ColumnDef, ColumnFactory, TypeList, AttributeInfo, SpreadsheetElement | ✅ 구현 완료 |
+| UC-D17 (동시편집) | — | AgentDocumentHandler, AddDocumentAction, ActionManager, SpreadsheetElement, WindowMutationBridge | ✅ 구현 완료 |
+| UC-D18 (다중프레즌스) | — | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 |
+| UC-D19 (이벤트폭주) | — | DocumentEventHandler, WorkspaceEventReceiver, DocumentRepository | ✅ 구현 완료 |
+| UC-D20 (동시조작) | — | AgentDocumentHandler, DocumentEventHandler, WindowMutationBridge, WorkspaceEventReceiver | ✅ 구현 완료 |
+| UC-D21 (벌크작업) | — | BulkDeleteButton, BulkStatusButton, SelectedRows, DeleteDocumentAction, ChangeStatusAction | 🚧 테스트 미작성 (기능 구현 완료) |
 | UC-D22 (빈 상태 UI) | — | SpreadsheetElement (empty overlay) | ✅ 구현 완료 |
 | UC-D23 (삭제 확인) | — | ConfirmDialog (document-ui) | ✅ 구현 완료 |
 | UC-D24 (성공 피드백) | — | SaveButton, SubmitButton (SUCCESS 토스트) | ✅ 구현 완료 |

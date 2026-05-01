@@ -198,7 +198,26 @@ sequenceDiagram
 | **액터** | 워크스페이스 관리자 |
 | **선행조건** | `{workspace}:role:assign` 권한 보유 |
 | **정상 흐름** | 1. 관리자가 그룹 ID와 역할명을 지정한다.<br>2. `group_roles` 테이블에 매핑을 저장한다. |
-| **결과** | 204 No Content |
+| UC-PW8 (역할 부여) | 3.3 | 역할 부여 | RoleController, RoleService, RoleRepository | - |
+
+---
+
+## 에이전트 연동 시나리오
+
+### UC-WS-A1: Assistant를 통한 워크스페이스 생성
+사용자가 자연어로 워크스페이스 생성을 요청하면 Assistant가 `workspace-command`의 API를 직접 호출하여 생성한다. 생성 시 Admin 그룹 배정 등 후속 로직이 자동으로 수행된다.
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant Ast as Assistant
+    participant WC as workspace-command
+
+    User->>Ast: "내 프로젝트용 워크스페이스 하나 만들어줘"
+    Ast->>WC: POST /workspaces {name: "My Project"}
+    WC-->>Ast: 201 Created (Workspace Info)
+    Ast-->>User: "워크스페이스 'My Project'가 생성되었습니다."
+```
 
 ---
 
@@ -214,3 +233,5 @@ sequenceDiagram
 | UC-PW6 (그룹 삭제) | 3.2 | 그룹 및 멤버 관리 | GroupController, GroupService, GroupRepository | - |
 | UC-PW7 (멤버 배정) | 3.2 | 그룹 및 멤버 관리 | GroupController, GroupService, GroupRepository | - |
 | UC-PW8 (역할 부여) | 3.3 | 역할 부여 | RoleController, RoleService, RoleRepository | - |
+| UC-WS-A1 (AI 생성) | 3.17 | UC-WS-A1 | Assistant, WorkspaceController | - |
+

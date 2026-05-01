@@ -267,20 +267,56 @@ sequenceDiagram
 
 ## 트레이서빌리티 매트릭스
 
-| UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
-|----|---|---|---|
-| UC-A1 (자연어 명령 처리) | 자연어 명령 처리 | AssistantController, AssistantService, IntentParser | AssistantServiceTest, AssistantControllerTest |
-| UC-A2 (실행 계획 생성) | 실행 계획 생성 | IntentParser, ExecutionPlan, ExecutionStep, AgentCommand | AssistantServiceTest |
-| UC-A3 (병렬 그룹 기반 명령 실행) | 병렬 그룹 기반 명령 실행 (Kafka 이벤트) | AssistantController, AssistantService, GroupedPlanExecutor, ExecutionContext, AgentCommandEventPublisher, Artifact | AssistantServiceTest, AssistantControllerTest |
-| UC-A4 (실행 취소) | 실행 취소 | AssistantController, AssistantService, ExecutionContext | AssistantServiceTest, AssistantControllerTest |
-| UC-A5 (데이터 품질 감시) | 데이터 품질 감시 | QualityMonitorService, QualityMonitor, DefaultQualityMonitor, QualityController, AgentCommandEventPublisher | QualityMonitorServiceTest, QualityControllerTest |
-| UC-A6 (감사 추적 조회) | 감사 추적 조회 | AuditController, AuditRepository, InMemoryAuditRepository, AuditEntry | AuditControllerTest, InMemoryAuditRepositoryTest |
-| UC-A7 (스케줄 감시) | 스케줄 기반 품질 감시 | ScheduledQualityMonitor, WorkspaceProvider, WebClientWorkspaceProvider, QualityMonitorService, SchedulingConfig | ScheduledQualityMonitorTest |
-| UC-A8 (VALIDATION_REQUESTED 검증) | VALIDATION_REQUESTED 이벤트 트리거 검증 | ValidationEventListener, QualityMonitorService, QualityMonitor, AgentCommandEventPublisher | ValidationEventListenerTest |
-| UC-A9 (실행 상태 조회) | 실행 상태/진행률 조회 | AssistantController, AssistantService, ExecutionContext | AssistantServiceTest, AssistantControllerTest |
-| UC-A10 (아티팩트 조회) | 아티팩트 조회 | AssistantController, AssistantService, AuditRepository, AuditEntry, Artifact | AssistantServiceTest, AssistantControllerTest |
-| UC-A11 (서브 에이전트 오케스트레이션) | 서브 에이전트 오케스트레이션 | AssistantService, SubAgentPlanExecutor, DefaultSubAgentPlanExecutor, ArtifactAggregator, DefaultArtifactAggregator, SubAgentDefinition, ExecutionContextManager | DefaultSubAgentPlanExecutorTest, DefaultArtifactAggregatorTest, AssistantServiceTest |
-| UC-A12 (AssistantService 분리) | AssistantService 분리 | SubAgentOrchestrator (추출 완료), ExecutionLifecycleManager (예정), AuditingService (예정) | - (부분 구현) |
+| UC | 제목 | 구현체 | 테스트 | 상태 |
+|----|------|--------|--------|------|
+| UC-A1 | 자연어 명령 처리 | `AssistantController.request()` | `AssistantControllerTest`, `AssistantServiceTest` | 구현 |
+| UC-A2 | 실행 계획 생성 | `IntentParser.parse()` | `OpenAiIntentParserTest` | 구현 |
+| UC-A3 | 명령 실행 | `AssistantService.execute()` | `AssistantServiceTest`, `GroupedPlanExecutorTest` | 구현 |
+| UC-A4 | 실행 취소 | `AssistantController.abort()` | `AssistantControllerTest`, `AssistantServiceTest` | 구현 |
+| UC-A5 | 데이터 품질 감시 | `QualityMonitorService.scan()` | `QualityMonitorServiceTest` | 구현 |
+| UC-A6 | 감사 추적 조회 | `AuditController.list()` | `AuditControllerTest` | 구현 |
+| UC-A7 | 스케줄 감시 | `ScheduledQualityMonitor` | `ScheduledQualityMonitorTest` | 구현 |
+| UC-A8 | 이벤트 트리거 검증 | `ValidationEventListener` | `ValidationEventListenerTest` | 구현 |
+| UC-A9 | 실행 상태 조회 | `AssistantController.getExecutions()` | `AssistantControllerTest` | 구현 |
+| UC-A10 | 아티팩트 조회 | `AssistantController.getArtifacts()` | `AssistantControllerTest` | 구현 |
+| UC-A11 | 서브 에이전트 | `SubAgentPlanExecutor` | `DefaultSubAgentPlanExecutorTest` | 구현 |
+| UC-A12 | 서비스 분리 | `SubAgentOrchestrator` | - | 부분 구현 |
+
+---
+
+## 에이전트 연동
+
+assistant 는 시스템 내의 모든 에이전트 활동을 오케스트레이션하는 **중앙 허브**입니다.
+
+### 시나리오 1 — 타 도메인과의 협업 (Type Mutation)
+
+assistant 가 LLM 의 판단에 따라 `type-command` 를 호출하거나 프론트엔드에 `AGENT_COMMAND` 를 발행하여 협업을 유도합니다.
+
+```mermaid
+sequenceDiagram
+    participant U as 사용자
+    participant AS as assistant
+    participant K as Kafka (handbook-events)
+    participant EB as event-broadcaster
+    participant UI as agent-ui / type-ui
+
+    U->>AS: "새 타입 추가해줘"
+    AS->>AS: LLM 분석 → mutate 계획 수립
+    AS->>K: AGENT_COMMAND (mutate) 발행
+    K->>EB: 이벤트 브로드캐스트
+    EB-->>UI: SSE 전달
+    UI->>UI: 시각적 실행 (타입 생성 애니메이션)
+```
+
+## 에이전트 연동 체크리스트
+
+| # | 항목 | 값 | 비고 |
+|---|------|---|------|
+| 1 | 내부 assistant 연동 | **자기 자신** | 오케스트레이터 역할 |
+| 2 | 외부 AI Tool Use | `request_assistant`, `execute_plan` | 외부 에이전트가 assistant 를 도구로 사용 가능 |
+| 3 | OpenAPI 어노테이션 | `@Operation` 적용 완료 | `AssistantController`, `AuditController` |
+| 4 | 감사 경로 | 모든 판단/실행이 `AuditEntry` 로 기록됨 | `AuditRepository` |
+| 5 | Agent Command 타겟 | N/A (발행 주체) | 단, `agent-ui` 는 assistant 의 페이로드를 직접 렌더링 |
 
 ## UC-A9: 실행 상태 조회
 

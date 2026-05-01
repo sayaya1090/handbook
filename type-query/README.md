@@ -32,6 +32,20 @@
 
 읽기/쓰기 분리(CQRS)로 읽기 전용 서비스를 독립 스케일링할 수 있다.
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: `AGENT_COMMAND` navigate (`target.menu="types"`)
+- 시나리오: "'User' 타입 정의 좀 보여줘" → `GET /types` 조회 후 `navigate`
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `GET /workspaces/{workspace}/types`
+- OpenAPI `summary` / `description` 기입 위치: `TypeController.getTypes`
+
+### Agent Command 타겟
+- navigate: `types`
+- highlight/mutate selector 패턴: `.type-list-item`
+
 ## 의존성
 
 - schema (Type, TypeLayout, Attribute)

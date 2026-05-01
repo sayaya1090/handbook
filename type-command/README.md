@@ -33,6 +33,20 @@
 | TransactionalOperator 주입 | usecase에 Spring 어노테이션 없이 트랜잭션 지원 |
 | Kafka 이벤트 발행 | TYPE_CREATED/DELETED → event-broadcaster → 실시간 UI 갱신 |
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: 직접 REST (`PUT /workspaces/{id}/types`)
+- 시나리오: "'Task' 타입에 'Priority' 속성을 추가해줘" → assistant 가 `PATCH /types` 호출
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `PUT /workspaces/{id}/types`, `PATCH /workspaces/{id}/types`
+- OpenAPI `summary` / `description` 기입 위치: `TypeController.saveType`
+
+### Agent Command 타겟
+- navigate: `types`, `schema-editor`
+- highlight/mutate selector 패턴: `.type-definition`, `.attribute-row`
+
 ## 의존성
 
 - schema (Type, Attribute, AttributeType, TypeLayout)

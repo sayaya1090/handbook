@@ -99,6 +99,16 @@ sequenceDiagram
     ExtAI-->>사용자: "워크스페이스 기능은 info/groups/permissions 3가지입니다..."
 ```
 
+## 에이전트 연동 체크리스트
+
+| # | 항목 | 값 | 비고 |
+|---|------|---|------|
+| 1 | 내부 assistant 연동 | `AGENT_COMMAND` navigate 타겟 | assistant 가 메뉴 조회를 통해 가용 화면 파악 |
+| 2 | 외부 AI Tool Use | `list_workspace_menu`, `list_workspaces` | `/menus`, `/workspaces` 엔드포인트 노출 |
+| 3 | OpenAPI 어노테이션 | `@Operation` 적용 완료 | `MenuController`, `WorkspaceController` |
+| 4 | 감사 경로 | `AuditEntry` 발행 지점 확인 | `gateway` 및 도메인 서비스 진입점 |
+| 5 | Agent Command 타겟 | URL 패턴: `^workspaces` | `shell-ui` 메뉴 매칭 정규식과 동기화 |
+
 ## 후속 확장 (미구현)
 
 - 사용자가 속한 워크스페이스만 필터링 (현재 `findAll` — 권한 필터링은 auth-expert 와 조율 후 추가)

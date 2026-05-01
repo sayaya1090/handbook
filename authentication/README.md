@@ -1,5 +1,7 @@
 # Authentication 모듈
 
+**에이전트 연동: 없음 (내부 전용).**
+
 JWT 기반 인증·인가 라이브러리. 쿠키에서 JWT를 추출하고, RSA 공개키로 서명을 검증하여
 Spring Security Authentication 객체로 변환한다.
 

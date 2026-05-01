@@ -37,6 +37,21 @@
 | Kafka 이벤트 발행 | DOCUMENT_CREATED/DELETED → event-broadcaster → 실시간 UI 갱신 |
 | DuplicateKeyException 핸들링 | serial 중복 시 409 Conflict 반환 |
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: 직접 REST (`PUT /workspaces/{id}/documents`)
+- 시나리오: "이 내용을 '회의록' 문서로 저장해줘" → assistant 가 `PUT` 호출
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `PUT /workspaces/{id}/documents`, `POST /workspaces/{id}/documents/import`
+- OpenAPI `summary` / `description` 기입 위치: `DocumentController.saveDocument`
+- 감사 경로: `caller_type=EXTERNAL_AGENT` → `AuditEntry` 발행
+
+### Agent Command 타겟
+- navigate: `documents`, `editor`
+- highlight/mutate selector 패턴: `.document-item`, `.editor-content`, `[data-serial="{serial}"]`
+
 ## 인프라 기능
 
 | 기능 | 구현 | 설명 |

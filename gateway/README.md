@@ -129,6 +129,24 @@ spring:
 
 ```
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: `/assistant/**` 경로 라우팅
+- 시나리오: 사용자의 자연어 요청을 Assistant 서비스로 전달하고, Assistant의 실행 계획 생성 및 실행 요청을 중계함
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `/openapi.json`, `/assistant/request`, `/assistant/execute` 등
+- OpenAPI `summary` / `description` 기입 위치: 각 백엔드 서비스의 Controller (SpringDoc 스캔)
+- 감사 경로: `CorrelationIdFilter`에서 `X-Correlation-Id` 생성 및 전파
+
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
+
+### Agent Command 타겟
+- navigate: 해당 없음 (인프라 계층)
+- highlight/mutate selector 패턴: 해당 없음
+
 ## 메뉴 수집 설정
 
 ```yaml

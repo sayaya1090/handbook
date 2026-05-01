@@ -120,6 +120,23 @@ sequenceDiagram
 | **정상 흐름** | 1. ContentElement 또는 외부에서 `LoginCommandRouter.dispatch(detail)`로 CustomEvent를 발행한다.<br>2. `LoginCommandRouter`가 `type` 필드를 읽어 해당 BehaviorSubject에 커맨드를 라우팅한다.<br>3-a. `notify` → `LoginNotifyHandler`가 level에 따라 콘솔에 메시지 출력.<br>3-b. `attention` → `LoginAttentionHandler`가 안내 메시지 출력.<br>3-c. `highlight` → `LoginHighlightHandler`가 target 요소에 강조 클래스 토글.<br>3-d. `progress` → `LoginProgressHandler`가 OAuth 버튼 비활성화 + 진행 메시지 출력. |
 | **결과** | 커맨드 타입에 따라 콘솔 출력, 요소 강조, 버튼 상태 변경이 수행된다. |
 
+## 에이전트 연동 시나리오
+
+로그인 화면의 콘솔 출력 및 안내를 에이전트가 제어한다.
+
+```mermaid
+sequenceDiagram
+    participant Shell as Shell (agent-ui)
+    participant Router as LoginCommandRouter
+    participant Handler as LoginAttentionHandler
+    participant Console as ConsoleElement
+
+    Note over Shell: 5초간 조작 없음 감지
+    Shell->>Router: CustomEvent(type: "attention")
+    Router->>Handler: next()
+    Handler->>Console: print("Click the button above to sign in")
+```
+
 ---
 
 ## 트레이서빌리티 매트릭스

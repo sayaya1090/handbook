@@ -41,14 +41,19 @@ Gateway `MenuService` 가 WebClient 로 `/menus` 를 집계하며, `/workspaces*
 ## 에이전트 연동
 
 ### 내부 assistant
-- **호출 경로**: `AGENT_COMMAND` navigate — `target.menu="workspaces"` 로 이 메뉴를 선택
-- **시나리오**: 사용자가 assistant 에 "워크스페이스 권한 설정 화면 열어줘" 요청
+- 호출 경로: `AGENT_COMMAND` navigate (`target.menu="workspaces"`)
+- 시나리오: 사용자가 assistant 에 "워크스페이스 권한 설정 화면 열어줘" 요청
   → assistant 가 `navigate { menu: "workspaces", tool: "permissions" }` 커맨드 발행
 
 ### 외부 AI (Tool Use)
-- **노출 엔드포인트**:
+- 노출 엔드포인트:
   - `GET /workspaces` — 워크스페이스 ID 목록 획득 (모든 후속 도메인 작업의 근거)
   - `GET /workspaces/{id}` — 단건 정보 조회
+- OpenAPI `summary` / `description` 기입 위치: `WorkspaceController` 메서드
+
+### Agent Command 타겟
+- navigate: `workspaces`, `menus`
+- highlight/mutate selector 패턴: `.workspace-list-item`, `.menu-entry`
 
 ## 실행
 

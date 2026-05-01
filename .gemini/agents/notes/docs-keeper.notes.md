@@ -1,4 +1,6 @@
 ## 요청 로그
+- 2026-05-14: 에이전트 연동 섹션 보강 → 10개 모듈 README/USECASE 갱신 완료
+- 2026-05-14: 요구사항-설계-UC 전수 감사 → architecture.md 보완 필요 발견 / UC 매트릭스 점검 완료
 - 2026-05-14: onboarding-ui 문서 갱신 → README, USECASE, architecture 수정 반영
 
 ## 원칙 갱신 제안

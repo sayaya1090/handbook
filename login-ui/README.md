@@ -4,6 +4,26 @@
 
 ---
 
+---
+
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: `handbook-login-command` CustomEvent
+- 시나리오: 로그인 화면에서 5초 이상 조작이 없을 때 에이전트가 `attention` 커맨드를 보내 조작 방법을 안내하거나, 인증 에러 발생 시 `notify` 커맨드로 터미널 콘솔에 에러를 출력함
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: 없음
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음
+- 감사 경로: 해당 없음
+
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
+
+### Agent Command 타겟
+- navigate: `SIGN_IN`, `SIGN_OUT` 메뉴 선택 시 로딩
+- highlight/mutate selector 패턴: `button.auth-provider-google`, `button.auth-provider-github`
+
 ## 엔트리 포인트
 
 | 모듈 | 스크립트 | 트리거 |

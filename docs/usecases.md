@@ -1960,21 +1960,21 @@ sequenceDiagram
 
 ## 추가 요구사항 (섹션 6) — UC 매핑
 
-| 요구사항 | 관련 UC | 모듈 UC | 설명 |
-|----------|---------|---------|------|
-| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspaces/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 |
-| 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 |
-| 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 |
-| 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI |
-| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (onboarding-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/공백/하이픈/언더스코어, 최대 255자 |
-| 6.6 접근성 (Accessibility) | 전체 UI UC | 전체 프론트엔드 모듈 | role 속성, aria-label, 키보드 네비게이션 (Tab/Enter/Escape) |
-| 6.7 파일 업로드 | UC-50 (문서 생성/편집) | UC-PD6 (document-command) | File 속성 multipart/form-data 업로드 엔드포인트, S3/로컬 저장소 연동 |
-| 6.8 사용자 설정 | — | UC-S15, UC-S16 (shell-ui) | 언어/테마 퍼시스턴스, 설정 패널 UI |
-| 6.9 감사 로그 UI | UC-91, UC-92 | UC-DB6 (dashboard-ui) | 감사 이력 통합 타임라인, 기간/사용자/이벤트 타입 필터 |
-| 6.10 벌크 작업 | UC-50, UC-51, UC-30 | UC-D21 (document-ui), UC-T23 (type-ui) | 문서 다중 선택 일괄 삭제/상태 변경, 타입 다중 선택 일괄 삭제 |
-| 6.11 세션 관리 | UC-01 (인증) | UC-S17 (shell-ui) | 토큰 자동 갱신, 만료 경고, 로그인 리다이렉트 |
-| 6.12 타입 버전 히스토리 UI | UC-30, UC-31 | UC-T24 (type-ui), UC-ST4 (type-query) | 타입 버전 목록 브라우징, 두 버전 간 diff 비교 |
-| 6.13 워크스페이스 관리 | UC-20~UC-24 | UC-PW5~PW8, UC-WM1~WM4 | 그룹 생성/삭제, 멤버 배정, 역할 부여 (workspace-ui, workspace-command) |
+| 요구사항 | 관련 UC | 모듈 UC | 설명 | 상태 |
+|----------|---------|---------|------|------|
+| 6.1 워크스페이스 참여 (JOIN) | UC-06 | UC-W2 (onboarding-ui) | POST /workspaces/{id}/join 엔드포인트, SubmitButton JOIN 모드 처리 | 🚧 부분 구현 (API 완료, UI 미연동) |
+| 6.2 대시보드 API 통합 | UC-91, UC-92 | UC-DB1~DB5 (dashboard-ui) | 워크스페이스 기반 API URL, 품질 이슈/에이전트 활동 조회 엔드포인트 | 🚧 부분 구현 (API 완료, UI 진행 중) |
+| 6.3 에러 핸들링 개선 | UC-50~UC-57 (문서), UC-30~UC-32 (타입) | UC-D5 (document-ui) | API 호출 실패 시 토스트 알림, 충돌 해결 UI, SSE 재연결 | ✅ 구현 완료 (ToastContainer, SSE retry) |
+| 6.4 페이지네이션 경계 처리 | UC-54 | UC-D8 (document-ui) | 마지막 페이지 Next 비활성화, hasMore 플래그, 결과 없음 UI | ✅ 구현 완료 |
+| 6.5 입력 검증 강화 | UC-06, UC-10 | UC-W1, UC-W2 (onboarding-ui) | 워크스페이스 이름 검증 (클라이언트+서버), 영숫자/한글/공백/하이픈/언더스코어, 최대 255자 | ✅ 구현 완료 |
+| 6.6 접근성 (Accessibility) | 전체 UI UC | 전체 프론트엔드 모듈 | role 속성, aria-label, 키보드 네비게이션 (Tab/Enter/Escape) | ✅ 구현 완료 |
+| 6.7 파일 업로드 | UC-50 (문서 생성/편집) | UC-PD6 (document-command) | File 속성 multipart/form-data 업로드 엔드포인트, S3/로컬 저장소 연동 | ✅ 구현 완료 |
+| 6.8 사용자 설정 | — | UC-S15, UC-S16 (shell-ui) | 언어/테마 퍼시스턴스, 설정 패널 UI | ✅ 구현 완료 |
+| 6.9 감사 로그 UI | UC-91, UC-92 | UC-DB6 (dashboard-ui) | 감사 이력 통합 타임라인, 기간/사용자/이벤트 타입 필터 | 🚧 부분 구현 (API 완료, UI 미연동) |
+| 6.10 벌크 작업 | UC-50, UC-51, UC-30 | UC-D21 (document-ui), UC-T23 (type-ui) | 문서 다중 선택 일괄 삭제/상태 변경, 타입 다중 선택 일괄 삭제 | 🚧 부분 구현 (UI 구현, 테스트 미작성) |
+| 6.11 세션 관리 | UC-01 (인증) | UC-S17 (shell-ui) | 토큰 자동 갱신, 만료 경고, 로그인 리다이렉트 | ✅ 구현 완료 |
+| 6.12 타입 버전 히스토리 UI | UC-30, UC-31 | UC-T24 (type-ui), UC-ST4 (type-query) | 타입 버전 목록 브라우징, 두 버전 간 diff 비교 | 🚧 부분 구현 (API 완료, UI 테스트 미작성) |
+| 6.13 워크스페이스 관리 | UC-20~UC-24 | UC-PW5~PW8, UC-WM1~WM4 | 그룹 생성/삭제, 멤버 배정, 역할 부여 (workspace-ui, workspace-command) | 🚧 부분 구현 (API 완료, UI 미구현) |
 
 ---
 

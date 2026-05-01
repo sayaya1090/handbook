@@ -336,6 +336,21 @@ sequenceDiagram
 
 ---
 
+## 에이전트 연동
+
+**에이전트 연동: 핵심 기반 모듈 (Assistant의 UI 실행기).**
+에이전트 커맨드를 수신하여 실제 UI 애니메이션과 브릿지 통신을 수행하는 중앙 모듈이다.
+
+### 내부 assistant
+- 호출 경로: SSE (`AGENT_COMMAND` 이벤트 수신)
+- 역할: Assistant가 발행한 실행 계획(커맨드 스트림)을 시각적 액션으로 변환
+
+### Agent Command 타겟 (자기 자신)
+- navigate: `agent-panel`
+- highlight/mutate selector 패턴: `.agent-input`, `.progress-bar`, `.artifact-panel`
+
+---
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |

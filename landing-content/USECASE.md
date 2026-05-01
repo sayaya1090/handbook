@@ -3,6 +3,22 @@
 `landing-content` 는 순수 DOM 라이브러리이므로 독립 유스케이스는 없다.
 소비자(`landing-ui`, 앱 내부 랜딩 activity) 의 유스케이스 안에서 기능 설명 카드 DOM 을 제공하는 하위 책임만 수행한다.
 
+## 에이전트 연동 시나리오
+
+외부 AI 에이전트가 사이트의 기능을 파악할 수 있도록 텍스트 정보를 제공한다.
+
+```mermaid
+sequenceDiagram
+    participant Agent as 외부 AI
+    participant S3 as S3 (Static)
+    participant Content as landing-content
+
+    Content->>Content: 빌드 타임에 마크다운 덤프
+    Content->>S3: /llms.txt 업로드
+    Agent->>S3: GET /llms.txt
+    Note over Agent: Handbook 기능 파악
+```
+
 ## 트레이서빌리티 매트릭스
 
 | 상위 UC | 참조 요구사항 | Landing-Content 의 역할 |

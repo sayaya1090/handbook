@@ -181,6 +181,22 @@ sequenceDiagram
     Consumer->>Prometheus: "dlq_events_total 카운터 증가"
 ```
 
+## 에이전트 연동 시나리오
+
+Assistant가 발행한 커맨드를 실시간으로 전달하는 흐름을 담당한다.
+
+```mermaid
+sequenceDiagram
+    participant Asst as Assistant
+    participant K as Kafka
+    participant EB as event-broadcaster
+    participant UI as agent-ui
+
+    Asst->>K: AGENT_COMMAND (mutate)
+    K->>EB: 이벤트 수신
+    EB-->>UI: SSE 브로드캐스트 (AGENT_COMMAND)
+```
+
 ---
 
 ## 트레이서빌리티 매트릭스

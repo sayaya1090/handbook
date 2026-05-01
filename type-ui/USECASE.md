@@ -673,17 +673,17 @@ sequenceDiagram
 | UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, AgentMutation | CollaborationTest: 에이전트 조작 검증 |
 | UC-T12 (검색) | — | 에이전트 연동 | TypeSearchProvider, AgentSearch | CollaborationTest: 검색 기능 연동 확인 |
 | UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement, TypeElement, DragShapeElement, AttributeEditorDialog | CanvasTest: 컨트롤러 툴바 레이아웃 확인 |
-| UC-T14 (RBAC) | — | — | RbacGuard, CanvasMode | ❌ UI 연동 미구현 |
-| UC-T15 (실시간협업) | 실시간 협업 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList | CollaborationTest: 실시간 이벤트 수신 검증 |
-| UC-T16 (충돌방지) | 충돌 방지 | 상태 관리 | @Version 낙관적 잠금, ChangeTracker | CanvasTest: 409 Conflict 표시 검증 |
-| UC-T17 (프레즌스) | 프레즌스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | CollaborationTest: 프레즌스 표시 검증 |
-| UC-T18 (화살표호버) | 참조 화살표 호버 | 캔버스 | TBoxReferenceElement, ArrowFactory, TypeElement | CanvasTest: 하이라이트 클래스 검증 |
-| UC-T19 (동시편집) | — | 에이전트 연동, 캔버스 | AgentMutationHandler, ActionManager, SelectedTBoxElement | CollaborationTest: 동시 편집 시 선택 유지 검증 |
-| UC-T20 (다중프레즌스) | — | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | CollaborationTest: 다중 프레즌스 수신 검증 |
-| UC-T21 (에이전트Undo) | — | 에이전트 연동, Action 계층 | AgentMutationHandler, ActionManager | UndoRedoTest: 에이전트 작업 Undo 검증 |
-| UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver | CollaborationTest: 이벤트 연속 수신 안정성 검증 |
-| UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedTBoxElement, DeleteTBoxAction | ❌ 테스트 미작성 |
-| UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | ❌ 테스트 미작성 |
+| UC-T14 (RBAC) | — | — | RbacGuard, CanvasMode | 🚧 UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
+| UC-T15 (실시간협업) | 실시간 협업 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList | ✅ 구현 완료 |
+| UC-T16 (충돌방지) | 충돌 방지 | 상태 관리 | @Version 낙관적 잠금, ChangeTracker | ✅ 구현 완료 |
+| UC-T17 (프레즌스) | 프레즌스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 |
+| UC-T18 (화살표호버) | 참조 화살표 호버 | 캔버스 | TBoxReferenceElement, ArrowFactory, TypeElement | ✅ 구현 완료 |
+| UC-T19 (동시편집) | — | 에이전트 연동, 캔버스 | AgentMutationHandler, ActionManager, SelectedTBoxElement | ✅ 구현 완료 |
+| UC-T20 (다중프레즌스) | — | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 |
+| UC-T21 (에이전트Undo) | — | 에이전트 연동, Action 계층 | AgentMutationHandler, ActionManager | ✅ 구현 완료 |
+| UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver | ✅ 구현 완료 |
+| UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedTBoxElement, DeleteTBoxAction | 🚧 테스트 미작성 (기능 구현 완료) |
+| UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | 🚧 테스트 미작성 (기능 구현 완료) |
 | UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | CollaborationTest: 쉘 워크스페이스 변경 이벤트 시 데이터 갱신 확인 (UC-T25) |
 | UC-T26 (빈 상태 UI) | — | — | SpreadsheetElement | ✅ 구현 완료 |
 | UC-T27 (삭제 확인) | — | — | ConfirmDialog | ✅ 구현 완료 |

@@ -40,6 +40,21 @@
 | Kafka 이벤트 발행 | WORKSPACE_CREATED/DELETED 이벤트 |
 | usecase에 Spring 어노테이션 없음 | Config에서 Bean 등록 |
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: 직접 REST (POST/PUT/DELETE /workspaces)
+- 시나리오: "새 워크스페이스 'AI Lab'을 만들어줘" → assistant 가 `POST /workspaces` 호출
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: POST /workspaces
+- OpenAPI `summary` / `description` 기입 위치: `WorkspaceController` 메서드
+- 감사 경로: `caller_type=EXTERNAL_AGENT` → `AuditEntry`
+
+### Agent Command 타겟
+- navigate: workspace, settings, groups
+- highlight/mutate selector 패턴: `.workspace-item`, `.group-row`, `.member-cell`
+
 ## 의존성
 
 - workspace (도메인)

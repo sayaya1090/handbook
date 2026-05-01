@@ -10,6 +10,26 @@
 
 ---
 
+---
+
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: 해당 없음
+- 시나리오: 해당 없음 (SEO용 정적 콘텐츠)
+
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: `/llms.txt`, `/llms-full.txt` (빌드 산출물이 배포됨)
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음
+- 감사 경로: 해당 없음
+
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
+
+### Agent Command 타겟
+- navigate: 해당 없음
+- highlight/mutate selector 패턴: 해당 없음
+
 ## 목적
 
 - **SEO**: 검색엔진이 인덱싱할 수 있는 의미 있는 정적 HTML 을 제공

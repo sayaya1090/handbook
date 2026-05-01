@@ -387,25 +387,49 @@ sequenceDiagram
 
 ## 에이전트 연동
 
-shell-ui 는 프론트엔드 Shell 모듈로 공개 REST API 를 노출하지 않는다. 그러나 외부/내부 AI 에이전트가 Shell 파이프라인과 상호작용하는 지점이 존재하므로 아래와 같이 기록한다.
+shell-ui 는 프론트엔드 Shell 모듈로서 에이전트의 네비게이션 및 강조 명령을 실제 UI 동작으로 전환하는 역할을 담당합니다.
+
+### 시나리오 1 — assistant 의 navigate 수신
+
+```mermaid
+sequenceDiagram
+    participant AS as assistant
+    participant EB as event-broadcaster
+    participant SU as shell-ui
+    participant MQ as document-query
+
+    AS->>EB: AGENT_COMMAND (navigate: "/workspaces/1/documents")
+    EB-->>SU: SSE push (AGENT_COMMAND)
+    SU->>SU: UrlBasedMenuResolver 가 URL 매칭
+    SU->>SU: "documents" 메뉴 자동 선택
+    SU->>MQ: GET /workspaces/1/documents (모듈 로딩)
+    MQ-->>SU: 문서 목록 데이터
+    SU-->>SU: Frame 내부에 document-query 렌더링
+```
+
+### 시나리오 2 — assistant 의 highlight 수신
+
+```mermaid
+sequenceDiagram
+    participant AS as assistant
+    participant EB as event-broadcaster
+    participant SU as shell-ui
+
+    AS->>EB: AGENT_COMMAND (highlight: ".menu-rail .item[data-menu='types']")
+    EB-->>SU: SSE push (AGENT_COMMAND)
+    SU->>SU: HighlightEffect 가 대상 요소 검색
+    SU->>SU: 해당 메뉴 아이템에 pulse 애니메이션 적용
+    SU->>SU: 필요 시 해당 위치로 스크롤
+```
+
+## 에이전트 연동 체크리스트
 
 | # | 항목 | 값 | 비고 |
 |---|------|---|------|
-| 1 | 내부 assistant 연동 | `AGENT_COMMAND` 수신 (`navigate`, `highlight`, `mutate`) | assistant 가 shell 의 URL 변경·DOM selector 하이라이트를 유도. `UrlBasedMenuResolver` / `HistoryManager` 가 navigate 타겟, `HighlightEffect` 가 highlight 타겟 |
-| 2 | 외부 AI Tool Use | N/A — 백엔드 API 없음 | shell-ui 자체는 `/openapi.json` 미발행. 외부 에이전트는 gateway 경유 백엔드 서비스로만 접근 |
+| 1 | 내부 assistant 연동 | `AGENT_COMMAND` 수신 (`navigate`, `highlight`, `mutate`) | assistant 가 shell 의 URL 변경·DOM selector 하이라이트를 유도 |
+| 2 | 외부 AI Tool Use | N/A — 백엔드 API 없음 | shell-ui 자체는 `/openapi.json` 미발행 |
 | 3 | OpenAPI 어노테이션 | N/A | 동일 사유 |
-| 4 | 감사 경로 | N/A (shell 자체) | 단, shell 이 트리거한 백엔드 호출은 각 서비스에서 `AuditEntry` 발행 (`docs/contracts/audit.md`) |
-| 5 | Agent Command 타겟 | URL 패턴: `MenuList.urlRegex` 에 등록된 메뉴 경로. selector: `.menu-rail .item`, `.tool-rail .item`, `.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
-
-**UC-S21 특기사항**: 가상 onboarding Menu 는 `MenuList` 밖에서 합성되므로 `urlRegex` 미지정 — 외부 에이전트의 navigate 커맨드로 직접 트리거 불가능. 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.
--ui 는 프론트엔드 Shell 모듈로 공개 REST API 를 노출하지 않는다. 그러나 외부/내부 AI 에이전트가 Shell 파이프라인과 상호작용하는 지점이 존재하므로 아래와 같이 기록한다.
-
-| # | 항목 | 값 | 비고 |
-|---|------|---|------|
-| 1 | 내부 assistant 연동 | `AGENT_COMMAND` 수신 (`navigate`, `highlight`, `mutate`) | assistant 가 shell 의 URL 변경·DOM selector 하이라이트를 유도. `UrlBasedMenuResolver` / `HistoryManager` 가 navigate 타겟, `HighlightEffect` 가 highlight 타겟 |
-| 2 | 외부 AI Tool Use | N/A — 백엔드 API 없음 | shell-ui 자체는 `/openapi.json` 미발행. 외부 에이전트는 gateway 경유 백엔드 서비스로만 접근 |
-| 3 | OpenAPI 어노테이션 | N/A | 동일 사유 |
-| 4 | 감사 경로 | N/A (shell 자체) | 단, shell 이 트리거한 백엔드 호출은 각 서비스에서 `AuditEntry` 발행 (`docs/contracts/audit.md`) |
-| 5 | Agent Command 타겟 | URL 패턴: `MenuList.urlRegex` 에 등록된 메뉴 경로. selector: `.menu-rail .item`, `.tool-rail .item`, `.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
+| 4 | 감사 경로 | N/A (shell 자체) | shell 이 트리거한 백엔드 호출은 각 서비스에서 감사 기록 발행 |
+| 5 | Agent Command 타겟 | URL 패턴: `MenuList.urlRegex`. selector: `.menu-rail .item`, `.tool-rail .item`, `.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
 
 **UC-S21 특기사항**: 가상 onboarding Menu 는 `MenuList` 밖에서 합성되므로 `urlRegex` 미지정 — 외부 에이전트의 navigate 커맨드로 직접 트리거 불가능. 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.

@@ -100,37 +100,73 @@ sequenceDiagram
     Ctrl-->>Client: "200 OK + 저장된 레이아웃"
 ```
 
-## 타입 조회 시퀀스
+---
 
-```mermaid
-sequenceDiagram
-    actor Client as "클라이언트 (type-ui)"
-    participant GW as Gateway
-    participant Ctrl as TypeController
-    participant Svc as TypeService
-    participant Repo as TypeRepository
-    participant AttrRepo as R2dbcAttributeEntityRepository
-    participant DB as PostgreSQL
+## UC-PT1: 타입 생성 및 업데이트
 
-    Client->>GW: "GET /workspaces/{id}/types?effect_date_time=&expire_date_time="
-    GW->>Ctrl: "@RequestParam effectDateTime, expireDateTime"
-    Ctrl->>Svc: "findByPeriod(workspace, effectDateTime, expireDateTime)"
-    Svc->>Repo: "findByWorkspaceAndPeriod(workspace, effectDateTime, expireDateTime)"
-    Repo->>DB: "SELECT * FROM types WHERE workspace=:w AND 기간 겹침"
-    DB-->>Repo: "List<R2dbcTypeEntity>"
-    Repo->>AttrRepo: "findByWorkspaceAndTypeIdIn(workspace, typeIds)"
-    AttrRepo->>DB: "SELECT * FROM type_attributes"
-    DB-->>AttrRepo: "List<R2dbcAttributeEntity>"
-    Repo->>Repo: "typeId:version 키로 속성 그룹핑"
-    Repo->>Repo: "R2dbcTypeEntity + Attributes → Type 도메인 변환"
-    Note over Repo: "attributeType JSON → AttributeType 역직렬화"
-    Repo-->>Svc: "Flux<Type>"
-    Svc-->>Ctrl: "Flux<Type>"
-    Ctrl-->>Client: "200 OK + 타입 목록 (속성 포함)"
-```
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 (type-ui) |
+| **정상 흐름** | 1. 클라이언트가 `PUT /workspaces/{id}/types`로 타입 목록을 전송한다.<br>2. `TypeService`가 트랜잭션 내에서 타입을 저장한다.<br>3. 기존 속성을 삭제하고 새 속성을 `type_attributes` 테이블에 저장한다.<br>4. 저장 완료 후 `TYPE_CREATED` 이벤트를 Kafka에 발행한다. |
+| **결과** | 타입 정보가 영구 저장되고 협업자들에게 실시간 알림이 전송된다. |
+
+## UC-PT2: 타입 삭제
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 (type-ui) |
+| **정상 흐름** | 1. 클라이언트가 `DELETE /workspaces/{id}/types`로 삭제할 타입 목록을 전송한다.<br>2. `TypeService`가 관련 속성과 타입을 삭제한다.<br>3. 삭제 완료 후 `TYPE_DELETED` 이벤트를 Kafka에 발행한다. |
+| **결과** | 타입 정보가 삭제되고 관련 데이터 정합성이 유지된다. |
+
+## UC-PT3: 레이아웃 저장
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 (type-ui) |
+| **정상 흐름** | 1. 클라이언트가 `PUT /workspaces/{id}/layouts`로 레이아웃 정보를 전송한다.<br>2. `LayoutService`가 `type_layouts` 테이블에 위치 정보를 JSON으로 저장한다.<br>3. 저장된 레이아웃 정보를 반환한다. |
 
 ---
 
-...
-| UC-PT5 (레이아웃 저장) | 레이아웃 저장 | LayoutController, LayoutService, LayoutRepository, R2dbcLayoutRepositoryAdapter, R2dbcLayoutEntity | - |
-| UC-PT6 (이벤트) | 타입 저장/삭제 (후반) | KafkaTypeEventPublisher, TypeEvent | - |
+## 트레이서빌리티 매트릭스
+
+| UC | 제목 | 구현체 | 테스트 | 상태 |
+|----|------|--------|--------|------|
+| UC-PT1 | 타입 저장 | `TypeController.save()` | `TypeControllerTest`, `TypeServiceTest` | 구현 |
+| UC-PT2 | 타입 삭제 | `TypeController.delete()` | `TypeControllerTest`, `TypeServiceTest` | 구현 |
+| UC-PT3 | 레이아웃 저장 | `LayoutController.save()` | `LayoutControllerTest`, `LayoutServiceTest` | 구현 |
+| UC-PT4 | 이벤트 발행 | `KafkaTypeEventPublisher` | `KafkaTypeEventPublisherTest` | 구현 |
+| UC-82 | 에이전트 mutate | `TypeController` (PUT/DELETE) | `CollaborationTest` (type-ui) | 구현 |
+
+---
+
+## 에이전트 연동 시나리오
+
+### 시나리오 1 — 내부 assistant 의 mutate
+
+사용자가 assistant 에게 **"고객 타입에 '휴대폰' 속성 추가해줘"** 요청 → assistant 가 `mutate` 커맨드 발행.
+
+```mermaid
+sequenceDiagram
+    participant U as 사용자
+    participant AS as assistant
+    participant TUI as type-ui
+    participant TC as type-command
+
+    U->>AS: "고객 타입에 휴대폰 속성 추가해줘"
+    AS->>AS: 실행 계획 — mutate{target:"type-ui", action:"ADD_ATTRIBUTE", value:"휴대폰"}
+    AS-->>U: (AGENT_COMMAND 발행)
+    TUI->>TUI: mutate 수신 → 캔버스 내 '고객' 타입에 속성 추가 (Pre-commit)
+    TUI->>TC: PUT /workspaces/{id}/types (최종 반영)
+    TC-->>TUI: 200 OK
+    TUI-->>U: "속성 추가를 완료했습니다."
+```
+
+## 에이전트 연동 체크리스트
+
+| # | 항목 | 값 | 비고 |
+|---|------|---|------|
+| 1 | 내부 assistant 연동 | `AGENT_COMMAND` mutate 타겟 | 타입 구조 변경 및 레이아웃 조정 |
+| 2 | 외부 AI Tool Use | `save_types`, `delete_types` | OpenAPI operationId |
+| 3 | OpenAPI 어노테이션 | `@Operation` 적용 완료 | `TypeController`, `LayoutController` |
+| 4 | 감사 경로 | `AuditEntry` 발행 | 데이터 변경 추적 |
+| 5 | Agent Command 타겟 | selector: `[data-type-key]`, `.type-editor` | `type-ui` 요소 강조 및 수정 |

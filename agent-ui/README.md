@@ -78,6 +78,16 @@ stateDiagram-v2
 - **미리보기 패널**: 좁은 화면에서 세로 스택(before/after 위아래 배치)으로 전환.
 - **토스트 알림**: 모바일에서 전체 너비로 표시.
 
+## 에이전트 연동
+
+### 내부 assistant
+- 호출 경로: `AGENT_COMMAND` 수신 (SSE 브로드캐스트)
+- 시나리오: Assistant 가 `highlight` 커맨드 발행 → `agent-ui` 가 대상 요소에 펄스 효과 적용
+
+### Agent Command 타겟
+- navigate: `assistant-ui`
+- highlight/mutate selector 패턴: `.agent-input-container`, `.toast-message`
+
 ## 의존성
 
 - **agent-protocol** — AgentCommand 도메인, AttentionStyle

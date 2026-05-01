@@ -618,6 +618,25 @@ client/
 | ShellInitializer 퍼사드 패턴 | 쉘 DOM 배치와 매니저 초기화를 캡슐화. App 모듈은 initialize() 한 줄로 쉘 전체를 초기화 |
 | 라이브러리 모듈 (엔트리포인트 없음) | Agent-UI, Login-UI 등과 결합 없이 App 모듈에서 조합. JAR에 소스 포함 |
 
+#### 11.3 사용자 상태 모델 및 메뉴 가시성
+
+요구사항 §3.24 에 따라, Shell 은 사용자의 인증 및 워크스페이스 선택 상태를 `SessionState` 로 모델링하고 이에 기반하여 메뉴 가시성을 제어한다.
+
+**SessionState 모델 (sealed class):**
+- `Anonymous`: 인증 없음 (쿠키 부재/만료)
+- `Authenticated(user, workspaces)`: 인증 성공, 워크스페이스 미선택
+- `InWorkspace(user, workspace, memberships)`: 인증 완료 및 특정 워크스페이스 진입
+
+**메뉴 가시성 평가 알고리즘:**
+각 메뉴는 `allowedSessionStates: Set<SessionStateKind>?` 필드를 가지며, 다음 로직으로 가시성을 결정한다:
+```
+visible(menu, state) = 
+    menu.allowedSessionStates == null 
+    OR state.kind ∈ menu.allowedSessionStates
+```
+- `null` (기본값): 모든 상태에서 상시 노출 (익명 포함)
+- 계층 추론 없음: 특정 상태를 명시적으로 열거해야 함 (예: 로그인 후 전용 메뉴는 `{AUTHENTICATED, IN_WORKSPACE}`)
+
 **의존성:** activity (Menu, Tool, Render, Progress, Labels), sayaya-ui, sayaya-rx, Elemento, Dagger
 
 ---
@@ -682,7 +701,6 @@ client/
 |------|------|
 | TypeToolManager 도입 | 로컬 도구들을 쉘의 전역 툴 레일로 통합 발행 및 이벤트 수신 관리 |
 | PositionMap으로 레이아웃 분리 | 백엔드 TypeLayout과 일치. 도메인에 캔버스 좌표 혼합 방지 |
-... (rest of decisions)
 | ChangeTracker로 변경 추적 분리 | 도메인 순수성 유지 |
 | ActionManager는 순수 undo/redo 스택 | 도메인 로직은 caller(버튼, 메뉴, 에이전트)에 위임. 단일 책임 |
 | VIEW/LAYOUT/TYPE 3모드 | LAYOUT: 이동/리사이즈, TYPE: 인라인 편집. 모드 분리로 이벤트 충돌 방지 |
