@@ -51,19 +51,19 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
     Given("워크스페이스 생성") {
         val workspaceId = UUID.randomUUID()
         val creator = UUID.randomUUID()
-        val workspace = Workspace(
-            id = workspaceId,
-            name = "테스트 워크스페이스",
-            description = "통합 테스트용",
+        val workspace = Workspace.create(
+            workspaceId.toString(),
+            "테스트 워크스페이스",
+            "통합 테스트용",
         )
 
         When("save를 호출하면") {
             Then("저장된 워크스페이스가 반환된다") {
                 StepVerifier.create(adapter.save(workspace, creator))
                     .assertNext { saved ->
-                        saved.id shouldBe workspaceId
-                        saved.name shouldBe "테스트 워크스페이스"
-                        saved.description shouldBe "통합 테스트용"
+                        saved.id() shouldBe workspaceId.toString()
+                        saved.name() shouldBe "테스트 워크스페이스"
+                        saved.description() shouldBe "통합 테스트용"
                     }
                     .verifyComplete()
             }
@@ -86,17 +86,17 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
 
         When("update를 호출하면") {
             Then("수정된 워크스페이스가 반환되고 last_modified_by 가 modifier 로 갱신된다") {
-                val updated = Workspace(
-                    id = workspaceId,
-                    name = "수정된 워크스페이스",
-                    description = "수정됨",
+                val updated = Workspace.create(
+                    workspaceId.toString(),
+                    "수정된 워크스페이스",
+                    "수정됨",
                 )
                 val modifier = UUID.randomUUID()
                 StepVerifier.create(adapter.update(updated, modifier))
                     .assertNext { saved ->
-                        saved.id shouldBe workspaceId
-                        saved.name shouldBe "수정된 워크스페이스"
-                        saved.description shouldBe "수정됨"
+                        saved.id() shouldBe workspaceId.toString()
+                        saved.name() shouldBe "수정된 워크스페이스"
+                        saved.description() shouldBe "수정됨"
                     }
                     .verifyComplete()
 
@@ -122,10 +122,10 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
                     .verifyComplete()
 
                 // 삭제 후 update 시도 시 빈 결과
-                val deleted = Workspace(
-                    id = workspaceId,
-                    name = "삭제된 워크스페이스",
-                    description = null,
+                val deleted = Workspace.create(
+                    workspaceId.toString(),
+                    "삭제된 워크스페이스",
+                    null,
                 )
                 StepVerifier.create(adapter.update(deleted, UUID.randomUUID()))
                     .verifyComplete()
@@ -135,10 +135,10 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
 
     Given("여러 워크스페이스 생성") {
         val workspaces = (1..3).map { i ->
-            Workspace(
-                id = UUID.randomUUID(),
-                name = "워크스페이스-$i",
-                description = "설명-$i",
+            Workspace.create(
+                UUID.randomUUID().toString(),
+                "워크스페이스-$i",
+                "설명-$i",
             )
         }
 
@@ -147,8 +147,8 @@ class R2dbcWorkspaceRepositoryIntegrationTest : BehaviorSpec({
                 workspaces.forEach { ws ->
                     StepVerifier.create(adapter.save(ws, UUID.randomUUID()))
                         .assertNext { saved ->
-                            saved.id shouldBe ws.id
-                            saved.name shouldBe ws.name
+                            saved.id() shouldBe ws.id()
+                            saved.name() shouldBe ws.name()
                         }
                         .verifyComplete()
                 }

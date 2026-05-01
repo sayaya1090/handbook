@@ -14,9 +14,9 @@ class R2dbcWorkspaceRepositoryAdapter(
 
     override fun save(workspace: Workspace, creator: UUID): Mono<Workspace> {
         val entity = R2dbcWorkspaceEntity(
-            id = workspace.id,
-            name = workspace.name,
-            description = workspace.description,
+            id = UUID.fromString(workspace.id()),
+            name = workspace.name(),
+            description = workspace.description(),
             createdBy = creator,
             lastModifiedBy = creator,
         )
@@ -26,11 +26,11 @@ class R2dbcWorkspaceRepositoryAdapter(
     override fun update(workspace: Workspace, modifier: UUID): Mono<Workspace> {
         return template.selectOne(
             org.springframework.data.relational.core.query.Query.query(
-                org.springframework.data.relational.core.query.Criteria.where("id").`is`(workspace.id)
+                org.springframework.data.relational.core.query.Criteria.where("id").`is`(UUID.fromString(workspace.id()))
             ), R2dbcWorkspaceEntity::class.java
         ).flatMap { existing ->
-            existing.name = workspace.name
-            existing.description = workspace.description
+            existing.name = workspace.name()
+            existing.description = workspace.description()
             existing.lastModifiedBy = modifier
             template.update(existing).map { it.toDomain() }
         }
@@ -44,5 +44,5 @@ class R2dbcWorkspaceRepositoryAdapter(
         ).then()
     }
 
-    private fun R2dbcWorkspaceEntity.toDomain() = Workspace(id, name, description)
+    private fun R2dbcWorkspaceEntity.toDomain() = Workspace.create(id.toString(), name, description)
 }

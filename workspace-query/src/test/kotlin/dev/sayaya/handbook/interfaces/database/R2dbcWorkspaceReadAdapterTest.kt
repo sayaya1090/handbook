@@ -27,9 +27,9 @@ class R2dbcWorkspaceReadAdapterTest : DescribeSpec({
             }
             
             val result = adapter.findAll().collectList().block()!!
-            result[0].id shouldBe entity.id
-            result[0].name shouldBe "alpha"
-            result[0].description shouldBe "desc"
+            result[0].id() shouldBe entity.id.toString()
+            result[0].name() shouldBe "alpha"
+            result[0].description() shouldBe "desc"
         }
         it("findById: ID로 단건 조회하고 도메인으로 매핑한다") {
             val id = UUID.randomUUID()
@@ -37,9 +37,9 @@ class R2dbcWorkspaceReadAdapterTest : DescribeSpec({
             every { template.selectOne(any(), R2dbcWorkspaceEntity::class.java) } returns Mono.just(entity)
             
             val result = adapter.findById(id).block()!!
-            result.id shouldBe id
-            result.name shouldBe "beta"
-            result.description shouldBe null
+            result.id() shouldBe id.toString()
+            result.name() shouldBe "beta"
+            result.description() shouldBe null
         }
         it("findByUserSub: SQL 쿼리 결과를 도메인으로 매핑한다") {
             val sub = UUID.randomUUID()
@@ -61,9 +61,9 @@ class R2dbcWorkspaceReadAdapterTest : DescribeSpec({
             every { row.get("description", String::class.java) } returns "delta"
             
             val result = mapperSlot.captured.apply(row, mockk())
-            result.id shouldBe id
-            result.name shouldBe "gamma"
-            result.description shouldBe "delta"
+            result.id() shouldBe id.toString()
+            result.name() shouldBe "gamma"
+            result.description() shouldBe "delta"
         }
     }
 })

@@ -20,7 +20,7 @@ class GroupControllerTest : BehaviorSpec({
     val workspaceId = UUID.randomUUID()
     val groupId = UUID.randomUUID()
     val userId = UUID.randomUUID()
-    val group = Group(groupId, workspaceId, "Test Group", "Description")
+    val group = Group.create(groupId.toString(), workspaceId.toString(), "Test Group", "Description")
 
     Given("그룹 생성 API") {
         When("유효한 요청으로 POST /workspaces/{ws}/groups 를 호출하면") {

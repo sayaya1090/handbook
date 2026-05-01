@@ -27,13 +27,13 @@ class R2dbcGroupRepositoryAdapter(
 
     override fun save(group: Group): Mono<Group> {
         val entity = R2dbcGroupEntity(
-            id = group.id,
-            workspace = group.workspace,
-            name = group.name,
-            description = group.description
+            id = UUID.fromString(group.id()),
+            workspace = UUID.fromString(group.workspace()),
+            name = group.name(),
+            description = group.description()
         )
         return template.insert(entity)
-            .map { Group(it.id!!, it.workspace, it.name, it.description) }
+            .map { Group.create(it.id.toString(), it.workspace.toString(), it.name, it.description) }
     }
 
     override fun delete(workspaceId: UUID, groupId: UUID): Mono<Void> {
@@ -46,21 +46,22 @@ class R2dbcGroupRepositoryAdapter(
 
     override fun createAndAssign(workspace: Workspace, creator: Principal, name: String, description: String?): Mono<Group> {
         val groupId = UUID.randomUUID()
+        val wsId = UUID.fromString(workspace.id())
         val groupEntity = R2dbcGroupEntity(
             id = groupId,
-            workspace = workspace.id,
+            workspace = wsId,
             name = name,
             description = description
         )
         val memberEntity = R2dbcGroupMemberEntity(
             id = UUID.randomUUID(),
-            workspace = workspace.id,
+            workspace = wsId,
             group = groupId,
             member = userUuid(creator),
         )
         return template.insert(groupEntity)
             .delayUntil { template.insert(memberEntity) }
-            .map { Group(groupId, workspace.id, name, description) }
+            .map { Group.create(groupId.toString(), workspace.id(), name, description) }
     }
 
     override fun addMember(workspaceId: UUID, principal: Principal): Mono<Void> {

@@ -61,7 +61,7 @@ class WorkspaceController(private val svc: WorkspaceService) {
         @RequestBody param: UpdateWorkspaceRequest,
     ): Mono<Workspace> {
         validateName(param.name)
-        return svc.update(Workspace(id, param.name, param.description), userUuid(principal))
+        return svc.update(Workspace.create(id.toString(), param.name, param.description), userUuid(principal))
     }
 
     @DeleteMapping("/{id}")

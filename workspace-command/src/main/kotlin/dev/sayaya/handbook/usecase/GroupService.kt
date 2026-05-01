@@ -14,7 +14,7 @@ import java.util.*
 class GroupService(private val groupRepo: GroupRepository) {
 
     fun createGroup(workspaceId: UUID, name: String, description: String?): Mono<Group> {
-        val group = Group(UUID.randomUUID(), workspaceId, name, description)
+        val group = Group.create(UUID.randomUUID().toString(), workspaceId.toString(), name, description)
         return groupRepo.save(group)
     }
 

@@ -31,7 +31,7 @@ class WorkspaceServiceTest : BehaviorSpec({
             Mono.just(firstArg())
         }
         every { groupRepo.createAndAssign(any(), principal, "Admin", null) } returns Mono.just(
-            Group(UUID.randomUUID(), UUID.randomUUID(), "Admin", null)
+            Group.create(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "Admin", null)
         )
         every { groupRepo.save(any()) } answers { Mono.just(firstArg()) }
         every { eventPublisher.publishCreated(any()) } returns Mono.empty()
@@ -42,8 +42,8 @@ class WorkspaceServiceTest : BehaviorSpec({
             Then("워크스페이스가 생성된다") {
                 StepVerifier.create(result)
                     .assertNext {
-                        it.name shouldBe name
-                        it.description shouldBe description
+                        it.name() shouldBe name
+                        it.description() shouldBe description
                     }
                     .verifyComplete()
             }
@@ -52,7 +52,7 @@ class WorkspaceServiceTest : BehaviorSpec({
             }
             Then("Admin 및 Member 그룹이 생성된다") {
                 verify { groupRepo.createAndAssign(any(), principal, "Admin", null) }
-                verify { groupRepo.save(match { it.name == "Member" }) }
+                verify { groupRepo.save(match { it.name() == "Member" }) }
             }
             Then("WORKSPACE_CREATED 이벤트가 발행된다") {
                 verify { eventPublisher.publishCreated(any()) }
@@ -61,7 +61,7 @@ class WorkspaceServiceTest : BehaviorSpec({
     }
 
     Given("워크스페이스 수정 요청이 주어졌을 때") {
-        val workspace = Workspace(UUID.randomUUID(), "UpdatedName", "수정된 설명")
+        val workspace = Workspace.create(UUID.randomUUID().toString(), "UpdatedName", "수정된 설명")
         val modifier = UUID.randomUUID()
         every { workspaceRepo.update(workspace, modifier) } returns Mono.just(workspace)
 
@@ -70,7 +70,7 @@ class WorkspaceServiceTest : BehaviorSpec({
 
             Then("수정된 워크스페이스가 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.name shouldBe "UpdatedName" }
+                    .assertNext { it.name() shouldBe "UpdatedName" }
                     .verifyComplete()
             }
             Then("modifier UUID 가 repo.update 에 전달된다 — last_modified_by 감사 회귀 방지") {

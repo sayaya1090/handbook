@@ -40,10 +40,10 @@ class WorkspaceService(
      * @param principal GroupRepo 의 `createAndAssign` 에 전달되어 Admin 멤버로 배정된다.
      */
     fun create(creator: UUID, principal: Principal, name: String, description: String?): Mono<Workspace> {
-        val workspace = Workspace(UUID.randomUUID(), name, description)
+        val workspace = Workspace.create(UUID.randomUUID().toString(), name, description)
         return workspaceRepo.save(workspace, creator)
             .delayUntil { groupRepo.createAndAssign(it, principal, GROUP_ADMIN, null) }
-            .delayUntil { groupRepo.save(Group(UUID.randomUUID(), workspace.id, GROUP_MEMBER, null)) }
+            .delayUntil { groupRepo.save(Group.create(UUID.randomUUID().toString(), workspace.id(), GROUP_MEMBER, null)) }
             .delayUntil { eventPublisher.publishCreated(it) }
     }
 

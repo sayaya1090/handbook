@@ -15,21 +15,21 @@ class WorkspaceSearchServiceTest : DescribeSpec({
 
     describe("WorkspaceSearchService") {
         it("list: 모든 워크스페이스를 반환한다") {
-            val workspace = Workspace(UUID.randomUUID(), "test", null)
+            val workspace = Workspace.create(UUID.randomUUID().toString(), "test", null)
             every { repo.findAll() } returns Flux.just(workspace)
             
             service.list().collectList().block() shouldBe listOf(workspace)
         }
         it("listForUser: 사용자가 속한 워크스페이스를 반환한다") {
             val sub = UUID.randomUUID()
-            val workspace = Workspace(UUID.randomUUID(), "test", null)
+            val workspace = Workspace.create(UUID.randomUUID().toString(), "test", null)
             every { repo.findByUserSub(sub) } returns Flux.just(workspace)
             
             service.listForUser(sub).collectList().block() shouldBe listOf(workspace)
         }
         it("findById: ID로 워크스페이스를 조회한다") {
             val id = UUID.randomUUID()
-            val workspace = Workspace(id, "test", null)
+            val workspace = Workspace.create(id.toString(), "test", null)
             every { repo.findById(id) } returns Mono.just(workspace)
             
             service.findById(id).block() shouldBe workspace

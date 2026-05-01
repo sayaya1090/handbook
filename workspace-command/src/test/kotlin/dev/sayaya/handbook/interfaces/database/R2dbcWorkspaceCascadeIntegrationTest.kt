@@ -105,9 +105,9 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
 
         // 두 워크스페이스 씨드
         listOf(keep to "keeper", target to "doomed").forEach { (id, label) ->
-            workspaceRepo.save(Workspace(id, label, null), UUID.randomUUID()).block()
+            workspaceRepo.save(Workspace.create(id.toString(), label, null), UUID.randomUUID()).block()
             val principal = Principal { UUID.randomUUID().toString() }
-            groupRepo.createAndAssign(Workspace(id, label, null), principal, "Admin", null).block()
+            groupRepo.createAndAssign(Workspace.create(id.toString(), label, null), principal, "Admin", null).block()
         }
     }
 
@@ -188,11 +188,11 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
         val ws = UUID.randomUUID()
         val subUuid = UUID.randomUUID()
         val idUuid = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "sub-wins", null), UUID.randomUUID()).block()
+        workspaceRepo.save(Workspace.create(ws.toString(), "sub-wins", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             groupRepo.createAndAssign(
-                Workspace(ws, "sub-wins", null),
+                Workspace.create(ws.toString(), "sub-wins", null),
                 userAuth(sub = subUuid.toString(), id = idUuid.toString()),
                 "Admin",
                 null,
@@ -207,11 +207,11 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
     Given("UserAuthentication 에 sub 는 null 이고 id 만 있는 Phase 1a 이전 토큰") {
         val ws = UUID.randomUUID()
         val idUuid = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "id-fallback", null), UUID.randomUUID()).block()
+        workspaceRepo.save(Workspace.create(ws.toString(), "id-fallback", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             groupRepo.createAndAssign(
-                Workspace(ws, "id-fallback", null),
+                Workspace.create(ws.toString(), "id-fallback", null),
                 userAuth(sub = null, id = idUuid.toString()),
                 "Admin",
                 null,
@@ -225,13 +225,13 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
 
     Given("UserAuthentication 에 sub · id 모두 null 인 경우") {
         val ws = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "both-null", null), UUID.randomUUID()).block()
+        workspaceRepo.save(Workspace.create(ws.toString(), "both-null", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             Then("name(username) 이 UUID 로 파싱 불가해 IllegalArgumentException 이 던져진다") {
                 shouldThrow<IllegalArgumentException> {
                     groupRepo.createAndAssign(
-                        Workspace(ws, "both-null", null),
+                        Workspace.create(ws.toString(), "both-null", null),
                         userAuth(sub = null, id = null),
                         "Admin",
                         null,
@@ -244,12 +244,12 @@ class R2dbcWorkspaceCascadeIntegrationTest : BehaviorSpec({
     Given("UserAuthentication 이 아닌 익명 Principal") {
         val ws = UUID.randomUUID()
         val legacyUuid = UUID.randomUUID()
-        workspaceRepo.save(Workspace(ws, "legacy-principal", null), UUID.randomUUID()).block()
+        workspaceRepo.save(Workspace.create(ws.toString(), "legacy-principal", null), UUID.randomUUID()).block()
 
         When("createAndAssign 을 호출하면") {
             val principal = Principal { legacyUuid.toString() }
             groupRepo.createAndAssign(
-                Workspace(ws, "legacy-principal", null),
+                Workspace.create(ws.toString(), "legacy-principal", null),
                 principal,
                 "Admin",
                 null,

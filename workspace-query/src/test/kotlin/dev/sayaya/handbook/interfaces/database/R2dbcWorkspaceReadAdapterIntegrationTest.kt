@@ -97,10 +97,10 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
             Then("모든 워크스페이스가 도메인 객체로 매핑되어 반환된다") {
                 StepVerifier.create(adapter.findAll().collectList())
                     .assertNext { list ->
-                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2, wsId3)
-                        list.first { it.id == wsId1 }.name shouldBe "alpha"
-                        list.first { it.id == wsId1 }.description shouldBe "first workspace"
-                        list.first { it.id == wsId2 }.description shouldBe null
+                        list.map { UUID.fromString(it.id()) } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2, wsId3)
+                        list.first { UUID.fromString(it.id()) == wsId1 }.name() shouldBe "alpha"
+                        list.first { UUID.fromString(it.id()) == wsId1 }.description() shouldBe "first workspace"
+                        list.first { UUID.fromString(it.id()) == wsId2 }.description() shouldBe null
                     }
                     .verifyComplete()
             }
@@ -110,8 +110,8 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
             Then("일치하는 워크스페이스가 반환된다") {
                 StepVerifier.create(adapter.findById(wsId1))
                     .assertNext { ws ->
-                        ws.id shouldBe wsId1
-                        ws.name shouldBe "alpha"
+                        UUID.fromString(ws.id()) shouldBe wsId1
+                        ws.name() shouldBe "alpha"
                     }
                     .verifyComplete()
             }
@@ -125,7 +125,7 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
             Then("alice 가 속한 alpha · beta 만 DISTINCT 로 반환된다") {
                 StepVerifier.create(adapter.findByUserSub(alice).collectList())
                     .assertNext { list ->
-                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2)
+                        list.map { UUID.fromString(it.id()) } shouldContainExactlyInAnyOrder listOf(wsId1, wsId2)
                     }
                     .verifyComplete()
             }
@@ -135,7 +135,7 @@ class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
             Then("bob 이 속한 gamma 만 반환된다") {
                 StepVerifier.create(adapter.findByUserSub(bob).collectList())
                     .assertNext { list ->
-                        list.map { it.id } shouldContainExactlyInAnyOrder listOf(wsId3)
+                        list.map { UUID.fromString(it.id()) } shouldContainExactlyInAnyOrder listOf(wsId3)
                     }
                     .verifyComplete()
             }

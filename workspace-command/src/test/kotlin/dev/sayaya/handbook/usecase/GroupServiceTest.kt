@@ -16,7 +16,7 @@ class GroupServiceTest : BehaviorSpec({
     val workspaceId = UUID.randomUUID()
     val groupId = UUID.randomUUID()
     val userId = UUID.randomUUID()
-    val group = Group(groupId, workspaceId, "Test Group", "Description")
+    val group = Group.create(groupId.toString(), workspaceId.toString(), "Test Group", "Description")
 
     Given("그룹 생성 로직") {
         When("새 그룹 생성을 요청하면") {

@@ -49,13 +49,13 @@ class R2dbcWorkspaceReadAdapter(
         )
             .bind("sub", sub)
             .map { row, _ ->
-                Workspace(
-                    id = row.get("id", UUID::class.java)!!,
-                    name = row.get("name", String::class.java)!!,
-                    description = row.get("description", String::class.java),
+                Workspace.create(
+                    row.get("id", UUID::class.java)!!.toString(),
+                    row.get("name", String::class.java)!!,
+                    row.get("description", String::class.java),
                 )
             }
             .all()
 
-    private fun R2dbcWorkspaceEntity.toDomain() = Workspace(id, name, description)
+    private fun R2dbcWorkspaceEntity.toDomain() = Workspace.create(id.toString(), name, description)
 }

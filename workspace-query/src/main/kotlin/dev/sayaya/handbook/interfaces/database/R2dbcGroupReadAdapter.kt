@@ -20,13 +20,13 @@ class R2dbcGroupReadAdapter(
     override fun findAllByWorkspace(workspaceId: UUID): Flux<Group> {
         val criteria = Query.query(Criteria.where("workspace").`is`(workspaceId))
         return template.select(criteria, R2dbcGroupEntity::class.java)
-            .map { Group(it.id, it.workspace, it.name, it.description) }
+            .map { Group.create(it.id.toString(), it.workspace.toString(), it.name, it.description) }
     }
 
     override fun findMembersByGroup(workspaceId: UUID, groupId: UUID): Flux<User> {
         return databaseClient.sql(
             """
-            SELECT u.id, u.username
+            SELECT u.id, u.username, u.email
               FROM users u
               JOIN group_member gm ON gm.member = u.id
              WHERE gm.workspace = :ws AND gm.group = :gid
@@ -36,10 +36,10 @@ class R2dbcGroupReadAdapter(
             .bind("ws", workspaceId)
             .bind("gid", groupId)
             .map { row, _ ->
-                User(
-                    id = row.get("id", UUID::class.java)!!,
-                    name = row.get("username", String::class.java)!!,
-                    workspaces = emptyList()
+                User.create(
+                    row.get("id", UUID::class.java)!!.toString(),
+                    row.get("username", String::class.java)!!,
+                    row.get("email", String::class.java)
                 )
             }
             .all()

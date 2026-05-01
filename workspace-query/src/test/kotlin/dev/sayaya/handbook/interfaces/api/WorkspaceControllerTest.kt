@@ -33,7 +33,7 @@ class WorkspaceControllerTest : BehaviorSpec({
 
     Given("WorkspaceController list") {
         val userUuid = UUID.randomUUID()
-        val ws = Workspace(UUID.randomUUID(), "alpha", "desc")
+        val ws = Workspace.create(UUID.randomUUID().toString(), "alpha", "desc")
         
         When("sub와 id가 모두 없는 경우") {
             val auth = principalWith(sub = null, id = null)
@@ -79,14 +79,17 @@ class WorkspaceControllerTest : BehaviorSpec({
 
     Given("WorkspaceController get") {
         val id = UUID.randomUUID()
-        val ws = Workspace(id, "alpha", "desc")
+        val ws = Workspace.create(id.toString(), "alpha", "desc")
         When("ID로 단건 조회 시") {
             every { service.findById(id) } returns Mono.just(ws)
             Then("200 OK와 워크스페이스를 반환한다") {
                 client.get().uri("/workspaces/$id")
                     .exchange()
                     .expectStatus().isOk
-                    .expectBody(Workspace::class.java).isEqualTo(ws)
+                    .expectBody()
+                    .jsonPath("$.id").isEqualTo(ws.id())
+                    .jsonPath("$.name").isEqualTo(ws.name())
+                    .jsonPath("$.description").isEqualTo(ws.description())
             }
         }
     }

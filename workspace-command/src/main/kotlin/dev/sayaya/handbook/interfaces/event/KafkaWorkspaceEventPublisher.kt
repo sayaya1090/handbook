@@ -12,8 +12,8 @@ class KafkaWorkspaceEventPublisher(private val streamBridge: StreamBridge) : Wor
     override fun publishCreated(workspace: Workspace): Mono<Void> = Mono.fromRunnable {
         streamBridge.send("workspace-out-0", mapOf(
             "type" to "WORKSPACE_CREATED",
-            "workspaceId" to workspace.id.toString(),
-            "name" to workspace.name,
+            "workspaceId" to workspace.id(),
+            "name" to workspace.name(),
         ))
     }
 

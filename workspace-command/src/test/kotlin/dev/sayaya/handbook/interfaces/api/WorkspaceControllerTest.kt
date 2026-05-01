@@ -38,7 +38,7 @@ class WorkspaceControllerTest : BehaviorSpec({
         token = "dummy.jwt.token",
     )
 
-    val workspace = Workspace(UUID.randomUUID(), "TestWorkspace", "테스트")
+    val workspace = Workspace.create(UUID.randomUUID().toString(), "TestWorkspace", "테스트")
 
     // 워크스페이스 생성 — @AuthenticationPrincipal UserAuthentication 주입 + 이름 정규식 검증.
     Given("워크스페이스 생성 API") {
@@ -133,7 +133,7 @@ class WorkspaceControllerTest : BehaviorSpec({
 
         When("UserAuthentication 과 함께 update 를 호출하면") {
             val request = WorkspaceController.UpdateWorkspaceRequest("TestWorkspace", "테스트")
-            val result = controller.update(workspace.id, testPrincipal, request).block()
+            val result = controller.update(UUID.fromString(workspace.id()), testPrincipal, request).block()
 
             Then("수정자 UUID 가 service 에 전달되고 수정된 워크스페이스가 반환된다") {
                 result shouldBe workspace
@@ -144,12 +144,12 @@ class WorkspaceControllerTest : BehaviorSpec({
 
     // 워크스페이스 삭제 API
     Given("워크스페이스 삭제 API") {
-        every { service.delete(workspace.id) } returns Mono.empty()
+        every { service.delete(UUID.fromString(workspace.id())) } returns Mono.empty()
 
         When("DELETE /workspaces/{id}를 호출하면") {
             Then("204 No Content가 반환된다") {
                 client.delete()
-                    .uri("/workspaces/${workspace.id}")
+                    .uri("/workspaces/${workspace.id()}")
                     .exchange()
                     .expectStatus().isNoContent
             }
@@ -158,12 +158,12 @@ class WorkspaceControllerTest : BehaviorSpec({
 
     // 워크스페이스 참여(Join) API
     Given("워크스페이스 참여 API") {
-        every { service.join(workspace.id, any()) } returns Mono.empty()
+        every { service.join(UUID.fromString(workspace.id()), any()) } returns Mono.empty()
 
         When("POST /workspaces/{id}/join을 호출하면") {
             Then("204 No Content가 반환된다") {
                 client.post()
-                    .uri("/workspaces/${workspace.id}/join")
+                    .uri("/workspaces/${workspace.id()}/join")
                     .exchange()
                     .expectStatus().isNoContent
             }
