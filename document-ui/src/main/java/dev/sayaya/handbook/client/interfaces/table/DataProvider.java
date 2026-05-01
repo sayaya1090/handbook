@@ -36,10 +36,10 @@ public final class DataProvider {
             for (int c = 0; c < columns.length; c++) {
                 String name = columns[c].name();
                 result[r][c] = switch (name) {
-                    case "serial" -> doc.serial;
-                    case "effectDateTime" -> doc.effectDateTime;
-                    case "expireDateTime" -> doc.expireDateTime;
-                    default -> doc.data != null ? doc.data.get(name) : null;
+                    case "serial" -> doc.serial();
+                    case "effectDateTime" -> doc.effectDateTime();
+                    case "expireDateTime" -> doc.expireDateTime();
+                    default -> doc.data() != null ? doc.data().get(name) : null;
                 };
             }
         }
@@ -56,10 +56,10 @@ public final class DataProvider {
                 String name = columns[c].name();
                 String value = data[r][c] != null ? String.valueOf(data[r][c]) : null;
                 switch (name) {
-                    case "serial" -> doc.serial = value;
+                    case "serial" -> doc.serial(value);
                     default -> {
-                        if (doc.data == null) doc.data = JsPropertyMap.of();
-                        doc.data.set(name, value);
+                        if (doc.data() == null) doc.data(JsPropertyMap.of());
+                        doc.data().set(name, value);
                     }
                 }
             }

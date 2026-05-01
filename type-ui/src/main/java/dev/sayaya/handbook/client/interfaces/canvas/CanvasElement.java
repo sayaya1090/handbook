@@ -1,31 +1,32 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
-import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.client.interfaces.box.BoxContextMenuElement;
-import dev.sayaya.handbook.client.interfaces.box.BoxElementFactory;
-import dev.sayaya.handbook.client.interfaces.box.BoxReferenceElement;
-import dev.sayaya.handbook.client.interfaces.box.TypeElement;
-import dev.sayaya.handbook.client.interfaces.box.VersionHistoryPanel;
+import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.interfaces.box.*;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
-import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.CanvasMode;
-import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.GridSnap;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
-import elemental2.dom.*;
+import dev.sayaya.handbook.domain.Action;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.KeyboardEvent;
+import elemental2.dom.MouseEvent;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.jboss.elemento.Elements.div;
 

@@ -1,13 +1,8 @@
 package dev.sayaya.handbook.interfaces.api
 
-import dev.sayaya.handbook.interfaces.authentication.UserAuthentication
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldNotBe
-import io.mockk.every
-import io.mockk.mockk
 import org.springframework.test.web.reactive.server.WebTestClient
-import java.time.LocalDateTime
-import java.util.*
 
 class UserControllerTest : BehaviorSpec({
     val controller = UserController()

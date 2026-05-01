@@ -4,9 +4,6 @@ import dev.sayaya.handbook.interfaces.authentication.AuthenticationConfig
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.every
-import io.mockk.mockk
-import org.springframework.http.HttpCookie
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest
 import org.springframework.mock.web.server.MockServerWebExchange
 import reactor.test.StepVerifier

@@ -5,7 +5,7 @@ import dev.sayaya.handbook.domain.ArtifactChange
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import java.util.UUID
+import java.util.*
 
 class DefaultArtifactAggregatorTest : BehaviorSpec({
     val aggregator = DefaultArtifactAggregator()

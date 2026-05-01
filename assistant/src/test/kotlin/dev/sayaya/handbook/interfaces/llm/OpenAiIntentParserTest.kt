@@ -1,7 +1,5 @@
 package dev.sayaya.handbook.interfaces.llm
 
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import dev.sayaya.handbook.domain.CommandType
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -10,6 +8,7 @@ import io.mockk.mockk
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class OpenAiIntentParserTest : DescribeSpec({
     val webClient = mockk<WebClient>()

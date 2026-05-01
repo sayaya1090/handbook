@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.usecase
 
-import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.SystemRole
 import dev.sayaya.handbook.domain.User
 import dev.sayaya.handbook.interfaces.config.TokenFactoryConfig
@@ -10,6 +9,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotBeBlank
+import tools.jackson.databind.ObjectMapper
 import java.security.KeyPairGenerator
 import java.util.*
 

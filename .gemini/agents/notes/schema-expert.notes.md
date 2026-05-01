@@ -1,6 +1,9 @@
 ## 요청 로그
+- 2026-05-01: TypeApi 리팩토링 → TypeValue를 Type으로 변경 및 컴파일 오류 해결
 
-(아직 기록 없음)
+- 2026-05-01: type-ui 내 TypeValue/AttributeValue를 Type/Attribute로 일괄 리팩토링 진행
+- 2026-05-01: Type/Attribute 모델 정규화 및 리팩토링 시작 → FQCN 변경 및 필드 접근 수정 준비
+- 2026-04-28: type-ui 도메인 모델 교체 → Type/Attribute 등 FQCN 수정 및 컴파일 확인 진행 중
 
 ---
 

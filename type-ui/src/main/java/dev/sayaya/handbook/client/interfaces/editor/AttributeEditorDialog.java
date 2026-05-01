@@ -1,16 +1,12 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
+import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.AttributeTypeValue;
 import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.KeyboardEvent;
-import elemental2.dom.NodeList;
+import elemental2.dom.*;
 import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;

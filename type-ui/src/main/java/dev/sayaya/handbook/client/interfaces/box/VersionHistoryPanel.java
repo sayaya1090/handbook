@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;

@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -21,13 +21,13 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link dev.sayaya.rx.subject.BehaviorSubject} — 최신 값 캐싱과 구독 관리</li>
- *   <li>{@link dev.sayaya.handbook.domain.TypeValue} — 관리 대상 타입 도메인 객체</li>
+ *   <li>{@link dev.sayaya.handbook.domain.Type} — 관리 대상 타입 도메인 객체</li>
  * </ul></p>
  *
  * <p><b>주의:</b> 초기값은 빈 리스트(Collections.emptyList())이다.</p>
  */
 @Singleton
 public class TypeList {
-    @Delegate private final BehaviorSubject<List<TypeValue>> _this = behavior(Collections.emptyList());
+    @Delegate private final BehaviorSubject<List<Type>> _this = behavior(Collections.emptyList());
     @Inject TypeList() {}
 }

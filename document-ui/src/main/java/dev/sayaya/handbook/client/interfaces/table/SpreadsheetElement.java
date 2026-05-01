@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.table;
 
 import dev.sayaya.handbook.client.domain.ColumnDef;
-import dev.sayaya.handbook.domain.DocumentValue;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.SelectedRows;
+import dev.sayaya.handbook.domain.DocumentValue;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ViewportObserver;

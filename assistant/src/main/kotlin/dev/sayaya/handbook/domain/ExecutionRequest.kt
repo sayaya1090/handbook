@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.domain
 
-import java.util.UUID
+import java.util.*
 
 /**
  * 실행 요청 응답 래퍼.

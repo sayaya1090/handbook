@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.usecase.action;
 
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.usecase.LayoutProvider;
 
 /**
  * 레이아웃 기간을 전환하는 Command 패턴 액션.

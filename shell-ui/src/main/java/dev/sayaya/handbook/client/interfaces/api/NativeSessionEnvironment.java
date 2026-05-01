@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.usecase.SessionEnvironment;
 import elemental2.dom.DomGlobal;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

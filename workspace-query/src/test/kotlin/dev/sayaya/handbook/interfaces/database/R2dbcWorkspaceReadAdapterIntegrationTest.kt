@@ -5,17 +5,12 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
-import io.r2dbc.spi.ConnectionFactoryOptions.DATABASE
-import io.r2dbc.spi.ConnectionFactoryOptions.DRIVER
-import io.r2dbc.spi.ConnectionFactoryOptions.HOST
-import io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD
-import io.r2dbc.spi.ConnectionFactoryOptions.PORT
-import io.r2dbc.spi.ConnectionFactoryOptions.USER
+import io.r2dbc.spi.ConnectionFactoryOptions.*
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.r2dbc.core.DatabaseClient
 import org.testcontainers.postgresql.PostgreSQLContainer
 import reactor.test.StepVerifier
-import java.util.UUID
+import java.util.*
 
 class R2dbcWorkspaceReadAdapterIntegrationTest : BehaviorSpec({
     val postgres = PostgreSQLContainer("postgres:17").apply { start() }

@@ -1,9 +1,11 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.usecase.*;
+import dev.sayaya.handbook.usecase.AgentMutation;
+import dev.sayaya.handbook.usecase.AgentSearch;
+import dev.sayaya.handbook.usecase.AgentState;
+import dev.sayaya.handbook.usecase.WorkspaceEvent;
 import dev.sayaya.rx.Observable;
-import elemental2.dom.DomGlobal;
 
 import static elemental2.dom.DomGlobal.console;
 

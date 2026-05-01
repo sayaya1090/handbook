@@ -3,7 +3,6 @@ package dev.sayaya.handbook.client.usecase;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
-import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

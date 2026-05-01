@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.domain.AttentionCommand;
+import dev.sayaya.handbook.domain.HighlightCommand;
+import dev.sayaya.handbook.domain.NotifyCommand;
+import dev.sayaya.handbook.domain.ProgressCommand;
 import dev.sayaya.rx.Observable;
 
 /**

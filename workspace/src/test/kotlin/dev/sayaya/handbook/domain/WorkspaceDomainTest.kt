@@ -2,7 +2,6 @@ package dev.sayaya.handbook.domain
 
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
-import io.kotest.matchers.shouldBe
 
 @GwtHtml("workspaceTest.html")
 class WorkspaceDomainTest : GwtTestSpec({

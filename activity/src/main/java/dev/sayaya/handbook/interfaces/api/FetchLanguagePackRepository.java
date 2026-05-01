@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
+import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
-import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.dom.Response;
@@ -11,8 +11,6 @@ import elemental2.promise.Promise;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import static elemental2.dom.DomGlobal.console;
 
 /**
  * JSON 언어팩 파일을 fetch로 로드한다.

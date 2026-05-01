@@ -1,13 +1,12 @@
 package dev.sayaya.handbook.interfaces.event
 
-import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.AgentCommand
 import dev.sayaya.handbook.domain.event.AgentCommandEvent
-import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.usecase.AgentCommandEventPublisher
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.kafka.core.KafkaTemplate
-import java.util.UUID
+import tools.jackson.databind.ObjectMapper
+import java.util.*
 
 class KafkaAgentCommandEventPublisher(
     private val kafkaTemplate: KafkaTemplate<String, String>,

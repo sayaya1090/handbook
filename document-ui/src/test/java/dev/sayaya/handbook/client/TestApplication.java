@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client;
 
+import dev.sayaya.handbook.client.interfaces.table.ColumnFactory;
 import dev.sayaya.handbook.domain.AttributeValue;
 import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.client.interfaces.table.ColumnFactory;
 import elemental2.dom.DomGlobal;
 
 import java.util.ArrayList;

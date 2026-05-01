@@ -3,17 +3,11 @@ package dev.sayaya.handbook.client;
 import com.google.gwt.core.client.EntryPoint;
 import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.RenderSharing;
-import dev.sayaya.handbook.usecase.AgentSearch;
-import dev.sayaya.handbook.usecase.AgentState;
 import dev.sayaya.handbook.usecase.WorkspaceEvent;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.EventType;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.elemento.Elements.body;
 import static org.jboss.elemento.Elements.div;
 
 public class Application implements EntryPoint {

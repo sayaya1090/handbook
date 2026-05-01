@@ -2,9 +2,13 @@ package dev.sayaya.handbook.client.usecase;
 
 import dagger.Module;
 import dagger.Provides;
-import dev.sayaya.handbook.client.components.*;
-import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.components.ConfirmDialog;
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.usecase.*;
 import dev.sayaya.rx.Observable;

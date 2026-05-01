@@ -9,7 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import reactor.core.publisher.Flux
-import java.util.UUID
+import java.util.*
 
 class ScheduledQualityMonitorTest : BehaviorSpec({
     val monitor = mockk<QualityMonitor>()

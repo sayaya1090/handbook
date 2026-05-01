@@ -3,7 +3,6 @@ package dev.sayaya.handbook.interfaces.schedule
 import dev.sayaya.handbook.usecase.QualityMonitorService
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
-import java.util.UUID
 
 /**
  * 스케줄 기반 품질 감시를 수행한다.

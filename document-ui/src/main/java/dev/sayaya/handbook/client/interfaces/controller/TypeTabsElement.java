@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.TypeProvider;
+import dev.sayaya.handbook.domain.Type;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
@@ -39,10 +39,10 @@ public class TypeTabsElement implements IsElement<elemental2.dom.HTMLElement> {
         typeList.subscribe(this::renderTabs);
     }
 
-    private void renderTabs(List<TypeValue> types) {
+    private void renderTabs(List<Type> types) {
         element.innerHTML = "";
         if (types == null) return;
-        for (TypeValue type : types) {
+        for (Type type : types) {
             var tab = span().css("doc-type-tab")
                     .text(type.id)
                     .on(EventType.click, e -> typeProvider.next(type))

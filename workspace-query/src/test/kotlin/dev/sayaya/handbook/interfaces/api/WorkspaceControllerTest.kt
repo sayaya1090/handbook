@@ -13,7 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 class WorkspaceControllerTest : BehaviorSpec({
     val service = mockk<WorkspaceSearchService>()

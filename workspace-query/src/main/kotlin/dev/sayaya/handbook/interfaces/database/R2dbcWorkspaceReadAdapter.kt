@@ -9,7 +9,7 @@ import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.UUID
+import java.util.*
 
 /**
  * [WorkspaceReadRepository] 의 R2DBC 읽기 전용 구현.

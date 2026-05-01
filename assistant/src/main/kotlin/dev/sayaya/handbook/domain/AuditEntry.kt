@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.domain
 
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /**
  * AI 어시스턴트 실행의 감사 기록 엔트리.

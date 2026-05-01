@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
-import elemental2.dom.*;
+import elemental2.dom.Event;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.Touch;
+import elemental2.dom.TouchEvent;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

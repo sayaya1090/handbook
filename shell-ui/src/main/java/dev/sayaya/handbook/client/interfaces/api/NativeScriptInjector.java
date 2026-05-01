@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
 import dev.sayaya.handbook.client.usecase.ScriptInjector;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

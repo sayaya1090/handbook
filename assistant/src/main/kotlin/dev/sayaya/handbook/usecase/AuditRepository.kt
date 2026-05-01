@@ -4,7 +4,7 @@ import dev.sayaya.handbook.domain.Artifact
 import dev.sayaya.handbook.domain.AuditEntry
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.UUID
+import java.util.*
 
 /**
  * 감사 기록 저장소 포트.

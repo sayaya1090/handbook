@@ -1,12 +1,12 @@
 package dev.sayaya.handbook.interfaces.config
 
-import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.usecase.TokenFactory
 import dev.sayaya.handbook.usecase.TokenPublisher
 import dev.sayaya.handbook.usecase.UserRepository
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import tools.jackson.databind.ObjectMapper
 
 /**
  * 로그인 모듈의 Spring Bean 설정.

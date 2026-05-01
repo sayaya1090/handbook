@@ -1,12 +1,10 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.domain.Render;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.usecase.RenderSharing;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.AgentSearch;
 import dev.sayaya.handbook.usecase.AgentState;
-import dev.sayaya.handbook.usecase.WorkspaceEvent;
+import dev.sayaya.handbook.usecase.RenderSharing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,7 @@ public class Application implements EntryPoint {
 
         component.typeRepository().list(null).subscribe(types -> {
             if (types != null && !types.isEmpty()) {
-                List<TypeValue> typeList = new ArrayList<>(types);
+                List<Type> typeList = new ArrayList<>(types);
                 component.typeList().next(typeList);
                 component.typeProvider().next(typeList.get(0));
             }

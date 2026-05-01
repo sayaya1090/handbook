@@ -9,9 +9,10 @@ plugins {
 }
 dependencies {
     implementation(project(":schema"))
-    implementation(project(":search"))
     implementation(project(":activity"))
+    implementation(project(":search"))
     implementation(project(":authentication"))
+    implementation("com.google.jsinterop:base:1.0.0")
     implementation(libs.bundles.spring.client)
     implementation(libs.bundles.kotlin.webflux)
     implementation(libs.bundles.r2dbc.postgres)

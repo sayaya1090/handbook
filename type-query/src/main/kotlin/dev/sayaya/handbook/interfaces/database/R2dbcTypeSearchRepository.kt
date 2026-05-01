@@ -7,7 +7,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /**
  * Spring Data R2DBC 자동 구현 인터페이스 — `types` 테이블 읽기 전용 쿼리.

@@ -3,7 +3,6 @@ package dev.sayaya.handbook.client.drawer;
 import dev.sayaya.handbook.client.ShellModule;
 import dev.sayaya.handbook.client.interfaces.drawer.*;
 import dev.sayaya.handbook.client.usecase.*;
-import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
 

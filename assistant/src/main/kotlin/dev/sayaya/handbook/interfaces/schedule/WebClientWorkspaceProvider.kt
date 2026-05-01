@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.interfaces.schedule
 
 import org.springframework.web.reactive.function.client.WebClient
-import java.util.UUID
+import java.util.*
 
 /**
  * WebClient를 사용하여 활성 워크스페이스 목록을 조회하는 어댑터.

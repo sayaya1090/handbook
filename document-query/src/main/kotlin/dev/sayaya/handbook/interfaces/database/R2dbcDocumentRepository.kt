@@ -1,7 +1,5 @@
 package dev.sayaya.handbook.interfaces.database
 
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.readValue
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.usecase.DocumentSearchRepository
@@ -15,6 +13,8 @@ import org.springframework.data.relational.core.query.Criteria.where
 import org.springframework.data.relational.core.query.Query
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 import java.util.*
 

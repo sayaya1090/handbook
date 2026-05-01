@@ -8,7 +8,7 @@ import io.mockk.mockk
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.UUID
+import java.util.*
 
 class AssistantControllerTest : BehaviorSpec({
     val service = mockk<AssistantService>()

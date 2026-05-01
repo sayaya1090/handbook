@@ -1,11 +1,12 @@
 package dev.sayaya.handbook.client.usecase
 
 import dev.sayaya.handbook.client.components.ToastContainer
-import dev.sayaya.handbook.domain.Labels
 import dev.sayaya.handbook.domain.ToastLevel
 import dev.sayaya.handbook.usecase.LabelProvider
 import io.kotest.core.spec.style.FunSpec
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 
 class SessionPollingServiceTest : FunSpec({
     

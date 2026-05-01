@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.domain;
 
-import jsinterop.annotations.*;
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsType;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 

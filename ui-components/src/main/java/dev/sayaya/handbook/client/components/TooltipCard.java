@@ -1,11 +1,7 @@
 package dev.sayaya.handbook.client.components;
 
 import dev.sayaya.ui.elements.CardElementBuilder;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.Element;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.HTMLStyleElement;
+import elemental2.dom.*;
 import org.jboss.elemento.IsElement;
 
 import static org.jboss.elemento.Elements.div;

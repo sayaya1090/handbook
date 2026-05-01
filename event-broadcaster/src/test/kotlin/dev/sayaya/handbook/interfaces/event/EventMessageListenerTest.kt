@@ -2,12 +2,6 @@ package dev.sayaya.handbook.interfaces.event
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.databind.PropertyNamingStrategies
-import tools.jackson.databind.SerializationFeature
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.databind.cfg.DateTimeFeature
-import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.event.DocumentEvent
 import dev.sayaya.handbook.domain.event.Event
@@ -16,6 +10,12 @@ import dev.sayaya.handbook.usecase.WorkspaceSinkManager
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import reactor.test.StepVerifier
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.time.Instant
 import java.util.*
 

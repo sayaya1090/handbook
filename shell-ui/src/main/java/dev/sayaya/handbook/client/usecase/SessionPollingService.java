@@ -6,7 +6,6 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import elemental2.dom.RequestInit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

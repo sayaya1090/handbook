@@ -4,7 +4,6 @@ import com.google.gwt.core.client.EntryPoint;
 import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Type;
-import elemental2.dom.DomGlobal;
 
 import static elemental2.dom.DomGlobal.console;
 

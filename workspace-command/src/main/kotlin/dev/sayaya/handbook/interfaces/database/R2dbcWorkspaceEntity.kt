@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /**
  * 워크스페이스 R2DBC 엔티티.

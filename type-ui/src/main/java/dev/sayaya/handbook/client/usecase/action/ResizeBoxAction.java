@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.usecase.action;
 
+import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.client.usecase.PositionMap;
 
 /**
  * 타입 박스의 크기를 변경하는 Command 패턴 액션.

@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client;
 
 import dev.sayaya.handbook.client.interfaces.api.ApiModule;
+
 import javax.inject.Singleton;
 
 @Singleton

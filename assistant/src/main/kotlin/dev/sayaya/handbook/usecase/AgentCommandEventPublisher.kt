@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.AgentCommand
-import java.util.UUID
+import java.util.*
 
 /**
  * 에이전트 커맨드를 워크스페이스 이벤트로 발행하는 포트.

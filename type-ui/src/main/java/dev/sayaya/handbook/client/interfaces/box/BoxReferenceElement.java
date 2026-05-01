@@ -1,23 +1,21 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.arrow.Arrow;
 import dev.sayaya.handbook.client.usecase.arrow.ArrowFactory;
 import dev.sayaya.handbook.client.usecase.arrow.Rectangle;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.Element;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.MouseEvent;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeValue;
+import elemental2.dom.*;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.jboss.elemento.Elements.div;
 

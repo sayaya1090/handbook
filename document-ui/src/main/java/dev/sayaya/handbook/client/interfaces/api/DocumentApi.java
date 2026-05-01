@@ -13,11 +13,10 @@ import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
 import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import jsinterop.base.JsPropertyMap;
-
 import java.util.List;
 
 /**

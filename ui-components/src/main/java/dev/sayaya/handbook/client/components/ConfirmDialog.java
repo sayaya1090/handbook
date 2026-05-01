@@ -2,11 +2,7 @@ package dev.sayaya.handbook.client.components;
 
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.DialogElementBuilder;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.KeyboardEvent;
-import elemental2.dom.NodeList;
+import elemental2.dom.*;
 import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;

@@ -4,16 +4,15 @@ import dagger.Module;
 import dagger.Provides;
 import dev.sayaya.handbook.client.interfaces.AgentSessionImpl;
 import dev.sayaya.handbook.client.interfaces.CommandRouter;
-import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.client.usecase.AgentApiPort;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
 import dev.sayaya.handbook.client.usecase.AgentSession;
+import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;
 import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.rx.Observer;
-import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Singleton;
 

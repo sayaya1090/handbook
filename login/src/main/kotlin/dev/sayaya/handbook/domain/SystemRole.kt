@@ -1,5 +1,9 @@
 package dev.sayaya.handbook.domain
 
+import dev.sayaya.handbook.domain.SystemRole.ADMIN
+import dev.sayaya.handbook.domain.SystemRole.USER
+
+
 /**
  * 시스템 전역 역할.
  *

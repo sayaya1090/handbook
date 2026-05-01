@@ -1,16 +1,14 @@
 package dev.sayaya.handbook.client.usecase.action;
 
 
-import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
-import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.ToastLevel;
-import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
+import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.usecase.TypeRepository;
-import dev.sayaya.handbook.client.usecase.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -76,8 +74,8 @@ public class SaveAction implements Action {
 
         // 변경된 타입 저장
         if (!changedKeys.isEmpty()) {
-            Set<TypeValue> toSave = new HashSet<>();
-            for (TypeValue type : typeList.getValue()) {
+            Set<Type> toSave = new HashSet<>();
+            for (Type type : typeList.getValue()) {
                 if (changedKeys.contains(type.key())) toSave.add(type);
             }
             if (!toSave.isEmpty()) {
@@ -87,12 +85,12 @@ public class SaveAction implements Action {
 
         // 삭제된 타입 처리
         if (!deletedKeys.isEmpty()) {
-            Set<TypeValue> toDelete = new HashSet<>();
+            Set<Type> toDelete = new HashSet<>();
             // 삭제된 타입은 이미 typeList에서 제거되었으므로 key로 임시 객체 생성
             for (String key : deletedKeys) {
                 String[] parts = key.split(":");
                 if (parts.length == 2) {
-                    TypeValue dummy = TypeValue.create(parts[0], parts[1], 0, 0);
+                    Type dummy = Type.create(parts[0], parts[1], null, null);
                     toDelete.add(dummy);
                 }
             }

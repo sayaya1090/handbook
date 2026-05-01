@@ -4,9 +4,9 @@ import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.DocumentValue;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
 
 /**
  * 선택된 문서들의 상태를 일괄 변경하는 Command 패턴 액션.
@@ -42,8 +42,8 @@ public class ChangeStatusAction implements Action {
         for (int idx : targetIndices) {
             if (idx >= 0 && idx < current.size()) {
                 DocumentValue doc = current.get(idx);
-                previousStatuses.put(idx, doc.status);
-                doc.status = newStatus;
+                previousStatuses.put(idx, doc.status());
+                doc.status(newStatus);
             }
         }
         documentList.next(current);
@@ -55,7 +55,7 @@ public class ChangeStatusAction implements Action {
         for (Map.Entry<Integer, String> entry : previousStatuses.entrySet()) {
             int idx = entry.getKey();
             if (idx >= 0 && idx < current.size()) {
-                current.get(idx).status = entry.getValue();
+                current.get(idx).status(entry.getValue());
             }
         }
         documentList.next(current);

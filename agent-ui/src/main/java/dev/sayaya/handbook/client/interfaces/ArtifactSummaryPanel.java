@@ -1,17 +1,16 @@
 package dev.sayaya.handbook.client.interfaces;
 
-import dev.sayaya.handbook.domain.CompleteInfo;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
+import dev.sayaya.handbook.domain.CompleteInfo;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.jboss.elemento.EventType;
 
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;

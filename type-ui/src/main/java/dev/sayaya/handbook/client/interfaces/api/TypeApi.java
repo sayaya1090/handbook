@@ -3,11 +3,10 @@ package dev.sayaya.handbook.client.interfaces.api;
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.interfaces.api.TypeNative;
-import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.domain.Progress;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.FetchApi;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
@@ -30,11 +29,10 @@ import java.util.Set;
  * TypeRepository의 HTTP 어댑터 구현체.
  *
  * <p><b>책임:</b> REST API를 통해 타입 목록 조회(list), 전체 저장(save), 부분 패치(patch),
- * 삭제(delete) 요청을 수행하고, 응답 JSON을 {@link TypeValue} 도메인 객체로 변환한다.</p>
+ * 삭제(delete) 요청을 수행하고, 응답 JSON을 {@link Type} 도메인 객체로 변환한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link FetchApi} — HTTP 요청 실행</li>
  *   <li>{@link dev.sayaya.handbook.domain.Progress} — 요청 시작/종료 시 프로그레스 바 제어</li>
- *   <li>{@link TypeNative} — JSON ↔ TypeValue 변환 매개 객체</li>
  * </ul></p>
  * <p><b>주의:</b> workspace 필드를 setWorkspace()로 설정한 후에 API 호출해야 한다.</p>
  */
@@ -54,19 +52,17 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Set<TypeValue>> list(LayoutPeriod period) {
+    public Observable<Set<Type>> list(LayoutPeriod period) {
         progress.next(Progress.indeterminate());
-        String effectIso = new JsDate(period.effectDateTime).toISOString();
-        String expireIso = new JsDate(period.expireDateTime).toISOString();
-        String url = "workspaces/" + workspace + "/types?effect_date_time=" + effectIso + "&expire_date_time=" + expireIso;
-        Promise<Set<TypeValue>> promise = fetchApi.request(url)
+        String url = "workspaces/" + workspace + "/types?effect_date_time=" + period.effectDateTime() + "&expire_date_time=" + period.expireDateTime();
+        Promise<Set<Type>> promise = fetchApi.request(url)
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
-                    JsArray<TypeNative> arr = Js.cast(json);
-                    Set<TypeValue> result = new LinkedHashSet<>();
-                    for (int i = 0; i < arr.length; i++) {
-                        result.add(arr.getAt(i).toDomain());
+                    Type[] arr = Js.cast(json);
+                    Set<Type> result = new LinkedHashSet<>();
+                    if (arr != null) {
+                        for (Type n : arr) result.add(n);
                     }
                     progress.next(Progress.hide());
                     return Promise.resolve(result);
@@ -81,11 +77,9 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Set<TypeValue>> save(Set<TypeValue> types) {
+    public Observable<Set<Type>> save(Set<Type> types) {
         progress.next(Progress.indeterminate());
-        TypeNative[] natives = new TypeNative[types.size()];
-        int i = 0;
-        for (TypeValue t : types) natives[i++] = TypeNative.fromDomain(t);
+        Type[] natives = types.toArray(new Type[0]);
 
         RequestInit init = RequestInit.create();
         init.setMethod("PUT");
@@ -94,14 +88,14 @@ public class TypeApi implements TypeRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Set<TypeValue>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
+        Promise<Set<Type>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
-                    JsArray<TypeNative> arr = Js.cast(json);
-                    Set<TypeValue> result = new LinkedHashSet<>();
+                    JsArray<Type> arr = Js.cast(json);
+                    Set<Type> result = new LinkedHashSet<>();
                     for (int j = 0; j < arr.length; j++) {
-                        result.add(arr.getAt(j).toDomain());
+                        result.add(arr.getAt(j));
                     }
                     progress.next(Progress.hide());
                     return Promise.resolve(result);
@@ -116,7 +110,7 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Set<TypeValue>> patch(List<JsPropertyMap<?>> patches) {
+    public Observable<Set<Type>> patch(List<JsPropertyMap<?>> patches) {
         progress.next(Progress.indeterminate());
         RequestInit init = RequestInit.create();
         init.setMethod("PATCH");
@@ -125,14 +119,14 @@ public class TypeApi implements TypeRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<Set<TypeValue>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
+        Promise<Set<Type>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
-                    JsArray<TypeNative> arr = Js.cast(json);
-                    Set<TypeValue> result = new LinkedHashSet<>();
+                    JsArray<Type> arr = Js.cast(json);
+                    Set<Type> result = new LinkedHashSet<>();
                     for (int j = 0; j < arr.length; j++) {
-                        result.add(arr.getAt(j).toDomain());
+                        result.add(arr.getAt(j));
                     }
                     progress.next(Progress.hide());
                     return Promise.resolve(result);
@@ -147,11 +141,9 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Void> delete(Set<TypeValue> types) {
+    public Observable<Void> delete(Set<Type> types) {
         progress.next(Progress.indeterminate());
-        TypeNative[] natives = new TypeNative[types.size()];
-        int i = 0;
-        for (TypeValue t : types) natives[i++] = TypeNative.fromDomain(t);
+        Type[] natives = types.toArray(new Type[0]);
 
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");
@@ -175,17 +167,17 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Set<TypeValue>> versions(String typeId) {
+    public Observable<Set<Type>> versions(String typeId) {
         progress.next(Progress.indeterminate());
         String url = "workspaces/" + workspace + "/types/" + typeId + "/versions";
-        Promise<Set<TypeValue>> promise = fetchApi.request(url)
+        Promise<Set<Type>> promise = fetchApi.request(url)
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
-                    JsArray<TypeNative> arr = Js.cast(json);
-                    Set<TypeValue> result = new LinkedHashSet<>();
+                    JsArray<Type> arr = Js.cast(json);
+                    Set<Type> result = new LinkedHashSet<>();
                     for (int i = 0; i < arr.length; i++) {
-                        result.add(arr.getAt(i).toDomain());
+                        result.add(arr.getAt(i));
                     }
                     progress.next(Progress.hide());
                     return Promise.resolve(result);

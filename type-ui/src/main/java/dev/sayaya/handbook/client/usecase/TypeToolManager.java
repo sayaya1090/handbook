@@ -7,8 +7,8 @@ import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.usecase.ToolProvider;
+import dev.sayaya.handbook.usecase.TypeRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

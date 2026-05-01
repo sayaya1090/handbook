@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.throwable.shouldHaveMessage
 import java.security.KeyPairGenerator
-import java.util.Base64
+import java.util.*
 
 internal class PemTest : FunSpec({
 

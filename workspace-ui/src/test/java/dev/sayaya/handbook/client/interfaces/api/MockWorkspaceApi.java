@@ -1,10 +1,11 @@
 package dev.sayaya.handbook.client.interfaces.api;
 
+import dev.sayaya.handbook.client.usecase.WorkspaceApi;
 import dev.sayaya.handbook.domain.Group;
 import dev.sayaya.handbook.domain.User;
 import dev.sayaya.handbook.domain.Workspace;
-import dev.sayaya.handbook.client.usecase.WorkspaceApi;
 import dev.sayaya.rx.Observable;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

@@ -1,9 +1,6 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.client.interfaces.InfoTabElement;
-import dev.sayaya.handbook.client.interfaces.api.MockWorkspaceApi;
-import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.DomGlobal;
 
 import static org.jboss.elemento.Elements.body;

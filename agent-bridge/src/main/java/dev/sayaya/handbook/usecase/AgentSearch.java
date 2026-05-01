@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.usecase;
 
 import elemental2.dom.DomGlobal;
-import jsinterop.annotations.JsFunction;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 

@@ -4,7 +4,9 @@ import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.DocumentPatch
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier

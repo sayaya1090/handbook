@@ -3,7 +3,7 @@ package dev.sayaya.handbook.interfaces.database
 import org.springframework.data.elasticsearch.repository.ReactiveElasticsearchRepository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.UUID
+import java.util.*
 
 /**
  * Elasticsearch 문서 검색 리포지토리.

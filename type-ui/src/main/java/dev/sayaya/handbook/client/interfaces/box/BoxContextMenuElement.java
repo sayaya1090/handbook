@@ -1,16 +1,15 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
-import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.client.interfaces.ContextMenuHelper;
-import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
-import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
+import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
+import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.TypeValue;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;

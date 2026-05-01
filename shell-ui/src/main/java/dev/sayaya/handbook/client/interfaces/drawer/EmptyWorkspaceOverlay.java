@@ -11,9 +11,7 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.h;
-import static org.jboss.elemento.Elements.p;
+import static org.jboss.elemento.Elements.*;
 
 /**
  * 참여 중인 워크스페이스가 없을 때 표시되는 빈 상태 오버레이.

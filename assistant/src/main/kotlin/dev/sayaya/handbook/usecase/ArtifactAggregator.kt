@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.usecase
 
 import dev.sayaya.handbook.domain.Artifact
-import java.util.UUID
+import java.util.*
 
 /**
  * 여러 서브 에이전트의 Artifact를 하나로 병합하는 포트.

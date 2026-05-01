@@ -1,16 +1,18 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 
-import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.interfaces.ContextMenuHelper;
-import dev.sayaya.handbook.client.usecase.*;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
+import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
@@ -24,7 +26,7 @@ import javax.inject.Singleton;
 /**
  * 새 타입을 캔버스에 추가하는 Filled 버튼.
  *
- * <p><b>책임:</b> 클릭 시 현재 레이아웃 기간에 맞는 새 TypeValue를 생성하고,
+ * <p><b>책임:</b> 클릭 시 현재 레이아웃 기간에 맞는 새 Type를 생성하고,
  * {@link CreateBoxAction} + {@link PushOutOverlapAction}을 {@link ComplexAction}으로 묶어 실행한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link ActionManager} — 액션 실행 및 Undo/Redo 스택 관리</li>
@@ -51,7 +53,7 @@ public class AddTypeButton implements IsElement<HTMLElement> {
             LayoutPeriod period = layoutProvider.getValue();
             if (period == null) return;
             String id = ContextMenuHelper.uniqueTypeId(typeList);
-            TypeValue newType = TypeValue.create(id, "1.0", period.effectDateTime, period.expireDateTime);
+            Type newType = Type.create(id, "1.0", null, null); // Skip setting effectDateTime, expireDateTime
             Position pos = Position.of(50, 80, 240, 160);
             actionManager.execute(new ComplexAction(
                     new CreateBoxAction(typeList, positionMap, tracker, newType, pos),

@@ -22,7 +22,7 @@ import java.util.List;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link TypeProvider} — DOC_SELECT 시 타입 선택 변경</li>
- *   <li>{@link TypeList} — 타입 이름으로 TypeValue 조회</li>
+ *   <li>{@link TypeList} — 타입 이름으로 Type 조회</li>
  *   <li>{@link dev.sayaya.handbook.client.components.ActionManager} — 액션 실행 및 Undo/Redo 관리</li>
  *   <li>{@link DocumentList} — 문서 목록 상태 조회/갱신</li>
  *   <li>{@link dev.sayaya.handbook.usecase.MutationReceiver} — 에이전트 명령 수신 채널</li>
@@ -92,7 +92,7 @@ public class AgentDocumentHandler {
 
     private void handleAdd() {
         DocumentValue newDoc = new DocumentValue();
-        newDoc.data = JsPropertyMap.of();
+        newDoc.data(JsPropertyMap.of());
         actionManager.execute(new AddDocumentAction(documentList, newDoc));
     }
 
@@ -107,8 +107,8 @@ public class AgentDocumentHandler {
         List<DocumentValue> docs = documentList.getValue();
         for (int i = 0; i < docs.size(); i++) {
             DocumentValue doc = docs.get(i);
-            if (doc.serial != null && doc.serial.equals(serial)) {
-                String before = doc.data != null ? (String) doc.data.get(field) : null;
+            if (doc.serial() != null && doc.serial().equals(serial)) {
+                String before = doc.data() != null ? (String) doc.data().get(field) : null;
                 actionManager.execute(new EditDocumentAction(documentList, i, field, before, value));
                 return;
             }
@@ -120,7 +120,7 @@ public class AgentDocumentHandler {
         List<DocumentValue> toDelete = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < docs.size(); i++) {
-            if (docs.get(i).serial != null && docs.get(i).serial.equals(serial)) {
+            if (docs.get(i).serial() != null && docs.get(i).serial().equals(serial)) {
                 toDelete.add(docs.get(i));
                 indices.add(i);
             }

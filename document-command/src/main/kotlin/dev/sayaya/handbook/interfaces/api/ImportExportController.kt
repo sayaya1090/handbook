@@ -1,7 +1,5 @@
 package dev.sayaya.handbook.interfaces.api
 
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.readValue
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.usecase.DocumentService
 import org.springframework.http.HttpHeaders
@@ -11,6 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
 import java.util.*
 
 /**

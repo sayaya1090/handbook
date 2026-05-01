@@ -1,11 +1,7 @@
 package dev.sayaya.handbook.client.components;
 
 import elemental2.core.JsArray;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.Element;
-import elemental2.dom.MutationObserver;
-import elemental2.dom.MutationObserverInit;
-import elemental2.dom.MutationRecord;
+import elemental2.dom.*;
 
 /**
  * 범용 DOM 요소 강조 효과 컴포넌트.

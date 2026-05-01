@@ -2,20 +2,14 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
-import dev.sayaya.handbook.domain.AgentActivity;
-import dev.sayaya.handbook.domain.ArtifactData;
-import dev.sayaya.handbook.domain.DistributionData;
-import dev.sayaya.handbook.domain.ExecutionStatusData;
-import dev.sayaya.handbook.domain.QualityIssue;
-import dev.sayaya.handbook.domain.TimelineData;
-import dev.sayaya.handbook.domain.WorkspaceStats;
 import dev.sayaya.handbook.client.usecase.DashboardRepository;
+import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
 import jsinterop.base.Js;
-import dev.sayaya.handbook.usecase.FetchApi;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

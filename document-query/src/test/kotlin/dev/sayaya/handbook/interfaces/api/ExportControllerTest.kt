@@ -1,16 +1,15 @@
 package dev.sayaya.handbook.interfaces.api
 
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Document
-import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.usecase.DocumentSearchService
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
 import io.mockk.mockk
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.time.Instant
 import java.util.*
 

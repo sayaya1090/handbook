@@ -1,7 +1,5 @@
 package dev.sayaya.handbook.interfaces.event
 
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.event.Event
 import io.kotest.core.spec.style.BehaviorSpec
@@ -10,6 +8,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.springframework.kafka.core.KafkaTemplate
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.time.Instant
 import java.util.*
 

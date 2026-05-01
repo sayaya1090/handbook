@@ -2,6 +2,17 @@ package dev.sayaya.handbook.interfaces.config
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
+import dev.sayaya.handbook.interfaces.database.InMemoryAuditRepository
+import dev.sayaya.handbook.interfaces.event.KafkaAgentCommandEventPublisher
+import dev.sayaya.handbook.interfaces.llm.*
+import dev.sayaya.handbook.interfaces.quality.DefaultQualityMonitor
+import dev.sayaya.handbook.usecase.*
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.web.reactive.function.client.WebClient
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.PropertyNamingStrategies
@@ -9,21 +20,6 @@ import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.KotlinModule
-import dev.sayaya.handbook.interfaces.database.InMemoryAuditRepository
-import dev.sayaya.handbook.interfaces.llm.LlmConfig
-import dev.sayaya.handbook.interfaces.llm.DefaultArtifactAggregator
-import dev.sayaya.handbook.interfaces.llm.DefaultSubAgentPlanExecutor
-import dev.sayaya.handbook.interfaces.llm.OpenAiIntentParser
-import dev.sayaya.handbook.interfaces.llm.GroupedPlanExecutor
-import dev.sayaya.handbook.interfaces.event.KafkaAgentCommandEventPublisher
-import dev.sayaya.handbook.interfaces.quality.DefaultQualityMonitor
-import dev.sayaya.handbook.usecase.*
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 @EnableConfigurationProperties(LlmConfig::class)

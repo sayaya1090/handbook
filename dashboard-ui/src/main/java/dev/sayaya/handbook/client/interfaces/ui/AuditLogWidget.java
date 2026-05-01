@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
-import dev.sayaya.handbook.domain.AgentActivity;
 import dev.sayaya.handbook.client.usecase.AgentActivityList;
+import dev.sayaya.handbook.domain.AgentActivity;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import lombok.experimental.Delegate;
@@ -14,9 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
 
-import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.input;
-import static org.jboss.elemento.Elements.span;
+import static org.jboss.elemento.Elements.*;
 
 /**
  * 사용자 변경 및 에이전트 활동을 통합 타임라인으로 표시하는 감사 로그 위젯.

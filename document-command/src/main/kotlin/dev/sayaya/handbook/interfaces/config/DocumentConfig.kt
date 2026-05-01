@@ -2,13 +2,6 @@ package dev.sayaya.handbook.interfaces.config
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.databind.PropertyNamingStrategies
-import tools.jackson.databind.SerializationFeature
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.databind.cfg.DateTimeFeature
-import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.interfaces.database.R2dbcDocumentEntityRepository
 import dev.sayaya.handbook.interfaces.database.R2dbcDocumentRepositoryAdapter
 import dev.sayaya.handbook.interfaces.event.KafkaDocumentEventPublisher
@@ -19,6 +12,13 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 /**
  * document-command 모듈의 Spring Bean 설정.

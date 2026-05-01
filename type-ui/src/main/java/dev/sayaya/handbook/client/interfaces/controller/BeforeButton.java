@@ -1,10 +1,10 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.action.ChangeLayoutAction;
+import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;

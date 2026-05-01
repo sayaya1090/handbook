@@ -4,7 +4,7 @@ import io.r2dbc.postgresql.codec.Json
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import java.util.UUID
+import java.util.*
 
 /**
  * `type_attributes` 테이블의 **읽기 전용 투영** — type-query 전용.

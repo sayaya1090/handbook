@@ -1,14 +1,16 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 
-import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
-import dev.sayaya.handbook.client.usecase.*;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
+import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;

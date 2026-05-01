@@ -3,7 +3,7 @@ package dev.sayaya.handbook.interfaces.authentication
 import io.jsonwebtoken.Claims
 import org.springframework.security.core.Authentication
 import java.time.ZoneId
-import java.util.Date
+import java.util.*
 
 /**
  * JWT Claims를 [UserAuthentication] 객체로 변환하는 컨버터

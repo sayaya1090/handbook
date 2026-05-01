@@ -1,11 +1,7 @@
 package dev.sayaya.handbook.client.drawer;
 
 import dagger.Provides;
-import dev.sayaya.handbook.client.usecase.MenuRepository;
-import dev.sayaya.handbook.client.usecase.UserRepository;
-import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
-import dev.sayaya.handbook.client.usecase.ScriptInjector;
-import dev.sayaya.handbook.client.usecase.SessionEnvironment;
+import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.usecase.LanguageDetector;
 import dev.sayaya.handbook.usecase.LanguagePackRepository;

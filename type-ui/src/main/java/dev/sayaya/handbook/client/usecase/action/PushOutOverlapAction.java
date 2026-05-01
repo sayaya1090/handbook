@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.usecase.action;
 
+import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.client.usecase.PositionMap;
 
 import java.util.*;
 

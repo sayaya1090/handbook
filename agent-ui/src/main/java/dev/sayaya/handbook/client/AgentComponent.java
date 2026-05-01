@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client;
 
 import dev.sayaya.handbook.client.interfaces.*;
-import dev.sayaya.handbook.client.usecase.AgentSession;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
+import dev.sayaya.handbook.client.usecase.AgentSession;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.rx.Observer;
 

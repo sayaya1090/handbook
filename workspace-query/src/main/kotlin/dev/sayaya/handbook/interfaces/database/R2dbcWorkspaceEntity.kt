@@ -2,7 +2,7 @@ package dev.sayaya.handbook.interfaces.database
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
-import java.util.UUID
+import java.util.*
 
 /**
  * workspace-command 가 소유한 `workspace` 테이블의 **읽기 전용 투영**.

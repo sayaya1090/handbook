@@ -3,7 +3,6 @@ package dev.sayaya.handbook
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 
 @GwtHtml("agent.html")
 internal class AgentEdgeCaseTest: GwtTestSpec({

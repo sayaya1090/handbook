@@ -1,7 +1,10 @@
 package dev.sayaya.handbook.client.interfaces.ui;
 
-import dev.sayaya.handbook.domain.*;
 import dev.sayaya.handbook.client.usecase.LoginCommandDispatcher;
+import dev.sayaya.handbook.domain.AttentionCommand;
+import dev.sayaya.handbook.domain.HighlightCommand;
+import dev.sayaya.handbook.domain.NotifyCommand;
+import dev.sayaya.handbook.domain.ProgressCommand;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import elemental2.dom.CustomEvent;

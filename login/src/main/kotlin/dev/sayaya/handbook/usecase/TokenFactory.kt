@@ -1,11 +1,11 @@
 package dev.sayaya.handbook.usecase
 
-import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Token
 import dev.sayaya.handbook.domain.User
 import dev.sayaya.handbook.interfaces.config.TokenFactoryConfig
 import io.jsonwebtoken.Jwts
 import org.bouncycastle.util.encoders.Base64
+import tools.jackson.databind.ObjectMapper
 import java.nio.charset.StandardCharsets
 import java.security.KeyFactory
 import java.security.PrivateKey

@@ -6,7 +6,6 @@ import dev.sayaya.rx.subject.BehaviorSubject;
 import elemental2.dom.CustomEvent;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
 import org.jboss.elemento.EventType;
 

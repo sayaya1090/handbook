@@ -7,7 +7,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import java.util.Date
+import java.util.*
 
 internal class UserAuthenticationConverterTest : StringSpec({
 

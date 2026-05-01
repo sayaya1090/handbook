@@ -2,7 +2,6 @@ package dev.sayaya.handbook.interfaces.database
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.every
 import io.mockk.mockk
 import reactor.core.publisher.Flux
 import tools.jackson.module.kotlin.jacksonObjectMapper

@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.interfaces.database
 
 import dev.sayaya.handbook.domain.Document
-import io.r2dbc.postgresql.codec.Json
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.r2dbc.postgresql.codec.Json
 import java.time.Instant
 import java.util.*
 

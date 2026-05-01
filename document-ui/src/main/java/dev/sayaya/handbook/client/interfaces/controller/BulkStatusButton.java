@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.select;
-import static org.jboss.elemento.Elements.span;
+import static org.jboss.elemento.Elements.*;
 
 /**
  * 선택된 문서들의 상태를 일괄 변경하는 드롭다운 버튼.

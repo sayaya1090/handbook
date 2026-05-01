@@ -1,20 +1,14 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
-import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.domain.Menu;
+import dev.sayaya.handbook.domain.Render;
+import dev.sayaya.handbook.domain.SessionStateKind;
+import dev.sayaya.handbook.interfaces.api.BrowserLanguageDetector;
+import dev.sayaya.handbook.interfaces.api.FetchLanguagePackRepository;
 import dev.sayaya.handbook.usecase.*;
-import dev.sayaya.handbook.interfaces.api.*;
-import dev.sayaya.rx.Observable;
-import dev.sayaya.rx.Observer;
-import dev.sayaya.rx.Subscription;
 import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.Response;
-import elemental2.dom.ResponseInit;
-import elemental2.promise.Promise;
 import jsinterop.base.Js;
-import org.jboss.elemento.EventType;
 
 import static elemental2.dom.DomGlobal.console;
 

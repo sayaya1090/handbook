@@ -1,12 +1,12 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.domain.DocumentValue;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.AddDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
+import dev.sayaya.handbook.domain.DocumentValue;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import jsinterop.base.JsPropertyMap;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
+import jsinterop.base.JsPropertyMap;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 

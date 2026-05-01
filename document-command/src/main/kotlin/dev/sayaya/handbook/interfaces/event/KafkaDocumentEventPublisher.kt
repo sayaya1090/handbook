@@ -1,11 +1,11 @@
 package dev.sayaya.handbook.interfaces.event
 
-import tools.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.event.DocumentEvent
 import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.usecase.DocumentEventPublisher
 import org.springframework.kafka.core.KafkaTemplate
+import tools.jackson.databind.ObjectMapper
 import java.util.*
 
 /**

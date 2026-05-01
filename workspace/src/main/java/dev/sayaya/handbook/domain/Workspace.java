@@ -2,14 +2,16 @@ package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
 @NoArgsConstructor
-public final class Workspace {
+public final class Workspace implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     @JsonProperty("id") @JsProperty private String id;
     @JsonProperty("name") @JsProperty private String name;
     @JsonProperty("description") @JsProperty private String description;
@@ -29,7 +31,8 @@ public final class Workspace {
     @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
     @Accessors(fluent = true)
     @NoArgsConstructor
-    public static final class WorkspaceSimple {
+    public static final class WorkspaceSimple implements java.io.Serializable {
+        private static final long serialVersionUID = 1L;
         @JsonProperty("id") @JsProperty private String id;
         @JsonProperty("name") @JsProperty private String name;
 

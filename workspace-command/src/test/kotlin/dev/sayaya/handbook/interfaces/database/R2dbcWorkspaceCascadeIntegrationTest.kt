@@ -11,12 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
-import io.r2dbc.spi.ConnectionFactoryOptions.DATABASE
-import io.r2dbc.spi.ConnectionFactoryOptions.DRIVER
-import io.r2dbc.spi.ConnectionFactoryOptions.HOST
-import io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD
-import io.r2dbc.spi.ConnectionFactoryOptions.PORT
-import io.r2dbc.spi.ConnectionFactoryOptions.USER
+import io.r2dbc.spi.ConnectionFactoryOptions.*
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
 import org.springframework.r2dbc.core.DatabaseClient
@@ -26,7 +21,7 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.security.Principal
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 /**
  * 워크스페이스 cascade 삭제 통합 테스트.

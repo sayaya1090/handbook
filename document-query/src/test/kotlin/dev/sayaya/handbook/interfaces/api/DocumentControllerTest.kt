@@ -1,10 +1,8 @@
 package dev.sayaya.handbook.interfaces.api
 
 import dev.sayaya.handbook.domain.Document
-import dev.sayaya.handbook.domain.Search
 import dev.sayaya.handbook.usecase.DocumentSearchService
 import io.kotest.core.spec.style.BehaviorSpec
-import dev.sayaya.handbook.interfaces.api.SearchArgumentResolver
 import io.mockk.every
 import io.mockk.mockk
 import org.springframework.data.domain.PageImpl

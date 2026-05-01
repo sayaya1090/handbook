@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.interfaces.database
 
-import dev.sayaya.handbook.usecase.*
+import dev.sayaya.handbook.usecase.AgentActivityEntry
+import dev.sayaya.handbook.usecase.QualityIssueEntry
+import dev.sayaya.handbook.usecase.TimelineEntry
+import dev.sayaya.handbook.usecase.WorkspaceSummary
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every

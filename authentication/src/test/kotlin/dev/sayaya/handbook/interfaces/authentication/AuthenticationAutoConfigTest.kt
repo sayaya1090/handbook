@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.util.*
-import java.util.Date
 
 @WebFluxTest
 @ContextConfiguration(classes = [AuthenticationAutoConfigTest.Companion.TestConfig::class])

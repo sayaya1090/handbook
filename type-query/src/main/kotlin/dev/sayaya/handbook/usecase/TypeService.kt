@@ -45,13 +45,13 @@ class TypeSearchService(private val repo: TypeSearchRepository) {
             val added = mutableListOf<String>()
             val removed = mutableListOf<String>()
 
-            if (old.description != new.description)
-                changes.add("description: ${old.description ?: "(없음)"} → ${new.description ?: "(없음)"}")
-            if (old.parent != new.parent)
-                changes.add("parent: ${old.parent ?: "(없음)"} → ${new.parent ?: "(없음)"}")
+            if (old.description() != new.description())
+                changes.add("description: ${old.description() ?: "(없음)"} → ${new.description() ?: "(없음)"}")
+            if (old.parent() != new.parent())
+                changes.add("parent: ${old.parent() ?: "(없음)"} → ${new.parent() ?: "(없음)"}")
 
-            val oldAttrs = old.attributes.associateBy { it.name }
-            val newAttrs = new.attributes.associateBy { it.name }
+            val oldAttrs = (old.attributes()?.toList() ?: emptyList()).associateBy { it.name }
+            val newAttrs = (new.attributes()?.toList() ?: emptyList()).associateBy { it.name }
 
             (newAttrs.keys - oldAttrs.keys).forEach { added.add(it) }
             (oldAttrs.keys - newAttrs.keys).forEach { removed.add(it) }

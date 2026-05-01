@@ -2,15 +2,14 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
+import dev.sayaya.handbook.client.usecase.LayoutRepository;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.interfaces.api.LayoutNative;
-import dev.sayaya.handbook.client.usecase.LayoutRepository;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.core.Global;
-import elemental2.core.JsArray;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
@@ -39,10 +38,12 @@ public class LayoutApi implements LayoutRepository {
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
-                    JsArray<LayoutNative> arr = Js.cast(json);
+                    TypeLayout[] arr = Js.cast(json);
                     List<LayoutPeriod> result = new ArrayList<>();
-                    for (int i = 0; i < arr.length; i++) {
-                        result.add(arr.getAt(i).toPeriod());
+                    if (arr != null) {
+                        for (TypeLayout layout : arr) {
+                            result.add(layout.toPeriod());
+                        }
                     }
                     return Promise.resolve(result);
                 })
@@ -60,12 +61,17 @@ public class LayoutApi implements LayoutRepository {
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
-                    JsArray<LayoutNative> arr = Js.cast(json);
-                    for (int i = 0; i < arr.length; i++) {
-                        LayoutNative layout = arr.getAt(i);
-                        LayoutPeriod lp = layout.toPeriod();
-                        if (lp.effectDateTime == period.effectDateTime && lp.expireDateTime == period.expireDateTime) {
-                            return Promise.resolve(layout.toPositionMap());
+                    TypeLayout[] arr = Js.cast(json);
+                    if (arr != null) {
+                        for (TypeLayout layout : arr) {
+                            LayoutPeriod lp = layout.toPeriod();
+                            if (lp.effectDateTime() == period.effectDateTime() && lp.expireDateTime() == period.expireDateTime()) {
+                                Map<String, Position> map = new HashMap<>();
+                                if (layout.positions() != null) {
+                                    layout.positions().forEach(key -> map.put(key, layout.positions().get(key)));
+                                }
+                                return Promise.resolve(map);
+                            }
                         }
                     }
                     return Promise.resolve(Collections.<String, Position>emptyMap());
@@ -80,20 +86,12 @@ public class LayoutApi implements LayoutRepository {
 
     @Override
     public Observable<Void> savePositions(LayoutPeriod period, Map<String, Position> positions) {
-        // Backend expects TypeLayout { id, effectDateTime, expireDateTime, positions }
-        LayoutNative layout = new LayoutNative();
-        layout.effectDateTime = new elemental2.core.JsDate((double) period.effectDateTime).toISOString();
-        layout.expireDateTime = new elemental2.core.JsDate((double) period.expireDateTime).toISOString();
-        jsinterop.base.JsPropertyMap<LayoutNative.PositionNative> posMap = jsinterop.base.JsPropertyMap.of();
+        jsinterop.base.JsPropertyMap<Position> posMap = jsinterop.base.JsPropertyMap.of();
         for (Map.Entry<String, Position> entry : positions.entrySet()) {
-            LayoutNative.PositionNative pn = new LayoutNative.PositionNative();
-            pn.x = entry.getValue().x;
-            pn.y = entry.getValue().y;
-            pn.width = entry.getValue().width;
-            pn.height = entry.getValue().height;
-            posMap.set(entry.getKey(), pn);
+            posMap.set(entry.getKey(), entry.getValue());
         }
-        layout.positions = posMap;
+        
+        TypeLayout layout = TypeLayout.create(null, workspace, period.effectDateTime(), period.expireDateTime(), posMap);
 
         RequestInit init = RequestInit.create();
         init.setMethod("PUT");

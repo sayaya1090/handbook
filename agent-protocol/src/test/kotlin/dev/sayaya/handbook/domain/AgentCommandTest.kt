@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.domain
 
-import tools.jackson.databind.ObjectMapper
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import tools.jackson.databind.ObjectMapper
 
 class AgentCommandTest : DescribeSpec({
 

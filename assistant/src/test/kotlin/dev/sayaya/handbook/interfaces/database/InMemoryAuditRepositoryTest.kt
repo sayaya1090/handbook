@@ -4,7 +4,7 @@ import dev.sayaya.handbook.domain.*
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import reactor.test.StepVerifier
-import java.util.UUID
+import java.util.*
 
 class InMemoryAuditRepositoryTest : BehaviorSpec({
     val repo = InMemoryAuditRepository()

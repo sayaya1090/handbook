@@ -1,10 +1,9 @@
 package dev.sayaya.handbook
 
+import com.microsoft.playwright.Page
+import com.microsoft.playwright.options.WaitForSelectorState
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
-import com.microsoft.playwright.options.WaitForSelectorState
-import com.microsoft.playwright.Page
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 

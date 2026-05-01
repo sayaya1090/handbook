@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.rx.subject.BehaviorSubject;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.HashMap;

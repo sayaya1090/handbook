@@ -3,14 +3,7 @@ package dev.sayaya.handbook.client;
 import dev.sayaya.handbook.client.interfaces.api.ApiModule;
 import dev.sayaya.handbook.client.interfaces.api.DashboardApi;
 import dev.sayaya.handbook.client.interfaces.ui.DashboardElement;
-import dev.sayaya.handbook.client.usecase.AgentActivityList;
-import dev.sayaya.handbook.client.usecase.ArtifactList;
-import dev.sayaya.handbook.client.usecase.DashboardRepository;
-import dev.sayaya.handbook.client.usecase.DistributionProvider;
-import dev.sayaya.handbook.client.usecase.ExecutionStatusList;
-import dev.sayaya.handbook.client.usecase.QualityIssueList;
-import dev.sayaya.handbook.client.usecase.StatsProvider;
-import dev.sayaya.handbook.client.usecase.TimelineProvider;
+import dev.sayaya.handbook.client.usecase.*;
 
 import javax.inject.Singleton;
 

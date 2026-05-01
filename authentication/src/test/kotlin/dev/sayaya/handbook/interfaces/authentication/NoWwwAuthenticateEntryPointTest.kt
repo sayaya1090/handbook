@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.interfaces.authentication
 
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.core.spec.style.StringSpec
 import io.mockk.clearMocks
 import io.mockk.every

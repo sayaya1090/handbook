@@ -2,7 +2,8 @@ package dev.sayaya.handbook.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jsinterop.annotations.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")

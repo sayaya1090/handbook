@@ -4,7 +4,7 @@ import dev.sayaya.handbook.usecase.QualityMonitorService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/assistant/quality")

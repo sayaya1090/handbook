@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-24: document-ui 컴파일 에러 해결 (도메인 모델 이름 변경 및 Fluent Accessor 적용) -> 완료
 - 2026-05-12: 문서 검색 엔진 전환 -> Elasticsearch 9.3.3 도입으로 검색 성능 강화
 - 2026-04-18: document-query MenuController allowedSessionStates -> IN_WORKSPACE 선언 + 테스트
 

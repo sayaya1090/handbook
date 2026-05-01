@@ -7,11 +7,12 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":schema"))
     implementation(project(":activity"))
     implementation(project(":agent-bridge"))
-    implementation(project(":ui-components"))
     implementation(project(":document"))
-    implementation(project(":schema"))
+    implementation(project(":ui-components"))
+    implementation(project(":activity"))
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)

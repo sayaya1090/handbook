@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.domain
 
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /**
  * 실행 완료 후 생성되는 결과물.

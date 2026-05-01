@@ -2,10 +2,10 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.interfaces.api.TypeNative;
-import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
+import dev.sayaya.handbook.usecase.TypeRepository;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.dom.RequestInit;
@@ -30,17 +30,17 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Set<TypeValue>> list(LayoutPeriod period) {
+    public Observable<Set<Type>> list(LayoutPeriod period) {
         RequestInit init = RequestInit.create();
         init.setMethod("GET");
         init.setHeaders(new String[][]{{"Accept", "application/vnd.sayaya.handbook.v1+json"}});
 
-        Promise<Set<TypeValue>> promise = fetchApi.request("workspaces/types", init)
+        Promise<Set<Type>> promise = fetchApi.request("workspaces/types", init)
                 .then(this::handleResponse)
                 .then(resp -> resp.json())
                 .then(json -> {
                     TypeNative[] arr = Js.cast(json);
-                    Set<TypeValue> set = new HashSet<>();
+                    Set<Type> set = new HashSet<>();
                     if (arr != null) {
                         for (TypeNative n : arr) set.add(n.toDomain());
                     }
@@ -54,13 +54,13 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Set<TypeValue>> save(Set<TypeValue> types) { return null; }
+    public Observable<Set<Type>> save(Set<Type> types) { return null; }
     @Override
-    public Observable<Set<TypeValue>> patch(List<JsPropertyMap<?>> patches) { return null; }
+    public Observable<Set<Type>> patch(List<JsPropertyMap<?>> patches) { return null; }
     @Override
-    public Observable<Void> delete(Set<TypeValue> types) { return null; }
+    public Observable<Void> delete(Set<Type> types) { return null; }
     @Override
-    public Observable<Set<TypeValue>> versions(String typeId) { return null; }
+    public Observable<Set<Type>> versions(String typeId) { return null; }
 
     private Promise<Response> handleResponse(Response response) {
         if (response.ok) return Promise.resolve(response);

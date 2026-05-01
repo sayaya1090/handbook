@@ -1,15 +1,17 @@
 package dev.sayaya.handbook.client.interfaces.canvas;
 
 
-import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.client.usecase.*;
+import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
+import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
+import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -92,7 +94,7 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
         LayoutPeriod period = layoutProvider.getValue();
         if (period == null) return;
         String id = uniqueTypeId(typeList);
-        TypeValue newType = TypeValue.create(id, "1.0", period.effectDateTime, period.expireDateTime);
+        Type newType = Type.create(id, "1.0", null, null); // period.effectDateTime(), period.expireDateTime() are skipped
         Position pos = Position.of(x, y, 240, 160);
         actionManager.execute(new ComplexAction(
                 new CreateBoxAction(typeList, positionMap, tracker, newType, pos),

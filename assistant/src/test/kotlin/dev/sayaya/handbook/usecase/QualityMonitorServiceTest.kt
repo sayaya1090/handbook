@@ -9,7 +9,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
-import java.util.UUID
+import java.util.*
 
 class QualityMonitorServiceTest : BehaviorSpec({
     val monitor = mockk<QualityMonitor>()

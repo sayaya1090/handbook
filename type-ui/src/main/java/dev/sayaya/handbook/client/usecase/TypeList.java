@@ -6,7 +6,9 @@ import dev.sayaya.rx.subject.BehaviorSubject;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;

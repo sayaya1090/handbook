@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import dev.sayaya.handbook.domain.DocumentValue;
-import elemental2.dom.DomGlobal;
 import jsinterop.base.JsPropertyMap;
 
 import static elemental2.dom.DomGlobal.console;

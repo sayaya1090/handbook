@@ -1,10 +1,9 @@
 package dev.sayaya.handbook.interfaces.database
 
-import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
-import io.r2dbc.postgresql.codec.Json
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.r2dbc.postgresql.codec.Json
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.Instant
 import java.util.*

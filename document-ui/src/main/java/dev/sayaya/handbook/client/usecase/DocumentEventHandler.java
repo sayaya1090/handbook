@@ -8,7 +8,6 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.usecase.DocumentRepository;
 import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.rx.Observable;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
 import elemental2.core.Global;
 import jsinterop.base.Js;

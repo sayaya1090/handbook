@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.interfaces.api
 
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import dev.sayaya.handbook.domain.event.PresencePayload
 import io.kotest.core.spec.style.DescribeSpec
 import io.mockk.every
@@ -8,7 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.core.publisher.Mono
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.*
 import java.util.concurrent.CompletableFuture
 

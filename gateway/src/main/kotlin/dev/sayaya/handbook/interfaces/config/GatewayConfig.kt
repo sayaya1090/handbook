@@ -2,10 +2,6 @@ package dev.sayaya.handbook.interfaces.config
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
-import tools.jackson.databind.*
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.databind.cfg.DateTimeFeature
-import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.interfaces.discovery.ServiceDiscovery
 import dev.sayaya.handbook.interfaces.discovery.ServiceListProperties
 import dev.sayaya.handbook.usecase.MenuService
@@ -21,6 +17,12 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.reactive.CorsWebFilter
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 import org.springframework.web.reactive.function.client.WebClient
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 /**
  * 게이트웨이 인프라 설정.

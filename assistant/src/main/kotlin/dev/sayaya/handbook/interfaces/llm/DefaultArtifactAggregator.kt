@@ -3,7 +3,7 @@ package dev.sayaya.handbook.interfaces.llm
 import dev.sayaya.handbook.domain.Artifact
 import dev.sayaya.handbook.domain.ArtifactChange
 import dev.sayaya.handbook.usecase.ArtifactAggregator
-import java.util.UUID
+import java.util.*
 
 /**
  * 서브 에이전트 Artifact를 하나의 Artifact로 병합하는 기본 구현체.

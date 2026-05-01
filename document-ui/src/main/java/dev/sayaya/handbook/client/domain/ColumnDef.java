@@ -1,11 +1,11 @@
 package dev.sayaya.handbook.client.domain;
 
-import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Attribute;
 
 /**
  * Handsontable 컬럼 정의. 속성 타입에 따라 type/width/readOnly/source/dateFormat 등을 결정한다.
  *
- * <p><b>책임:</b> 도메인 속성 정보({@link AttributeValue})를 Handsontable이 이해할 수 있는
+ * <p><b>책임:</b> 도메인 속성 정보({@link Attribute})를 Handsontable이 이해할 수 있는
  * 컬럼 설정으로 변환한다.</p>
  */
 public record ColumnDef(
@@ -36,11 +36,11 @@ public record ColumnDef(
                 null, "YYYY-MM-DD HH:mm", true);
     }
 
-    public static ColumnDef fromAttribute(AttributeValue attr) {
+    public static ColumnDef fromAttribute(Attribute attr) {
         return fromAttribute(attr, null);
     }
 
-    public static ColumnDef fromAttribute(AttributeValue attr, String[] typeNames) {
+    public static ColumnDef fromAttribute(Attribute attr, String[] typeNames) {
         String attrType = (attr.type != null && attr.type.type != null) ? attr.type.type : "text";
         switch (attrType) {
             case "number":

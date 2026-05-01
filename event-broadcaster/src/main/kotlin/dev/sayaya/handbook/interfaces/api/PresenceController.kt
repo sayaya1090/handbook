@@ -1,13 +1,12 @@
 package dev.sayaya.handbook.interfaces.api
 
-import tools.jackson.databind.ObjectMapper
-import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.domain.event.PresenceEvent
 import dev.sayaya.handbook.domain.event.PresencePayload
 import org.springframework.http.HttpStatus
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
 import java.util.*
 
 /**

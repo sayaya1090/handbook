@@ -2,12 +2,6 @@ package dev.sayaya.handbook.interfaces.database
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.PropertyAccessor
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.databind.PropertyNamingStrategies
-import tools.jackson.databind.SerializationFeature
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.databind.cfg.DateTimeFeature
-import tools.jackson.module.kotlin.KotlinModule
 import dev.sayaya.handbook.domain.Attribute
 import dev.sayaya.handbook.domain.AttributeType
 import dev.sayaya.handbook.domain.Type
@@ -23,6 +17,12 @@ import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.testcontainers.postgresql.PostgreSQLContainer
 import reactor.test.StepVerifier
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.time.Instant
 import java.util.*
 
