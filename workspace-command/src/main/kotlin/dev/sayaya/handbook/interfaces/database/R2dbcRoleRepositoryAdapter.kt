@@ -9,6 +9,14 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
 
+/**
+ * [RoleRepository] 포트의 R2DBC 어댑터.
+ *
+ * **책임:** 그룹과 역할(Role) 간의 매핑 정보를 `group_role` 테이블에 저장, 조회, 삭제한다.
+ *
+ * **의존관계:**
+ * - [R2dbcEntityTemplate] — 매핑 엔티티 영속화
+ */
 @Repository
 class R2dbcRoleRepositoryAdapter(
     private val template: R2dbcEntityTemplate

@@ -52,9 +52,15 @@ interface R2dbcTypeEntityRepository : ReactiveCrudRepository<R2dbcTypeEntity, St
 /**
  * [TypeSearchRepository] 포트의 R2DBC 읽기 전용 어댑터.
  *
- * <p>type-command 의 `R2dbcTypeRepositoryAdapter` 와 동일 테이블을 사용하지만 쓰기 경로는 없고,
- * 속성(type_attributes) 은 workspace+typeId 벌크 조회 후 애플리케이션 레벨에서 type+version 키로
- * multimap 매핑한다 (type-command 의 `findByWorkspaceAndPeriod` 와 동일 패턴).</p>
+ * **책임:** 워크스페이스별 타입 정보 조회 및 특정 ID/버전의 타입을 조회한다.
+ * 속성 정보(type_attributes)는 벌크 조회 후 메모리에서 매핑(hydrate)하여 반환한다.
+ *
+ * **의존관계:**
+ * - [R2dbcTypeEntityRepository] — `types` 테이블 조회
+ * - [R2dbcAttributeEntityRepository] — `type_attributes` 테이블 조회
+ * - [AttributeEntityMapper] — 속성 엔티티 ↔ 도메인 변환
+ *
+ * **주의:** `hydrate` 메서드는 타입 목록과 해당 타입들의 모든 속성을 한 번에 조회하여 매핑하므로 N+1 문제를 방지한다.
  */
 class R2dbcTypeSearchRepositoryAdapter(
     private val typeRepo: R2dbcTypeEntityRepository,

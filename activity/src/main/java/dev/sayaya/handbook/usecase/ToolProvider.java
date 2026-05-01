@@ -12,8 +12,15 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
  * 도구 목록을 발행하고 선택 이벤트를 중계하는 공통 제공자.
- * 
- * <p>자식 모듈과 쉘 UI 간의 통신을 캡슐화하여 각 모듈에서 손쉽게 전역 도구를 사용할 수 있도록 한다.</p>
+ *
+ * <p><b>책임:</b> 자식 모듈(Iframe 또는 동적 모듈)과 쉘 UI 간의 도구(Tool) 상태 공유를 캡슐화한다.
+ * 각 모듈에서 손쉽게 전역 도구 표시 및 클릭 이벤트를 처리할 수 있도록 한다.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link ToolPublisher} — 쉘 방향으로 도구 목록 발행 브릿지</li>
+ *   <li>{@link ToolSubscriber} — 자식 방향으로 클릭 이벤트 수신 브릿지</li>
+ * </ul></p>
  */
 @Singleton
 public class ToolProvider {

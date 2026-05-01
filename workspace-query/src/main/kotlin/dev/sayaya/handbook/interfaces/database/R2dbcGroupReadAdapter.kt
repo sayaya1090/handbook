@@ -11,6 +11,15 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import java.util.*
 
+/**
+ * [GroupReadRepository] 의 R2DBC 읽기 전용 구현.
+ *
+ * **책임:** 워크스페이스 내 그룹 목록 조회 및 특정 그룹의 멤버(User) 목록 조회를 담당한다.
+ *
+ * **의존관계:**
+ * - [R2dbcEntityTemplate] — Spring Data R2DBC 를 이용한 엔티티 조회
+ * - [DatabaseClient] — 조인이 포함된 멤버 목록 조회를 위한 로우 SQL 실행
+ */
 @Repository
 class R2dbcGroupReadAdapter(
     private val template: R2dbcEntityTemplate,

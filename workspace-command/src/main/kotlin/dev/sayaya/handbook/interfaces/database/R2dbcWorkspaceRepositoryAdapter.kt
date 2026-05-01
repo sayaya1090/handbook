@@ -7,6 +7,14 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 import java.util.*
 
+/**
+ * [WorkspaceRepository] 포트의 R2DBC 어댑터.
+ *
+ * **책임:** 워크스페이스 도메인 객체의 생성, 수정, 삭제를 R2DBC 엔티티를 통해 처리한다.
+ *
+ * **의존관계:**
+ * - [R2dbcEntityTemplate] — R2DBC 엔티티 영속화 및 조회
+ */
 @Repository
 class R2dbcWorkspaceRepositoryAdapter(
     private val template: R2dbcEntityTemplate,

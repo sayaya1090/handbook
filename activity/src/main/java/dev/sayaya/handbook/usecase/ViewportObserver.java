@@ -8,11 +8,15 @@ import elemental2.dom.MediaQueryList;
 import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
- * 뷰포트 크기 변경을 감지하여 모바일/컴팩트 상태를 BehaviorSubject로 발행한다.
- * <ul>
- *   <li>mobile: 뷰포트 너비 < 768px</li>
- *   <li>compact: 뷰포트 너비 < 480px</li>
- * </ul>
+ * 브라우저 뷰포트 크기 변경을 감지하여 모바일/컴팩트 상태를 발행하는 옵저버.
+ *
+ * <p><b>책임:</b> CSS Media Query 를 감시하여 화면 레이아웃 결정 기준(Mobile/Compact)을
+ * BehaviorSubject 로 실시간 공유한다.</p>
+ *
+ * <p><b>주의:</b> <ul>
+ *   <li>Mobile: 768px 미만</li>
+ *   <li>Compact: 480px 미만 (초소형 기기 또는 좁은 사이드바)</li>
+ * </ul></p>
  */
 public class ViewportObserver {
     private static final String MOBILE_QUERY = "(max-width: 768px)";

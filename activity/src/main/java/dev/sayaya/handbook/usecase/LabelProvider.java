@@ -13,8 +13,17 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 /**
  * 다국어 레이블을 제공하는 싱글톤 usecase.
- * 브라우저 언어를 감지하고 언어팩을 로드하여 BehaviorSubject로 발행한다.
- * 로드 실패 시 Labels.empty()를 유지한다 (키를 그대로 표시).
+ *
+ * <p><b>책임:</b> 브라우저 언어를 감지하고 언어팩을 로드하여 {@link dev.sayaya.handbook.domain.Labels}
+ * 를 BehaviorSubject로 발행한다. UI 컴포넌트의 다국어 텍스트 공급원 역할을 수행한다.</p>
+ *
+ * <p><b>의존관계:</b>
+ * <ul>
+ *   <li>{@link LanguageDetector} — 현재 브라우저 언어 감지</li>
+ *   <li>{@link LanguagePackRepository} — 서버/로컬에서 언어 JSON 로드</li>
+ * </ul></p>
+ *
+ * <p><b>주의:</b> 로드 실패 시 Labels.empty()를 유지하므로, 번역이 없는 경우 키(key)가 그대로 노출된다.</p>
  */
 @Singleton
 public class LabelProvider {

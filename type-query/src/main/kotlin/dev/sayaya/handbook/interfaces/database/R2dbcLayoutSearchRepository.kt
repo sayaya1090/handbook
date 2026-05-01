@@ -16,7 +16,13 @@ interface R2dbcLayoutEntityRepository : ReactiveCrudRepository<R2dbcLayoutEntity
 }
 
 /**
- * [LayoutSearchRepository] 포트의 R2DBC 읽기 전용 어댑터. positions JSONB 역직렬화를 담당.
+ * [LayoutSearchRepository] 포트의 R2DBC 읽기 전용 어댑터.
+ *
+ * **책임:** 워크스페이스별 타입 레이아웃 정보를 조회하고, positions JSONB 데이터를 역직렬화하여 도메인 객체로 변환한다.
+ *
+ * **의존관계:**
+ * - [R2dbcLayoutEntityRepository] — `type_layouts` 테이블 조회
+ * - [ObjectMapper] — positions JSONB 역직렬화
  */
 class R2dbcLayoutSearchRepositoryAdapter(
     private val repository: R2dbcLayoutEntityRepository,
