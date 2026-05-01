@@ -359,6 +359,20 @@ sequenceDiagram
 | **선행 조건** | 유효한 JWT 토큰이 쿠키에 존재한다 |
 | **후행 조건** | 새로운 JWT 토큰이 쿠키에 저장된다 |
 
+```mermaid
+sequenceDiagram
+    participant Shell as Shell UI
+    participant GW as Gateway
+    participant L as Login 서비스
+
+    Shell->>GW: "GET /auth/refresh"
+    GW->>L: "요청 라우팅"
+    L->>L: "기존 토큰 검증"
+    L->>L: "새 JWT 토큰 발행"
+    L-->>GW: "Set-Cookie (새 토큰)"
+    GW-->>Shell: "200 OK"
+```
+
 **기본 흐름:**
 1. Shell UI의 UserApi가 10분 주기로 `/auth/refresh`를 호출한다.
 2. Login 서비스가 기존 토큰을 검증하고 새 토큰을 발행한다.
@@ -422,6 +436,21 @@ flowchart TD
 | **선행 조건** | 로그인 상태이며, 2개 이상의 워크스페이스에 참여 중이다 |
 | **후행 조건** | 선택한 워크스페이스로 전환되고, 해당 워크스페이스가 마지막 액션 워크스페이스로 기록된다 |
 
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant Shell as Shell UI
+    participant GW as Gateway
+    participant API as workspace-query
+
+    U->>Shell: "워크스페이스 선택"
+    Shell->>Shell: "활성 워크스페이스 ID 변경"
+    Shell->>GW: "GET /menus"
+    GW-->>Shell: "새 워크스페이스 메뉴 목록"
+    Shell->>U: "UI 메뉴 갱신"
+    Shell->>Shell: "마지막 액션 워크스페이스 저장"
+```
+
 **기본 흐름:**
 1. 사용자가 Shell UI의 워크스페이스 선택기를 통해 다른 워크스페이스를 선택한다.
 2. 시스템이 선택한 워크스페이스로 전환한다.
@@ -481,6 +510,22 @@ flowchart TD
 | **액터** | 워크스페이스 관리자 |
 | **선행 조건** | 해당 워크스페이스의 ADMIN 권한을 가진다 |
 | **후행 조건** | 워크스페이스와 모든 종속 데이터(그룹, 타입, 문서, 레이아웃 등)가 삭제된다 |
+
+```mermaid
+sequenceDiagram
+    actor Admin as 관리자
+    participant GW as Gateway
+    participant API as workspace-command
+    participant DB as Database
+    participant Kafka
+
+    Admin->>GW: "DELETE /workspaces/{id}"
+    GW->>API: "요청 라우팅"
+    API->>DB: "워크스페이스 및 종속 데이터 삭제 (cascade)"
+    API->>Kafka: "WORKSPACE_DELETED 이벤트 발행"
+    API-->>GW: "204 No Content"
+    GW-->>Admin: "204 No Content"
+```
 
 **기본 흐름:**
 1. 관리자가 워크스페이스 삭제를 요청한다.
@@ -2003,3 +2048,4 @@ sequenceDiagram
 | 7.6 AssistantService 분리 | UC-80~UC-84 (AI 어시스턴트) | UC-A12 (assistant) | SubAgentOrchestrator를 AssistantService에서 분리 | ✅ 부분 구현 — `SubAgentOrchestrator` (usecase 계층 추출 완료) |
 | 7.6 테스트 커버리지 80% | — | 전 모듈 | Kover 최소 커버리지 80%. 에러 경로/타임아웃 테스트 보강 | ❌ 미구현 (계획) |
 | 7.6 누락 Javadoc 보완 | — | 전 모듈 | 헬퍼/유틸리티 클래스 문서화 | ❌ 미구현 (계획) |
+

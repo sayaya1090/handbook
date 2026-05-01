@@ -397,28 +397,28 @@ flowchart LR
 | GET    | `/login/oauth2/code/{provider}`             | OAuth2 콜백 (인가 코드 수신)     |
 | GET    | `/menus`                                    | 메뉴 목록 조회 (서비스 집계)     |
 | GET    | `/user`                                     | 현재 사용자 정보 조회            |
-| POST   | `/workspace`                                | 워크스페이스 생성               |
-| GET    | `/workspace/{workspace}/types`              | 타입 목록 조회 (날짜 필터링)     |
-| GET    | `/workspace/{workspace}/types/{type}?version=` | 특정 타입 버전 조회           |
-| PUT    | `/workspace/{workspace}/types`              | 타입 일괄 저장 (새 버전 생성)    |
-| PATCH  | `/workspace/{workspace}/types`              | 타입 부분 업데이트 (변경 속성만) |
-| DELETE | `/workspace/{workspace}/types`              | 타입 일괄 삭제                  |
-| GET    | `/workspace/{workspace}/types/{type}/diff?v1=&v2=` | 타입 두 버전 간 diff       |
-| GET    | `/workspace/{workspace}/documents`          | 문서 검색 (페이지네이션)         |
-| GET    | `/workspace/{workspace}/{type}/{serial}`    | 특정 문서 조회                  |
-| GET    | `/workspace/{workspace}/{type}/{serial}?date=` | 특정 시점 문서 조회 (이력)    |
-| PUT    | `/workspace/{workspace}/documents`          | 문서 일괄 저장 (새 버전 생성)    |
-| PATCH  | `/workspace/{workspace}/documents`          | 문서 부분 업데이트 (변경 필드만) |
-| DELETE | `/workspace/{workspace}/documents`          | 문서 일괄 삭제                  |
-| GET    | `/workspace/{workspace}/{type}/{serial}/diff?date1=&date2=` | 문서 두 시점 간 diff |
-| GET    | `/workspace/{workspace}/compliance`         | 호환성 검증 결과 조회           |
-| GET    | `/workspace/{workspace}/layouts`            | 레이아웃 목록 조회              |
-| GET    | `/workspace/{workspace}/messages`           | SSE 실시간 이벤트 스트림        |
-| POST   | `/workspace/{workspace}/presence`           | 프레즌스 (편집 중 셀/타입 공유)  |
-| POST   | `/workspace/{workspace}/documents/import`   | 문서 일괄 임포트 (CSV/JSON)     |
-| GET    | `/workspace/{workspace}/documents/export`   | 문서 일괄 익스포트 (CSV/JSON)   |
-| GET    | `/workspace/{workspace}/dashboard`          | 워크스페이스 현황 대시보드       |
-| GET    | `/workspace/{workspace}/audit-logs`         | 감사 로그 조회                  |
+| POST   | `/workspaces`                               | 워크스페이스 생성               |
+| GET    | `/workspaces/{workspace}/types`             | 타입 목록 조회 (날짜 필터링)     |
+| GET    | `/workspaces/{workspace}/types/{type}?version=` | 특정 타입 버전 조회           |
+| PUT    | `/workspaces/{workspace}/types`             | 타입 일괄 저장 (새 버전 생성)    |
+| PATCH  | `/workspaces/{workspace}/types`             | 타입 부분 업데이트 (변경 속성만) |
+| DELETE | `/workspaces/{workspace}/types`             | 타입 일괄 삭제                  |
+| GET    | `/workspaces/{workspace}/types/{type}/diff?v1=&v2=` | 타입 두 버전 간 diff       |
+| GET    | `/workspaces/{workspace}/documents`         | 문서 검색 (페이지네이션)         |
+| GET    | `/workspaces/{workspace}/{type}/{serial}`   | 특정 문서 조회                  |
+| GET    | `/workspaces/{workspace}/{type}/{serial}?date=` | 특정 시점 문서 조회 (이력)    |
+| PUT    | `/workspaces/{workspace}/documents`         | 문서 일괄 저장 (새 버전 생성)    |
+| PATCH  | `/workspaces/{workspace}/documents`         | 문서 부분 업데이트 (변경 필드만) |
+| DELETE | `/workspaces/{workspace}/documents`         | 문서 일괄 삭제                  |
+| GET    | `/workspaces/{workspace}/{type}/{serial}/diff?date1=&date2=` | 문서 두 시점 간 diff |
+| GET    | `/workspaces/{workspace}/compliance`        | 호환성 검증 결과 조회           |
+| GET    | `/workspaces/{workspace}/layouts`           | 레이아웃 목록 조회              |
+| GET    | `/workspaces/{workspace}/messages`          | SSE 실시간 이벤트 스트림        |
+| POST   | `/workspaces/{workspace}/presence`          | 프레즌스 (편집 중 셀/타입 공유)  |
+| POST   | `/workspaces/{workspace}/documents/import`  | 문서 일괄 임포트 (CSV/JSON)     |
+| GET    | `/workspaces/{workspace}/documents/export`  | 문서 일괄 익스포트 (CSV/JSON)   |
+| GET    | `/workspaces/{workspace}/dashboard`         | 워크스페이스 현황 대시보드       |
+| GET    | `/workspaces/{workspace}/audit-logs`        | 감사 로그 조회                  |
 | GET    | `/openapi.json`                             | OpenAPI 3.0 스펙               |
 | POST   | `/assistant/request`                        | 자연어 요청 → 실행 계획 생성     |
 | POST   | `/assistant/execute`                        | 실행 계획 확인 후 실행 (Kafka 발행) |
@@ -426,12 +426,12 @@ flowchart LR
 | POST   | `/assistant/respond`                        | 에이전트 확인 요청에 대한 사용자 응답    |
 | GET    | `/assistant/executions`                     | 실행 상태/진행률 조회 (워크스페이스별)   |
 | GET    | `/assistant/artifacts`                      | 실행 결과 아티팩트 조회                 |
-| PATCH  | `/workspace/{workspace}/documents/{id}/status` | 문서 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
-| POST   | `/workspace/{workspace}/webhooks`           | 웹훅 등록                               |
-| GET    | `/workspace/{workspace}/webhooks`           | 웹훅 목록 조회                           |
-| DELETE | `/workspace/{workspace}/webhooks/{id}`      | 웹훅 삭제                               |
-| GET    | `/workspace/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 조회              |
-| GET    | `/workspace/{workspace}/stats/distribution` | 타입별 문서 분포 조회                    |
+| PATCH  | `/workspaces/{workspace}/documents/{id}/status` | 문서 상태 전이 (DRAFT/REVIEW/PUBLISHED) |
+| POST   | `/workspaces/{workspace}/webhooks`          | 웹훅 등록                               |
+| GET    | `/workspaces/{workspace}/webhooks`          | 웹훅 목록 조회                           |
+| DELETE | `/workspaces/{workspace}/webhooks/{id}`     | 웹훅 삭제                               |
+| GET    | `/workspaces/{workspace}/stats/timeline?from=&to=&interval=` | 시계열 통계 조회              |
+| GET    | `/workspaces/{workspace}/stats/distribution` | 타입별 문서 분포 조회                    |
 | GET    | `/`                                         | SEO 랜딩 (ko, §3.22.2)                   |
 | GET    | `/en/`                                      | SEO 랜딩 (en, §3.22.2)                   |
 | GET    | `/sitemap.xml`                              | 사이트맵 (§3.22.2)                       |
@@ -1817,10 +1817,11 @@ visible(menu, state) =
 
 ### 5.1 기술 스택
 
-- **백엔드**: Kotlin, Spring Boot, Spring WebFlux (리액티브)
-- **프론트엔드**: Java (GWT → JavaScript 컴파일), Material Design 3
+- **백엔드**: Kotlin 2.3.0, Spring Boot 4.0.1, Spring WebFlux (리액티브)
+- **프론트엔드**: Java (GWT 2.13.0 → JavaScript 컴파일), Material Design 3
 - **데이터베이스**: PostgreSQL (R2DBC, 리액티브)
 - **메시징**: Kafka (Spring Cloud Stream)
+- **검색**: Elasticsearch 9.3.3 (전문 검색 및 복합 필터링)
 - **인프라**: Kubernetes, Helm Charts, Jib 컨테이너화
 - **서비스 디스커버리**: Zookeeper
 
@@ -1856,7 +1857,7 @@ visible(menu, state) =
 
 ### 6.1 워크스페이스 참여 (JOIN)
 - 사용자는 워크스페이스 ID를 입력하여 기존 워크스페이스에 참여할 수 있어야 한다.
-- POST /workspace/{id}/join 엔드포인트 필요.
+- POST /workspaces/{id}/join 엔드포인트 필요.
 - workspace-ui SubmitButton에서 JOIN 모드 처리 구현.
 
 ### 6.2 대시보드 API 통합
@@ -1952,3 +1953,4 @@ visible(menu, state) =
 - **AssistantService 분리**: 255줄 → SubAgentOrchestrator, ExecutionLifecycleManager, AuditingService 3클래스.
 - **테스트 커버리지 80%**: 전 모듈 Kover 최소 커버리지 충족. 에러 경로/타임아웃 테스트 보강.
 - **누락 Javadoc 보완**: 헬퍼/유틸리티 클래스 문서화.
+

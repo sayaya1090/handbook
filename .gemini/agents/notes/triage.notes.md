@@ -1,6 +1,6 @@
 ## 요청 로그
 
-(아직 기록 없음)
+- 2025-05-14: 문서 교차 검증 시나리오 → doc, events, asst, auth, docs-keeper
 
 ---
 

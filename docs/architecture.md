@@ -8,19 +8,19 @@ graph TB
         App["app<br/>조합 루트 (Entry Point)"]
         ShellUI["shell-ui<br/>애플리케이션 프레임"]
         AgentUI["agent-ui<br/>에이전트 커맨드 UI"]
-        TypeUI["type-ui<br/>캔버스 타입 편집기"]
+        TypeUI["type-ui<br/>캔버스 기반 타입 편집기"]
         DocumentUI["document-ui<br/>스프레드시트 문서 편집기"]
-        WorkspaceUI["workspace-ui<br/>워크스페이스 관리 (대시보드)"]
+        WorkspaceUI["workspace-ui<br/>워크스페이스 관리(대시보드)"]
         OnboardingUI["onboarding-ui<br/>워크스페이스 생성/참여<br/>(Presenter 패턴 적용)"]
         UiComponents["ui-components<br/>범용 UI 컴포넌트"]
         AgentBridge["agent-bridge<br/>모듈 간 브릿지"]
-        LoginUI["login-ui<br/>로그인/로그아웃"]
+        LoginUI["login-ui<br/>로그인·로그아웃"]
         Activity["activity<br/>공유 도메인 + i18n"]
         DashboardUI["dashboard-ui<br/>워크스페이스 대시보드"]
     end
 
     subgraph "API Gateway"
-        Gateway["gateway<br/>라우팅 · 부하분산"]
+        Gateway["gateway<br/>라우팅·부하분산"]
     end
 
     subgraph "Backend Services"
@@ -159,15 +159,20 @@ graph TB
 
 ## 5. 신규 엔지니어링 표준 (2026-04-28 반영)
 
-### 5.1 공용 도메인 모델 (Shared Domain) 전략
-- **SSOT(Single Source of Truth)**: 백엔드(JVM)와 프론트엔드(GWT)는 하나의 Java 소스를 공유한다.
+### 5.1 기술 스택
+- **백엔드**: Kotlin 2.3.0, Spring Boot 4.0.1 (Jackson 3 내장)
+- **프론트엔드**: Java (GWT 2.13.0), Material Design 3
+- **인프라**: Elasticsearch 9.3.3, Kafka, PostgreSQL (R2DBC)
+
+### 5.2 공용 도메인 모델 (Shared Domain) 전략
+- **SSOT(Single Source of Truth)**: 백엔드(JVM)와 프론트엔드(GWT)가 하나의 Java 소스를 공유한다.
 - **캡슐화된 네이티브 모델**: 
     - `@JsType(isNative = true)` 사용.
     - 필드는 `private`으로 캡슐화하고 `@JsProperty`로 노출.
     - 자바 측 접근은 `@Getter(onMethod_ = {@JsOverlay, @JsIgnore})`를 사용하여 플루언트 API(`id()`)를 제공.
 - **제로 카피(Zero-copy)**: 데이터 변환 없이 JSON을 직접 도메인 객체로 캐스팅하여 사용한다.
 
-### 5.2 Dagger DI 및 상태 관리 표준
+### 5.3 Dagger DI 및 상태 관리 표준
 - **Store 기반 상태 관리**: `BehaviorSubject`를 전용 `Store` 클래스로 캡슐화한다.
 - **인터페이스 기반 주입**: 컴포넌트에는 구체 Store가 아닌 `Observable`(읽기) 및 `Observer`(쓰기) 인터페이스를 주입한다.
 - **Composition Root**: 모든 컨테이너 생성은 EntryPoint에서만 수행한다.
