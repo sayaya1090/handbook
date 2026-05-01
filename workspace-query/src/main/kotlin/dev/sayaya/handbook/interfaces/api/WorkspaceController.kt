@@ -57,12 +57,20 @@ class WorkspaceController(
     fun list(
         @AuthenticationPrincipal authentication: UserAuthentication,
     ): Flux<Workspace> {
-        // Phase 1a: sub(사용자 UUID) 우선, 없으면 id(jti 이전 토큰에서는 사용자 UUID)로 폴백.
+        // Phase 1a: sub(사용자 UUID) 가 없는 경우 jti 이전 토큰(id 에 사용자 UUID) 지원을 위해 id 로 폴백.
+        // 주의: 리팩토링 이후 토큰은 id 가 jti(토큰 식별자)이므로, sub 가 반드시 존재해야 함.
         val userId = authentication.sub ?: authentication.id
-            ?: return Flux.empty()
+            ?: return Flux.empty<Workspace>().also { logger.debug("No userId found in authentication: sub and id are both null") }
+        
         val userUuid = runCatching { UUID.fromString(userId) }.getOrNull()
-            ?: return Flux.empty()
+            ?: return Flux.empty<Workspace>().also { logger.warn("Invalid UUID format for userId: {}", userId) }
+            
+        logger.debug("Fetching workspaces for user: {}", userUuid)
         return service.listForUser(userUuid)
+    }
+
+    companion object {
+        private val logger = org.slf4j.LoggerFactory.getLogger(WorkspaceController::class.java)
     }
 
     @Operation(

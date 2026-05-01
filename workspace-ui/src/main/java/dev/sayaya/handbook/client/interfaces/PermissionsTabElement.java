@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.client.interfaces;
 
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.domain.Group;
+import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.client.usecase.WorkspaceApi;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
@@ -19,12 +22,17 @@ public class PermissionsTabElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement groupList;
     private final HTMLDivElement roleList;
     private final WorkspaceApi api;
+    private final ToastContainer toast;
+    private final LabelProvider labelProvider;
+    private Labels labels = Labels.empty();
     private String workspaceId;
     private String selectedGroupId;
 
     @Inject
-    public PermissionsTabElement(WorkspaceApi api, LabelProvider labelProvider) {
+    public PermissionsTabElement(WorkspaceApi api, LabelProvider labelProvider, ToastContainer toast) {
         this.api = api;
+        this.toast = toast;
+        this.labelProvider = labelProvider;
         
         groupList = div().css("mgmt-list", "mgmt-group-list").element();
         roleList = div().css("mgmt-list", "mgmt-role-list").element();
@@ -43,6 +51,11 @@ public class PermissionsTabElement implements IsElement<HTMLDivElement> {
                         .add(roleList)
                         .add(div().css("mgmt-actions").add(assignRoleBtn)))
                 .element();
+
+        labelProvider.subscribe(l -> {
+            this.labels = l;
+            assignRoleBtn.textContent = l.getOrDefault("workspace.mgmt.roles.assign", "Assign Role");
+        });
     }
 
     public void setWorkspaceId(String id) {
@@ -81,6 +94,8 @@ public class PermissionsTabElement implements IsElement<HTMLDivElement> {
     }
 
     private void assignRole() {
+        // Implementation for assigning role
+        // toast.show(ToastLevel.SUCCESS, labels.getOrDefault("toast.role.assigned", "Role assigned"));
     }
 
     @Override

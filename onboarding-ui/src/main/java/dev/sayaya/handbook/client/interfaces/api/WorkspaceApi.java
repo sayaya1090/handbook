@@ -60,7 +60,7 @@ public class WorkspaceApi implements WorkspaceRepository {
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });
 
-        Promise<String> promise = fetchApi.request("workspace/" + id, init)
+        Promise<String> promise = fetchApi.request("workspaces/" + id, init)
                 .then(this::handleResponse)
                 .then(Response::text)
                 .catch_(err -> {
@@ -76,7 +76,7 @@ public class WorkspaceApi implements WorkspaceRepository {
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");
 
-        Promise<Void> promise = fetchApi.request("workspace/" + id, init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + id, init)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("WorkspaceApi.delete failed: " + err);
@@ -91,7 +91,7 @@ public class WorkspaceApi implements WorkspaceRepository {
         RequestInit init = RequestInit.create();
         init.setMethod("POST");
 
-        Promise<Void> promise = fetchApi.request("workspace/" + workspaceId + "/join", init)
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspaceId + "/join", init)
                 .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {

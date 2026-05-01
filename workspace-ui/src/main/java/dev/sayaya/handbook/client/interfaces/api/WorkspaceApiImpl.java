@@ -54,6 +54,22 @@ public class WorkspaceApiImpl implements WorkspaceApi {
     }
 
     @Override
+    public Observable<Void> delete(String id) {
+        RequestInit init = RequestInit.create();
+        init.setMethod("DELETE");
+
+        Promise<Void> promise = fetchApi.request("workspaces/" + id, init)
+                .then(this::handleResponse)
+                .then(resp -> Promise.resolve((Void) null))
+                .catch_(err -> {
+                    GWT.log("WorkspaceApi.delete failed: " + err);
+                    ErrorNotifier.notify("WorkspaceApi.delete failed: " + err);
+                    return Promise.reject(err);
+                });
+        return AsyncSubject.await(promise);
+    }
+
+    @Override
     public Observable<Group[]> listGroups(String workspaceId) {
         RequestInit init = RequestInit.create();
         init.setMethod("GET");

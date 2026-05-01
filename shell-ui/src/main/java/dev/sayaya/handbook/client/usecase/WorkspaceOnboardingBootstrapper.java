@@ -70,7 +70,7 @@ public class WorkspaceOnboardingBootstrapper {
         if (path == null) return;
 
         // 이미 특정 워크스페이스 컨텍스트 내부에 있거나 온보딩 화면이면 중단
-        if (path.contains("/workspace/") || "/workspaces".equals(path)) {
+        if (path.contains("/workspaces/") || "/workspaces".equals(path)) {
             bootstrapped = true;
             return;
         }
@@ -87,7 +87,7 @@ public class WorkspaceOnboardingBootstrapper {
         } else {
             // 워크스페이스 있음 -> 첫 번째 항목 선택 (대시보드로 진입)
             String firstId = loadedWorkspaces.get(0).id();
-            uri.next("/workspace/" + firstId + "/dashboard");
+            uri.next("/workspaces/" + firstId + "/dashboard");
         }
     }
 }

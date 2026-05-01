@@ -2,12 +2,7 @@ package dev.sayaya.handbook.client;
 
 import dev.sayaya.handbook.client.interfaces.ContentElement;
 import dev.sayaya.handbook.client.interfaces.ProgressElement;
-import dev.sayaya.handbook.client.interfaces.drawer.DrawerPresenter;
-import dev.sayaya.handbook.client.interfaces.drawer.MenuRailPresenter;
-import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsElement;
-import dev.sayaya.handbook.client.interfaces.drawer.MobileTabsPresenter;
-import dev.sayaya.handbook.client.interfaces.drawer.ShellAppBarElement;
-import dev.sayaya.handbook.client.interfaces.drawer.ToolRailPresenter;
+import dev.sayaya.handbook.client.interfaces.drawer.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,6 +19,8 @@ public class UiInitializer {
     @SuppressWarnings("unused") private final ToolRailPresenter toolRailPresenter;
     private final ProgressElement progressElement;
     private final ContentElement contentElement;
+    private final EmptyWorkspaceOverlay emptyWorkspaceOverlay;
+    private final EmptyWorkspacePresenter emptyWorkspacePresenter;
 
     @Inject
     public UiInitializer(
@@ -34,7 +31,9 @@ public class UiInitializer {
             MenuRailPresenter menuRailPresenter,
             ToolRailPresenter toolRailPresenter,
             ProgressElement progressElement,
-            ContentElement contentElement
+            ContentElement contentElement,
+            EmptyWorkspaceOverlay emptyWorkspaceOverlay,
+            EmptyWorkspacePresenter emptyWorkspacePresenter
     ) {
         this.appBar = appBar;
         this.mobileTabs = mobileTabs;
@@ -44,6 +43,8 @@ public class UiInitializer {
         this.toolRailPresenter = toolRailPresenter;
         this.progressElement = progressElement;
         this.contentElement = contentElement;
+        this.emptyWorkspaceOverlay = emptyWorkspaceOverlay;
+        this.emptyWorkspacePresenter = emptyWorkspacePresenter;
     }
 
     public void initialize() {
@@ -51,6 +52,8 @@ public class UiInitializer {
         body().add(mobileTabs);
         body().add(progressElement);
         body().add(contentElement);
+        body().add(emptyWorkspaceOverlay);
+        emptyWorkspacePresenter.initialize();
     }
 }
 

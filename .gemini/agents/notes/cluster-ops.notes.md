@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-01: 게이트웨이 검증 → 배포 완료 확인, 서비스명 불일치(search-workspace vs workspace-query)로 인한 500 에러 및 ArgoCD OutOfSync 진단.
 - 2026-04-27: 스마트 라우팅 반영 → ArgoCD Sync 및 검증 완료. curl -I는 Method=GET 제한으로 404 반환됨을 확인.
 - 2026-04-27: 4915cae 반영 → Sync 및 재시작 완료, 200 OK 확인
 - 2026-04-27: Clean URL 404 진단 → Helm ConfigMap 동기화 누락 확인

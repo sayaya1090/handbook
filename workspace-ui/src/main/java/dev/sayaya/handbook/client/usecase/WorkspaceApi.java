@@ -13,6 +13,9 @@ import dev.sayaya.rx.Observable;
 public interface WorkspaceApi {
     /** 워크스페이스 정보 수정 */
     Observable<Workspace> update(String id, String name, String description);
+
+    /** 워크스페이스 삭제 */
+    Observable<Void> delete(String id);
     
     /** 그룹 목록 조회 */
     Observable<Group[]> listGroups(String workspaceId);

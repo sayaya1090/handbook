@@ -1,6 +1,9 @@
 package dev.sayaya.handbook.client.interfaces;
 
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.domain.Group;
+import dev.sayaya.handbook.domain.Labels;
+import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.domain.User;
 import dev.sayaya.handbook.client.usecase.WorkspaceApi;
 import dev.sayaya.handbook.usecase.LabelProvider;
@@ -20,12 +23,17 @@ public class GroupsTabElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement groupList;
     private final HTMLDivElement memberList;
     private final WorkspaceApi api;
+    private final ToastContainer toast;
+    private final LabelProvider labelProvider;
+    private Labels labels = Labels.empty();
     private String workspaceId;
     private String selectedGroupId;
 
     @Inject
-    public GroupsTabElement(WorkspaceApi api, LabelProvider labelProvider) {
+    public GroupsTabElement(WorkspaceApi api, LabelProvider labelProvider, ToastContainer toast) {
         this.api = api;
+        this.toast = toast;
+        this.labelProvider = labelProvider;
         
         groupList = div().css("mgmt-list", "mgmt-group-list").element();
         memberList = div().css("mgmt-list", "mgmt-member-list").element();
@@ -50,6 +58,12 @@ public class GroupsTabElement implements IsElement<HTMLDivElement> {
                         .add(memberList)
                         .add(div().css("mgmt-actions").add(addMemberBtn)))
                 .element();
+
+        labelProvider.subscribe(l -> {
+            this.labels = l;
+            addGroupBtn.textContent = l.getOrDefault("workspace.mgmt.groups.add", "Add Group");
+            addMemberBtn.textContent = l.getOrDefault("workspace.mgmt.members.add", "Add Member");
+        });
     }
 
     public void setWorkspaceId(String id) {
@@ -88,9 +102,13 @@ public class GroupsTabElement implements IsElement<HTMLDivElement> {
     }
 
     private void addGroup() {
+        // Implementation for adding group (e.g. show dialog)
+        // toast.show(ToastLevel.SUCCESS, labels.getOrDefault("toast.group.created", "Group created"));
     }
 
     private void addMember() {
+        // Implementation for adding member
+        // toast.show(ToastLevel.SUCCESS, labels.getOrDefault("toast.member.added", "Member added"));
     }
 
     @Override
