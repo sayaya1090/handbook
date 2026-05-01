@@ -82,11 +82,11 @@ data:
               predicates:
                 - Path=/workspaces,/workspaces/**
                 - Method=GET
-            # 워크스페이스
+            # 워크스페이스 명령 (CUD)
             - id: workspace-command
               uri: ${gateway.routes.workspace-command}
               predicates:
-                - Path=/workspace,/workspace/**
+                - Path=/workspaces,/workspaces/**
                 - Method=POST,PUT,DELETE
             # 에이전트 (선택 서비스 — 장애 시 빈 응답)
             - id: assistant
