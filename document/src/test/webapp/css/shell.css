@@ -779,3 +779,48 @@ body[data-onboarding="true"] {
     --shell-mobile-tabs-height: 0px;
     --shell-frame-left-offset: 0px;
 }
+
+/* ── Shell Empty Workspace Overlay ── */
+.shell-empty-overlay {
+    position: fixed;
+    /* Frame 과 동일한 영역 차지 */
+    left: calc(var(--shell-frame-left-offset) + 16px);
+    right: 16px;
+    top: calc(var(--shell-app-bar-height) + var(--shell-mobile-tabs-height) + env(safe-area-inset-top, 0px) + 16px);
+    bottom: 16px;
+    background-color: var(--md-sys-color-surface);
+    z-index: 800; /* AppBar(950) 보다는 낮고 Content 보다는 높게 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+}
+@media (max-width: 768px) {
+    .shell-empty-overlay {
+        left: 16px;
+    }
+}
+.shell-empty-overlay .empty-content {
+    max-width: 400px;
+    text-align: center;
+    padding: 32px;
+}
+.shell-empty-overlay .empty-icon {
+    font-size: 64px;
+    color: var(--md-sys-color-primary);
+    margin-bottom: 24px;
+    opacity: 0.5;
+}
+.shell-empty-overlay .empty-title {
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 16px;
+}
+.shell-empty-overlay .empty-message {
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 32px;
+}
+.shell-empty-overlay .empty-actions {
+    display: flex;
+    justify-content: center;
+}

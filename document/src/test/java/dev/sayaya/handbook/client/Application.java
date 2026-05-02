@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import jsinterop.base.JsPropertyMap;
 
 import static elemental2.dom.DomGlobal.console;
@@ -16,15 +16,14 @@ public class Application implements EntryPoint {
     }
 
     private void testDocumentValue() {
-        DocumentValue doc = DocumentValue.create("doc-1", "type-A");
-        doc.data(JsPropertyMap.of());
+        Document doc = Document.create("doc-1", "type-A", "serial-1", 0.0, 0.0, 1000.0, "test-user", JsPropertyMap.of());
         doc.data().set("title", "Hello Document");
         
         console.log("LOG_DOC_DATA:" + doc.id() + ":" + doc.type() + ":" + doc.data().get("title"));
     }
 
     private void testDocumentLogic() {
-        DocumentValue doc = new DocumentValue();
+        Document doc = new Document();
         doc.expireDateTime(1000.0);
         
         console.log("LOG_DOC_EXPIRED_TRUE:" + doc.isExpired(2000.0));

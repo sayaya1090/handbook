@@ -17,15 +17,16 @@ Handbook의 UI/UX 디자인 및 시각적 폴리싱 전문가 에이전트의 �
 @Setter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
 @NoArgsConstructor
-public final class MyModel implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
-    @JsonProperty("field") @JsProperty private String field; // private 필드 권장
+public final class MyModel {
+    @JsonProperty("field") @JsProperty private String field;
 
     @JsOverlay @JsIgnore
     public static MyModel create(...) { ... }
 }
 ```
-- **핵심**: `Lombok` Getter/Setter에 `@JsOverlay`를 붙여 Java 환경에서도 사용 가능하게 한다.
+- **핵심**: 모든 필드를 `private`으로 선언하고 `Lombok` Getter/Setter에 `@JsOverlay`를 붙여 Java 환경에서도 사용 가능하게 한다.
+- **제약**: `@JsType(isNative = true)`가 선언된 클래스는 어떠한 클래스도 상속받을 수 없으며, 어떠한 인터페이스도 구현(`implements`)할 수 없다. **`java.io.Serializable`조차도 허용되지 않는다.**
+
 
 
 ## UI/UX 결정 사항

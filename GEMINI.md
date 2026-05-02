@@ -91,6 +91,7 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 
 ### Java (GWT 프론트엔드)
 - **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.gemini/skills/sayaya-ui.md` 참조.
+- **JsInterop 제약**: `@JsType(isNative = true)`가 선언된 클래스는 어떠한 클래스도 상속받을 수 없으며, 어떠한 인터페이스도 구현(`implements`)할 수 없다. **`java.io.Serializable`조차도 허용되지 않는다.** (GWT 컴파일러가 네이티브 객체로 처리하기 때문)
 - `@JsOverlay` 인스턴스 메서드에서 재귀 호출 금지 → static 헬퍼로 우회
 - **Java record 사용 제한**: GWT 2.12 이상에서 Java Record를 지원하나, 특정 빌드 환경에서 컴파일 오류가 발생할 수 있으므로 가급적 일반 class 사용을 권장한다. (다중 생성자 금지 → static 팩토리 메서드 `of()`로 대체 필수)
 - Dagger `@Module`에 새 의존성 추가 시 `@Provides` 누락 주의
