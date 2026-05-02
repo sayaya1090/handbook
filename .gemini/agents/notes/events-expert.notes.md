@@ -26,7 +26,7 @@
 
 ## 원칙 갱신 제안
 
-(미확보)
+- **이벤트 명명 규칙 (2026-05-03)**: 워크스페이스 컨텍스트 공유는 `handbook-workspace-context`, 일반 도메인 이벤트 브릿징(SSE 수신 등)은 `handbook-workspace-event`를 사용한다.
 
 ## 아카이브 요약
 

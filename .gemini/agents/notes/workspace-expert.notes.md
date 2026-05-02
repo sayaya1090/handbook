@@ -31,7 +31,7 @@
 - `WebTestClient.bindToController` 만 쓰면 spring-security resolver 체인이 걸리지 않아 `@AuthenticationPrincipal UserAuthentication` 이 null 로 주입됨. 해당 엔드포인트는 메서드 직접 호출 (`controller.list(principal)`) 로 검증해야 함 (workspace-command WorkspaceControllerTest 패턴).
 - MockK `verify(exactly = 0) { ... }` 는 spec 전체 누적 호출을 보므로, 여러 Given 에서 같은 mock 을 공유하면 다른 Given 의 호출이 섞여 실패. 호출 0회 검증은 해당 Given 전용 mock 인스턴스로 격리.
 - `.ws-content` 가 `position:absolute; inset:0` 로 frame 영역에 고정되는데 모바일에서 dialog 를 `min-height:100dvh` 로 두고 스크롤 옵션을 안 주면 하단(버튼) 잘림. 컨테이너에 `overflow-y:auto` 필수. dialog 는 `min-height` 대신 `height:auto` + 충분한 padding-bottom(safe-area 포함) 으로 내용만큼만 차지 + 필요 시 컨테이너가 스크롤.
-- 신규 GWT UI 모듈의 Dagger Module 복사·붙여넣기 시 `LanguagePackRepository` 가 `behavior(Labels.empty()).asObservable()` 스텁인 채로 남으면 UI 전체가 영문 fallback 만 노출. `LabelProvider.subscribe` 구독은 되는데 emit 이 비어 있어 키 누락과 증상이 동일 — 로그에 HTTP 요청이 안 찍히는 것으로 구분. workspace-ui 의 회귀가 이 경로. 신규 모듈은 TypeModule/DocumentModule 의 fetchApi+AsyncSubject.await 패턴을 그대로 복사하고, LanguageDetector 도 `navigator.language.split("-")[0]` 처리 필요 (`ko-KR` → `ko`).
+- **ID 공유 계약 (2026-05-03)**: 모듈 간 워크스페이스 상태 전파 시 `handbook-workspace-context` 이벤트를 사용하며, 하위 개체의 영속성 기준은 `id == null`로 통일한다.
 
 ## 내부 체크리스트
 

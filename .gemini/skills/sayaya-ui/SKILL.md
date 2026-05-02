@@ -71,3 +71,5 @@ ButtonElementBuilder.button().filled()  // or .outlined() or .text()
 - `name(String)`, `value(String)` setter는 `FormAssociable` 인터페이스에 정의
 - Select 옵션 추가 후 `.done()` 호출 필수
 - MD3 웹 컴포넌트 기반이므로 `md-outlined-select`, `md-checkbox` 등 커스텀 엘리먼트로 렌더링
+- **`ConfirmDialog` 자가 부착**: 다이얼로그 호출 시 `root.parentNode`가 null이면 자동으로 `body`에 append하는 로직 권장 (테스트 환경 안정성).
+- **버튼 타겟팅**: 다이얼로그 내부 버튼은 `.ui-confirm-actions md-text-button` 셀렉터로 접근 시 Shadow DOM 이슈를 최소화할 수 있음.

@@ -18,12 +18,15 @@
 
 - **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 (공용, GEMINI.md)
 - **`switchIfEmpty` eager**: `Mono.defer { }` 로 감쌀 것
+- **영속 상태 판별 (2026-05-03)**: `id == null` 인 데이터는 서버에 저장되지 않은 로컬 전용 신규 작업물로 간주한다.
+- **비파괴적 병합 (Smart Merge) (2026-05-03)**: 외부 이벤트로 데이터 갱신 시, 서버 수신 목록을 베이스라인으로 삼고 로컬 신규 항목(`id == null`) 중 `serial`이 서버와 중복되지 않는 것만 보존하여 병합한다.
 
 ## 내부 체크리스트
 
 - [ ] 문서 검증 시 `Compliance` 결과를 통해 어떤 타입 버전을 만족하는지 추적
 - [ ] DRAFT 외 상태에서 수정 시도 거부 로직 검증
 - [ ] PATCH 시 ChangeTracker 의 변경 필드만 전송 — 전체 전송 안 됨
+- [ ] `Document` 클래스의 `equals/hashCode`가 `serial`을 폴백으로 사용하는지 확인 (2026-05-03)
 
 ## 과거 실수
 

@@ -46,6 +46,7 @@ description: GWT 기술 스택 및 프론트엔드 개발 가이드
 | **생성자** | 본문이 없는 기본 생성자만 허용 | 자바 인스턴스화가 아닌 JS 객체 캐스팅이 주 목적 |
 | **로직 추가** | **`@JsOverlay`** 사용 | 자바 전용 메서드(팩토리, 비즈니스 규칙)를 안전하게 추가 |
 | **타입 호환** | `Instant` → `double`, `UUID` → `String` | GWT/JS 표준 타입으로 치환하여 호환성 보장 |
+| **상속 제한** | **인터페이스/클래스 상속 금지** | `isNative=true` 타입은 `Serializable`을 포함한 어떤 Java 타입도 상속/구현할 수 없음 |
 
 ---
 
@@ -165,19 +166,31 @@ public class Application implements EntryPoint {
 }
 ```
 
+### 계층형 모듈 구조 (Layered Modules)
+의존성 성격에 따라 모듈을 분리하여 운영/테스트 환경 대응력을 높인다.
+- **`StateModule`**: 비즈니스 상태(`Progress`, `Observable` 등) 싱글톤 제공.
+- **`EventModule`**: 외부 시스템 브릿지(`MutationReceiver` 등) 제공.
+- **`UiModule`**: 공용 UI 컴포넌트(`Toast`, `Dialog`) 제공.
+- **`ApiModule`**: 실제 API 어댑터(`FetchApi`, `Repository`) 바인딩.
+- **`ProductionModule` / `TestModule`**: 위 모듈들을 조합하여 최종 컴포넌트 구성.
+
 ### 초기화 패턴 (모든 UI 모듈 공통)
 1. `DaggerComponent.create()` — 컨테이너 생성
 2. `injectCss("css/module-ui.css")` — CSS 로드
-3. 이벤트 핸들러 `.init()` — Observable 구독 시작
+3. 이벤트 핸들러 `.init()` — Observable 구독 시작 (데이터 주입 전 수행)
 4. Window 브릿지 등록 — 모듈 간 통신
 5. **DOM 마운트**: 절대 `body().add()`를 직접 사용하지 않고 `WindowRenderBridge.next(render)`를 통해 Shell 프레임에 마운트한다.
-```java
-Render render = frame -> {
-    frame.append(container.element());
-    return true;
-};
-WindowRenderBridge.next(render);
-```
+
+--- ## Part 5: 협업 및 동기화 전략
+
+### 지능형 병합 (Smart Merge)
+외부 이벤트를 통해 데이터를 갱신할 때 로컬 편집 본을 보존하며 서버 데이터와 병합하는 전략.
+
+1. **상태 판별**: 영속화되지 않은 로컬 전용 작업물(Dirty state)을 식별하는 기준을 수립한다.
+2. **병합 규칙**: 
+   - 서버 데이터를 기본 베이스라인으로 삼는다.
+   - 로컬 작업물 중 서버 데이터와 충돌하지 않는 항목만 선별하여 보존한다.
+3. **일관성**: 객체의 동등성 비교(`equals/hashCode`) 로직을 강화하여 영속 전후의 객체를 동일하게 식별할 수 있어야 한다.
 
 ---
 

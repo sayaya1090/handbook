@@ -44,16 +44,18 @@ description: 디버깅 패턴 및 문제 해결 가이드
 | 경계 페이지 | 첫 페이지에서 Prev 클릭 → 변화 없음 확인 | 셀 수/컬럼 수 불변 |
 | 빈 Undo 스택 | Ctrl+Z (실행할 것 없음) → 변화 없음 확인 | 타입 개수 불변 |
 | 0/0 진행률 | `currentGroup:0, totalGroups:0` 이벤트 → 에러 없음 | `body.innerHTML().isNotBlank()` |
-| 빈 배열 이벤트 | `CustomEvent('handbook-mutate', {detail: []})` → 유지 | 스프레드시트 존재 |
+| 빈 배열 이벤트 | `CustomEvent('app-mutate', {detail: []})` → 유지 | 스프레드시트 존재 |
 | 연속 이벤트 폭주 | `for(i=1..5)` 이벤트 연속 디스패치 → UI 정상 | 캔버스/컨트롤러/SVG 유지 |
 
 ## GWT Playwright 테스트 안정화 패턴
 
 | 문제 | 원인 | 해결 |
 |------|------|------|
-| `.ht_clone_top th` 카운트 불일치 | Handsontable은 clone 오버레이마다 thead 생성 | `.handsontable thead th` 또는 `.ht_master thead th` 사용 |
-| Delete/Ctrl+Z 키가 먹히지 않음 | 캔버스에 포커스가 없으면 키보드 이벤트 무시 | `page.evaluate("document.querySelector('.type-canvas').focus()")` 후 키 발행 |
-| Handsontable 헤더 미렌더링 | DOM 추가 전에 `init()` 호출 | `body().add(container)` 후 `spreadsheet().init()` 호출 |
+| **`ht_master` vs Clones** | Handsontable은 여러 clone 오버레이를 생성 | 포인터 인터셉트 방지를 위해 `.ht_clone_left` 또는 `.ht_clone_top`을 명시적으로 타겟팅 |
+| **Shadow DOM Buttons** | MD3 버튼은 내부 텍스트 인식이 불안정함 | `:has-text` 대신 속성 셀렉터나 `.ui-confirm-actions md-text-button` 등 계층 구조 활용 |
+| **Fetch Stream reuse** | Response 바디는 한 번만 읽기 가능 | `FetchMock`에서 매 요청마다 `new Response(json, init)`를 생성하여 반환 |
+| **Detached Element** | 동적 렌더링 시 Element Handle이 무효화됨 | **Handle(변수) 대신 Selector(문자열)**를 직접 사용하여 Playwright의 자동 재시도 활용 |
+| **Handsontable 헤더** | DOM 추가 전에 `init()` 호출 | `body().add(container)` 후 `spreadsheet().init()` 호출 |
 | 우클릭 컨텍스트 메뉴 미표시 | Playwright `click(RIGHT)`이 canvas 핸들러에 먹힘 | JS `dispatchEvent(new MouseEvent('contextmenu', {bubbles:false}))` 사용 |
 | GWT Promise 타이밍 이슈 | AsyncSubject.await() + FetchMock 캐스팅 조합 | 테스트에서는 동기 렌더링으로 우회, API 파싱은 백엔드 테스트에서 검증 |
 | Undo 후 Save 비활성화 검증 실패 | Undo 1회로 전체 스택이 비워지지 않음 | 루프로 Undo 버튼 비활성화될 때까지 반복 후 검증 |
