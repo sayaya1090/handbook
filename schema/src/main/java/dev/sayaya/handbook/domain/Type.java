@@ -7,15 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Setter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
 @NoArgsConstructor
-public final class Type implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
+public final class Type {
     @JsonProperty("id") @JsProperty private String id;
     @JsonProperty("version") @JsProperty private String version;
     @JsonProperty("description") @JsProperty private String description;

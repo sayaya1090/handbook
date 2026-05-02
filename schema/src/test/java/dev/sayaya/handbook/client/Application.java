@@ -28,7 +28,7 @@ public class Application implements EntryPoint {
     }
 
     private void testTypeValue() {
-        Type type = Type.create("t-1", "1.0", 500, 400);
+        Type type = Type.createWithSize("t-1", "1.0", 500, 400);
         console.log("LOG_TYPE_RESULT:" + type.id() + ":" + type.version() + ":" + type.width());
     }
 }
