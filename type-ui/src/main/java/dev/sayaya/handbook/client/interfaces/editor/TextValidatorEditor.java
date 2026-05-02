@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -20,7 +20,7 @@ public class TextValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         if (value != null && value.regexPatterns != null) {
             regexField.value(String.join("\n", value.regexPatterns));
         } else {
@@ -29,10 +29,10 @@ public class TextValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public AttributeTypeValue collect() {
+    public AttributeType collect() {
         String raw = regexField.value();
         String[] patterns = (raw == null || raw.trim().isEmpty()) ? null : raw.split("\n");
-        AttributeTypeValue v = AttributeTypeValue.text();
+        AttributeType v = AttributeType.text();
         v.regexPatterns = patterns;
         return v;
     }

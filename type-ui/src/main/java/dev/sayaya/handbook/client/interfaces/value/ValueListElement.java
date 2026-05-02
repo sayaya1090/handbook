@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
-import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Attribute;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 
@@ -14,21 +14,21 @@ import static org.jboss.elemento.Elements.div;
 public class ValueListElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
     private final List<ValueElement> elements = new ArrayList<>();
-    private Consumer<AttributeValue> onEdit;
-    private Consumer<AttributeValue> onDelete;
+    private Consumer<Attribute> onEdit;
+    private Consumer<Attribute> onDelete;
 
     public ValueListElement() {
         root = div().css("type-attr-list").element();
     }
 
-    public void setOnEdit(Consumer<AttributeValue> onEdit) { this.onEdit = onEdit; }
-    public void setOnDelete(Consumer<AttributeValue> onDelete) { this.onDelete = onDelete; }
+    public void setOnEdit(Consumer<Attribute> onEdit) { this.onEdit = onEdit; }
+    public void setOnDelete(Consumer<Attribute> onDelete) { this.onDelete = onDelete; }
 
-    public void update(AttributeValue[] attributes) {
+    public void update(Attribute[] attributes) {
         root.innerHTML = "";
         elements.clear();
         if (attributes == null) return;
-        for (AttributeValue attr : attributes) {
+        for (Attribute attr : attributes) {
             ValueElement elem = new ValueElement(attr, onEdit, onDelete);
             elements.add(elem);
             root.appendChild(elem.element());

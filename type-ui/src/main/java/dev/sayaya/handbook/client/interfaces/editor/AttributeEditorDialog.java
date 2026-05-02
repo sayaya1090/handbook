@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.domain.AttributeTypeValue;
-import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.domain.AttributeType;
+import dev.sayaya.handbook.domain.Attribute;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.*;
@@ -24,7 +24,7 @@ import static org.jboss.elemento.Elements.div;
  *
  * <p><b>책임:</b> 타입 셀렉터(text/number/date/enum/bool/array/map/file/document 9종),
  * 타입별 validator 에디터({@link ValidatorEditor} 구현체), 이름/설명 입력 필드를 제공하며,
- * Apply 시 편집된 {@link AttributeValue}를 콜백으로 반환한다.</p>
+ * Apply 시 편집된 {@link Attribute}를 콜백으로 반환한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link TextValidatorEditor}, {@link NumberValidatorEditor} 등 — 타입별 검증 에디터</li>
  *   <li>{@link DocumentValidatorEditor} — document 타입 참조 선택 (TypeList 의존)</li>
@@ -43,8 +43,8 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
     private final HTMLDivElement validatorContainer;
     private final Map<String, HTMLElement> typeButtons = new LinkedHashMap<>();
     private final Map<String, ValidatorEditor> validatorEditors = new LinkedHashMap<>();
-    private Consumer<AttributeValue> onApply;
-    private AttributeValue current;
+    private Consumer<Attribute> onApply;
+    private Attribute current;
     private String selectedType = "text";
 
     @Inject
@@ -141,7 +141,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         });
     }
 
-    public void show(AttributeValue attribute, Consumer<AttributeValue> onApply) {
+    public void show(Attribute attribute, Consumer<Attribute> onApply) {
         this.current = attribute;
         this.onApply = onApply;
         nameField.value(attribute.name);
@@ -166,7 +166,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         updateTypeButtons();
     }
 
-    private void showValidatorEditor(String type, AttributeTypeValue value) {
+    private void showValidatorEditor(String type, AttributeType value) {
         validatorContainer.innerHTML = "";
         ValidatorEditor editor = validatorEditors.get(type);
         if (editor != null) {
@@ -184,14 +184,14 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
     private void apply() {
         if (current == null || onApply == null) return;
         ValidatorEditor editor = validatorEditors.get(selectedType);
-        AttributeTypeValue atv;
+        AttributeType atv;
         if (editor != null) {
             atv = editor.collect();
         } else {
-            atv = new AttributeTypeValue();
+            atv = new AttributeType();
             atv.type = selectedType;
         }
-        AttributeValue updated = current
+        Attribute updated = current
                 .withName(nameField.value())
                 .withType(atv)
                 .withDescription(descField.value());

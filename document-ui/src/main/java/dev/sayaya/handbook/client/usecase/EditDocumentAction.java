@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link DocumentList} — 문서 목록 상태 갱신 대상</li>
- *   <li>{@link dev.sayaya.handbook.domain.DocumentValue} — 편집 대상 문서의 data 맵</li>
+ *   <li>{@link dev.sayaya.handbook.domain.Document} — 편집 대상 문서의 data 맵</li>
  *   <li>{@link dev.sayaya.handbook.domain.Action} — Command 패턴 인터페이스</li>
  * </ul></p>
  *
@@ -49,10 +49,10 @@ public class EditDocumentAction implements Action {
     }
 
     private void applyValue(String value) {
-        List<DocumentValue> docs = documentList.getValue();
+        List<Document> docs = documentList.getValue();
         if (index >= 0 && index < docs.size()) {
-            DocumentValue doc = docs.get(index);
-            doc.data.set(field, value);
+            Document doc = docs.get(index);
+            doc.data().set(field, value);
             documentList.next(new ArrayList<>(docs));
         }
     }

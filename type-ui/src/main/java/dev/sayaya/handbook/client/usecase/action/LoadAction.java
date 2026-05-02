@@ -9,7 +9,8 @@ import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.usecase.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 
 /**
  * 서버에서 타입과 레이아웃을 로드하는 액션.

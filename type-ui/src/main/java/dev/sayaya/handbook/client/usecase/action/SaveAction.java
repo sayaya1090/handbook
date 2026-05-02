@@ -8,8 +8,8 @@ import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.*;
-import dev.sayaya.handbook.usecase.TypeRepository;
-
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,7 +90,7 @@ public class SaveAction implements Action {
             for (String key : deletedKeys) {
                 String[] parts = key.split(":");
                 if (parts.length == 2) {
-                    Type dummy = Type.create(parts[0], parts[1], null, null);
+                    Type dummy = Type.create(parts[0], parts[1], 0.0, 0.0);
                     toDelete.add(dummy);
                 }
             }

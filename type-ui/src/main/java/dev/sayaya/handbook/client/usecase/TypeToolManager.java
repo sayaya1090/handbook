@@ -6,9 +6,10 @@ import dev.sayaya.handbook.client.usecase.action.LoadAction;
 import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Tool;
-import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.handbook.usecase.ToolProvider;
-import dev.sayaya.handbook.usecase.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.client.interfaces.api.ToolProvider;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -117,7 +118,7 @@ public class TypeToolManager {
         var period = layoutProvider.getValue();
         if (period == null) return;
         String id = dev.sayaya.handbook.client.interfaces.ContextMenuHelper.uniqueTypeId(typeList);
-        dev.sayaya.handbook.domain.TypeValue newType = dev.sayaya.handbook.domain.TypeValue.create(id, "1.0", period.effectDateTime, period.expireDateTime);
+        dev.sayaya.handbook.domain.Type newType = dev.sayaya.handbook.domain.Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         dev.sayaya.handbook.domain.Position pos = dev.sayaya.handbook.domain.Position.of(50, 80, 240, 160);
         actionManager.execute(new dev.sayaya.handbook.client.usecase.action.ComplexAction(
                 new dev.sayaya.handbook.client.usecase.action.CreateBoxAction(typeList, positionMap, tracker, newType, pos),

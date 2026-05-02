@@ -6,7 +6,7 @@ import dev.sayaya.handbook.client.interfaces.api.LayoutApi;
 import dev.sayaya.handbook.client.interfaces.api.TypeApi;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;

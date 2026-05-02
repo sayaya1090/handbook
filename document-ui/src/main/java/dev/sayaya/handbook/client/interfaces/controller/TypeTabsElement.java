@@ -44,7 +44,7 @@ public class TypeTabsElement implements IsElement<elemental2.dom.HTMLElement> {
         if (types == null) return;
         for (Type type : types) {
             var tab = span().css("doc-type-tab")
-                    .text(type.id)
+                    .text(type.id())
                     .on(EventType.click, e -> typeProvider.next(type))
                     .element();
             element.appendChild(tab);

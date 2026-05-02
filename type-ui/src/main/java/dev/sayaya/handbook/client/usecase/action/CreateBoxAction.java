@@ -5,7 +5,7 @@ import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 
 /**
  * 새 타입을 캔버스에 추가하는 Command 패턴 액션.
@@ -23,11 +23,11 @@ public class CreateBoxAction implements Action {
     private final TypeList typeList;
     private final PositionMap positionMap;
     private final ChangeTracker tracker;
-    private final TypeValue type;
+    private final Type type;
     private final Position position;
 
     public CreateBoxAction(TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
-                           TypeValue type, Position position) {
+                           Type type, Position position) {
         this.typeList = typeList;
         this.positionMap = positionMap;
         this.tracker = tracker;

@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.usecase;
 
 
 import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import dev.sayaya.handbook.usecase.DocumentRepository;
 import dev.sayaya.handbook.usecase.MutationReceiver;
 import jsinterop.base.JsPropertyMap;
@@ -83,7 +83,7 @@ public class AgentDocumentHandler {
     private void handleSelect(String typeName) {
         var types = typeList.getValue();
         for (var type : types) {
-            if (type.id != null && type.id.equals(typeName)) {
+            if (type.id() != null && type.id().equals(typeName)) {
                 typeProvider.next(type);
                 return;
             }
@@ -91,7 +91,7 @@ public class AgentDocumentHandler {
     }
 
     private void handleAdd() {
-        DocumentValue newDoc = new DocumentValue();
+        Document newDoc = new Document();
         newDoc.data(JsPropertyMap.of());
         actionManager.execute(new AddDocumentAction(documentList, newDoc));
     }
@@ -104,9 +104,9 @@ public class AgentDocumentHandler {
         String field = parts[1];
         String value = parts[2];
 
-        List<DocumentValue> docs = documentList.getValue();
+        List<Document> docs = documentList.getValue();
         for (int i = 0; i < docs.size(); i++) {
-            DocumentValue doc = docs.get(i);
+            Document doc = docs.get(i);
             if (doc.serial() != null && doc.serial().equals(serial)) {
                 String before = doc.data() != null ? (String) doc.data().get(field) : null;
                 actionManager.execute(new EditDocumentAction(documentList, i, field, before, value));
@@ -116,8 +116,8 @@ public class AgentDocumentHandler {
     }
 
     private void handleDelete(String serial) {
-        List<DocumentValue> docs = documentList.getValue();
-        List<DocumentValue> toDelete = new ArrayList<>();
+        List<Document> docs = documentList.getValue();
+        List<Document> toDelete = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < docs.size(); i++) {
             if (docs.get(i).serial() != null && docs.get(i).serial().equals(serial)) {
@@ -131,7 +131,7 @@ public class AgentDocumentHandler {
     }
 
     private void handleSave() {
-        List<DocumentValue> docs = documentList.getValue();
+        List<Document> docs = documentList.getValue();
         documentRepository.save(docs).subscribe(v -> actionManager.clear());
     }
 }

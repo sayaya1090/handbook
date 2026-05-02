@@ -39,6 +39,7 @@ public final class ColumnFactory {
     public static ColumnDef[] create(Type type, List<Type> allTypes) {
         List<ColumnDef> defs = new ArrayList<>();
         defs.add(ColumnDef.serial());
+        defs.add(ColumnDef.status());
         defs.add(ColumnDef.effectDateTime());
         defs.add(ColumnDef.expireDateTime());
         String[] typeNames = allTypes != null

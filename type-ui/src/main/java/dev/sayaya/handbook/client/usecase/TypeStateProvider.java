@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Attribute;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.StateProvider;
 
 import javax.inject.Inject;
@@ -23,11 +23,11 @@ public class TypeStateProvider implements StateProvider {
 
     @Override
     public String snapshot() {
-        Set<TypeValue> types = typeList.getValue();
+        Set<Type> types = typeList.getValue();
         StringBuilder sb = new StringBuilder();
         sb.append("{\"types\":[");
         boolean first = true;
-        for (TypeValue t : types) {
+        for (Type t : types) {
             if (!first) sb.append(",");
             first = false;
             sb.append("{\"id\":\"").append(escape(t.id)).append("\"");
@@ -39,7 +39,7 @@ public class TypeStateProvider implements StateProvider {
             sb.append(",\"attributes\":[");
             if (t.attributes != null) {
                 boolean afirst = true;
-                for (AttributeValue a : t.attributes) {
+                for (Attribute a : t.attributes) {
                     if (!afirst) sb.append(",");
                     afirst = false;
                     sb.append("{\"name\":\"").append(escape(a.name)).append("\"");

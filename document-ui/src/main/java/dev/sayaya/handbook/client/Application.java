@@ -5,6 +5,7 @@ import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.AgentSearch;
 import dev.sayaya.handbook.usecase.AgentState;
 import dev.sayaya.handbook.usecase.RenderSharing;
+import dev.sayaya.rx.Observable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,25 +16,20 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
-        
+
         component.documentEventHandler().init();
-        body().add(component.toastContainer());
+        component.agentDocumentHandler().init();
+        body().add(component.toastContainer())
+              .add(component.confirmDialog());
 
-        component.typeRepository().list(null).subscribe(types -> {
-            if (types != null && !types.isEmpty()) {
-                List<Type> typeList = new ArrayList<>(types);
-                component.typeList().next(typeList);
-                component.typeProvider().next(typeList.get(0));
-            }
-        });
-
-        RenderSharing.next(frame -> {
-            frame.innerHTML = "";
-            frame.append(component.spreadsheetElement().element());
-            return true;
+        RenderSharing.next((RenderSharing.NextFn) frame -> {
+            elemental2.dom.HTMLElement el = jsinterop.base.Js.cast(frame);
+            el.innerHTML = "";
+            el.append(component.spreadsheetElement().element());
+            el.append(component.pagination().element());
         });
 
         AgentState.register(component.documentStateProvider());
-        AgentSearch.register(query -> "{\"results\":[]}");
+        AgentSearch.register(query -> Observable.of("{\"results\":[]}"));
     }
 }

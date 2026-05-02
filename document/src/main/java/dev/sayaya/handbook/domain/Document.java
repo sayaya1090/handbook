@@ -70,11 +70,14 @@ public final class Document {
         if (o == null || getClass() != o.getClass()) return false;
         Document document = (Document) o;
         if (id() != null && document.id() != null) return id().equals(document.id());
+        if (serial() != null && document.serial() != null) return serial().equals(document.serial());
         return false;
     }
 
     @JsOverlay @Override
     public int hashCode() {
-        return id() != null ? id().hashCode() : System.identityHashCode(this);
+        if (id() != null) return id().hashCode();
+        if (serial() != null) return serial().hashCode();
+        return System.identityHashCode(this);
     }
 }

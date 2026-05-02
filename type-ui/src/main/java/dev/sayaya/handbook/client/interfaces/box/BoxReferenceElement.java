@@ -5,9 +5,9 @@ import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.arrow.Arrow;
 import dev.sayaya.handbook.client.usecase.arrow.ArrowFactory;
 import dev.sayaya.handbook.client.usecase.arrow.Rectangle;
-import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import elemental2.dom.*;
 import org.jboss.elemento.IsElement;
 
@@ -90,22 +90,22 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
             svg.removeChild(svg.firstChild);
         }
 
-        Set<TypeValue> types = typeList.getValue();
+        Set<Type> types = typeList.getValue();
         Map<String, Position> positions = positionMap.getValue();
         if (types.isEmpty() || positions.isEmpty()) return;
 
         // typeId → key 매핑 (참조 타입은 id로 참조하므로)
         Map<String, String> idToKey = new HashMap<>();
-        for (TypeValue type : types) {
+        for (Type type : types) {
             idToKey.put(type.id, type.key());
         }
 
-        for (TypeValue type : types) {
+        for (Type type : types) {
             if (type.attributes == null) continue;
             Position fromPos = positions.get(type.key());
             if (fromPos == null) continue;
 
-            for (AttributeValue attr : type.attributes) {
+            for (Attribute attr : type.attributes) {
                 if (attr.type == null || !"document".equals(attr.type.type)) continue;
                 String refType = attr.type.referencedType;
                 if (refType == null) continue;

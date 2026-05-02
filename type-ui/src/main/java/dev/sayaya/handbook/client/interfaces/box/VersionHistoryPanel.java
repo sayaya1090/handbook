@@ -1,9 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.box;
 
 import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.usecase.LabelProvider;
-import dev.sayaya.handbook.usecase.TypeRepository;
+import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -115,7 +115,7 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
         selectedVersions.clear();
     }
 
-    private void renderVersions(Set<TypeValue> versions) {
+    private void renderVersions(Set<Type> versions) {
         listContainer.innerHTML = "";
         if (versions == null || versions.isEmpty()) {
             var empty = div().css("version-history-empty").element();
@@ -129,7 +129,7 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
                 "Click two versions to compare");
         listContainer.appendChild(hint);
 
-        for (TypeValue version : versions) {
+        for (Type version : versions) {
             var versionLabel = span().css("version-history-version").element();
             versionLabel.textContent = version.version;
 

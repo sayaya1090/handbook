@@ -23,16 +23,13 @@
     display: flex;
     gap: 4px;
     margin-left: auto;
+    /* 웹컴포넌트 버튼 클릭 시 컨테이너가 가로채지 않도록 조정 */
+    pointer-events: none;
 }
 
 .doc-ctrl-btn {
-    padding: 6px 12px;
-    border: 1px solid var(--md-sys-color-outline, #999);
-    border-radius: var(--md-sys-shape-corner-small, 8px);
-    background: var(--md-sys-color-surface-container, #f5f5f5);
-    color: var(--md-sys-color-on-surface, #333);
+    /* 기존 button 전용 스타일 최소화 (MD3 컴포넌트가 자체 관리하도록 함) */
     cursor: pointer;
-    font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
 }
 
 .doc-ctrl-btn:hover {
@@ -71,7 +68,47 @@
 /* 스프레드시트 */
 .doc-spreadsheet {
     flex: 1;
-    overflow: auto;
+    min-height: 0; /* flex container 내부에서 overflow: auto가 작동하도록 보장 */
+    overflow: hidden;
+}
+
+/* 페이지네이션 */
+.doc-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--md-sys-color-outline-variant, #ccc);
+    background: var(--md-sys-color-surface, #fff);
+    flex-shrink: 0;
+}
+
+.doc-page-info {
+    font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+    color: var(--md-sys-color-on-surface, #333);
+}
+
+.doc-page-btn {
+    min-width: 40px;
+    height: 40px;
+}
+
+/* 확인 다이얼로그 */
+.ui-confirm-wrapper {
+    position: fixed;
+    z-index: 1000;
+}
+
+.ui-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px;
+}
+
+.ui-confirm-option {
+    --md-text-button-label-text-color: var(--md-sys-color-primary);
 }
 
 /* 모바일 (< 768px) */

@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.interfaces.table;
 import dev.sayaya.handbook.client.domain.ColumnDef;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.SelectedRows;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ViewportObserver;
@@ -93,6 +93,7 @@ public class SpreadsheetElement implements IsElement<elemental2.dom.HTMLElement>
             if (instance != null) {
                 config.data = toDataWithCheckbox(docs);
                 instance.updateSettings(config);
+                instance.render();
             }
             updateEmptyState(docs);
         });
@@ -117,7 +118,7 @@ public class SpreadsheetElement implements IsElement<elemental2.dom.HTMLElement>
         }
     }
 
-    private void updateEmptyState(List<DocumentValue> docs) {
+    private void updateEmptyState(List<Document> docs) {
         boolean empty = docs == null || docs.isEmpty();
         emptyState.style.set("display", empty ? "block" : "none");
     }
@@ -149,20 +150,21 @@ public class SpreadsheetElement implements IsElement<elemental2.dom.HTMLElement>
         selectedRows.toggle(row);
     }
 
-    private Object[][] toDataWithCheckbox(List<DocumentValue> docs) {
+    private Object[][] toDataWithCheckbox(List<Document> docs) {
         if (docs == null || docs.isEmpty() || columns == null) return new Object[0][0];
         int colCount = columns.length + 1; // +1 for checkbox
         Object[][] result = new Object[docs.size()][colCount];
         for (int r = 0; r < docs.size(); r++) {
             result[r][0] = Boolean.FALSE; // checkbox column
-            DocumentValue doc = docs.get(r);
+            Document doc = docs.get(r);
             for (int c = 0; c < columns.length; c++) {
                 String name = columns[c].name();
                 result[r][c + 1] = switch (name) {
-                    case "serial" -> doc.serial;
-                    case "effectDateTime" -> doc.effectDateTime;
-                    case "expireDateTime" -> doc.expireDateTime;
-                    default -> doc.data != null ? doc.data.get(name) : null;
+                    case "serial" -> doc.serial();
+                    case "status" -> doc.status();
+                    case "effectDateTime" -> doc.effectDateTime();
+                    case "expireDateTime" -> doc.expireDateTime();
+                    default -> doc.data() != null ? doc.data().get(name) : null;
                 };
             }
         }

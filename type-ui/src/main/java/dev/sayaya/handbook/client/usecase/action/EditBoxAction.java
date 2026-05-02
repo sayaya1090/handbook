@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.usecase.action;
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 
 /**
  * 타입의 속성/메타데이터를 편집하는 Command 패턴 액션.
@@ -19,10 +19,10 @@ import dev.sayaya.handbook.domain.TypeValue;
 public class EditBoxAction implements Action {
     private final TypeList typeList;
     private final ChangeTracker tracker;
-    private final TypeValue before;
-    private final TypeValue after;
+    private final Type before;
+    private final Type after;
 
-    public EditBoxAction(TypeList typeList, ChangeTracker tracker, TypeValue before, TypeValue after) {
+    public EditBoxAction(TypeList typeList, ChangeTracker tracker, Type before, Type after) {
         this.typeList = typeList;
         this.tracker = tracker;
         this.before = before;

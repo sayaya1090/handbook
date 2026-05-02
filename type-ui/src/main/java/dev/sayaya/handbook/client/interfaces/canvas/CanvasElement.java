@@ -15,7 +15,7 @@ import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.KeyboardEvent;
 import elemental2.dom.MouseEvent;
@@ -101,8 +101,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                     String firstKey = selected.iterator().next();
                     Position firstPos = positionMap.get(firstKey);
                     if (firstPos != null) {
-                        dx = gridSnap.snapDelta(firstPos.x, dx);
-                        dy = gridSnap.snapDelta(firstPos.y, dy);
+                        dx = gridSnap.snapDelta(firstPos.x(), dx);
+                        dy = gridSnap.snapDelta(firstPos.y(), dy);
                     }
                 }
                 if (dx == 0 && dy == 0) return;
@@ -144,10 +144,10 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         typeList.subscribe(this::syncElements);
     }
 
-    private void syncElements(Set<TypeValue> types) {
+    private void syncElements(Set<Type> types) {
         Set<String> currentKeys = new HashSet<>(elementMap.keySet());
         Set<String> newKeys = new HashSet<>();
-        for (TypeValue type : types) {
+        for (Type type : types) {
             String key = type.key();
             newKeys.add(key);
             if (!elementMap.containsKey(key)) {
@@ -205,14 +205,14 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
             } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
                 e.preventDefault();
                 Set<String> allKeys = new HashSet<>();
-                for (TypeValue type : typeList.getValue()) {
+                for (Type type : typeList.getValue()) {
                     allKeys.add(type.key());
                 }
                 selection.selectAll(allKeys);
             } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
                 e.preventDefault();
                 Set<String> selected = new HashSet<>(selection.getValue());
-                for (TypeValue type : typeList.getValue()) {
+                for (Type type : typeList.getValue()) {
                     if (selected.contains(type.key())) {
                         actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
                     }

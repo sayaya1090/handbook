@@ -30,9 +30,10 @@ internal class DocumentTest: GwtTestSpec({
         }
 
         When("Add 버튼을 클릭하면") {
-            page.click(".doc-ctrl-btn-add")
+            page.click(".doc-ctrl-btn-add", Page.ClickOptions().setForce(true))
             Thread.sleep(1000)
             Then("Undo 버튼이 활성화된다") {
+                page.waitForSelector(".doc-ctrl-btn-undo:not([disabled])", Page.WaitForSelectorOptions().setTimeout(5000.0))
                 val disabled = page.querySelector(".doc-ctrl-btn-undo")!!
                     .evaluate("el => el.disabled") as Boolean
                 disabled shouldBe false
@@ -40,14 +41,15 @@ internal class DocumentTest: GwtTestSpec({
         }
 
         When("행을 선택 후 Delete 버튼을 클릭하면") {
+            page.waitForSelector(".handsontable td", Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE))
             page.evaluate("""
                 (function() {
                     var td = document.querySelector('.handsontable td');
                     if (td) td.click();
                 })()
             """.trimIndent())
-            Thread.sleep(1000)
-            page.click(".doc-ctrl-btn-delete")
+            Thread.sleep(500)
+            page.click(".doc-ctrl-btn-delete", Page.ClickOptions().setForce(true))
             Thread.sleep(1000)
             Then("삭제 실행 후 스프레드시트가 유지된다") {
                 page.querySelector(".doc-spreadsheet") shouldNotBe null

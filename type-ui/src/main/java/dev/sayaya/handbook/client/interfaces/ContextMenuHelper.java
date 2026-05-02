@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 
@@ -33,7 +33,7 @@ public final class ContextMenuHelper {
         while (true) {
             String id = "new-type-" + n;
             boolean exists = false;
-            for (TypeValue t : typeList.getValue()) {
+            for (Type t : typeList.getValue()) {
                 if (t.id.equals(id)) { exists = true; break; }
             }
             if (!exists) return id;

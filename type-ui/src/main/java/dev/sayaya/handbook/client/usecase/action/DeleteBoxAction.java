@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.usecase.action;
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 
 /**
  * 타입을 삭제 마킹하는 Command 패턴 액션.
@@ -20,10 +20,10 @@ import dev.sayaya.handbook.domain.TypeValue;
 public class DeleteBoxAction implements Action {
     private final TypeList typeList;
     private final ChangeTracker tracker;
-    private final TypeValue type;
+    private final Type type;
     private ChangeTracker.ChangeState previousState;
 
-    public DeleteBoxAction(TypeList typeList, ChangeTracker tracker, TypeValue type) {
+    public DeleteBoxAction(TypeList typeList, ChangeTracker tracker, Type type) {
         this.typeList = typeList;
         this.tracker = tracker;
         this.type = type;

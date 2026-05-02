@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -23,16 +23,16 @@ public class NumberValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         minField.value(value != null && value.min != null ? String.valueOf(value.min) : "");
         maxField.value(value != null && value.max != null ? String.valueOf(value.max) : "");
     }
 
     @Override
-    public AttributeTypeValue collect() {
+    public AttributeType collect() {
         Double min = parseDouble(minField.value());
         Double max = parseDouble(maxField.value());
-        return AttributeTypeValue.number(min, max);
+        return AttributeType.number(min, max);
     }
 
     private static Double parseDouble(String s) {

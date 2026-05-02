@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.usecase.ChangeStatusAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.SelectedRows;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLSelectElement;
 import org.jboss.elemento.Elements;
@@ -57,9 +58,11 @@ public class BulkStatusButton implements IsElement<HTMLElement> {
         }
         selectBuilder.on(EventType.change, e -> {
             String newStatus = selectEl.value;
+            DomGlobal.console.log(newStatus);
             if (newStatus == null || newStatus.isEmpty()) return;
 
             Set<Integer> selected = selectedRows.getValue();
+            DomGlobal.console.log(selected.stream().toList());
             if (selected.isEmpty()) {
                 selectEl.value = "";
                 return;

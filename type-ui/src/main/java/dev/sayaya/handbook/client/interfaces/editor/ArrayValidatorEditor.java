@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -48,7 +48,7 @@ public class ArrayValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         if (value != null && value.elementType != null && value.elementType.type != null) {
             typeSelect.selectByValue(value.elementType.type);
             onTypeChanged();
@@ -62,16 +62,16 @@ public class ArrayValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public AttributeTypeValue collect() {
+    public AttributeType collect() {
         String selected = typeSelect.value();
-        AttributeTypeValue elementType;
+        AttributeType elementType;
         if (currentSubEditor != null) {
             elementType = currentSubEditor.collect();
         } else {
-            elementType = new AttributeTypeValue();
+            elementType = new AttributeType();
             elementType.type = selected;
         }
-        return AttributeTypeValue.array(elementType);
+        return AttributeType.array(elementType);
     }
 
     @Override

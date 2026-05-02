@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Attribute;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.SearchProvider;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
@@ -24,13 +24,13 @@ public class TypeSearchProvider implements SearchProvider {
 
     @Override
     public Observable<String> search(String query) {
-        Set<TypeValue> types = typeList.getValue();
+        Set<Type> types = typeList.getValue();
         String q = (query == null) ? "" : query.trim().toLowerCase();
 
         StringBuilder sb = new StringBuilder();
         sb.append("{\"results\":[");
         boolean first = true;
-        for (TypeValue t : types) {
+        for (Type t : types) {
             if (!q.isEmpty() && !matches(t, q)) continue;
             if (!first) sb.append(",");
             first = false;
@@ -45,11 +45,11 @@ public class TypeSearchProvider implements SearchProvider {
         return BehaviorSubject.<String>behavior(sb.toString()).asObservable();
     }
 
-    private boolean matches(TypeValue t, String q) {
+    private boolean matches(Type t, String q) {
         if (t.id.toLowerCase().contains(q)) return true;
         if (t.description != null && t.description.toLowerCase().contains(q)) return true;
         if (t.attributes != null) {
-            for (AttributeValue a : t.attributes) {
+            for (Attribute a : t.attributes) {
                 if (a.name.toLowerCase().contains(q)) return true;
             }
         }

@@ -11,9 +11,8 @@ internal class DocumentInputTest: GwtTestSpec({
         Thread.sleep(5000)
         
         Then("스프레드시트 컬럼 헤더가 렌더링된다") {
-            page.waitForSelector(".handsontable thead th", com.microsoft.playwright.Page.WaitForSelectorOptions().setTimeout(10000.0)) shouldNotBe null
+            // Target the specific visible header clone to avoid timeouts on hidden clones
+            page.waitForSelector(".ht_clone_top thead th", com.microsoft.playwright.Page.WaitForSelectorOptions().setTimeout(10000.0)) shouldNotBe null
         }
-        
-        // ... (나머지 테스트 케이스도 동일하게 처리)
     }
 })

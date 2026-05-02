@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -50,7 +50,7 @@ public class MapValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         if (value != null && value.keyType != null && value.keyType.type != null) {
             keySelect.selectByValue(value.keyType.type);
             onKeyTypeChanged();
@@ -70,18 +70,18 @@ public class MapValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public AttributeTypeValue collect() {
-        AttributeTypeValue keyType = collectFrom(keySelect, keySubEditor);
-        AttributeTypeValue valueType = collectFrom(valueSelect, valueSubEditor);
-        return AttributeTypeValue.map(keyType, valueType);
+    public AttributeType collect() {
+        AttributeType keyType = collectFrom(keySelect, keySubEditor);
+        AttributeType valueType = collectFrom(valueSelect, valueSubEditor);
+        return AttributeType.map(keyType, valueType);
     }
 
     @Override
     public HTMLElement element() { return root; }
 
-    private AttributeTypeValue collectFrom(SelectElementBuilder.OutlinedSelectElementBuilder select, ValidatorEditor subEditor) {
+    private AttributeType collectFrom(SelectElementBuilder.OutlinedSelectElementBuilder select, ValidatorEditor subEditor) {
         if (subEditor != null) return subEditor.collect();
-        AttributeTypeValue v = new AttributeTypeValue();
+        AttributeType v = new AttributeType();
         v.type = select.value();
         return v;
     }

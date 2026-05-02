@@ -7,10 +7,10 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
-import dev.sayaya.handbook.domain.AttributeTypeValue;
-import dev.sayaya.handbook.domain.AttributeValue;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.domain.AttributeType;
+import dev.sayaya.handbook.domain.Attribute;
+import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -102,29 +102,29 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
     }
 
     private void addAttribute() {
-        TypeValue type = findType();
+        Type type = findType();
         if (type == null) return;
         int nextOrder = (type.attributes != null ? type.attributes.length : 0) + 1;
-        AttributeValue newAttr = AttributeValue.of("attr-" + nextOrder, nextOrder, AttributeTypeValue.text());
+        Attribute newAttr = Attribute.of("attr-" + nextOrder, nextOrder, AttributeType.text());
         editorDialog.show(newAttr, applied -> {
-            TypeValue before = type;
-            AttributeValue[] oldAttrs = before.attributes != null ? before.attributes : new AttributeValue[0];
-            AttributeValue[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
+            Type before = type;
+            Attribute[] oldAttrs = before.attributes != null ? before.attributes : new Attribute[0];
+            Attribute[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
             newAttrs[oldAttrs.length] = applied;
-            TypeValue after = before.withAttributes(newAttrs);
+            Type after = before.withAttributes(newAttrs);
             actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
         });
     }
 
     private void showVersionHistory() {
-        TypeValue type = findType();
+        Type type = findType();
         if (type == null) return;
         versionHistoryPanel.show(type.id);
     }
 
     private void deleteTarget() {
         if (targetTypeKey == null) return;
-        for (TypeValue type : typeList.getValue()) {
+        for (Type type : typeList.getValue()) {
             if (type.key().equals(targetTypeKey)) {
                 actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
                 break;
@@ -132,9 +132,9 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
         }
     }
 
-    private TypeValue findType() {
+    private Type findType() {
         if (targetTypeKey == null) return null;
-        for (TypeValue type : typeList.getValue()) {
+        for (Type type : typeList.getValue()) {
             if (type.key().equals(targetTypeKey)) return type;
         }
         return null;

@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.domain.AttributeTypeValue;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.ui.elements.SelectElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -36,15 +36,15 @@ public class DocumentValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         // 드롭다운 재생성 (옵션 갱신)
         root.innerHTML = "";
         select = SelectElementBuilder.select().outlined().label("Referenced type");
         select.option().value("").text("-- select --").done();
 
-        Set<TypeValue> types = typeList.getValue();
+        Set<Type> types = typeList.getValue();
         if (types != null) {
-            for (TypeValue type : types) {
+            for (Type type : types) {
                 select.option().value(type.id).text(type.id + " (" + type.version + ")").done();
             }
         }
@@ -56,9 +56,9 @@ public class DocumentValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public AttributeTypeValue collect() {
+    public AttributeType collect() {
         String ref = select.value();
-        return AttributeTypeValue.document(ref != null && !ref.isEmpty() ? ref : null);
+        return AttributeType.document(ref != null && !ref.isEmpty() ? ref : null);
     }
 
     @Override

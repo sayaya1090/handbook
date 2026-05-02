@@ -12,7 +12,7 @@ import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Type;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;

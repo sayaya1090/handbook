@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,12 +29,12 @@ public class PeriodRecalculationService {
         typeList.subscribe(types -> recalculate(types));
     }
 
-    private void recalculate(Set<TypeValue> types) {
+    private void recalculate(Set<Type> types) {
         if (types.isEmpty()) return;
 
         // 모든 타입의 시점을 수집
         TreeSet<Double> timePoints = new TreeSet<>();
-        for (TypeValue type : types) {
+        for (Type type : types) {
             timePoints.add(type.effectDateTime);
             timePoints.add(type.expireDateTime);
         }

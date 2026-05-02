@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import dev.sayaya.handbook.usecase.DocumentRepository;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class SaveDocumentAction implements Action {
     private final DocumentList documentList;
     private final DocumentRepository documentRepository;
     private final ActionManager actionManager;
-    private List<DocumentValue> snapshot;
+    private List<Document> snapshot;
 
     public SaveDocumentAction(DocumentList documentList, DocumentRepository documentRepository, ActionManager actionManager) {
         this.documentList = documentList;

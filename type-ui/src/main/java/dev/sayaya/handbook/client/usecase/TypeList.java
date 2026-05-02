@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.BehaviorSubject;
 
@@ -21,50 +21,50 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  * 구독(subscribe) 기능을 제공한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link BehaviorSubject} — 반응형 상태 관리</li>
- *   <li>{@link TypeValue} — 보유하는 타입 도메인 객체</li>
+ *   <li>{@link Type} — 보유하는 타입 도메인 객체</li>
  * </ul></p>
  * <p><b>주의:</b> 모든 변경은 새 Set 인스턴스를 생성하여 발행하므로 구독자에게 참조 동등성이 보장되지 않는다.</p>
  */
 @Singleton
 public class TypeList {
-    private final BehaviorSubject<Set<TypeValue>> subject = behavior(Collections.emptySet());
+    private final BehaviorSubject<Set<Type>> subject = behavior(Collections.emptySet());
 
     @Inject TypeList() {}
 
-    public Observable<Set<TypeValue>> observable() {
+    public Observable<Set<Type>> observable() {
         return subject.asObservable();
     }
 
-    public Set<TypeValue> getValue() {
+    public Set<Type> getValue() {
         return subject.getValue();
     }
 
-    public void replace(Set<TypeValue> types) {
+    public void replace(Set<Type> types) {
         subject.next(types);
     }
 
-    public void add(TypeValue type) {
-        Set<TypeValue> next = new LinkedHashSet<>(subject.getValue());
+    public void add(Type type) {
+        Set<Type> next = new LinkedHashSet<>(subject.getValue());
         next.add(type);
         subject.next(next);
     }
 
-    public void remove(TypeValue type) {
-        Set<TypeValue> next = new LinkedHashSet<>(subject.getValue());
+    public void remove(Type type) {
+        Set<Type> next = new LinkedHashSet<>(subject.getValue());
         next.removeIf(t -> t.key().equals(type.key()));
         subject.next(next);
     }
 
-    public void update(TypeValue before, TypeValue after) {
-        Set<TypeValue> next = new LinkedHashSet<>();
-        for (TypeValue t : subject.getValue()) {
+    public void update(Type before, Type after) {
+        Set<Type> next = new LinkedHashSet<>();
+        for (Type t : subject.getValue()) {
             if (t.key().equals(before.key())) next.add(after);
             else next.add(t);
         }
         subject.next(next);
     }
 
-    public void subscribe(Consumer<Set<TypeValue>> consumer) {
+    public void subscribe(Consumer<Set<Type>> consumer) {
         subject.subscribe(consumer::accept);
     }
 }

@@ -5,7 +5,7 @@ import dev.sayaya.handbook.client.components.ConfirmDialog;
 import dev.sayaya.handbook.client.usecase.DeleteDocumentAction;
 import dev.sayaya.handbook.client.usecase.DocumentList;
 import dev.sayaya.handbook.client.usecase.SelectedRows;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
@@ -63,8 +63,8 @@ public class BulkDeleteButton implements IsElement<elemental2.dom.HTMLElement> {
             confirmDialog.show(headline, new String[]{no, yes}, option -> {
                 if (!option.equals(yes)) return;
 
-                List<DocumentValue> docs = documentList.getValue();
-                List<DocumentValue> toDelete = new ArrayList<>();
+                List<Document> docs = documentList.getValue();
+                List<Document> toDelete = new ArrayList<>();
                 List<Integer> indices = new ArrayList<>(selected);
                 indices.sort(Integer::compareTo);
 

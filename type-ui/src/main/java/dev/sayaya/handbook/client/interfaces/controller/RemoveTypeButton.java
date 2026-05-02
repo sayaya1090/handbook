@@ -7,8 +7,8 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
@@ -56,7 +56,7 @@ public class RemoveTypeButton implements IsElement<HTMLElement> {
             String no = currentLabels.getOrDefault("confirm.no", "Cancel");
             confirmDialog.show(headline, new String[]{no, yes}, option -> {
                 if (!option.equals(yes)) return;
-                for (TypeValue type : typeList.getValue()) {
+                for (Type type : typeList.getValue()) {
                     if (selected.contains(type.key())) {
                         actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
                     }

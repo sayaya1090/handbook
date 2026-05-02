@@ -7,8 +7,8 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.TypeValue;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
@@ -67,13 +67,13 @@ public class BulkDeleteButton implements IsElement<HTMLElement> {
             confirmDialog.show(headline, new String[]{no, yes}, option -> {
                 if (!option.equals(yes)) return;
 
-                List<TypeValue> toDelete = new ArrayList<>();
-                for (TypeValue type : typeList.getValue()) {
+                List<Type> toDelete = new ArrayList<>();
+                for (Type type : typeList.getValue()) {
                     if (selected.contains(type.key())) {
                         toDelete.add(type);
                     }
                 }
-                for (TypeValue type : toDelete) {
+                for (Type type : toDelete) {
                     actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
                 }
                 selection.clear();

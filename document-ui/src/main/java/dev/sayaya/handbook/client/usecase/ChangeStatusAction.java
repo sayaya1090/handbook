@@ -1,7 +1,8 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Action;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
+import elemental2.dom.DomGlobal;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,7 +18,7 @@ import java.util.Map;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link DocumentList} — 문서 목록 상태 갱신 대상</li>
- *   <li>{@link DocumentValue} — 상태 변경 대상 문서 객체</li>
+ *   <li>{@link Document} — 상태 변경 대상 문서 객체</li>
  *   <li>{@link Action} — Command 패턴 인터페이스</li>
  * </ul></p>
  *
@@ -37,13 +38,16 @@ public class ChangeStatusAction implements Action {
 
     @Override
     public void execute() {
-        List<DocumentValue> current = new ArrayList<>(documentList.getValue());
+        List<Document> current = new ArrayList<>(documentList.getValue());
         previousStatuses.clear();
         for (int idx : targetIndices) {
+            DomGlobal.console.log(idx + ", " + current.size());
             if (idx >= 0 && idx < current.size()) {
-                DocumentValue doc = current.get(idx);
+                Document doc = current.get(idx);
                 previousStatuses.put(idx, doc.status());
+                DomGlobal.console.log(doc.status());
                 doc.status(newStatus);
+                DomGlobal.console.log(doc.status());
             }
         }
         documentList.next(current);
@@ -51,7 +55,7 @@ public class ChangeStatusAction implements Action {
 
     @Override
     public void rollback() {
-        List<DocumentValue> current = new ArrayList<>(documentList.getValue());
+        List<Document> current = new ArrayList<>(documentList.getValue());
         for (Map.Entry<Integer, String> entry : previousStatuses.entrySet()) {
             int idx = entry.getKey();
             if (idx >= 0 && idx < current.size()) {

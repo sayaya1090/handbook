@@ -33,6 +33,8 @@ public class UndoButton implements IsElement<elemental2.dom.HTMLElement> {
         this._this = ButtonElementBuilder.button().text().css("doc-ctrl-btn", "doc-ctrl-btn-undo");
         labelProvider.subscribe(labels -> _this.text(labels.getOrDefault("document.undo", "Undo")));
         _this.onClick(e->actionManager.undo());
-        actionManager.onCanUndo(can -> _this.disabled(!can));
+        actionManager.onCanUndo(can -> {
+            _this.disabled(!can);
+        });
     }
 }

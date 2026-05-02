@@ -53,5 +53,8 @@ public class SaveButton implements IsElement<elemental2.dom.HTMLElement> {
                         currentLabels.getOrDefault("toast.save.success", "Save completed"));
             })
         );
+        actionManager.onCanUndo(can -> {
+            _this.disabled(!can);
+        });
     }
 }

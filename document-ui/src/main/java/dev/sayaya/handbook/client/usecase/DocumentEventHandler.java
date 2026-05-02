@@ -3,10 +3,9 @@ package dev.sayaya.handbook.client.usecase;
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.PresenceTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.ToastLevel;
-import dev.sayaya.handbook.usecase.DocumentRepository;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
 import elemental2.core.Global;
@@ -17,6 +16,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
+import dev.sayaya.handbook.client.interfaces.api.DocumentApi;
+import elemental2.dom.CustomEvent;
+import elemental2.dom.DomGlobal;
 
 /**
  * 워크스페이스 SSE 이벤트를 구독하여 문서 관련 이벤트를 처리한다.
@@ -30,7 +32,7 @@ import java.util.List;
  * <p><b>의존관계:</b>
  * <ul>
  *   <li>{@link WorkspaceEventReceiver} — SSE 이벤트 스트림 (shell-ui에서 CustomEvent로 브릿지)</li>
- *   <li>{@link DocumentRepository} — 문서 재조회 (PATCH/PUT 지원)</li>
+ *   <li>{@link DocumentApi} — 문서 재조회 (PATCH/PUT 지원)</li>
  *   <li>{@link PresenceTracker} — 프레즌스 상태 관리 (ui-components)</li>
  *   <li>{@link LabelProvider} — 토스트 메시지 다국어 처리</li>
  * </ul></p>
@@ -42,7 +44,7 @@ import java.util.List;
 public class DocumentEventHandler {
     private final WorkspaceEventReceiver eventReceiver;
     private final TypeProvider typeProvider;
-    private final DocumentRepository documentRepository;
+    private final DocumentApi documentApi;
     private final DocumentList documentList;
     private final ToastContainer toastContainer;
     private final PresenceTracker presenceTracker;
@@ -51,14 +53,14 @@ public class DocumentEventHandler {
     @Inject
     public DocumentEventHandler(WorkspaceEventReceiver eventReceiver,
                                  TypeProvider typeProvider,
-                                 DocumentRepository documentRepository,
+                                 DocumentApi documentApi,
                                  DocumentList documentList,
                                  ToastContainer toastContainer,
                                  LabelProvider labelProvider,
                                  PresenceTracker presenceTracker) {
         this.eventReceiver = eventReceiver;
         this.typeProvider = typeProvider;
-        this.documentRepository = documentRepository;
+        this.documentApi = documentApi;
         this.documentList = documentList;
         this.toastContainer = toastContainer;
         this.presenceTracker = presenceTracker;
@@ -67,6 +69,15 @@ public class DocumentEventHandler {
 
     public void init() {
         eventReceiver.events().subscribe(this::handleEvent);
+        
+        // 워크스페이스 변경 이벤트 수신 (agent-bridge 계약 준수)
+        DomGlobal.window.addEventListener("handbook-workspace-context", evt -> {
+            CustomEvent<String> ce = Js.cast(evt);
+            if (ce.detail != null) {
+                documentApi.setWorkspace(ce.detail);
+                refreshDocuments();
+            }
+        });
     }
 
     private void handleEvent(String eventData) {
@@ -91,7 +102,6 @@ public class DocumentEventHandler {
 
     @SuppressWarnings("unchecked")
     private void handlePresence(String json) {
-        GWT.log("DocumentEventHandler: presence event: " + json);
         JsPropertyMap<Object> parsed = Js.cast(Global.JSON.parse(json));
         String user = Js.cast(parsed.get("user"));
         String userName = parsed.has("user_name") ? Js.cast(parsed.get("user_name")) : user;
@@ -103,12 +113,32 @@ public class DocumentEventHandler {
 
     private void refreshDocuments() {
         var type = typeProvider.getValue();
-        if (type == null || type.id == null) return;
-        GWT.log("DocumentEventHandler: refreshing documents for type " + type.id);
-        documentRepository.search(type.id, 0, 50).subscribe(docs -> {
-            if (docs != null) {
-                List<DocumentValue> docList = Arrays.asList(docs);
-                documentList.next(docList);
+        if (type == null || type.id() == null) return;
+        
+        // 1. 현재 로컬에만 존재하는(저장되지 않은) 신규 행들을 추출 (ID가 없는 경우)
+        List<Document> localNewDocs = new java.util.ArrayList<>();
+        List<Document> currentDocs = documentList.getValue();
+        if (currentDocs != null) {
+            for (Document doc : currentDocs) {
+                if (doc.id() == null) localNewDocs.add(doc);
+            }
+        }
+
+        documentApi.search(type.id(), 0, 50).subscribe(serverDocs -> {
+            if (serverDocs != null) {
+                List<Document> mergedList = new java.util.ArrayList<>(java.util.Arrays.asList(serverDocs));
+                // 2. 서버 데이터와 중복되지 않는 로컬 신규 행들만 병합
+                for (Document local : localNewDocs) {
+                    boolean duplicate = false;
+                    for (Document server : serverDocs) {
+                        if (local.serial() != null && local.serial().equals(server.serial())) {
+                            duplicate = true;
+                            break;
+                        }
+                    }
+                    if (!duplicate) mergedList.add(local);
+                }
+                documentList.next(mergedList);
             }
         });
     }

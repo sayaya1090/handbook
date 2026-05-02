@@ -32,7 +32,9 @@ public class RedoButton implements IsElement<elemental2.dom.HTMLElement> {
     public RedoButton(ActionManager actionManager, LabelProvider labelProvider) {
         this._this = ButtonElementBuilder.button().text().css("doc-ctrl-btn", "doc-ctrl-btn-redo");
         labelProvider.subscribe(labels -> _this.text(labels.getOrDefault("document.redo", "Redo")));
-        _this.onClick(e -> actionManager.redo());
-        actionManager.onCanRedo(can -> _this.disabled(!can));
+        _this.onClick(e->actionManager.redo());
+        actionManager.onCanRedo(can -> {
+            _this.disabled(!can);
+        });
     }
 }

@@ -13,9 +13,9 @@ import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
 import dev.sayaya.handbook.client.usecase.action.ResizeBoxAction;
-import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.TypeValue;
+import dev.sayaya.handbook.domain.Type;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -45,7 +45,7 @@ import static org.jboss.elemento.Elements.div;
  *   <li>{@link GridSnap} — 리사이즈 시 스냅 적용</li>
  *   <li>{@link ValueListElement} — 속성 목록 렌더링</li>
  * </ul></p>
- * <p><b>주의:</b> Dagger AssistedInject로 생성된다(TypeValue, Position이 Assisted 파라미터).
+ * <p><b>주의:</b> Dagger AssistedInject로 생성된다(Type, Position이 Assisted 파라미터).
  * TYPE 모드에서 이름/버전 더블클릭 시 인라인 input 편집이 시작된다.</p>
  */
 public class TypeElement implements IsElement<HTMLDivElement> {
@@ -61,7 +61,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private final AttributeEditorDialog editorDialog;
     private final GridSnap gridSnap;
     private final CanvasMode canvasMode;
-    private TypeValue type;
+    private Type type;
     private final PositionMap positionMap;
     private final SelectedBoxElement selection;
     private DisplayMode displayMode = DisplayMode.DETAIL;
@@ -70,7 +70,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private int dragStartX, dragStartY;
 
     @AssistedInject
-    TypeElement(@Assisted TypeValue type, @Assisted Position position,
+    TypeElement(@Assisted Type type, @Assisted Position position,
                 PositionMap positionMap, SelectedBoxElement selection,
                 ActionManager actionManager, TypeList typeList, ChangeTracker tracker,
                 AttributeEditorDialog editorDialog, GridSnap gridSnap, CanvasMode canvasMode) {
@@ -172,7 +172,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         Runnable commit = () -> {
             String newName = input.value.trim();
             if (!newName.isEmpty() && !newName.equals(type.id)) {
-                TypeValue after = TypeValue.create(newName, type.version, type.effectDateTime, type.expireDateTime);
+                Type after = Type.create(newName, type.version, type.effectDateTime, type.expireDateTime);
                 after.description = type.description;
                 after.primitive = type.primitive;
                 after.parent = type.parent;
@@ -203,7 +203,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         Runnable commit = () -> {
             String newVersion = input.value.trim();
             if (!newVersion.isEmpty() && !newVersion.equals(type.version)) {
-                TypeValue after = TypeValue.create(type.id, newVersion, type.effectDateTime, type.expireDateTime);
+                Type after = Type.create(type.id, newVersion, type.effectDateTime, type.expireDateTime);
                 after.description = type.description;
                 after.primitive = type.primitive;
                 after.parent = type.parent;
@@ -222,24 +222,24 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     }
 
     // ── 속성 편집 ──
-    private void editAttribute(AttributeValue attr) {
+    private void editAttribute(Attribute attr) {
         editorDialog.show(attr, applied -> {
-            TypeValue before = type;
-            AttributeValue[] newAttrs = Arrays.stream(before.attributes)
+            Type before = type;
+            Attribute[] newAttrs = Arrays.stream(before.attributes)
                     .map(a -> a.name.equals(attr.name) && a.order == attr.order ? applied : a)
-                    .toArray(AttributeValue[]::new);
-            TypeValue after = before.withAttributes(newAttrs);
+                    .toArray(Attribute[]::new);
+            Type after = before.withAttributes(newAttrs);
             actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
         });
     }
 
     // ── 속성 삭제 ──
-    private void deleteAttribute(AttributeValue attr) {
-        TypeValue before = type;
-        AttributeValue[] newAttrs = Arrays.stream(before.attributes)
+    private void deleteAttribute(Attribute attr) {
+        Type before = type;
+        Attribute[] newAttrs = Arrays.stream(before.attributes)
                 .filter(a -> !(a.name.equals(attr.name) && a.order == attr.order))
-                .toArray(AttributeValue[]::new);
-        TypeValue after = before.withAttributes(newAttrs);
+                .toArray(Attribute[]::new);
+        Type after = before.withAttributes(newAttrs);
         actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
     }
 
@@ -292,9 +292,9 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         });
     }
 
-    public TypeValue getType() { return type; }
+    public Type getType() { return type; }
 
-    public void setType(TypeValue type) {
+    public void setType(Type type) {
         this.type = type;
         nameLabel.textContent = type.id;
         versionLabel.textContent = type.version;

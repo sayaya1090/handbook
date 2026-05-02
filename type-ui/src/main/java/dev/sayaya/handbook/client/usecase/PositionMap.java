@@ -23,7 +23,7 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  *   <li>{@link BehaviorSubject} — 반응형 상태 관리</li>
  *   <li>{@link Position} — 보유하는 위치 값 객체</li>
  * </ul></p>
- * <p><b>주의:</b> 키는 TypeValue.key() 형식("id:version")이다. 모든 변경은 새 Map 인스턴스를 생성한다.</p>
+ * <p><b>주의:</b> 키는 Type.key() 형식("id:version")이다. 모든 변경은 새 Map 인스턴스를 생성한다.</p>
  */
 @Singleton
 public class PositionMap {

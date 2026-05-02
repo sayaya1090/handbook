@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
-import dev.sayaya.handbook.domain.DocumentValue;
+import dev.sayaya.handbook.domain.Document;
 import dev.sayaya.handbook.usecase.DocumentRepository;
 import dev.sayaya.handbook.usecase.FetchApi;
 import dev.sayaya.rx.Observable;
@@ -32,7 +32,7 @@ import java.util.List;
  *
  * <p><b>주의:</b> workspace는 {@link #setWorkspace(String)}으로 설정해야 한다.
  * patch() 실패 시 409 Conflict를 Promise.reject로 전파하여 호출자가 충돌 UI를 표시할 수 있게 한다.
- * Content-Type은 항상 {@code application/vnd.sayaya.handbook.v1+json}.</p>
+ * Content-Type은 항상 application/vnd.sayaya.handbook.v1+json.</p>
  */
 @Singleton
 public class DocumentApi implements DocumentRepository {
@@ -49,21 +49,21 @@ public class DocumentApi implements DocumentRepository {
     }
 
     @Override
-    public Observable<DocumentValue[]> search(String type, int page, int limit) {
+    public Observable<Document[]> search(String type, int page, int limit) {
         String url = "workspaces/" + workspace + "/documents?page=" + page + "&limit=" + limit + "&type=" + type;
-        Promise<DocumentValue[]> promise = fetchApi.request(url)
+        Promise<Document[]> promise = fetchApi.request(url)
                 .then(Response::json)
-                .then(json -> Promise.resolve(Js.<DocumentValue[]>cast(json)))
+                .then(json -> Promise.resolve(Js.<Document[]>cast(json)))
                 .catch_(err -> {
                     GWT.log("DocumentApi.search failed: " + err);
                     ErrorNotifier.notify("DocumentApi.search failed: " + err);
-                    return Promise.resolve(new DocumentValue[0]);
+                    return Promise.resolve(new Document[0]);
                 });
         return AsyncSubject.await(promise);
     }
 
     @Override
-    public Observable<Void> save(List<DocumentValue> documents) {
+    public Observable<Void> save(List<Document> documents) {
         String url = "workspaces/" + workspace + "/documents";
         RequestInit init = RequestInit.create();
         init.setMethod("PUT");
@@ -100,7 +100,7 @@ public class DocumentApi implements DocumentRepository {
     }
 
     @Override
-    public Observable<Void> delete(List<DocumentValue> documents) {
+    public Observable<Void> delete(List<Document> documents) {
         String url = "workspaces/" + workspace + "/documents";
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");

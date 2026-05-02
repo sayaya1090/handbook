@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -23,16 +23,16 @@ public class DateValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         afterField.value(value != null && value.after != null ? String.valueOf(value.after.longValue()) : "");
         beforeField.value(value != null && value.before != null ? String.valueOf(value.before.longValue()) : "");
     }
 
     @Override
-    public AttributeTypeValue collect() {
+    public AttributeType collect() {
         Double after = parseDouble(afterField.value());
         Double before = parseDouble(beforeField.value());
-        return AttributeTypeValue.date(after, before);
+        return AttributeType.date(after, before);
     }
 
     private static Double parseDouble(String s) {

@@ -13,8 +13,8 @@ import jsinterop.base.Js;
 public final class WorkspaceEvent {
     private static final String ID_EVENT = "handbook-workspace-context";
     private static final String DOMAIN_EVENT = "handbook-workspace-event";
-    private static final BehaviorSubject<String> workspaceIdSubject = BehaviorSubject.behavior(null);
-    private static final BehaviorSubject<String> eventSubject = BehaviorSubject.behavior(null);
+    private static final BehaviorSubject<String> workspaceIdSubject = BehaviorSubject.behavior("");
+    private static final BehaviorSubject<String> eventSubject = BehaviorSubject.behavior("");
     private static boolean listenerRegistered = false;
 
     private WorkspaceEvent() {}

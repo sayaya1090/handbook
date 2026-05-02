@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
-import dev.sayaya.handbook.domain.AttributeTypeValue;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -20,7 +20,7 @@ public class EnumValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public void load(AttributeTypeValue value) {
+    public void load(AttributeType value) {
         if (value != null && value.allowedValues != null) {
             valuesField.value(String.join("\n", value.allowedValues));
         } else {
@@ -29,10 +29,10 @@ public class EnumValidatorEditor implements ValidatorEditor {
     }
 
     @Override
-    public AttributeTypeValue collect() {
+    public AttributeType collect() {
         String raw = valuesField.value();
         String[] values = (raw == null || raw.trim().isEmpty()) ? null : raw.split("\n");
-        return AttributeTypeValue.enumType(values);
+        return AttributeType.enumType(values);
     }
 
     @Override

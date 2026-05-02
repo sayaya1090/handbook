@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.usecase.GridSnap;
-import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
 import dev.sayaya.ui.elements.CheckboxElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;

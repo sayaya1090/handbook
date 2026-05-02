@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
-import dev.sayaya.handbook.domain.AttributeValue;
+import dev.sayaya.handbook.domain.Attribute;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -13,9 +13,9 @@ import static org.jboss.elemento.Elements.div;
 /** 타입 카드 안의 속성 한 줄. 이름 + 타입 표시 + 삭제 버튼. */
 public class ValueElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
-    private final AttributeValue attribute;
+    private final Attribute attribute;
 
-    public ValueElement(AttributeValue attribute, Consumer<AttributeValue> onEdit, Consumer<AttributeValue> onDelete) {
+    public ValueElement(Attribute attribute, Consumer<Attribute> onEdit, Consumer<Attribute> onDelete) {
         this.attribute = attribute;
         HTMLDivElement nameDiv = div().css("type-attr-name").element();
         nameDiv.textContent = attribute.name;
@@ -41,7 +41,7 @@ public class ValueElement implements IsElement<HTMLDivElement> {
         });
     }
 
-    public AttributeValue getAttribute() { return attribute; }
+    public Attribute getAttribute() { return attribute; }
 
     @Override
     public HTMLDivElement element() { return root; }

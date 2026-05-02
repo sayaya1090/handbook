@@ -36,28 +36,32 @@ public record ColumnDef(
                 null, "YYYY-MM-DD HH:mm", true);
     }
 
+    public static ColumnDef status() {
+        return of("status", "Status", "text", 100, true);
+    }
+
     public static ColumnDef fromAttribute(Attribute attr) {
         return fromAttribute(attr, null);
     }
 
     public static ColumnDef fromAttribute(Attribute attr, String[] typeNames) {
-        String attrType = (attr.type != null && attr.type.type != null) ? attr.type.type : "text";
+        String attrType = (attr.type() != null && attr.type().type() != null) ? attr.type().type() : "text";
         switch (attrType) {
             case "number":
-                return of(attr.name, attr.name, "numeric", 120, false);
+                return of(attr.name(), attr.name(), "numeric", 120, false);
             case "date":
-                return new ColumnDef(attr.name, attr.name, "date", 120, false,
-                        null, "YYYY-MM-DD HH:mm", true);
+                return new ColumnDef(attr.name(), attr.name(), "date", 120, false,
+                        null, "YYYY-MM-DD", true);
             case "bool":
-                return of(attr.name, attr.name, "checkbox", 120, false);
+                return of(attr.name(), attr.name(), "checkbox", 120, false);
             case "enum":
-                return new ColumnDef(attr.name, attr.name, "dropdown", 120, false,
-                        attr.type.allowedValues, null, null);
+                return new ColumnDef(attr.name(), attr.name(), "dropdown", 120, false,
+                        attr.type().allowedValues(), null, null);
             case "document":
-                return new ColumnDef(attr.name, attr.name, "dropdown", 150, false,
-                        typeNames != null ? typeNames : new String[0], null, null);
+                return new ColumnDef(attr.name(), attr.name(), "dropdown", 150, false,
+                        null, null, null);
             default:
-                return of(attr.name, attr.name, "text", 120, false);
+                return of(attr.name(), attr.name(), "text", 120, false);
         }
     }
 }

@@ -10,8 +10,7 @@ import lombok.experimental.Accessors;
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
 @Accessors(fluent = true)
 @NoArgsConstructor
-public final class Workspace implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
+public final class Workspace {
     @JsonProperty("id") @JsProperty private String id;
     @JsonProperty("name") @JsProperty private String name;
     @JsonProperty("description") @JsProperty private String description;
@@ -31,8 +30,7 @@ public final class Workspace implements java.io.Serializable {
     @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
     @Accessors(fluent = true)
     @NoArgsConstructor
-    public static final class WorkspaceSimple implements java.io.Serializable {
-        private static final long serialVersionUID = 1L;
+    public static final class WorkspaceSimple {
         @JsonProperty("id") @JsProperty private String id;
         @JsonProperty("name") @JsProperty private String name;
 
