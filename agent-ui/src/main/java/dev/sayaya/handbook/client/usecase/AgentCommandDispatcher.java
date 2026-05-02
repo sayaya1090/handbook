@@ -1,6 +1,16 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.domain.AwaitConfirmCommand;
+import dev.sayaya.handbook.domain.HighlightCommand;
+import dev.sayaya.handbook.domain.MutateCommand;
+import dev.sayaya.handbook.domain.NavigateCommand;
+import dev.sayaya.handbook.domain.NotifyCommand;
+import dev.sayaya.handbook.domain.PreviewCommand;
+import dev.sayaya.handbook.domain.ScrollCommand;
+import dev.sayaya.handbook.client.domain.CompleteInfo;
+import dev.sayaya.handbook.client.domain.OverlayRequest;
+import dev.sayaya.handbook.client.domain.ProgressInfo;
+import dev.sayaya.handbook.client.domain.SearchVisualizationRequest;
 import dev.sayaya.rx.Observable;
 
 

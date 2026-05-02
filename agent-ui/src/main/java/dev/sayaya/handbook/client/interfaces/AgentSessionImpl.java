@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.client.usecase.AgentSession;
-import dev.sayaya.handbook.domain.AgentSessionState;
+import dev.sayaya.handbook.client.domain.AgentSessionState;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;

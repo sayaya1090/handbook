@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("agent.html")
+@GwtHtml("agenttest.html")
 internal class AgentTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {
         Then("테스트 영역이 존재한다") {

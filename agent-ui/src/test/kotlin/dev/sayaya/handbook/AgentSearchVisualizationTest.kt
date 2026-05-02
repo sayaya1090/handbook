@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("agent.html")
+@GwtHtml("agenttest.html")
 internal class AgentSearchVisualizationTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {
         // UC-A11: 검색 시각화 — search 커맨드로 시각적 오케스트레이션

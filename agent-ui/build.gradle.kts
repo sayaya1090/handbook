@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":activity"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)
@@ -22,7 +21,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Agent", "dev.sayaya.handbook.AgentTest")
+        modules = listOf("dev.sayaya.handbook.AgentTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

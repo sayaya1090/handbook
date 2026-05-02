@@ -1,6 +1,6 @@
 package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.domain.AgentSessionState;
+import dev.sayaya.handbook.client.domain.AgentSessionState;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 

@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.domain;
+package dev.sayaya.handbook.client.domain;
 
 /**
  * 진행률 정보 값 객체.

@@ -14,11 +14,8 @@ import elemental2.dom.DomGlobal;
 public class AgentApplication implements EntryPoint {
     @Override
     public void onModuleLoad() {
-        if (ProgressSharing.isRegistered()) {
-            boot();
-        } else {
-            DomGlobal.window.addEventListener("handbook-shell-ready", e -> boot());
-        }
+        DomGlobal.window.addEventListener("handbook-shell-ready", e -> boot());
+        boot();
     }
 
     private void boot() {

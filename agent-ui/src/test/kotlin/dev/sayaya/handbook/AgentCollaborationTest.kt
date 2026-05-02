@@ -5,7 +5,7 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-@GwtHtml("agent.html")
+@GwtHtml("agenttest.html")
 internal class AgentCollaborationTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {
         // UC-A14: DELEGATE 커맨드 수신

@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.domain;
+package dev.sayaya.handbook.client.domain;
 
 /**
  * 알림 정보 값 객체.

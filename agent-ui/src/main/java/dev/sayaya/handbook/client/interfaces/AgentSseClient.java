@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.interfaces;
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.usecase.AgentApiPort;
 import dev.sayaya.handbook.client.usecase.AgentSession;
-import dev.sayaya.handbook.domain.AgentSessionState;
+import dev.sayaya.handbook.client.domain.AgentSessionState;
 import elemental2.dom.EventSource;
 import elemental2.dom.RequestInit;
 

@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.client.usecase.AgentApiPort;
 import dev.sayaya.handbook.client.usecase.AgentSession;
-import dev.sayaya.handbook.domain.AgentSessionState;
+import dev.sayaya.handbook.client.domain.AgentSessionState;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ViewportObserver;

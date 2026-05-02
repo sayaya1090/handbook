@@ -31,7 +31,7 @@ public class AgentBridgeModule {
 
     @Provides @Singleton
     static Observer<String> uriObserver() {
-        return Observer.next(url -> 0.navigate(url));
+        return Observer.next(url -> UriSharing.navigate(url));
     }
 
     @Provides @Singleton
@@ -53,11 +53,8 @@ public class AgentBridgeModule {
     static LanguagePackRepository languagePackRepository() {
         return lang -> {
             BehaviorSubject<Labels> subject = behavior(Labels.empty());
-            Object snapshot = LabelSharing.snapshot();
-            if (snapshot != null) subject.next(Js.cast(snapshot));
-            DomGlobal.window.addEventListener(LabelSharing.EVENT_NAME, evt -> {
-                CustomEvent<?> ce = Js.cast(evt);
-                if (ce.detail != null) subject.next(Js.cast(ce.detail));
+            LabelSharing.register(labels -> {
+                if (labels != null) subject.next(labels);
             });
             return subject.asObservable();
         };

@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces;
 
 import dev.sayaya.handbook.client.components.OverlayContainer;
 import dev.sayaya.handbook.client.usecase.AgentCommandDispatcher;
-import dev.sayaya.handbook.domain.OverlayRequest;
+import dev.sayaya.handbook.client.domain.OverlayRequest;
 import dev.sayaya.handbook.domain.OverlayStyle;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
