@@ -18,52 +18,35 @@ class TypeServiceDiffTest : BehaviorSpec({
     val service = TypeSearchService(repo)
     val workspace = UUID.randomUUID()
 
-    val baseAttributes = listOf(
-        Attribute(
-            name = "name",
-            order = 0,
-            description = "이름",
-            type = AttributeType.Text(),
-            nullable = false,
-            inherited = false,
-        ),
-        Attribute(
-            name = "age",
-            order = 1,
-            description = "나이",
-            type = AttributeType.Number(min = 0, max = 200),
-            nullable = true,
-            inherited = false,
-        ),
+    val baseAttributes = arrayOf(
+        Attribute.create(UUID.randomUUID().toString(), "name", 0, AttributeType.text())
+            .description("이름")
+            .nullable(false)
+            .inherited(false),
+        Attribute.create(UUID.randomUUID().toString(), "age", 1, AttributeType.number(0.0, 200.0))
+            .description("나이")
+            .nullable(true)
+            .inherited(false)
     )
 
-    val v1 = Type(
-        id = "customer",
-        version = "1.0",
-        effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-        expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-        description = "고객 타입",
-        primitive = false,
-        attributes = baseAttributes,
-        parent = null,
-    )
+    val v1 = Type.create(
+        "customer",
+        "1.0",
+        Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+        Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble()
+    ).description("고객 타입").primitive(false).attributes(baseAttributes)
 
     Given("속성이 추가된 버전 간 diff") {
-        val v2 = Type(
-            id = "customer",
-            version = "2.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-            attributes = baseAttributes + Attribute(
-                name = "email",
-                order = 2,
-                description = "이메일",
-                type = AttributeType.Text(),
-                nullable = true,
-                inherited = false,
-            ),
+        val v2 = Type.create(
+            "customer",
+            "2.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false).attributes(
+            baseAttributes + Attribute.create(UUID.randomUUID().toString(), "email", 2, AttributeType.text())
+                .description("이메일")
+                .nullable(true)
+                .inherited(false)
         )
         every { repo.findByIdAndVersion(workspace, "customer", "1.0") } returns Mono.just(v1)
         every { repo.findByIdAndVersion(workspace, "customer", "2.0") } returns Mono.just(v2)
@@ -81,14 +64,13 @@ class TypeServiceDiffTest : BehaviorSpec({
     }
 
     Given("속성이 삭제된 버전 간 diff") {
-        val v2 = Type(
-            id = "customer",
-            version = "2.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-            attributes = listOf(baseAttributes[0]), // age 삭제
+        val v2 = Type.create(
+            "customer",
+            "2.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false).attributes(
+            arrayOf(baseAttributes[0]) // age 삭제
         )
         every { repo.findByIdAndVersion(workspace, "customer", "1.0") } returns Mono.just(v1)
         every { repo.findByIdAndVersion(workspace, "customer", "2.0") } returns Mono.just(v2)
@@ -106,15 +88,12 @@ class TypeServiceDiffTest : BehaviorSpec({
     }
 
     Given("description이 변경된 버전 간 diff") {
-        val v2 = Type(
-            id = "customer",
-            version = "2.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-12-31T23:59:59Z"),
-            description = "변경된 설명",
-            primitive = false,
-            attributes = baseAttributes,
-        )
+        val v2 = Type.create(
+            "customer",
+            "2.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("변경된 설명").primitive(false).attributes(baseAttributes)
         every { repo.findByIdAndVersion(workspace, "customer", "1.0") } returns Mono.just(v1)
         every { repo.findByIdAndVersion(workspace, "customer", "2.0") } returns Mono.just(v2)
 
@@ -130,16 +109,12 @@ class TypeServiceDiffTest : BehaviorSpec({
     }
 
     Given("parent가 변경된 버전 간 diff") {
-        val v2 = Type(
-            id = "customer",
-            version = "2.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-            attributes = baseAttributes,
-            parent = "person",
-        )
+        val v2 = Type.create(
+            "customer",
+            "2.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false).attributes(baseAttributes).parent("person")
         every { repo.findByIdAndVersion(workspace, "customer", "1.0") } returns Mono.just(v1)
         every { repo.findByIdAndVersion(workspace, "customer", "2.0") } returns Mono.just(v2)
 
@@ -155,26 +130,19 @@ class TypeServiceDiffTest : BehaviorSpec({
     }
 
     Given("속성의 nullable이 변경된 버전 간 diff") {
-        val modifiedAttributes = listOf(
+        val modifiedAttributes = arrayOf(
             baseAttributes[0],
-            Attribute(
-                name = "age",
-                order = 1,
-                description = "나이",
-                type = AttributeType.Number(min = 0, max = 200),
-                nullable = false, // true -> false
-                inherited = false,
-            ),
+            Attribute.create(UUID.randomUUID().toString(), "age", 1, AttributeType.number(0.0, 200.0))
+                .description("나이")
+                .nullable(false) // true -> false
+                .inherited(false)
         )
-        val v2 = Type(
-            id = "customer",
-            version = "2.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-            attributes = modifiedAttributes,
-        )
+        val v2 = Type.create(
+            "customer",
+            "2.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false).attributes(modifiedAttributes)
         every { repo.findByIdAndVersion(workspace, "customer", "1.0") } returns Mono.just(v1)
         every { repo.findByIdAndVersion(workspace, "customer", "2.0") } returns Mono.just(v2)
 
@@ -190,33 +158,22 @@ class TypeServiceDiffTest : BehaviorSpec({
     }
 
     Given("속성의 order가 변경된 버전 간 diff") {
-        val modifiedAttributes = listOf(
-            Attribute(
-                name = "name",
-                order = 1, // 0 -> 1
-                description = "이름",
-                type = AttributeType.Text(),
-                nullable = false,
-                inherited = false,
-            ),
-            Attribute(
-                name = "age",
-                order = 0, // 1 -> 0
-                description = "나이",
-                type = AttributeType.Number(min = 0, max = 200),
-                nullable = true,
-                inherited = false,
-            ),
+        val modifiedAttributes = arrayOf(
+            Attribute.create(UUID.randomUUID().toString(), "name", 1, AttributeType.text())
+                .description("이름")
+                .nullable(false)
+                .inherited(false),
+            Attribute.create(UUID.randomUUID().toString(), "age", 0, AttributeType.number(0.0, 200.0))
+                .description("나이")
+                .nullable(true)
+                .inherited(false)
         )
-        val v2 = Type(
-            id = "customer",
-            version = "2.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-            attributes = modifiedAttributes,
-        )
+        val v2 = Type.create(
+            "customer",
+            "2.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false).attributes(modifiedAttributes)
         every { repo.findByIdAndVersion(workspace, "customer", "1.0") } returns Mono.just(v1)
         every { repo.findByIdAndVersion(workspace, "customer", "2.0") } returns Mono.just(v2)
 

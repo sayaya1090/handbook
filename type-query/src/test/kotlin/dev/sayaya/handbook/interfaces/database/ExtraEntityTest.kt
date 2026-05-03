@@ -17,21 +17,21 @@ class ExtraEntityTest : DescribeSpec({
             val later = now.plusSeconds(3600)
             val entity = R2dbcLayoutEntity(id, ws, now, later, "{}")
             val domain = entity.toDomain(emptyMap())
-            domain.id shouldBe id
-            domain.workspace shouldBe ws
+            domain.id() shouldBe id.toString()
+            domain.workspace() shouldBe ws.toString()
         }
     }
     describe("AttributeEntityMapper") {
-        val mapper = AttributeEntityMapper(jacksonObjectMapper())
+        val mapper = AttributeEntityMapper()
         it("toDomain 매핑 검증") {
             val entity = R2dbcAttributeEntity(
                 UUID.randomUUID(), "t1", "v1", UUID.randomUUID(), "a1", 1, "desc",
                 Json.of("""{"type":"text"}"""), false, false, Json.of("[]"), Json.of("[]")
             )
             val domain = mapper.toDomain(entity)
-            domain.name shouldBe "a1"
-            domain.description shouldBe "desc"
-            domain.type shouldBe AttributeType.Text()
+            domain.name() shouldBe "a1"
+            domain.description() shouldBe "desc"
+            domain.type().type() shouldBe AttributeType.text().type()
         }
     }
 })

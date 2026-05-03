@@ -16,13 +16,11 @@ class LayoutServiceTest : BehaviorSpec({
     val workspace = UUID.randomUUID()
 
     Given("워크스페이스 레이아웃 조회 요청이 주어졌을 때") {
-        val layout = TypeLayout(
-            id = UUID.randomUUID(),
-            workspace = workspace,
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            positions = mapOf("customer" to TypeLayout.Position(100, 200, 200, 150)),
-        )
+        val layout = TypeLayout()
+            .id(UUID.randomUUID().toString())
+            .workspace(workspace.toString())
+            .effectDateTime(Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble())
+            .expireDateTime(Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble())
         every { repo.findByWorkspace(workspace) } returns Flux.just(layout)
 
         When("findByWorkspace를 호출하면") {
@@ -30,7 +28,7 @@ class LayoutServiceTest : BehaviorSpec({
 
             Then("레이아웃 목록이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe layout.id }
+                    .assertNext { it.id() shouldBe layout.id() }
                     .verifyComplete()
             }
         }

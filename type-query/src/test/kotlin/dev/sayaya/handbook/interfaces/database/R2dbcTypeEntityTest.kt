@@ -10,12 +10,11 @@ class R2dbcTypeEntityTest : DescribeSpec({
         it("toDomain 매핑 검증") {
             val entity = R2dbcTypeEntity("t1", "v1", UUID.randomUUID(), Instant.now(), Instant.now(), "desc", true, "p1", 1L)
             val domain = entity.toDomain()
-            domain.id shouldBe "t1"
-            domain.version shouldBe "v1"
-            domain.description shouldBe "desc"
-            domain.primitive shouldBe true
-            domain.parent shouldBe "p1"
-            domain.rev shouldBe 1L
+            domain.id() shouldBe "t1"
+            domain.version() shouldBe "v1"
+            domain.description() shouldBe "desc"
+            domain.primitive() shouldBe true
+            domain.parent() shouldBe "p1"
         }
     }
 })

@@ -27,8 +27,5 @@ data class AgentCommandEvent(
         val type: String,
         val target: Map<String, Any>? = null,
         val description: String? = null,
-    ) : Serializable
-}
-ull,
     )
 }

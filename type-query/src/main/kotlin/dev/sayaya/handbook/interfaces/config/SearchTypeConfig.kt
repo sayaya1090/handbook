@@ -31,7 +31,7 @@ import tools.jackson.module.kotlin.KotlinModule
  */
 @Configuration
 class SearchTypeConfig {
-    @Bean fun attributeEntityMapper(objectMapper: ObjectMapper) = AttributeEntityMapper(objectMapper)
+    @Bean fun attributeEntityMapper() = AttributeEntityMapper()
 
     @Bean fun typeSearchRepository(
         typeRepo: R2dbcTypeEntityRepository,

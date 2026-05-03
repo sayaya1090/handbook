@@ -50,8 +50,8 @@ class TypeSearchService(private val repo: TypeSearchRepository) {
             if (old.parent() != new.parent())
                 changes.add("parent: ${old.parent() ?: "(없음)"} → ${new.parent() ?: "(없음)"}")
 
-            val oldAttrs = (old.attributes()?.toList() ?: emptyList()).associateBy { it.name }
-            val newAttrs = (new.attributes()?.toList() ?: emptyList()).associateBy { it.name }
+            val oldAttrs = (old.attributes()?.toList() ?: emptyList()).associateBy { it.name() }
+            val newAttrs = (new.attributes()?.toList() ?: emptyList()).associateBy { it.name() }
 
             (newAttrs.keys - oldAttrs.keys).forEach { added.add(it) }
             (oldAttrs.keys - newAttrs.keys).forEach { removed.add(it) }
@@ -59,9 +59,9 @@ class TypeSearchService(private val repo: TypeSearchRepository) {
             oldAttrs.keys.intersect(newAttrs.keys).forEach { name ->
                 val a = oldAttrs[name]!!
                 val b = newAttrs[name]!!
-                if (a.type != b.type) changes.add("$name [type]: ${a.type} → ${b.type}")
-                if (a.nullable != b.nullable) changes.add("$name [nullable]: ${a.nullable} → ${b.nullable}")
-                if (a.order != b.order) changes.add("$name [order]: ${a.order} → ${b.order}")
+                if (a.type() != b.type()) changes.add("$name [type]: ${a.type()} → ${b.type()}")
+                if (a.nullable() != b.nullable()) changes.add("$name [nullable]: ${a.nullable()} → ${b.nullable()}")
+                if (a.order() != b.order()) changes.add("$name [order]: ${a.order()} → ${b.order()}")
             }
 
             DiffResult(changes, added, removed)

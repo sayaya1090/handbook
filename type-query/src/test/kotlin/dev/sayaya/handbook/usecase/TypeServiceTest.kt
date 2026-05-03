@@ -16,14 +16,12 @@ class TypeServiceTest : BehaviorSpec({
     val service = TypeSearchService(repo)
     val workspace = UUID.randomUUID()
 
-    val type = Type(
-        id = "customer",
-        version = "1.0",
-        effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-        expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-        description = "고객 타입",
-        primitive = false,
-    )
+    val type = Type.create(
+        "customer",
+        "1.0",
+        Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+        Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble()
+    ).description("고객 타입").primitive(false)
 
     Given("기간이 지정된 타입 조회 요청이 주어졌을 때") {
         val effectDateTime = Instant.parse("2026-01-01T00:00:00Z")
@@ -35,7 +33,7 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("기간에 해당하는 타입이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "customer" }
+                    .assertNext { it.id() shouldBe "customer" }
                     .verifyComplete()
             }
         }
@@ -50,7 +48,7 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("effectDateTime을 expireDateTime으로 사용하여 조회한다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "customer" }
+                    .assertNext { it.id() shouldBe "customer" }
                     .verifyComplete()
                 verify { repo.findByRange(workspace, effectDateTime, effectDateTime) }
             }
@@ -65,7 +63,7 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("전체 타입 목록이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "customer" }
+                    .assertNext { it.id() shouldBe "customer" }
                     .verifyComplete()
                 verify { repo.findAll(workspace) }
             }
@@ -81,7 +79,7 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("해당 타입의 모든 버전이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "customer" }
+                    .assertNext { it.id() shouldBe "customer" }
                     .verifyComplete()
             }
         }

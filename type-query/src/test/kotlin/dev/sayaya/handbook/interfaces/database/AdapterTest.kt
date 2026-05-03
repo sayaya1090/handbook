@@ -23,16 +23,16 @@ class AdapterTest : DescribeSpec({
             val entity = R2dbcLayoutEntity(id, ws, now, later, """{"t1":{"x":10,"y":20,"width":100,"height":50}}""")
             
             val domain = adapter.toDomain(entity)
-            domain.id shouldBe id
-            domain.positions["t1"]?.x shouldBe 10
-            domain.positions["t1"]?.width shouldBe 100
+            domain.id() shouldBe id.toString()
+            domain.positions().get("t1")?.x() shouldBe 10
+            domain.positions().get("t1")?.width() shouldBe 100
         }
     }
 
     describe("R2dbcTypeSearchRepositoryAdapter") {
         val typeRepo = mockk<R2dbcTypeEntityRepository>()
         val attrRepo = mockk<R2dbcAttributeEntityRepository>()
-        val attrMapper = AttributeEntityMapper(objectMapper)
+        val attrMapper = AttributeEntityMapper()
         val adapter = R2dbcTypeSearchRepositoryAdapter(typeRepo, attrRepo, attrMapper)
 
         it("hydrate: 빈 엔티티 목록 처리") {

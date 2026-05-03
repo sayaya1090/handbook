@@ -83,7 +83,7 @@ class R2dbcTypeSearchRepositoryAdapter(
                         entity.toDomain(
                             attrs.filter { it.typeVersion == entity.version }
                                 .map { attrMapper.toDomain(it) }
-                                .sortedBy { it.order }
+                                .sortedBy { it.order() }
                         )
                     }
             }
@@ -102,7 +102,7 @@ class R2dbcTypeSearchRepositoryAdapter(
                         val key = "${entity.id}:${entity.version}"
                         val attrs = (attrMap[key] ?: emptyList())
                             .map { attrMapper.toDomain(it) }
-                            .sortedBy { it.order }
+                            .sortedBy { it.order() }
                         entity.toDomain(attrs)
                     })
                 }

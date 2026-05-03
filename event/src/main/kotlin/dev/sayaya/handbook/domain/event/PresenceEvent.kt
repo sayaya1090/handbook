@@ -35,6 +35,4 @@ data class PresencePayload(
     val serial: String? = null,
     /** 편집 중인 필드명 */
     val field: String? = null,
-) : Serializable
-g? = null,
 )

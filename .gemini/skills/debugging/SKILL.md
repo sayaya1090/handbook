@@ -9,6 +9,7 @@ description: 디버깅 패턴 및 문제 해결 가이드
 
 | 에러 | 원인 | 해결 |
 |------|------|------|
+| `UnsatisfiedLinkError` (JsPropertyMap) | JVM(Spring Boot/Test) 환경에서 `JsPropertyMap.of()` 등 GWT 네이티브 객체 생성 시도 | `java.lang.reflect.Proxy`를 사용해 가짜(Proxy) `JsPropertyMap` 구현체를 주입하여 우회 |
 | `bad SQL grammar` + JSONB | R2DBC 엔티티의 JSONB 컬럼이 `String` 타입 | `io.r2dbc.postgresql.codec.Json` 타입 사용 |
 | `no Identifier. Update not possible` | 엔티티에 `@Id` 누락 | `@Id` 어노테이션 추가 |
 | `GWT ReferenceError` | `@JsOverlay` 인스턴스 메서드에서 재귀 호출 | static 헬퍼로 우회 |
