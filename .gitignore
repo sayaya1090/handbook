@@ -69,3 +69,12 @@ clear.cache.gif
 !**/src/test/webapp/css/
 !**/src/test/webapp/wav/
 !**/src/test/webapp/*.html
+
+# Ignore auto-copied shared CSS in test webapp
+**/src/test/webapp/css/shell.css
+**/src/test/webapp/css/global.css
+**/src/test/webapp/css/fontawesome.min.css
+**/src/test/webapp/css/ui-components.css
+**/src/test/webapp/css/document-ui.css
+**/src/test/webapp/css/workspace.css
+**/src/test/webapp/css/agent-ui.css
