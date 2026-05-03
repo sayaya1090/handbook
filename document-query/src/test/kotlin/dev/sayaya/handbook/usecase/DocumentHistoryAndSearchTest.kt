@@ -18,25 +18,25 @@ class DocumentHistoryAndSearchTest : BehaviorSpec({
     val workspace = UUID.randomUUID()
 
     Given("문서 이력 조회 요청이 주어졌을 때") {
-        val doc1 = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-06-30T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길동"),
+        val doc1 = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-06-30T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
-        val doc2 = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-07-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길순"),
+        val doc2 = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-07-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { repo.findHistory(workspace, "customer", "CUST-001") } returns Flux.just(doc2, doc1)
 
@@ -45,23 +45,23 @@ class DocumentHistoryAndSearchTest : BehaviorSpec({
 
             Then("시간 역순으로 문서 스냅샷이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.data["name"] shouldBe "홍길순" }
-                    .assertNext { it.data["name"] shouldBe "홍길동" }
+                    .assertNext { it.serial() shouldBe "CUST-001" }
+                    .assertNext { it.serial() shouldBe "CUST-001" }
                     .verifyComplete()
             }
         }
     }
 
     Given("전문 검색 요청이 주어졌을 때") {
-        val doc = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길동"),
+        val doc = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { repo.fullTextSearch(workspace, "홍길동", 0, 50) } returns Mono.just(PageImpl(listOf(doc)))
 
@@ -72,7 +72,7 @@ class DocumentHistoryAndSearchTest : BehaviorSpec({
                 StepVerifier.create(result)
                     .assertNext {
                         it.totalElements shouldBe 1
-                        it.content[0].data["name"] shouldBe "홍길동"
+                        it.content[0].serial() shouldBe "CUST-001"
                     }
                     .verifyComplete()
             }

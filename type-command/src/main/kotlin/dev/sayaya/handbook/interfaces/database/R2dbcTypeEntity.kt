@@ -31,28 +31,27 @@ data class R2dbcTypeEntity(
     val parent: String?,
     @Version val rev: Long? = null,
 ) {
-    fun toDomain(attributes: List<Attribute> = emptyList()): Type = Type(
-        id = id,
-        version = version,
-        effectDateTime = effectDateTime,
-        expireDateTime = expireDateTime,
-        description = description,
-        primitive = primitive,
-        attributes = attributes,
-        parent = parent,
-        rev = rev,
-    )
+    fun toDomain(attributes: List<Attribute> = emptyList()): Type {
+        val type = Type.create(
+            id,
+            version,
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble()
+        ).description(description).primitive(primitive).attributes(attributes.toTypedArray())
+        parent?.let { type.parent(it) }
+        return type
+    }
 
     companion object {
         fun fromDomain(workspace: UUID, type: Type): R2dbcTypeEntity = R2dbcTypeEntity(
-            id = type.id,
-            version = type.version,
+            id = type.id(),
+            version = type.version(),
             workspace = workspace,
-            effectDateTime = type.effectDateTime,
-            expireDateTime = type.expireDateTime,
-            description = type.description,
-            primitive = type.primitive,
-            parent = type.parent,
+            effectDateTime = Instant.ofEpochMilli(type.effectDateTime().toLong()),
+            expireDateTime = Instant.ofEpochMilli(type.expireDateTime().toLong()),
+            description = type.description(),
+            primitive = type.primitive(),
+            parent = type.parent(),
         )
     }
 }

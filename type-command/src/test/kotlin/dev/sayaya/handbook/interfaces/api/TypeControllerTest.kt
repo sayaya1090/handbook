@@ -17,14 +17,12 @@ class TypeControllerTest : BehaviorSpec({
     val client = WebTestClient.bindToController(controller).build()
     val workspace = UUID.randomUUID()
 
-    val type = Type(
-        id = "customer",
-        version = "1.0",
-        effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-        expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-        description = "고객 타입",
-        primitive = false,
-    )
+    val type = Type.create(
+        "customer",
+        "1.0",
+        Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+        Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+    ).description("고객 타입").primitive(false)
 
     // UC-PT1: 타입 조회 API
     Given("타입 조회 API") {

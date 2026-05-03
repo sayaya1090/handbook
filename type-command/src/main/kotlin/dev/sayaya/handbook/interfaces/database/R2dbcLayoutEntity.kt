@@ -24,20 +24,33 @@ data class R2dbcLayoutEntity(
     /** positions는 JSONB 컬럼으로 저장 */
     val positions: String?,
 ) {
-    fun toDomain(positionsMap: Map<String, TypeLayout.Position>): TypeLayout = TypeLayout(
-        id = id,
-        workspace = workspace,
-        effectDateTime = effectDateTime,
-        expireDateTime = expireDateTime,
-        positions = positionsMap,
-    )
+    fun toDomain(positionsMap: Map<String, dev.sayaya.handbook.domain.Position>): TypeLayout {
+        val map = java.lang.reflect.Proxy.newProxyInstance(
+            jsinterop.base.JsPropertyMap::class.java.classLoader,
+            arrayOf(jsinterop.base.JsPropertyMap::class.java)
+        ) { _, method, args ->
+            when (method.name) {
+                "get" -> positionsMap[args[0] as String]
+                "set" -> null
+                "forEach" -> null
+                else -> null
+            }
+        } as jsinterop.base.JsPropertyMap<dev.sayaya.handbook.domain.Position>
+        return TypeLayout.create(
+            id.toString(),
+            workspace.toString(),
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble(),
+            map
+        )
+    }
 
     companion object {
         fun fromDomain(layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity = R2dbcLayoutEntity(
-            id = layout.id,
-            workspace = layout.workspace,
-            effectDateTime = layout.effectDateTime,
-            expireDateTime = layout.expireDateTime,
+            id = UUID.fromString(layout.id()),
+            workspace = UUID.fromString(layout.workspace()),
+            effectDateTime = Instant.ofEpochMilli(layout.effectDateTime().toLong()),
+            expireDateTime = Instant.ofEpochMilli(layout.expireDateTime().toLong()),
             positions = positionsJson,
         )
     }

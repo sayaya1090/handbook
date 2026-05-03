@@ -150,15 +150,29 @@ class R2dbcDocumentSearchRepository(
 
     internal fun toDomain(entity: R2dbcDocumentEntity): Document {
         val dataMap: Map<String, String?> = objectMapper.readValue(entity.data)
-        return Document(
-            id = entity.id,
-            type = entity.type,
-            serial = entity.serial,
-            effectDateTime = entity.effectDateTime,
-            expireDateTime = entity.expireDateTime,
-            createDateTime = entity.createDateTime,
-            creator = entity.creator,
-            data = dataMap,
-        )
+        val map = java.lang.reflect.Proxy.newProxyInstance(
+            jsinterop.base.JsPropertyMap::class.java.classLoader,
+            arrayOf(jsinterop.base.JsPropertyMap::class.java, Map::class.java)
+        ) { _, method, args ->
+            if (method.declaringClass == Map::class.java) {
+                method.invoke(dataMap, *(args ?: emptyArray()))
+            } else when (method.name) {
+                "get" -> dataMap[args[0] as String]
+                "set" -> null
+                "forEach" -> null
+                else -> null
+            }
+        } as jsinterop.base.JsPropertyMap<String>
+        return Document.create(
+            entity.id.toString(),
+            entity.type,
+            entity.serial,
+            entity.effectDateTime.toEpochMilli().toDouble(),
+            entity.expireDateTime.toEpochMilli().toDouble(),
+            entity.createDateTime.toEpochMilli().toDouble(),
+            entity.creator,
+            map
+        ).status("PUBLISHED")
     }
 }
+

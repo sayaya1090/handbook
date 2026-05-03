@@ -1,4 +1,4 @@
-package dev.sayaya.handbook.domain;
+package dev.sayaya.handbook.client.domain;
 
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;

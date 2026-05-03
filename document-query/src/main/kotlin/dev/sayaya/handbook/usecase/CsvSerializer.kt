@@ -22,7 +22,12 @@ object CsvSerializer {
      * @return CSV 문자열 (헤더 행 포함, 문서가 비어있으면 헤더만 반환)
      */
     fun serialize(documents: List<Document>): String {
-        val dataKeys = documents.flatMap { it.data.keys }.distinct().sorted()
+        val om = tools.jackson.module.kotlin.jacksonObjectMapper()
+        val dataMaps = documents.associateWith { doc ->
+            val json = om.writeValueAsString(doc.data() ?: emptyMap<String, Any>())
+            om.readValue(json, object : tools.jackson.core.type.TypeReference<Map<String, Any?>>() {})
+        }
+        val dataKeys = dataMaps.values.flatMap { it.keys }.distinct().sorted()
         val allColumns = FIXED_COLUMNS + dataKeys
 
         val sb = StringBuilder()
@@ -32,13 +37,14 @@ object CsvSerializer {
         // Data rows
         for (doc in documents) {
             val fixedValues = listOf(
-                doc.type,
-                doc.serial,
-                doc.effectDateTime.toString(),
-                doc.expireDateTime.toString(),
-                doc.status,
+                doc.type(),
+                doc.serial(),
+                doc.effectDateTime().toString(),
+                doc.expireDateTime().toString(),
+                doc.status() ?: "DRAFT",
             )
-            val dataValues = dataKeys.map { key -> doc.data[key] ?: "" }
+            val dataMap = dataMaps[doc]!!
+            val dataValues = dataKeys.map { key -> dataMap[key]?.toString() ?: "" }
             val allValues = fixedValues + dataValues
             sb.appendLine(allValues.joinToString(",") { escapeCsv(it) })
         }

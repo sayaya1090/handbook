@@ -21,15 +21,15 @@ class DocumentControllerTest : BehaviorSpec({
     val workspace = UUID.randomUUID()
 
     Given("문서 검색 API") {
-        val doc = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길동"),
+        val doc = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { service.search(workspace, any()) } returns Mono.just(PageImpl(listOf(doc), PageRequest.of(0, 10), 1))
 
@@ -45,15 +45,15 @@ class DocumentControllerTest : BehaviorSpec({
     }
 
     Given("문서 단건 조회 API") {
-        val doc = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길동"),
+        val doc = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { service.find(workspace, "customer", "CUST-001", any()) } returns Mono.just(doc)
 

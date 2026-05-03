@@ -40,7 +40,7 @@ class R2dbcDocumentRepositoryAdapter(
     override fun saveAll(workspace: UUID, documents: List<Document>): Flux<Document> {
         return Flux.fromIterable(documents)
             .map { doc ->
-                val serializedData = objectMapper.writeValueAsString(doc.data)
+                val serializedData = objectMapper.writeValueAsString(doc.data() ?: emptyMap<String, Any>())
                 R2dbcDocumentEntity.fromDomain(workspace, doc, serializedData)
             }
             .collectList()
@@ -82,18 +82,30 @@ class R2dbcDocumentRepositoryAdapter(
         return spec.map { row, _ ->
             val dataJson = row.get("data", String::class.java) ?: "{}"
             val dataMap: Map<String, String?> = objectMapper.readValue(dataJson)
-            Document(
-                id = row.get("id", UUID::class.java),
-                type = row.get("type", String::class.java)!!,
-                serial = row.get("serial", String::class.java)!!,
-                effectDateTime = row.get("effect_date_time", java.time.Instant::class.java)!!,
-                expireDateTime = row.get("expire_date_time", java.time.Instant::class.java)!!,
-                createDateTime = row.get("create_date_time", java.time.Instant::class.java),
-                creator = row.get("creator", String::class.java),
-                data = dataMap,
-                status = row.get("status", String::class.java) ?: "DRAFT",
-                rev = row.get("rev", java.lang.Long::class.java)?.toLong(),
+            val map = java.lang.reflect.Proxy.newProxyInstance(
+                jsinterop.base.JsPropertyMap::class.java.classLoader,
+                arrayOf(jsinterop.base.JsPropertyMap::class.java)
+            ) { _, method, args ->
+                when (method.name) {
+                    "get" -> dataMap[args[0] as String]
+                    "set" -> null
+                    "forEach" -> null
+                    else -> null
+                }
+            } as jsinterop.base.JsPropertyMap<String>
+            val doc = Document.create(
+                row.get("id", UUID::class.java)?.toString(),
+                row.get("type", String::class.java)!!,
+                row.get("serial", String::class.java)!!,
+                row.get("effect_date_time", java.time.Instant::class.java)!!.toEpochMilli().toDouble(),
+                row.get("expire_date_time", java.time.Instant::class.java)!!.toEpochMilli().toDouble(),
+                row.get("create_date_time", java.time.Instant::class.java)?.toEpochMilli()?.toDouble() ?: 0.0,
+                row.get("creator", String::class.java),
+                map
             )
+            doc.status(row.get("status", String::class.java) ?: "DRAFT")
+            row.get("rev", java.lang.Long::class.java)?.let { doc.rev(it.toLong()) }
+            doc
         }.all()
     }
 
@@ -115,24 +127,36 @@ class R2dbcDocumentRepositoryAdapter(
     }
 
     override fun deleteAll(workspace: UUID, documents: List<Document>): Mono<Void> {
-        val ids = documents.mapNotNull { it.id }
+        val ids = documents.mapNotNull { it.id()?.let { idStr -> UUID.fromString(idStr) } }
         return repo.deleteAllById(ids)
             .`as`(tx::transactional)
     }
 
     private fun R2dbcDocumentEntity.toDomainWithData(objectMapper: ObjectMapper): Document {
         val dataMap: Map<String, String?> = objectMapper.readValue(data.asString())
-        return Document(
-            id = id,
-            type = type,
-            serial = serial,
-            effectDateTime = effectDateTime,
-            expireDateTime = expireDateTime,
-            createDateTime = createDateTime,
-            creator = creator,
-            data = dataMap,
-            status = status,
-            rev = rev,
+        val map = java.lang.reflect.Proxy.newProxyInstance(
+            jsinterop.base.JsPropertyMap::class.java.classLoader,
+            arrayOf(jsinterop.base.JsPropertyMap::class.java)
+        ) { _, method, args ->
+            when (method.name) {
+                "get" -> dataMap[args[0] as String]
+                "set" -> null
+                "forEach" -> null
+                else -> null
+            }
+        } as jsinterop.base.JsPropertyMap<String>
+        val doc = Document.create(
+            id.toString(),
+            type,
+            serial,
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble(),
+            createDateTime?.toEpochMilli()?.toDouble() ?: 0.0,
+            creator,
+            map
         )
+        doc.status(status)
+        rev?.let { doc.rev(it) }
+        return doc
     }
 }

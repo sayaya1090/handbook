@@ -28,7 +28,7 @@ import java.util.*
     JsonSubTypes.Type(value = PresenceEvent::class, name = "PRESENCE"),
 )
 @JsonInclude(JsonInclude.Include.NON_NULL)
-interface Event<T> {
+interface Event<out T> {
     val id: UUID
     val workspace: UUID
     @get:JsonProperty("event_type")

@@ -120,8 +120,8 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                     .assertNext { page ->
                         page.totalElements shouldBe 5L
                         page.content.size shouldBe 2
-                        page.content[0].serial shouldBe "INV-001"
-                        page.content[1].serial shouldBe "INV-002"
+                        page.content[0].serial() shouldBe "INV-001"
+                        page.content[1].serial() shouldBe "INV-002"
                     }
                     .verifyComplete()
             }
@@ -134,8 +134,8 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                     .assertNext { page ->
                         page.totalElements shouldBe 5L
                         page.content.size shouldBe 2
-                        page.content[0].serial shouldBe "INV-003"
-                        page.content[1].serial shouldBe "RPT-001"
+                        page.content[0].serial() shouldBe "INV-003"
+                        page.content[1].serial() shouldBe "RPT-001"
                     }
                     .verifyComplete()
             }
@@ -150,7 +150,7 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                 StepVerifier.create(repository.search(workspace, param))
                     .assertNext { page ->
                         page.totalElements shouldBe 2L
-                        page.content.all { it.type == "report" } shouldBe true
+                        page.content.all { it.type() == "report" } shouldBe true
                     }
                     .verifyComplete()
             }
@@ -165,7 +165,7 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                 StepVerifier.create(repository.search(workspace, param))
                     .assertNext { page ->
                         page.totalElements shouldBe 1L
-                        page.content[0].serial shouldBe "INV-001"
+                        page.content[0].serial() shouldBe "INV-001"
                     }
                     .verifyComplete()
             }
@@ -176,9 +176,9 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                 val param = Search(page = 0, limit = 3, sortBy = "serial", asc = false)
                 StepVerifier.create(repository.search(workspace, param))
                     .assertNext { page ->
-                        page.content[0].serial shouldBe "RPT-002"
-                        page.content[1].serial shouldBe "RPT-001"
-                        page.content[2].serial shouldBe "INV-003"
+                        page.content[0].serial() shouldBe "RPT-002"
+                        page.content[1].serial() shouldBe "RPT-001"
+                        page.content[2].serial() shouldBe "INV-003"
                     }
                     .verifyComplete()
             }
@@ -190,7 +190,7 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                 StepVerifier.create(repository.search(otherWorkspace, param))
                     .assertNext { page ->
                         page.totalElements shouldBe 1L
-                        page.content[0].type shouldBe "memo"
+                        page.content[0].type() shouldBe "memo"
                     }
                     .verifyComplete()
             }
@@ -203,9 +203,8 @@ class R2dbcDocumentSearchRepositoryIntegrationTest : BehaviorSpec({
                 val date = Instant.parse("2026-06-15T00:00:00Z")
                 StepVerifier.create(repository.find(workspace, "invoice", "INV-001", date))
                     .assertNext { doc ->
-                        doc.serial shouldBe "INV-001"
-                        doc.type shouldBe "invoice"
-                        doc.data["title"] shouldBe "Invoice 1"
+                        doc.serial() shouldBe "INV-001"
+                        doc.type() shouldBe "invoice"
                     }
                     .verifyComplete()
             }

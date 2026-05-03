@@ -30,35 +30,45 @@ class ImportExportControllerTest : BehaviorSpec({
     val workspace = UUID.randomUUID()
 
     Given("문서 일괄 임포트 API (UC-PD4)") {
-        val doc1 = Document(
-            id = null,
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = null,
-            creator = null,
-            data = mapOf("name" to "홍길동"),
+        val doc1 = Document.create(
+            null,
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            0.0,
+            null,
+            null
         )
-        val doc2 = Document(
-            id = null,
-            type = "customer",
-            serial = "CUST-002",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = null,
-            creator = null,
-            data = mapOf("name" to "김철수"),
+        val doc2 = Document.create(
+            null,
+            "customer",
+            "CUST-002",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            0.0,
+            null,
+            null
         )
-        val saved1 = doc1.copy(
-            id = UUID.randomUUID(),
-            createDateTime = Instant.now(),
-            creator = "user-1",
+        val saved1 = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
-        val saved2 = doc2.copy(
-            id = UUID.randomUUID(),
-            createDateTime = Instant.now(),
-            creator = "user-1",
+        val saved2 = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-002",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { service.save(workspace, any()) } returns Flux.just(saved1, saved2)
 
@@ -82,20 +92,25 @@ class ImportExportControllerTest : BehaviorSpec({
     }
 
     Given("단일 문서 임포트") {
-        val doc = Document(
-            id = null,
-            type = "order",
-            serial = "ORD-001",
-            effectDateTime = Instant.parse("2026-06-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-05-31T23:59:59Z"),
-            createDateTime = null,
-            creator = null,
-            data = mapOf("item" to "노트북", "qty" to "3"),
+        val doc = Document.create(
+            null,
+            "order",
+            "ORD-001",
+            Instant.parse("2026-06-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-05-31T23:59:59Z").toEpochMilli().toDouble(),
+            0.0,
+            null,
+            null
         )
-        val saved = doc.copy(
-            id = UUID.randomUUID(),
-            createDateTime = Instant.now(),
-            creator = "user-2",
+        val saved = Document.create(
+            UUID.randomUUID().toString(),
+            "order",
+            "ORD-001",
+            Instant.parse("2026-06-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-05-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-2",
+            null
         )
         every { service.save(workspace, any()) } returns Flux.just(saved)
 
@@ -115,25 +130,25 @@ class ImportExportControllerTest : BehaviorSpec({
     }
 
     Given("문서 일괄 익스포트 API (UC-PD5)") {
-        val doc1 = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길동"),
+        val doc1 = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
-        val doc2 = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-002",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "김철수"),
+        val doc2 = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-002",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { service.findAll(workspace, null) } returns Flux.just(doc1, doc2)
 
@@ -154,15 +169,15 @@ class ImportExportControllerTest : BehaviorSpec({
     }
 
     Given("타입 필터링이 적용된 익스포트") {
-        val doc = Document(
-            id = UUID.randomUUID(),
-            type = "order",
-            serial = "ORD-001",
-            effectDateTime = Instant.parse("2026-06-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2027-05-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("item" to "노트북"),
+        val doc = Document.create(
+            UUID.randomUUID().toString(),
+            "order",
+            "ORD-001",
+            Instant.parse("2026-06-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2027-05-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { service.findAll(workspace, "order") } returns Flux.just(doc)
 

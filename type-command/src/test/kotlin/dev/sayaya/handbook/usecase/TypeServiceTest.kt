@@ -21,22 +21,18 @@ class TypeServiceTest : BehaviorSpec({
     Given("기간별 타입 조회 요청이 주어졌을 때") {
         val effectDateTime = Instant.parse("2026-01-01T00:00:00Z")
         val expireDateTime = Instant.parse("2026-12-31T23:59:59Z")
-        val type1 = Type(
-            id = "customer",
-            version = "1.0",
-            effectDateTime = effectDateTime,
-            expireDateTime = expireDateTime,
-            description = "고객 타입",
-            primitive = false,
-        )
-        val type2 = Type(
-            id = "order",
-            version = "1.0",
-            effectDateTime = effectDateTime,
-            expireDateTime = expireDateTime,
-            description = "주문 타입",
-            primitive = false,
-        )
+        val type1 = Type.create(
+            "customer",
+            "1.0",
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false)
+        val type2 = Type.create(
+            "order",
+            "1.0",
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble()
+        ).description("주문 타입").primitive(false)
         every { repo.findByWorkspaceAndPeriod(workspace, effectDateTime, expireDateTime) } returns Flux.just(type1, type2)
 
         When("findByPeriod를 호출하면") {
@@ -44,8 +40,8 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("해당 기간의 타입 목록이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "customer" }
-                    .assertNext { it.id shouldBe "order" }
+                    .assertNext { it.id() shouldBe "customer" }
+                    .assertNext { it.id() shouldBe "order" }
                     .verifyComplete()
             }
         }
@@ -53,14 +49,12 @@ class TypeServiceTest : BehaviorSpec({
 
     // UC-PT2: 타입 저장
     Given("타입 저장 요청이 주어졌을 때") {
-        val type = Type(
-            id = "product",
-            version = "1.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            description = "상품 타입",
-            primitive = false,
-        )
+        val type = Type.create(
+            "product",
+            "1.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("상품 타입").primitive(false)
         every { repo.save(workspace, listOf(type)) } returns Flux.just(type)
 
         When("save를 호출하면") {
@@ -68,7 +62,7 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("저장된 타입이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "product" }
+                    .assertNext { it.id() shouldBe "product" }
                     .verifyComplete()
             }
             Then("TYPE_CREATED 이벤트가 발행된다") {
@@ -78,14 +72,12 @@ class TypeServiceTest : BehaviorSpec({
     }
 
     Given("타입 패치 요청이 주어졌을 때") {
-        val type = Type(
-            id = "customer",
-            version = "1.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-        )
+        val type = Type.create(
+            "customer",
+            "1.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("고객 타입").primitive(false)
         val patch = TypePatch(id = "customer", version = "1.0", rev = 1)
         every { repo.patch(workspace, listOf(patch)) } returns Flux.just(type)
 
@@ -94,7 +86,7 @@ class TypeServiceTest : BehaviorSpec({
 
             Then("패치된 타입이 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe "customer" }
+                    .assertNext { it.id() shouldBe "customer" }
                     .verifyComplete()
             }
             Then("TYPE_CREATED 이벤트가 발행된다") {
@@ -105,14 +97,12 @@ class TypeServiceTest : BehaviorSpec({
 
     // UC-PT3: 타입 삭제
     Given("타입 삭제 요청이 주어졌을 때") {
-        val type = Type(
-            id = "obsolete",
-            version = "1.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            description = "삭제 대상",
-            primitive = false,
-        )
+        val type = Type.create(
+            "obsolete",
+            "1.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble()
+        ).description("삭제 대상").primitive(false)
         every { repo.delete(workspace, listOf(type)) } returns Mono.empty()
 
         When("delete를 호출하면") {

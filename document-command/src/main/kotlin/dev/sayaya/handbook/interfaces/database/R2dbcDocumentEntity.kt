@@ -34,32 +34,35 @@ data class R2dbcDocumentEntity(
     @CreatedBy var creator: String? = null,
     @Version val rev: Long? = null,
 ) {
-    fun toDomain(): Document = Document(
-        id = id,
-        type = type,
-        serial = serial,
-        effectDateTime = effectDateTime,
-        expireDateTime = expireDateTime,
-        createDateTime = createDateTime,
-        creator = creator,
-        data = emptyMap(), // JSON 역직렬화는 Adapter에서 처리
-        status = status,
-        rev = rev,
-    )
+    fun toDomain(): Document {
+        val doc = Document.create(
+            id.toString(),
+            type,
+            serial,
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble(),
+            createDateTime?.toEpochMilli()?.toDouble() ?: 0.0,
+            creator,
+            null
+        )
+        doc.status(status)
+        rev?.let { doc.rev(it) }
+        return doc
+    }
 
     companion object {
         fun fromDomain(workspace: UUID, document: Document, serializedData: String): R2dbcDocumentEntity = R2dbcDocumentEntity(
-            id = document.id ?: UUID.randomUUID(),
+            id = document.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
             workspace = workspace,
-            type = document.type,
-            serial = document.serial,
-            effectDateTime = document.effectDateTime,
-            expireDateTime = document.expireDateTime,
+            type = document.type(),
+            serial = document.serial(),
+            effectDateTime = Instant.ofEpochMilli(document.effectDateTime().toLong()),
+            expireDateTime = Instant.ofEpochMilli(document.expireDateTime().toLong()),
             data = Json.of(serializedData),
-            status = document.status,
-            createDateTime = document.createDateTime,
-            creator = document.creator,
-            rev = document.rev,
+            status = document.status() ?: "DRAFT",
+            createDateTime = if (document.createDateTime() > 0) Instant.ofEpochMilli(document.createDateTime().toLong()) else null,
+            creator = document.creator(),
+            rev = if (document.rev() == -1L) null else document.rev(),
         )
     }
 }

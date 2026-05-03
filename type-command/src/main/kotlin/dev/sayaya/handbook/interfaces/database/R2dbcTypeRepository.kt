@@ -67,7 +67,7 @@ class R2dbcTypeRepositoryAdapter(
                         Flux.fromIterable(entities.map { entity ->
                             val key = "${entity.id}:${entity.version}"
                             val attrs = (attrMap[key] ?: emptyList()).map { attrMapper.toDomain(it) }
-                                .sortedBy { it.order }
+                                .sortedBy { it.order() }
                             entity.toDomain(attrs)
                         })
                     }
@@ -84,12 +84,12 @@ class R2dbcTypeRepositoryAdapter(
         val entity = R2dbcTypeEntity.fromDomain(workspace, type)
         return typeRepo.save(entity)
             .flatMap { saved ->
-                attrRepo.deleteByTypeIdAndTypeVersion(type.id, type.version)
+                attrRepo.deleteByTypeIdAndTypeVersion(type.id(), type.version())
                     .thenReturn(saved)
             }
             .flatMap { saved ->
-                val attrEntities = type.attributes.map { attr ->
-                    attrMapper.toEntity(type.id, type.version, workspace, attr)
+                val attrEntities = (type.attributes() ?: emptyArray()).map { attr ->
+                    attrMapper.toEntity(type.id(), type.version(), workspace, attr)
                 }
                 if (attrEntities.isEmpty()) Mono.just(saved.toDomain())
                 else attrRepo.saveAll(attrEntities)
@@ -124,7 +124,7 @@ class R2dbcTypeRepositoryAdapter(
                 // 2. 변경 속성만 upsert (이름 기준으로 삭제 후 삽입)
                 val attrOps = Flux.fromIterable(patch.attributes)
                     .flatMap { attr ->
-                        attrRepo.deleteByTypeIdAndTypeVersionAndName(patch.id, patch.version, attr.name)
+                        attrRepo.deleteByTypeIdAndTypeVersionAndName(patch.id, patch.version, attr.name())
                             .then(attrRepo.save(attrMapper.toEntity(patch.id, patch.version, workspace, attr)))
                     }
                 // 3. 전체 타입 조회하여 반환
@@ -132,7 +132,7 @@ class R2dbcTypeRepositoryAdapter(
                     typeRepo.findById(patch.id).flatMap { entity ->
                         attrRepo.findByTypeIdAndTypeVersion(patch.id, patch.version)
                             .collectList()
-                            .map { attrs -> entity.toDomain(attrs.map { attrMapper.toDomain(it) }.sortedBy { it.order }) }
+                            .map { attrs -> entity.toDomain(attrs.map { attrMapper.toDomain(it) }.sortedBy { it.order() }) }
                     }
                 )
             }
@@ -141,7 +141,7 @@ class R2dbcTypeRepositoryAdapter(
     override fun delete(workspace: UUID, types: List<Type>): Mono<Void> {
         return Flux.fromIterable(types)
             .flatMap { type ->
-                attrRepo.deleteByTypeIdAndTypeVersion(type.id, type.version)
+                attrRepo.deleteByTypeIdAndTypeVersion(type.id(), type.version())
                     .then(typeRepo.delete(R2dbcTypeEntity.fromDomain(workspace, type)))
             }
             .`as`(tx::transactional)

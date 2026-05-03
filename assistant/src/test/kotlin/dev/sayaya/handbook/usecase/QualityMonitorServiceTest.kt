@@ -56,17 +56,17 @@ class QualityMonitorServiceTest : BehaviorSpec({
                 verify { eventPublisher.publish(workspace, 0, match {
                     it.type == CommandType.NOTIFY &&
                     it.payload?.get("level") == "error" &&
-                    it.payload?.get("type") == "고객"
+                    it.payload["type"] == "고객"
                 }) }
                 verify { eventPublisher.publish(workspace, 0, match {
                     it.type == CommandType.NOTIFY &&
                     it.payload?.get("level") == "warning" &&
-                    it.payload?.get("type") == "주문"
+                    it.payload["type"] == "주문"
                 }) }
                 verify { eventPublisher.publish(workspace, 0, match {
                     it.type == CommandType.NOTIFY &&
                     it.payload?.get("level") == "info" &&
-                    it.payload?.get("type") == "제품"
+                    it.payload["type"] == "제품"
                 }) }
             }
         }

@@ -14,6 +14,22 @@ import java.time.Instant
 import java.util.*
 
 class ExportControllerTest : BehaviorSpec({
+    fun createDataMap(data: Map<String, String>): jsinterop.base.JsPropertyMap<String> {
+        return java.lang.reflect.Proxy.newProxyInstance(
+            jsinterop.base.JsPropertyMap::class.java.classLoader,
+            arrayOf(jsinterop.base.JsPropertyMap::class.java, Map::class.java)
+        ) { _, method, args ->
+            if (method.declaringClass == Map::class.java) {
+                method.invoke(data, *(args ?: emptyArray()))
+            } else when (method.name) {
+                "get" -> data[args[0] as String]
+                "set" -> null
+                "forEach" -> null
+                else -> null
+            }
+        } as jsinterop.base.JsPropertyMap<String>
+    }
+
     val service = mockk<DocumentSearchService>()
     val objectMapper: ObjectMapper = JsonMapper.builder()
         .addModule(KotlinModule.Builder().build())
@@ -24,15 +40,15 @@ class ExportControllerTest : BehaviorSpec({
         .build()
     val workspace = UUID.randomUUID()
 
-    val doc = Document(
-        id = UUID.randomUUID(),
-        type = "customer",
-        serial = "CUST-001",
-        effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-        expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-        createDateTime = Instant.now(),
-        creator = "user-1",
-        data = mapOf("name" to "홍길동"),
+    val doc = Document.create(
+        UUID.randomUUID().toString(),
+        "customer",
+        "CUST-001",
+        Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+        Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+        Instant.now().toEpochMilli().toDouble(),
+        "user-1",
+        createDataMap(mapOf("name" to "홍길동"))
     )
 
     Given("JSON 형식 내보내기 API") {

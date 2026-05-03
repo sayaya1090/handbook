@@ -25,11 +25,11 @@ import java.util.concurrent.ConcurrentHashMap
 class WorkspaceSinkManager {
     private val workspaceSinks = ConcurrentHashMap<UUID, WorkspaceSink>()
 
-    fun tryEmitNext(event: Event<out Serializable>) {
+    fun tryEmitNext(event: Event<Any>) {
         workspaceSinks[event.workspace]?.tryEmitNext(event)
     }
 
-    fun listen(workspace: UUID): Flux<Event<out Serializable>> = Flux.defer {
+    fun listen(workspace: UUID): Flux<Event<Any>> = Flux.defer {
         val sink = workspaceSinks.compute(workspace) { _, existing ->
             (existing ?: WorkspaceSink(Sinks.many().replay().limit(Duration.ofMillis(10))))
                 .also { it.incrementSubscribers() }

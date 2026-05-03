@@ -12,6 +12,7 @@ dependencies {
     api(project(":schema"))
     implementation(libs.bundles.kotlin.webflux)
     testImplementation(libs.bundles.test.api)
+    testImplementation(libs.bundles.sayaya.web)
 }
 
 tasks.named("bootJar") {

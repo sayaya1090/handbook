@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.spring.elasticsearch)
     implementation(libs.spring.kafka)
     implementation(libs.springdoc.webflux)
+    implementation("com.google.jsinterop:base:1.0.0")
     testImplementation(libs.bundles.test.api)
     testImplementation(platform(libs.testcontainers.bom))
     testImplementation(libs.testcontainers.postgresql)

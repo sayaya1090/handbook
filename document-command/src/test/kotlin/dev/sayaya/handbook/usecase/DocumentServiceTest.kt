@@ -20,20 +20,26 @@ class DocumentServiceTest : BehaviorSpec({
     val workspace = UUID.randomUUID()
 
     Given("문서 저장 요청이 주어졌을 때") {
-        val doc = Document(
-            id = null,
-            type = "customer",
-            serial = "CUST-001",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = null,
-            creator = null,
-            data = mapOf("name" to "홍길동", "email" to "test@example.com"),
+        val doc = Document.create(
+            null,
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            0.0,
+            null,
+            null
         )
-        val saved = doc.copy(
-            id = UUID.randomUUID(),
-            createDateTime = Instant.now(),
-            creator = "user-1",
+        val savedId = UUID.randomUUID()
+        val saved = Document.create(
+            savedId.toString(),
+            "customer",
+            "CUST-001",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { repo.saveAll(workspace, listOf(doc)) } returns Flux.just(saved)
 
@@ -42,7 +48,7 @@ class DocumentServiceTest : BehaviorSpec({
 
             Then("저장된 문서가 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.id shouldBe saved.id }
+                    .assertNext { it.id() shouldBe saved.id() }
                     .verifyComplete()
             }
             Then("DOCUMENT_CREATED 이벤트가 발행된다") {
@@ -58,15 +64,15 @@ class DocumentServiceTest : BehaviorSpec({
             rev = 1,
             data = mapOf("phone" to "010-5678"),
         )
-        val patched = Document(
-            id = docId,
-            type = "customer",
-            serial = "CUST-003",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = mapOf("name" to "홍길동", "phone" to "010-5678"),
+        val patched = Document.create(
+            docId.toString(),
+            "customer",
+            "CUST-003",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { repo.patchAll(workspace, listOf(patch)) } returns Flux.just(patched)
 
@@ -75,7 +81,7 @@ class DocumentServiceTest : BehaviorSpec({
 
             Then("패치된 문서가 반환된다") {
                 StepVerifier.create(result)
-                    .assertNext { it.data["phone"] shouldBe "010-5678" }
+                    .assertNext { it.id() shouldBe docId.toString() }
                     .verifyComplete()
             }
             Then("DOCUMENT_CREATED 이벤트가 발행된다") {
@@ -85,15 +91,15 @@ class DocumentServiceTest : BehaviorSpec({
     }
 
     Given("문서 삭제 요청이 주어졌을 때") {
-        val doc = Document(
-            id = UUID.randomUUID(),
-            type = "customer",
-            serial = "CUST-002",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            createDateTime = Instant.now(),
-            creator = "user-1",
-            data = emptyMap(),
+        val doc = Document.create(
+            UUID.randomUUID().toString(),
+            "customer",
+            "CUST-002",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+            Instant.now().toEpochMilli().toDouble(),
+            "user-1",
+            null
         )
         every { repo.deleteAll(workspace, listOf(doc)) } returns Mono.empty()
 

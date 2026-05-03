@@ -16,17 +16,17 @@ class EntityTest : DescribeSpec({
             val later = now.plusSeconds(3600)
             val entity = R2dbcDocumentEntity(id, ws, "type", "serial", now, later, Json.of("{}"), "DRAFT", now, "user", 1L)
             val domain = entity.toDomain()
-            domain.id shouldBe id
-            domain.type shouldBe "type"
-            domain.serial shouldBe "serial"
-            domain.status shouldBe "DRAFT"
-            domain.rev shouldBe 1L
+            domain.id() shouldBe id.toString()
+            domain.type() shouldBe "type"
+            domain.serial() shouldBe "serial"
+            domain.status() shouldBe "DRAFT"
+            domain.rev() shouldBe 1L
         }
         it("fromDomain 매핑 검증") {
             val id = UUID.randomUUID()
             val now = Instant.now()
             val later = now.plusSeconds(3600)
-            val document = Document(id, "type", "serial", now, later, now, "user", emptyMap(), "DRAFT", 1L)
+            val document = Document.create(id.toString(), "type", "serial", now.toEpochMilli().toDouble(), later.toEpochMilli().toDouble(), now.toEpochMilli().toDouble(), "user", null).status("DRAFT").rev(1L)
             val ws = UUID.randomUUID()
             val entity = R2dbcDocumentEntity.fromDomain(ws, document, "{}")
             entity.id shouldBe id

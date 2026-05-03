@@ -46,32 +46,51 @@ data class ElasticsearchDocumentEntity(
     
     val rev: Long
 ) {
-    fun toDomain() = dev.sayaya.handbook.domain.Document(
-        id = id,
-        type = type,
-        serial = serial,
-        effectDateTime = effectDateTime,
-        expireDateTime = expireDateTime,
-        createDateTime = createDateTime,
-        creator = creator,
-        data = data.mapValues { it.value?.toString() },
-        status = status,
-        rev = rev
-    )
+    fun toDomain(): dev.sayaya.handbook.domain.Document {
+        val map = java.lang.reflect.Proxy.newProxyInstance(
+            jsinterop.base.JsPropertyMap::class.java.classLoader,
+            arrayOf(jsinterop.base.JsPropertyMap::class.java)
+        ) { _, method, args ->
+            when (method.name) {
+                "get" -> data[args[0] as String]?.toString()
+                "set" -> null
+                "forEach" -> null
+                else -> null
+            }
+        } as jsinterop.base.JsPropertyMap<String>
+        
+        val doc = dev.sayaya.handbook.domain.Document.create(
+            id.toString(), type, serial,
+            effectDateTime.toEpochMilli().toDouble(),
+            expireDateTime.toEpochMilli().toDouble(),
+            createDateTime?.toEpochMilli()?.toDouble() ?: 0.0,
+            creator,
+            map
+        )
+        doc.status(status)
+        doc.rev(rev)
+        return doc
+    }
 
     companion object {
-        fun fromDomain(workspace: UUID, doc: dev.sayaya.handbook.domain.Document) = ElasticsearchDocumentEntity(
-            id = doc.id ?: UUID.randomUUID(), // id 가 없는 경우 생성 (onboarding/import 상황 고려)
-            workspace = workspace,
-            type = doc.type,
-            serial = doc.serial,
-            effectDateTime = doc.effectDateTime,
-            expireDateTime = doc.expireDateTime,
-            createDateTime = doc.createDateTime,
-            creator = doc.creator,
-            data = doc.data,
-            status = doc.status,
-            rev = doc.rev ?: 0L
-        )
+        fun fromDomain(workspace: UUID, doc: dev.sayaya.handbook.domain.Document): ElasticsearchDocumentEntity {
+            val om = tools.jackson.module.kotlin.jacksonObjectMapper()
+            val dataJson = om.writeValueAsString(doc.data() ?: emptyMap<String, Any>())
+            val dataMap = om.readValue(dataJson, object : tools.jackson.core.type.TypeReference<Map<String, Any?>>() {})
+            
+            return ElasticsearchDocumentEntity(
+                id = doc.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
+                workspace = workspace,
+                type = doc.type(),
+                serial = doc.serial(),
+                effectDateTime = Instant.ofEpochMilli(doc.effectDateTime().toLong()),
+                expireDateTime = Instant.ofEpochMilli(doc.expireDateTime().toLong()),
+                createDateTime = if (doc.createDateTime() > 0) Instant.ofEpochMilli(doc.createDateTime().toLong()) else null,
+                creator = doc.creator(),
+                data = dataMap,
+                status = doc.status() ?: "DRAFT",
+                rev = doc.rev()
+            )
+        }
     }
 }

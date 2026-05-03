@@ -35,9 +35,10 @@ class BroadcasterTest : DescribeSpec({
         id = UUID.randomUUID(),
         workspace = workspace,
         eventType = Event.EventType.DOCUMENT_CREATED,
-        payload = Document(
-            UUID.randomUUID(), "customer", "C-001",
-            now, now.plusSeconds(3600), now, "user-1", mapOf("name" to "Alice")
+        payload = Document.create(
+            UUID.randomUUID().toString(), "customer", "C-001",
+            now.toEpochMilli().toDouble(), now.plusSeconds(3600).toEpochMilli().toDouble(),
+            now.toEpochMilli().toDouble(), "user-1", null
         )
     )
 

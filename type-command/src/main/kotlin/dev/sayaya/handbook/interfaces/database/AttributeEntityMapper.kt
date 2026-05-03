@@ -26,11 +26,13 @@ class AttributeEntityMapper(
      * @param entity 변환할 속성 엔티티
      * @return 도메인 Attribute 객체
      */
-    fun toDomain(entity: R2dbcAttributeEntity): Attribute = Attribute().apply {
-        this.name = entity.name
-        this.order = entity.order.toInt()
+    fun toDomain(entity: R2dbcAttributeEntity): Attribute = Attribute.create(
+        UUID.randomUUID().toString(),
+        entity.name,
+        entity.order.toInt(),
+        objectMapper.readValue(entity.attributeType.asString(), AttributeType::class.java)
+    ).apply {
         this.description(entity.description)
-        this.type = objectMapper.readValue(entity.attributeType.asString(), AttributeType::class.java)
         this.nullable(entity.nullable)
         this.inherited(entity.inherited)
         this.readRoles(objectMapper.readValue(entity.readRoles.asString(), Array<String>::class.java))
@@ -51,13 +53,13 @@ class AttributeEntityMapper(
             typeId = typeId,
             typeVersion = typeVersion,
             workspace = workspace,
-            name = attr.name,
-            order = attr.order.toShort(),
+            name = attr.name(),
+            order = attr.order().toShort(),
             description = attr.description(),
-            attributeType = Json.of(objectMapper.writeValueAsString(attr.type)),
-            nullable = attr.nullable,
-            inherited = attr.inherited,
-            readRoles = Json.of(objectMapper.writeValueAsString(attr.readRoles)),
-            writeRoles = Json.of(objectMapper.writeValueAsString(attr.writeRoles)),
+            attributeType = Json.of(objectMapper.writeValueAsString(attr.type())),
+            nullable = attr.nullable(),
+            inherited = attr.inherited(),
+            readRoles = Json.of(objectMapper.writeValueAsString(attr.readRoles())),
+            writeRoles = Json.of(objectMapper.writeValueAsString(attr.writeRoles())),
         )
 }

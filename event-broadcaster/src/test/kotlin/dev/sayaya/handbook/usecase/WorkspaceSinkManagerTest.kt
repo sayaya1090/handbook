@@ -19,9 +19,10 @@ class WorkspaceSinkManagerTest : DescribeSpec({
         id = UUID.randomUUID(),
         workspace = workspace,
         eventType = Event.EventType.DOCUMENT_CREATED,
-        payload = Document(
-            UUID.randomUUID(), "customer", "C-001",
-            now, now.plusSeconds(3600), now, "user-1", mapOf("name" to "Alice")
+        payload = Document.create(
+            UUID.randomUUID().toString(), "customer", "C-001",
+            now.toEpochMilli().toDouble(), now.plusSeconds(3600).toEpochMilli().toDouble(),
+            now.toEpochMilli().toDouble(), "user-1", null
         )
     )
 
@@ -85,7 +86,7 @@ class WorkspaceSinkManagerTest : DescribeSpec({
             val ws = UUID.randomUUID()
 
             // 구독자 B 먼저 구독 (take 없이 수동 관리)
-            val received = mutableListOf<Event<out java.io.Serializable>>()
+            val received = mutableListOf<Event<Any>>()
             val disposable = manager.listen(ws).subscribe { received.add(it) }
 
             // 구독자 A 구독 → 이벤트 1개 수신 → 해제

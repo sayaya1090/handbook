@@ -30,18 +30,18 @@ class R2dbcLayoutRepositoryAdapter(
 
     override fun findByWorkspace(workspace: UUID): Flux<TypeLayout> =
         repository.findByWorkspace(workspace).map { entity ->
-            val positions: Map<String, TypeLayout.Position> = entity.positions?.let {
-                objectMapper.readValue(it)
+            val positions: Map<String, dev.sayaya.handbook.domain.Position> = entity.positions?.let {
+                objectMapper.readValue(it, object : tools.jackson.core.type.TypeReference<Map<String, dev.sayaya.handbook.domain.Position>>() {})
             } ?: emptyMap()
             entity.toDomain(positions)
         }
 
     override fun save(workspace: UUID, layout: TypeLayout): Mono<TypeLayout> {
-        val positionsJson = objectMapper.writeValueAsString(layout.positions)
+        val positionsJson = objectMapper.writeValueAsString(layout.positions() ?: emptyMap<String, Any>())
         val entity = R2dbcLayoutEntity.fromDomain(layout, positionsJson)
         return repository.save(entity).map { saved ->
-            val positions: Map<String, TypeLayout.Position> = saved.positions?.let {
-                objectMapper.readValue(it)
+            val positions: Map<String, dev.sayaya.handbook.domain.Position> = saved.positions?.let {
+                objectMapper.readValue(it, object : tools.jackson.core.type.TypeReference<Map<String, dev.sayaya.handbook.domain.Position>>() {})
             } ?: emptyMap()
             saved.toDomain(positions)
         }

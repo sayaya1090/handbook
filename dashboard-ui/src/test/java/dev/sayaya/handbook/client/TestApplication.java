@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.domain.*;
+import dev.sayaya.handbook.client.domain.*;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 

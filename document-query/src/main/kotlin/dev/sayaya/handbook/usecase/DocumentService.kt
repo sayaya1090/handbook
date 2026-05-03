@@ -66,8 +66,11 @@ class DocumentSearchService(private val repo: DocumentSearchRepository) {
             val added = mutableListOf<String>()
             val removed = mutableListOf<String>()
 
-            val oldData = old.data
-            val newData = new.data
+            val om = tools.jackson.module.kotlin.jacksonObjectMapper()
+            val oldJson = om.writeValueAsString(old.data() ?: emptyMap<String, Any>())
+            val newJson = om.writeValueAsString(new.data() ?: emptyMap<String, Any>())
+            val oldData: Map<String, Any?> = om.readValue(oldJson, object : tools.jackson.core.type.TypeReference<Map<String, Any?>>() {})
+            val newData: Map<String, Any?> = om.readValue(newJson, object : tools.jackson.core.type.TypeReference<Map<String, Any?>>() {})
 
             (newData.keys - oldData.keys).forEach { added.add(it) }
             (oldData.keys - newData.keys).forEach { removed.add(it) }

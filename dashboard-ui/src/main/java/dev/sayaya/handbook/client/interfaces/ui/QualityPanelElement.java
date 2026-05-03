@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces.ui;
 
 import dev.sayaya.handbook.client.usecase.QualityIssueList;
 import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.QualityIssue;
+import dev.sayaya.handbook.client.domain.QualityIssue;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import lombok.experimental.Delegate;
 import org.jboss.elemento.HTMLContainerBuilder;

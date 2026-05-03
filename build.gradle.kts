@@ -69,7 +69,7 @@ subprojects {
             into("${project.projectDir}/src/test/webapp/js")
             exclude("language.*.json")
             if (project.name != "shell-ui") {
-                dependsOn(":shell-ui:mergeI18n", ":shell-ui:gwtGenerateTestHtml")
+                dependsOn(":shell-ui:mergeI18n", ":shell-ui:gwtGenerateTestHtml", ":shell-ui:gwtTestCompile")
             }
         }
         // 다른 GWT UI 모듈은 shell-ui/src/test/webapp/css 에서 복사 (global/fontawesome 포함).
@@ -80,7 +80,7 @@ subprojects {
             from("${rootProject.projectDir}/shell-ui/src/test/webapp/css")
             into("${project.projectDir}/src/test/webapp/css")
             if (project.name != "shell-ui") {
-                dependsOn(":shell-ui:syncShellCssFromMain", ":shell-ui:gwtGenerateTestHtml")
+                dependsOn(":shell-ui:syncShellCssFromMain", ":shell-ui:gwtGenerateTestHtml", ":shell-ui:gwtTestCompile")
             }
         }
         // shell-ui 에 한해 main → test 의 shell.css 단방향 동기화 태스크를 추가해

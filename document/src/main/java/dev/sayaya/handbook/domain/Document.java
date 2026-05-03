@@ -61,6 +61,7 @@ public final class Document {
         doc.creator(creator);
         doc.data(data);
         doc.status("DRAFT");
+        doc.rev(-1);
         return doc;
     }
 

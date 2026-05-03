@@ -29,9 +29,9 @@ class GroupedPlanExecutorTest : BehaviorSpec({
                     .assertNext {
                         it.type shouldBe CommandType.PROGRESS
                         it.payload!!["currentGroup"] shouldBe 1
-                        it.payload!!["totalGroups"] shouldBe 1
-                        it.payload!!["parallel"] shouldBe false
-                        it.payload!!["stepCount"] shouldBe 1
+                        it.payload["totalGroups"] shouldBe 1
+                        it.payload["parallel"] shouldBe false
+                        it.payload["stepCount"] shouldBe 1
                     }
                     .assertNext {
                         it.type shouldBe CommandType.NAVIGATE
@@ -103,7 +103,7 @@ class GroupedPlanExecutorTest : BehaviorSpec({
                     .assertNext {
                         it.type shouldBe CommandType.PROGRESS
                         it.payload!!["parallel"] shouldBe true
-                        it.payload!!["stepCount"] shouldBe 2
+                        it.payload["stepCount"] shouldBe 2
                     }
                     .thenConsumeWhile { it.type != CommandType.COMPLETE }
                     .assertNext { it.type shouldBe CommandType.COMPLETE }

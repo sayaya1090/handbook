@@ -96,41 +96,32 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
     afterSpec { postgres.stop() }
 
     Given("타입 저장") {
-        val type = Type(
-            id = "customer",
-            version = "1.0",
-            effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-            expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-            description = "고객 타입",
-            primitive = false,
-            attributes = listOf(
-                Attribute(
-                    name = "name",
-                    order = 0,
-                    description = "고객 이름",
-                    type = AttributeType.Text(),
-                    nullable = false,
-                    inherited = false,
-                ),
-                Attribute(
-                    name = "age",
-                    order = 1,
-                    description = "나이",
-                    type = AttributeType.Number(min = 0, max = 200),
-                    nullable = true,
-                    inherited = false,
-                ),
-            ),
+        val type = Type.create(
+            "customer",
+            "1.0",
+            Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+            Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+        ).description("고객 타입").primitive(false).attributes(
+            arrayOf(
+                Attribute.create(UUID.randomUUID().toString(), "name", 0, AttributeType.text())
+                    .description("고객 이름")
+                    .nullable(false)
+                    .inherited(false),
+                Attribute.create(UUID.randomUUID().toString(), "age", 1, AttributeType.number(0.0, 200.0))
+                    .description("나이")
+                    .nullable(true)
+                    .inherited(false),
+            )
         )
 
         When("save를 호출하면") {
             Then("저장된 타입이 반환된다") {
                 StepVerifier.create(adapter.save(workspace, listOf(type)))
                     .assertNext { saved ->
-                        saved.id shouldBe "customer"
-                        saved.version shouldBe "1.0"
-                        saved.description shouldBe "고객 타입"
-                        saved.primitive shouldBe false
+                        saved.id() shouldBe "customer"
+                        saved.version() shouldBe "1.0"
+                        saved.description() shouldBe "고객 타입"
+                        saved.primitive() shouldBe false
                     }
                     .verifyComplete()
             }
@@ -146,11 +137,11 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                     )
                 )
                     .assertNext { found ->
-                        found.id shouldBe "customer"
-                        found.version shouldBe "1.0"
-                        found.attributes.size shouldBe 2
-                        found.attributes[0].name shouldBe "name"
-                        found.attributes[1].name shouldBe "age"
+                        found.id() shouldBe "customer"
+                        found.version() shouldBe "1.0"
+                        found.attributes().size shouldBe 2
+                        found.attributes()[0].name() shouldBe "name"
+                        found.attributes()[1].name() shouldBe "age"
                     }
                     .verifyComplete()
             }
@@ -177,23 +168,19 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                     version = "1.0",
                     rev = savedRev,
                     attributes = listOf(
-                        Attribute(
-                            name = "phone",
-                            order = 2,
-                            description = "전화번호",
-                            type = AttributeType.Text(),
-                            nullable = true,
-                            inherited = false,
-                        ),
+                        Attribute.create(UUID.randomUUID().toString(), "phone", 2, AttributeType.text())
+                            .description("전화번호")
+                            .nullable(true)
+                            .inherited(false),
                     ),
                 )
                 StepVerifier.create(adapter.patch(workspace, listOf(patch)))
                     .assertNext { patched ->
-                        patched.id shouldBe "customer"
-                        patched.attributes.size shouldBe 3
-                        patched.attributes.any { it.name == "name" } shouldBe true
-                        patched.attributes.any { it.name == "age" } shouldBe true
-                        patched.attributes.any { it.name == "phone" } shouldBe true
+                        patched.id() shouldBe "customer"
+                        patched.attributes().size shouldBe 3
+                        patched.attributes().any { it.name() == "name" } shouldBe true
+                        patched.attributes().any { it.name() == "age" } shouldBe true
+                        patched.attributes().any { it.name() == "phone" } shouldBe true
                     }
                     .verifyComplete()
             }
@@ -207,14 +194,10 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                     version = "1.0",
                     rev = wrongRev,
                     attributes = listOf(
-                        Attribute(
-                            name = "email",
-                            order = 3,
-                            description = "이메일",
-                            type = AttributeType.Text(),
-                            nullable = true,
-                            inherited = false,
-                        ),
+                        Attribute.create(UUID.randomUUID().toString(), "email", 3, AttributeType.text())
+                            .description("이메일")
+                            .nullable(true)
+                            .inherited(false),
                     ),
                 )
                 StepVerifier.create(adapter.patch(workspace, listOf(patch)))

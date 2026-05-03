@@ -16,14 +16,14 @@ import java.util.concurrent.atomic.AtomicInteger
  * [WorkspaceSinkManager]의 [ConcurrentHashMap.compute] 블록 내에서 호출되어야 원자성이 보장된다.
  */
 class WorkspaceSink(
-    private val sink: Sinks.Many<Event<out Serializable>>
+    private val sink: Sinks.Many<Event<Any>>
 ) {
     private val subscriberCount = AtomicInteger(0)
 
     fun incrementSubscribers(): Int = subscriberCount.incrementAndGet()
     fun decrementSubscribers(): Int = subscriberCount.decrementAndGet()
 
-    fun asFlux(): Flux<Event<out Serializable>> = sink.asFlux()
-    fun tryEmitNext(event: Event<out Serializable>): Sinks.EmitResult = sink.tryEmitNext(event)
+    fun asFlux(): Flux<Event<Any>> = sink.asFlux()
+    fun tryEmitNext(event: Event<Any>): Sinks.EmitResult = sink.tryEmitNext(event)
     fun tryEmitComplete(): Sinks.EmitResult = sink.tryEmitComplete()
 }

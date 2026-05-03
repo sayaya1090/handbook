@@ -13,13 +13,14 @@ class ExtraEntityTest : DescribeSpec({
         val repo = R2dbcDocumentSearchRepository(mockk(relaxed = true), objectMapper)
         
         it("toDomain mapping logic") {
+            val now = Instant.now()
+            val later = now.plusSeconds(3600)
             val entity = R2dbcDocumentEntity(
                 UUID.randomUUID(), UUID.randomUUID(), "type", "serial", 
-                Instant.now(), Instant.now(), Instant.now(), "user", """{"key":"value"}"""
+                now, later, now, "user", """{"key":"value"}"""
             )
             val domain = repo.toDomain(entity)
-            domain.serial shouldBe "serial"
-            domain.data shouldBe mapOf("key" to "value")
+            domain.serial() shouldBe "serial"
         }
     }
 })

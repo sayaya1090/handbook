@@ -26,7 +26,7 @@ class Broadcaster(
     private val sinkManager: WorkspaceSinkManager,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val sink: Sinks.Many<Event<out Serializable>> = Sinks.many().replay().limit(Duration.ofMillis(10))
+    private val sink: Sinks.Many<Event<Any>> = Sinks.many().replay().limit(Duration.ofMillis(10))
 
     init {
         sink.asFlux()
@@ -35,10 +35,10 @@ class Broadcaster(
     }
 
     fun broadcast(event: String) {
-        val parsed = objectMapper.readValue(event, object : TypeReference<Event<out Serializable>>() {})
+        val parsed = objectMapper.readValue(event, object : TypeReference<Event<Any>>() {})
         val result = sink.tryEmitNext(parsed)
         logger.info("Broadcast result: {}", result)
     }
 
-    fun listen(workspace: UUID): Flux<Event<out Serializable>> = sinkManager.listen(workspace)
+    fun listen(workspace: UUID): Flux<Event<Any>> = sinkManager.listen(workspace)
 }

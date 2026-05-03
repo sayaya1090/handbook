@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import java.util.UUID
 
 /**
  * 문서 이벤트 컨슈머.
@@ -39,12 +40,12 @@ class DocumentEventListener(
         val doc = event.payload
         return when (event.eventType) {
             Event.EventType.DOCUMENT_CREATED -> {
-                logger.info("Syncing created/updated document: {}/{}", workspace, doc.id)
+                logger.info("Syncing created/updated document: {}/{}", workspace, doc.id())
                 repository.save(ElasticsearchDocumentEntity.fromDomain(workspace, doc)).then()
             }
             Event.EventType.DOCUMENT_DELETED -> {
-                logger.info("Syncing deleted document: {}/{}", workspace, doc.id)
-                repository.deleteByWorkspaceAndId(workspace, doc.id!!)
+                logger.info("Syncing deleted document: {}/{}", workspace, doc.id())
+                repository.deleteByWorkspaceAndId(workspace, UUID.fromString(doc.id()))
             }
             else -> Mono.empty()
         }

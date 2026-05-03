@@ -17,12 +17,12 @@ class LayoutControllerTest : BehaviorSpec({
     val client = WebTestClient.bindToController(controller).build()
     val workspace = UUID.randomUUID()
 
-    val layout = TypeLayout(
-        id = UUID.randomUUID(),
-        workspace = workspace,
-        effectDateTime = Instant.parse("2026-01-01T00:00:00Z"),
-        expireDateTime = Instant.parse("2026-12-31T23:59:59Z"),
-        positions = mapOf("customer" to TypeLayout.Position(100, 200, 200, 150)),
+    val layout = TypeLayout.create(
+        UUID.randomUUID().toString(),
+        workspace.toString(),
+        Instant.parse("2026-01-01T00:00:00Z").toEpochMilli().toDouble(),
+        Instant.parse("2026-12-31T23:59:59Z").toEpochMilli().toDouble(),
+        null
     )
 
     // UC-PT4: 레이아웃 조회 API

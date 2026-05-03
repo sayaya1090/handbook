@@ -61,9 +61,9 @@ class DocumentService(
         return documentRepository.findById(documentId)
             .switchIfEmpty(Mono.error(IllegalArgumentException("Document not found: $documentId")))
             .flatMap { document ->
-                val allowed = allowedTransitions[document.status] ?: emptySet()
+                val allowed = allowedTransitions[document.status()] ?: emptySet()
                 if (newStatus !in allowed) {
-                    Mono.error(IllegalStateException("Invalid status transition: ${document.status} → $newStatus"))
+                    Mono.error(IllegalStateException("Invalid status transition: ${document.status()} → $newStatus"))
                 } else {
                     documentRepository.updateStatus(documentId, newStatus)
                         .doOnNext { updated -> eventPublisher.publishCreated(workspace, updated) }

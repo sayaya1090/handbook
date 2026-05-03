@@ -15,17 +15,16 @@ class EventTest : DescribeSpec({
     val now = Instant.now()
     val workspace = UUID.randomUUID()
 
-    fun sampleDocument() = Document(
-        id = UUID.randomUUID(), type = "customer", serial = "C-001",
-        effectDateTime = now, expireDateTime = now.plusSeconds(3600),
-        createDateTime = now, creator = "user-1", data = mapOf("name" to "Alice")
+    fun sampleDocument() = Document.create(
+        UUID.randomUUID().toString(), "customer", "C-001",
+        now.toEpochMilli().toDouble(), now.plusSeconds(3600).toEpochMilli().toDouble(),
+        now.toEpochMilli().toDouble(), "user-1", null
     )
 
-    fun sampleType() = Type(
-        id = "customer", version = "1.0",
-        effectDateTime = now, expireDateTime = now.plusSeconds(3600),
-        description = "고객", primitive = false
-    )
+    fun sampleType() = Type.create(
+        "customer", "1.0",
+        now.toEpochMilli().toDouble(), now.plusSeconds(3600).toEpochMilli().toDouble()
+    ).description("고객").primitive(false)
 
     describe("DocumentEvent는") {
         it("DOCUMENT_CREATED로 생성할 수 있다") {

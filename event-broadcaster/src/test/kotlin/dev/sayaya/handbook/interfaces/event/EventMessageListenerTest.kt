@@ -42,7 +42,7 @@ class EventMessageListenerTest : DescribeSpec({
 
             val event = DocumentEvent(
                 UUID.randomUUID(), workspace, Event.EventType.DOCUMENT_CREATED,
-                Document(UUID.randomUUID(), "order", "O-100", now, now.plusSeconds(3600), now, "user-1", emptyMap())
+                Document.create(UUID.randomUUID().toString(), "order", "O-100", now.toEpochMilli().toDouble(), now.plusSeconds(3600).toEpochMilli().toDouble(), now.toEpochMilli().toDouble(), "user-1", null)
             )
             val json = objectMapper.writeValueAsString(event)
 

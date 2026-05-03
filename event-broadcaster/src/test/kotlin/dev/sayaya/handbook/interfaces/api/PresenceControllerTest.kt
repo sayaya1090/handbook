@@ -27,7 +27,7 @@ class PresenceControllerTest : DescribeSpec({
             }
 
             client.post()
-                .uri("/workspace/$workspaceId/presence")
+                .uri("/workspaces/$workspaceId/presence")
                 .bodyValue(payload)
                 .exchange()
                 .expectStatus().isOk
