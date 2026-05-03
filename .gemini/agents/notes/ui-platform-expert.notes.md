@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-04: GWT Native JsType 제약 사항 수정 (필드 초기화 금지) 및 대시보드 컴파일 에러 해결 -> 완료
 - 2026-04-28: shell-ui 아키텍처 분석 → 의존성 단방향 흐름, Dagger 2 모범 사례 준수 확인 및 DOM 직접 접근 리팩토링 제안
 - 2026-04-27: 동적 툴 프로바이더 설계 및 구현 제안 → agent-bridge/activity 연동 설계 및 코드(ToolProvider, Bridges) 생성
 - 2026-04-27: 반응형 데이터 흐름 통제(Unidirectional Data Flow) → LayoutProvider, LayoutList 캡슐화 완료 (Scope 4)
@@ -28,6 +29,7 @@
 
 ## 반복 함정
 
+- **GWT Native JsType 필드 초기화 금지 (2026-05-04)**: `@JsType(isNative=true)` 클래스의 필드는 직접 초기화식을 가질 수 없다. (예: `long rev = -1L;` 금지). 모든 초기값 설정은 `@JsOverlay` 가 붙은 팩토리 메서드(`create`) 내부에서 수행해야 한다.
 - **SessionContext 를 통한 반응형 컨텍스트 관리 (2026-04-27)**: 워크스페이스 전환처럼 전역 상태가 변경될 때 UI 가 즉각 반응해야 하는 경우, 단순 싱글톤 필드가 아닌 `SessionContext` (Observable 모델)를 사용한다.
 - **PlaceholderResolver 와 {workspaceId} 예약어 규약 (2026-04-27)**: 프레임워크 수준에서 `{workspaceId}` 는 현재 선택된 워크스페이스의 고유 식별자로 규약한다.
 - **비활성화된 메뉴의 호버 peek 차단 (2026-04-23)**: `MenuRailItemElement` 가 `[disabled]` 상태일 때도 `mouseover` 이벤트가 `MenuHover` 를 발행하면, 툴레일이 열리는 문제 가드 필수.

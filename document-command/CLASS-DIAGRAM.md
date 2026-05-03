@@ -45,12 +45,13 @@ classDiagram
         +serial: String
         +effectDateTime: Instant
         +expireDateTime: Instant
-        +data: String
-        +createDateTime: Instant
-        +creator: String
+        +data: Json
+        +status: String
+        +createDateTime: Instant?
+        +creator: String?
         +rev: Long?
         +toDomain(): Document
-        +fromDomain(workspace, doc)$ R2dbcDocumentEntity
+        +fromDomain(workspace: UUID, document: Document, serializedData: String)$ R2dbcDocumentEntity
     }
 
     class R2dbcDocumentEntityRepository {

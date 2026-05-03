@@ -77,3 +77,26 @@ WindowRenderBridge.next(render);
 - **선언적 DOM (Elemento)**: HTML 문자열이나 네이티브 HTML 조작 대신 `div()`, `button()` 등 Elemento 빌더와 `sayaya-ui` MD3 컴포넌트 래퍼를 사용한다.
 - **이벤트 1회 등록**: 이벤트 리스너는 동적으로 여러 번 달고 제거하지 않으며, 초기 생성 시 1회만 등록하고 핸들러 내부에서 조건문으로 동작을 제어한다.
 - **모듈 간 통신**: 모듈 간 통신은 SSE 메시지를 `WindowToolPublisherBridge` 등이 수신하여 `DomGlobal.window.dispatchEvent(CustomEvent)` 형태로 브로드캐스트하는 방식을 따른다.
+
+---
+
+## 5. JVM 환경에서의 GWT 네이티브 객체 호환성 (Proxy 패턴)
+
+공용 도메인이 GWT 전용 네이티브 인터페이스(`JsPropertyMap` 등)를 포함할 경우, 백엔드(JVM) 환경에서 `UnsatisfiedLinkError`가 발생한다. 이를 방지하기 위해 **Java Reflection Proxy**를 사용하여 JVM용 가짜 객체를 주입한다.
+
+- **Proxy 패턴**: `java.lang.reflect.Proxy`를 사용하여 인터페이스의 가짜 구현체를 생성하고, 내부적으로는 Java/Kotlin의 `Map`에 위임한다.
+- **Jackson 호환성**: Proxy가 `Map` 인터페이스도 함께 구현하도록 하여 Jackson이 JSON 직렬화 시 값을 정상적으로 추출할 수 있게 한다.
+- **구현 예시**:
+```kotlin
+val map = java.lang.reflect.Proxy.newProxyInstance(
+    JsPropertyMap::class.java.classLoader,
+    arrayOf(JsPropertyMap::class.java, Map::class.java)
+) { _, method, args ->
+    if (method.declaringClass == Map::class.java) {
+        method.invoke(dataMap, *(args ?: emptyArray()))
+    } else when (method.name) {
+        "get" -> dataMap[args[0] as String]
+        else -> null
+    }
+} as JsPropertyMap<String>
+```

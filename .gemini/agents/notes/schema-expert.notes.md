@@ -5,6 +5,8 @@
 - 2026-05-01: Type/Attribute 모델 정규화 및 리팩토링 시작 → FQCN 변경 및 필드 접근 수정 준비
 - 2026-04-28: type-ui 도메인 모델 교체 → Type/Attribute 등 FQCN 수정 및 컴파일 확인 진행 중
 
+- 2026-05-04: 도메인 모델 전환 대응 (Java Fluent API) 및 테스트 복구 -> 완료
+
 ---
 
 # schema-expert Operational Notes
@@ -15,11 +17,11 @@
 
 ## 탐색 패턴
 
-(미확보)
+- **GWT Shared Domain JVM 호환성 (2026-05-04)**: `JsPropertyMap`을 포함한 도메인을 백엔드(JVM)에서 사용할 때 `java.lang.reflect.Proxy`를 사용하여 `UnsatisfiedLinkError`를 방지한다.
 
 ## 반복 함정
 
-(미확보)
+- **낙관적 잠금 초기값 (rev = -1) (2026-05-04)**: GWT의 primitive `long` 제약으로 인해 `null` 대신 `-1L`을 미초기화(INSERT) 상태로 사용한다.
 
 ## 내부 체크리스트
 

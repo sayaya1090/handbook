@@ -12,6 +12,7 @@
 - 2026-05-15: Gateway Fallback -> Accept 헤더 기반 Clean URL 설정 제안
 - 2026-05-12: Elasticsearch 9.3.3 추가 -> 인프라 확장 및 검색 동기화 설정
 - 2026-04-23: ArgoCD 동기화 및 메모리 제한 수정 -> handbook-operator 및 runner-set 검증 완료 및 GRADLE_OPTS 적용
+- 2026-05-04: Gradle 9 Implicit Dependency 경고 해결 및 빌드 스크립트 안정화 -> 완료
 
 ---
 
@@ -25,9 +26,11 @@
   - 원인: 컨테이너의 UID(예: ES 1000)와 마운트된 볼륨(Ceph RBD/NFS)의 소유권(root) 불일치.
   - 진단: `oc debug` 파드로 마운트 포인트(`ls -ld /data`) 권한 확인.
   - 해결: `podSecurityContext.fsGroup` 설정 또는 `initContainer`를 통한 `chown`.
+- **Elasticsearch CrashLoopBackOff 진단**: `oc logs --previous`의 `failed to obtain node locks` 패턴은 주로 PVC 권한(UID/GID) 불일치에서 기인함.
 
 ## 반복 함정
 
+- **Gradle 9 Implicit Dependency (2026-05-04)**: 리소스 복사(Copy) 태스크가 다른 모듈의 컴파일 결과물을 참조할 때, 명시적인 `dependsOn`이 없으면 Gradle 9에서 검증 오류가 발생한다. (예: `copyTestCssResources` → `:shell-ui:gwtTestCompile`).
 - **GWT war 태스크 의존성**: `build.gradle.kts` 수정 시 `war { dependsOn("gwtCompile") }` 섹션이 누락되면 정적 자산(CSS/HTML)만 배포되고 JS 가 빠지는 현상이 발생함. `shell-ui` 가 최근 커밋(`d9d52702`)에서 이 설정이 제거되어 결함이 발생함.
 
 ## 내부 체크리스트
@@ -50,8 +53,3 @@
 ---
 
 마지막 감사: — (신규)
-## 요청 로그
-- 2026-04-26: elasticsearch 재시작 분석 → node lock 실패 및 권한 문제 확인
-
-## 탐색 패턴
-- Elasticsearch CrashLoopBackOff 진단 시 `oc logs --previous`의 `failed to obtain node locks` 패턴은 주로 PVC 권한(UID/GID) 불일치에서 기인함.

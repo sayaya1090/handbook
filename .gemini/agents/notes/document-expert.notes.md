@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-04: 도메인 모델 전환 대응 (Java Fluent API) 및 테스트 복구 -> 완료
 - 2026-05-24: document-ui 컴파일 에러 해결 (도메인 모델 이름 변경 및 Fluent Accessor 적용) -> 완료
 - 2026-05-12: 문서 검색 엔진 전환 -> Elasticsearch 9.3.3 도입으로 검색 성능 강화
 - 2026-04-18: document-query MenuController allowedSessionStates -> IN_WORKSPACE 선언 + 테스트
@@ -12,10 +13,11 @@
 
 ## 탐색 패턴
 
-(미확보)
+- **GWT Shared Domain JVM 호환성 (2026-05-04)**: `JsPropertyMap`을 포함한 도메인을 백엔드(JVM)에서 사용할 때 `java.lang.reflect.Proxy`를 사용하여 `UnsatisfiedLinkError`를 방지한다. Jackson 호환을 위해 Proxy가 `Map` 인터페이스도 구현해야 한다.
 
 ## 반복 함정
 
+- **낙관적 잠금 초기값 (rev = -1) (2026-05-04)**: GWT의 primitive `long` 제약으로 인해 `null` 대신 `-1L`을 미초기화(INSERT) 상태로 사용한다. 백엔드 매핑 시 `-1L`을 `null`로 변환하여 전송해야 한다.
 - **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 (공용, GEMINI.md)
 - **`switchIfEmpty` eager**: `Mono.defer { }` 로 감쌀 것
 - **영속 상태 판별 (2026-05-03)**: `id == null` 인 데이터는 서버에 저장되지 않은 로컬 전용 신규 작업물로 간주한다.

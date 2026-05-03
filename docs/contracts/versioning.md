@@ -27,6 +27,8 @@
 ## 불변원칙
 
 - **모든 엔티티는 `@Version rev: Long?` 을 가진다** (schema 등 공유 도메인 포함)
+- **GWT Native 제약 (rev = -1)**: GWT의 primitive `long`은 `null`을 가질 수 없으므로, 미초기화 상태(INSERT 대상)를 나타내기 위해 **`-1`**을 초기값으로 사용한다.
+- **백엔드 매핑 (-1 → null)**: R2DBC 엔티티 매핑 시 도메인의 `rev == -1L`이면 `null`로 변환하여 INSERT가 발생하도록 보장한다.
 - **`@Version` 있는 엔티티의 `fromDomain()` 은 반드시 `rev` 를 전달** — 누락 시 `DuplicateKeyException` on save (INSERT 시도)
 - **`rev` 는 INSERT 시 null**, UPDATE 시 Spring Data R2DBC 가 자동 증가
 
