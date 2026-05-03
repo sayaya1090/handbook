@@ -69,15 +69,13 @@ public final class Document {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Document document = (Document) o;
-        if (id() != null && document.id() != null) return id().equals(document.id());
-        if (serial() != null && document.serial() != null) return serial().equals(document.serial());
-        return false;
+        if (id() == null || document.id() == null) return false;
+        return id().equals(document.id());
     }
 
     @JsOverlay @Override
     public int hashCode() {
         if (id() != null) return id().hashCode();
-        if (serial() != null) return serial().hashCode();
         return System.identityHashCode(this);
     }
 }
