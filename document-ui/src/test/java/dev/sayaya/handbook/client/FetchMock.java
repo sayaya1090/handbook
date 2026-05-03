@@ -75,6 +75,11 @@ public class FetchMock implements FetchApi {
         return Promise.resolve(createEmptyResponse(404));
     }
 
+    @Override
+    public Promise<Response> request(String url) {
+        return request(url, null);
+    }
+
     private static Response createResponse(MockData data) {
         ResponseInit init = ResponseInit.create();
         init.setStatus(data.status);

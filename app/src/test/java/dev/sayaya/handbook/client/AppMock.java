@@ -54,7 +54,14 @@ public class AppMock {
         return lang -> behavior(Labels.empty());
     }
 
-    @Provides @Singleton static dev.sayaya.handbook.usecase.FetchApi fetchApi() { return new dev.sayaya.handbook.usecase.FetchApi() {}; }
+    @Provides @Singleton static dev.sayaya.handbook.usecase.FetchApi fetchApi() { 
+        return new dev.sayaya.handbook.usecase.FetchApi() {
+            @Override
+            public elemental2.promise.Promise<elemental2.dom.Response> request(String url, elemental2.dom.RequestInit param) {
+                return elemental2.promise.Promise.resolve(new elemental2.dom.Response());
+            }
+        };
+    }
     @Provides @Singleton static dev.sayaya.handbook.client.components.ToastContainer toastContainer() { return new dev.sayaya.handbook.client.components.ToastContainer(); }
 
     // ── Agent mocks ──

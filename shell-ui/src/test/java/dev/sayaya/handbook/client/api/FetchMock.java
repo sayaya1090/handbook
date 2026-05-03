@@ -57,6 +57,11 @@ public class FetchMock implements FetchApi {
         return Promise.resolve(createEmptyResponse(404));
     }
 
+    @Override
+    public Promise<Response> request(String url) {
+        return request(url, null);
+    }
+
     private static Object createUserJson() {
         JsPropertyMap<Object> userObj = JsPropertyMap.of();
         userObj.set("id", "test-user-id");
@@ -98,4 +103,3 @@ public class FetchMock implements FetchApi {
         return Js.cast(mock);
     }
 }
-
