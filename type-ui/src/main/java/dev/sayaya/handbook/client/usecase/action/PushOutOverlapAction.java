@@ -53,7 +53,7 @@ public class PushOutOverlapAction implements Action {
                 Position other = entry.getValue();
                 int[] delta = calculateOverlap(current, other);
                 if (delta == null) continue;
-                positionMap.put(otherKey, Position.of(other.x + delta[0], other.y + delta[1], other.width, other.height));
+                positionMap.put(otherKey, Position.of(other.x() + delta[0], other.y() + delta[1], other.width(), other.height()));
                 if (!processed.contains(otherKey)) {
                     processed.add(otherKey);
                     queue.add(otherKey);
@@ -66,17 +66,17 @@ public class PushOutOverlapAction implements Action {
      * 두 박스가 겹치면 최소 이동 방향(dx, dy)을 반환한다. 겹치지 않으면 null.
      */
     private int[] calculateOverlap(Position a, Position b) {
-        int aRight = a.x + a.width;
-        int aBottom = a.y + a.height;
-        int bRight = b.x + b.width;
-        int bBottom = b.y + b.height;
+        int aRight = a.x() + a.width();
+        int aBottom = a.y() + a.height();
+        int bRight = b.x() + b.width();
+        int bBottom = b.y() + b.height();
 
-        if (a.x >= bRight || aRight <= b.x || a.y >= bBottom || aBottom <= b.y) return null;
+        if (a.x() >= bRight || aRight <= b.x() || a.y() >= bBottom || aBottom <= b.y()) return null;
 
-        int pushLeft  = -(bRight - a.x + padding);
-        int pushRight = aRight - b.x + padding;
-        int pushUp    = -(bBottom - a.y + padding);
-        int pushDown  = aBottom - b.y + padding;
+        int pushLeft  = -(bRight - a.x() + padding);
+        int pushRight = aRight - b.x() + padding;
+        int pushUp    = -(bBottom - a.y() + padding);
+        int pushDown  = aBottom - b.y() + padding;
 
         int minAbsX = Math.abs(pushLeft) <= Math.abs(pushRight) ? pushLeft : pushRight;
         int minAbsY = Math.abs(pushUp) <= Math.abs(pushDown) ? pushUp : pushDown;

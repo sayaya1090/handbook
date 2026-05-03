@@ -21,8 +21,8 @@ public class EnumValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        if (value != null && value.allowedValues != null) {
-            valuesField.value(String.join("\n", value.allowedValues));
+        if (value != null && value.allowedValues() != null) {
+            valuesField.value(String.join("\n", value.allowedValues()));
         } else {
             valuesField.value("");
         }

@@ -35,10 +35,10 @@ public class TypeSearchProvider implements SearchProvider {
             if (!first) sb.append(",");
             first = false;
             sb.append("{\"key\":\"").append(escape(t.key())).append("\"");
-            sb.append(",\"id\":\"").append(escape(t.id)).append("\"");
-            sb.append(",\"version\":\"").append(escape(t.version)).append("\"");
-            if (t.description != null) sb.append(",\"description\":\"").append(escape(t.description)).append("\"");
-            sb.append(",\"attributeCount\":").append(t.attributes != null ? t.attributes.length : 0);
+            sb.append(",\"id\":\"").append(escape(t.id())).append("\"");
+            sb.append(",\"version\":\"").append(escape(t.version())).append("\"");
+            if (t.description() != null) sb.append(",\"description\":\"").append(escape(t.description())).append("\"");
+            sb.append(",\"attributeCount\":").append(t.attributes() != null ? t.attributes().length : 0);
             sb.append("}");
         }
         sb.append("]}");
@@ -46,11 +46,11 @@ public class TypeSearchProvider implements SearchProvider {
     }
 
     private boolean matches(Type t, String q) {
-        if (t.id.toLowerCase().contains(q)) return true;
-        if (t.description != null && t.description.toLowerCase().contains(q)) return true;
-        if (t.attributes != null) {
-            for (Attribute a : t.attributes) {
-                if (a.name.toLowerCase().contains(q)) return true;
+        if (t.id().toLowerCase().contains(q)) return true;
+        if (t.description() != null && t.description().toLowerCase().contains(q)) return true;
+        if (t.attributes() != null) {
+            for (Attribute a : t.attributes()) {
+                if (a.name().toLowerCase().contains(q)) return true;
             }
         }
         return false;

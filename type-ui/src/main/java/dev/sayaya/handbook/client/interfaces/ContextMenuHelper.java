@@ -34,7 +34,7 @@ public final class ContextMenuHelper {
             String id = "new-type-" + n;
             boolean exists = false;
             for (Type t : typeList.getValue()) {
-                if (t.id.equals(id)) { exists = true; break; }
+                if (t.id().equals(id)) { exists = true; break; }
             }
             if (!exists) return id;
             n++;

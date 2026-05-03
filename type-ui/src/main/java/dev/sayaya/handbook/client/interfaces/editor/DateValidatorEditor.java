@@ -24,8 +24,8 @@ public class DateValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        afterField.value(value != null && value.after != null ? String.valueOf(value.after.longValue()) : "");
-        beforeField.value(value != null && value.before != null ? String.valueOf(value.before.longValue()) : "");
+        afterField.value(value != null && value.after() != null ? String.valueOf(value.after().longValue()) : "");
+        beforeField.value(value != null && value.before() != null ? String.valueOf(value.before().longValue()) : "");
     }
 
     @Override

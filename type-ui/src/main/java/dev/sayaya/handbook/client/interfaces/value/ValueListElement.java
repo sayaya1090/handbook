@@ -1,6 +1,7 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
 import dev.sayaya.handbook.domain.Attribute;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.IsElement;
 
@@ -33,6 +34,7 @@ public class ValueListElement implements IsElement<HTMLDivElement> {
             elements.add(elem);
             root.appendChild(elem.element());
         }
+        DomGlobal.console.log("3");
     }
 
     @Override

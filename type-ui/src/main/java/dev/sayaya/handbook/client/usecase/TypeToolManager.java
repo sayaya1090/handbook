@@ -8,8 +8,8 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
-import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
-import dev.sayaya.handbook.client.interfaces.api.ToolProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.handbook.usecase.ToolProvider;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

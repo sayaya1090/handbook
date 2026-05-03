@@ -55,12 +55,7 @@ public class Application implements EntryPoint {
 
         // 에이전트 브릿지 등록: StateProvider, SearchProvider
         AgentState.register(component.typeStateProvider());
-        AgentSearch.register(q -> {
-            // TypeSearchProvider.search()는 BehaviorSubject를 반환하므로 동기적으로 값을 꺼낸다
-            final String[] result = {null};
-            component.typeSearchProvider().search(q).subscribe(v -> result[0] = v);
-            return result[0];
-        });
+        AgentSearch.register(q -> component.typeSearchProvider().search(q));
         
         // 동적 도구 관리자 초기화
         component.typeToolManager().init();

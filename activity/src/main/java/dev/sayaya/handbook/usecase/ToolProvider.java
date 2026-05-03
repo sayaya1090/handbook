@@ -28,7 +28,7 @@ public class ToolProvider {
     private final BehaviorSubject<String> selectedToolId;
 
     @Inject
-    ToolProvider() {
+    public ToolProvider() {
         this.tools = behavior(new Tool[0]);
         this.selectedToolId = behavior(null);
     }

@@ -56,14 +56,14 @@ public class DragShapeElement implements IsElement<HTMLDivElement> {
             if (pos == null) continue;
             HTMLDivElement ghost = (HTMLDivElement) DomGlobal.document.createElement("div");
             ghost.classList.add("drag-ghost");
-            setPosition(ghost, pos.x, pos.y, pos.width, pos.height);
+            setPosition(ghost, pos.x(), pos.y(), pos.width(), pos.height());
             ghosts.put(key, ghost);
             root.appendChild(ghost);
         }
         root.style.setProperty("display", "block");
-    }
+        }
 
-    public void move(int mouseX, int mouseY) {
+        public void move(int mouseX, int mouseY) {
         if (!active) return;
         int dx = mouseX - lastMouseX;
         int dy = mouseY - lastMouseY;
@@ -72,9 +72,9 @@ public class DragShapeElement implements IsElement<HTMLDivElement> {
         for (Map.Entry<String, HTMLDivElement> entry : ghosts.entrySet()) {
             Position pos = positionMap.get(entry.getKey());
             if (pos == null) continue;
-            int ghostX = gridSnap.snap(pos.x + (mouseX - dragOriginX));
-            int ghostY = gridSnap.snap(pos.y + (mouseY - dragOriginY));
-            setPosition(entry.getValue(), ghostX, ghostY, pos.width, pos.height);
+            int ghostX = gridSnap.snap(pos.x() + (mouseX - dragOriginX));
+            int ghostY = gridSnap.snap(pos.y() + (mouseY - dragOriginY));
+            setPosition(entry.getValue(), ghostX, ghostY, pos.width(), pos.height());
         }
         lastMouseX = mouseX;
         lastMouseY = mouseY;

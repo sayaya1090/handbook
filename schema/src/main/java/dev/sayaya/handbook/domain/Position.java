@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
@@ -14,10 +15,10 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @NoArgsConstructor
 public final class Position {
-    @JsonProperty("x") @JsProperty private int x;
-    @JsonProperty("y") @JsProperty private int y;
-    @JsonProperty("width") @JsProperty private int width;
-    @JsonProperty("height") @JsProperty private int height;
+    @JsonProperty("x") @JsProperty(name = "x") private int x;
+    @JsonProperty("y") @JsProperty(name = "y") private int y;
+    @JsonProperty("width") @JsProperty(name = "width") private int width;
+    @JsonProperty("height") @JsProperty(name = "height") private int height;
 
     @JsOverlay @JsIgnore
     public static Position of(int x, int y, int width, int height) {

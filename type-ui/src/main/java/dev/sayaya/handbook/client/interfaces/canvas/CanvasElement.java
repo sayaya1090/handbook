@@ -147,18 +147,24 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private void syncElements(Set<Type> types) {
         Set<String> currentKeys = new HashSet<>(elementMap.keySet());
         Set<String> newKeys = new HashSet<>();
-        for (Type type : types) {
-            String key = type.key();
-            newKeys.add(key);
-            if (!elementMap.containsKey(key)) {
-                Position pos = positionMap.get(key);
-                if (pos == null) pos = Position.of(20, 20, 240, 160);
-                TypeElement elem = boxFactory.create(type, pos);
-                elementMap.put(key, elem);
-                root.appendChild(elem.element());
-                initBoxHandlers(elem);
-            } else {
-                elementMap.get(key).setType(type);
+        if (types != null) {
+            for (Type type : types) {
+                try {
+                    String key = type.key();
+                    newKeys.add(key);
+                    if (!elementMap.containsKey(key)) {
+                        Position pos = positionMap.get(key);
+                        if (pos == null) pos = Position.of(20, 20, 240, 160);
+                        TypeElement elem = boxFactory.create(type, pos);
+                        elementMap.put(key, elem);
+                        root.appendChild(elem.element());
+                        initBoxHandlers(elem);
+                    } else {
+                        elementMap.get(key).setType(type);
+                    }
+                } catch (Throwable t) {
+                    com.google.gwt.core.client.GWT.log("CanvasElement: error syncing box: " + t.getMessage(), t);
+                }
             }
         }
         for (String key : currentKeys) {

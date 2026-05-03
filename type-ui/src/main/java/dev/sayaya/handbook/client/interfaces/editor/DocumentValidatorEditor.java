@@ -45,13 +45,13 @@ public class DocumentValidatorEditor implements ValidatorEditor {
         Set<Type> types = typeList.getValue();
         if (types != null) {
             for (Type type : types) {
-                select.option().value(type.id).text(type.id + " (" + type.version + ")").done();
+                select.option().value(type.id()).text(type.id() + " (" + type.version() + ")").done();
             }
         }
         root.appendChild(select.element());
 
-        if (value != null && value.referencedType != null) {
-            select.selectByValue(value.referencedType);
+        if (value != null && value.referencedType() != null) {
+            select.selectByValue(value.referencedType());
         }
     }
 

@@ -21,8 +21,8 @@ public class FileValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        if (value != null && value.extensions != null) {
-            extField.value(String.join("\n", value.extensions));
+        if (value != null && value.extensions() != null) {
+            extField.value(String.join("\n", value.extensions()));
         } else {
             extField.value("");
         }

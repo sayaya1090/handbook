@@ -10,7 +10,7 @@ import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
 import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Type;
-import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -104,11 +104,11 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
     private void addAttribute() {
         Type type = findType();
         if (type == null) return;
-        int nextOrder = (type.attributes != null ? type.attributes.length : 0) + 1;
-        Attribute newAttr = Attribute.of("attr-" + nextOrder, nextOrder, AttributeType.text());
+        int nextOrder = (type.attributes() != null ? type.attributes().length : 0) + 1;
+        Attribute newAttr = Attribute.create(null, "attr-" + nextOrder, nextOrder, AttributeType.text());
         editorDialog.show(newAttr, applied -> {
             Type before = type;
-            Attribute[] oldAttrs = before.attributes != null ? before.attributes : new Attribute[0];
+            Attribute[] oldAttrs = before.attributes() != null ? before.attributes() : new Attribute[0];
             Attribute[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
             newAttrs[oldAttrs.length] = applied;
             Type after = before.withAttributes(newAttrs);
@@ -119,7 +119,7 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
     private void showVersionHistory() {
         Type type = findType();
         if (type == null) return;
-        versionHistoryPanel.show(type.id);
+        versionHistoryPanel.show(type.id());
     }
 
     private void deleteTarget() {

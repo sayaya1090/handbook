@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces.box;
 
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Type;
-import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -131,13 +131,13 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
 
         for (Type version : versions) {
             var versionLabel = span().css("version-history-version").element();
-            versionLabel.textContent = version.version;
+            versionLabel.textContent = version.version();
 
             var effectDate = span().css("version-history-date").element();
-            effectDate.textContent = formatTimestamp(version.effectDateTime);
+            effectDate.textContent = formatTimestamp(version.effectDateTime());
 
             var attrCount = span().css("version-history-attrs").element();
-            int count = version.attributes != null ? version.attributes.length : 0;
+            int count = version.attributes() != null ? version.attributes().length : 0;
             attrCount.textContent = count + " " +
                     labels.getOrDefault("type.version_history.attributes", "attributes");
 

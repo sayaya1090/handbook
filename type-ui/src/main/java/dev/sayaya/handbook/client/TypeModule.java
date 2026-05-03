@@ -53,14 +53,8 @@ public class TypeModule {
     @Provides @Singleton static LanguageDetector languageDetector() {
         return TypeModule::detectLanguage;
     }
-    @Provides @Singleton static LanguagePackRepository languagePackRepository(dev.sayaya.handbook.usecase.FetchApi fetchApi) {
-        return lang -> {
-            elemental2.promise.Promise<Labels> promise = fetchApi.request("js/language." + lang + ".json")
-                    .then(r -> r.ok ? r.json() : elemental2.promise.Promise.reject("HTTP " + r.status))
-                    .then(obj -> elemental2.promise.Promise.resolve((Labels) obj))
-                    .catch_(err -> elemental2.promise.Promise.resolve(Labels.empty()));
-            return AsyncSubject.await(promise);
-        };
+    @Provides @Singleton static ToolProvider toolProvider() {
+        return new ToolProvider();
     }
 
     /**

@@ -1,9 +1,11 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
 import dev.sayaya.handbook.domain.Attribute;
+import dev.sayaya.handbook.domain.AttributeType;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import jsinterop.base.Js;
 import org.jboss.elemento.IsElement;
 
 import java.util.function.Consumer;
@@ -18,9 +20,9 @@ public class ValueElement implements IsElement<HTMLDivElement> {
     public ValueElement(Attribute attribute, Consumer<Attribute> onEdit, Consumer<Attribute> onDelete) {
         this.attribute = attribute;
         HTMLDivElement nameDiv = div().css("type-attr-name").element();
-        nameDiv.textContent = attribute.name;
+        nameDiv.textContent = attribute.name();
         HTMLDivElement typeDiv = div().css("type-attr-type").element();
-        typeDiv.textContent = attribute.type != null ? attribute.type.simplify() : "text";
+        typeDiv.textContent = attribute.type() != null ? attribute.type().simplify() : "text";
 
         HTMLElement deleteBtn = (HTMLElement) DomGlobal.document.createElement("span");
         deleteBtn.classList.add("type-attr-delete");
@@ -29,12 +31,10 @@ public class ValueElement implements IsElement<HTMLDivElement> {
             e.stopPropagation();
             if (onDelete != null) onDelete.accept(attribute);
         });
-
         root = div().css("type-attr-row").element();
         root.appendChild(nameDiv);
         root.appendChild(typeDiv);
         root.appendChild(deleteBtn);
-
         root.addEventListener("click", e -> {
             e.stopPropagation();
             if (onEdit != null) onEdit.accept(attribute);

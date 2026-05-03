@@ -51,18 +51,18 @@ public class MapValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        if (value != null && value.keyType != null && value.keyType.type != null) {
-            keySelect.selectByValue(value.keyType.type);
+        if (value != null && value.keyType() != null && value.keyType().type() != null) {
+            keySelect.selectByValue(value.keyType().type());
             onKeyTypeChanged();
-            if (keySubEditor != null) keySubEditor.load(value.keyType);
+            if (keySubEditor != null) keySubEditor.load(value.keyType());
         } else {
             keySelect.selectByValue("text");
             onKeyTypeChanged();
         }
-        if (value != null && value.valueType != null && value.valueType.type != null) {
-            valueSelect.selectByValue(value.valueType.type);
+        if (value != null && value.valueType() != null && value.valueType().type() != null) {
+            valueSelect.selectByValue(value.valueType().type());
             onValueTypeChanged();
-            if (valueSubEditor != null) valueSubEditor.load(value.valueType);
+            if (valueSubEditor != null) valueSubEditor.load(value.valueType());
         } else {
             valueSelect.selectByValue("text");
             onValueTypeChanged();
@@ -82,7 +82,7 @@ public class MapValidatorEditor implements ValidatorEditor {
     private AttributeType collectFrom(SelectElementBuilder.OutlinedSelectElementBuilder select, ValidatorEditor subEditor) {
         if (subEditor != null) return subEditor.collect();
         AttributeType v = new AttributeType();
-        v.type = select.value();
+        v.type(select.value());
         return v;
     }
 

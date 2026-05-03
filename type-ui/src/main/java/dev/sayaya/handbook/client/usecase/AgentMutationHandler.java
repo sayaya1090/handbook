@@ -90,7 +90,7 @@ class CreateTypeStrategy implements MutationStrategy {
         String id = operand.substring(5);
         var period = layoutProvider.getValue();
         if (period == null) return null;
-        Type newType = Type.create(id, "1.0", null, null); // effectDateTime, expireDateTime replaced with null since Type uses LocalDateTime
+        Type newType = Type.create(id, "1.0", 0.0, 0.0); // effectDateTime, expireDateTime replaced with 0.0 since Type uses double
         Position pos = Position.of(50, 80, 240, 160);
         return new ComplexAction(
                 new CreateBoxAction(typeList, positionMap, tracker, newType, pos),

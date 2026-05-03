@@ -21,8 +21,8 @@ public class TextValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        if (value != null && value.regexPatterns != null) {
-            regexField.value(String.join("\n", value.regexPatterns));
+        if (value != null && value.regexPatterns() != null) {
+            regexField.value(String.join("\n", value.regexPatterns()));
         } else {
             regexField.value("");
         }
@@ -33,7 +33,7 @@ public class TextValidatorEditor implements ValidatorEditor {
         String raw = regexField.value();
         String[] patterns = (raw == null || raw.trim().isEmpty()) ? null : raw.split("\n");
         AttributeType v = AttributeType.text();
-        v.regexPatterns = patterns;
+        v.regexPatterns(patterns);
         return v;
     }
 

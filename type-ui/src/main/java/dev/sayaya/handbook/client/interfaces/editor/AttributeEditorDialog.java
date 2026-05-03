@@ -3,7 +3,7 @@ package dev.sayaya.handbook.client.interfaces.editor;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.handbook.domain.Attribute;
-import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;
 import elemental2.dom.*;
@@ -144,10 +144,10 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
     public void show(Attribute attribute, Consumer<Attribute> onApply) {
         this.current = attribute;
         this.onApply = onApply;
-        nameField.value(attribute.name);
-        descField.value(attribute.description != null ? attribute.description : "");
-        selectedType = attribute.type != null ? attribute.type.type : "text";
-        showValidatorEditor(selectedType, attribute.type);
+        nameField.value(attribute.name());
+        descField.value(attribute.description() != null ? attribute.description() : "");
+        selectedType = attribute.type() != null ? attribute.type().type() : "text";
+        showValidatorEditor(selectedType, attribute.type());
         updateTypeButtons();
         root.style.setProperty("display", "flex");
         // 열린 후 이름 필드에 포커스
@@ -189,7 +189,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
             atv = editor.collect();
         } else {
             atv = new AttributeType();
-            atv.type = selectedType;
+            atv.type(selectedType);
         }
         Attribute updated = current
                 .withName(nameField.value())

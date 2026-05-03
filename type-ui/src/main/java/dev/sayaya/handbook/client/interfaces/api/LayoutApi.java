@@ -2,11 +2,11 @@ package dev.sayaya.handbook.client.interfaces.api;
 
 import com.google.gwt.core.client.GWT;
 import dev.sayaya.handbook.client.components.ErrorNotifier;
-import dev.sayaya.handbook.client.usecase.LayoutRepository;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.TypeLayout;
-import dev.sayaya.handbook.usecase.FetchApi;
+import dev.sayaya.handbook.client.interfaces.api.FetchApi;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.core.Global;

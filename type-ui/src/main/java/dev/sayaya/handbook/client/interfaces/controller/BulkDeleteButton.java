@@ -8,7 +8,7 @@ import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Type;
-import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;

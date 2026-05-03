@@ -14,7 +14,11 @@ import dev.sayaya.handbook.client.usecase.TypeList;
 import javax.inject.Singleton;
 
 @Singleton
-@dagger.Component(modules = { dev.sayaya.handbook.client.usecase.MockModule.class, BoxElementModule.class })
+@dagger.Component(modules = { 
+    dev.sayaya.handbook.client.TypeModule.class, 
+    dev.sayaya.handbook.usecase.MockApiModule.class, 
+    BoxElementModule.class 
+})
 public interface TestComponent {
     CanvasElement canvas();
     ControllerElement controller();

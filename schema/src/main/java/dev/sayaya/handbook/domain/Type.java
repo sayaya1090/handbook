@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 @Getter(onMethod_ = {@JsOverlay, @JsIgnore})
@@ -14,16 +15,16 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @NoArgsConstructor
 public final class Type {
-    @JsonProperty("id") @JsProperty private String id;
-    @JsonProperty("version") @JsProperty private String version;
-    @JsonProperty("description") @JsProperty private String description;
-    @JsonProperty("primitive") @JsProperty private boolean primitive;
-    @JsonProperty("parent") @JsProperty private String parent;
-    @JsonProperty("effect_date_time") @JsProperty private double effectDateTime;
-    @JsonProperty("expire_date_time") @JsProperty private double expireDateTime;
-    @JsonProperty("width") @JsProperty private double width;
-    @JsonProperty("height") @JsProperty private double height;
-    @JsonProperty("attributes") @JsProperty private Attribute[] attributes;
+    @JsonProperty("id") @JsProperty(name = "id") private String id;
+    @JsonProperty("version") @JsProperty(name = "version") private String version;
+    @JsonProperty("description") @JsProperty(name = "description") private String description;
+    @JsonProperty("primitive") @JsProperty(name = "primitive") private boolean primitive;
+    @JsonProperty("parent") @JsProperty(name = "parent") private String parent;
+    @JsonProperty("effect_date_time") @JsProperty(name = "effect_date_time") private double effectDateTime;
+    @JsonProperty("expire_date_time") @JsProperty(name = "expire_date_time") private double expireDateTime;
+    @JsonProperty("width") @JsProperty(name = "width") private double width;
+    @JsonProperty("height") @JsProperty(name = "height") private double height;
+    @JsonProperty("attributes") @JsProperty(name = "attributes") private Attribute[] attributes;
 
     @JsOverlay @JsIgnore
     public static Type create(String id, String version, double effectDateTime, double expireDateTime) {

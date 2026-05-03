@@ -13,7 +13,7 @@ import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Type;
-import dev.sayaya.handbook.client.interfaces.api.LabelProvider;
+import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
@@ -53,7 +53,7 @@ public class AddTypeButton implements IsElement<HTMLElement> {
             LayoutPeriod period = layoutProvider.getValue();
             if (period == null) return;
             String id = ContextMenuHelper.uniqueTypeId(typeList);
-            Type newType = Type.create(id, "1.0", null, null); // Skip setting effectDateTime, expireDateTime
+            Type newType = Type.create(id, "1.0", 0.0, 0.0); // Skip setting effectDateTime, expireDateTime
             Position pos = Position.of(50, 80, 240, 160);
             actionManager.execute(new ComplexAction(
                     new CreateBoxAction(typeList, positionMap, tracker, newType, pos),

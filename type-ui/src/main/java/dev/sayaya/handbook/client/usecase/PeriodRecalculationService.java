@@ -35,8 +35,8 @@ public class PeriodRecalculationService {
         // 모든 타입의 시점을 수집
         TreeSet<Double> timePoints = new TreeSet<>();
         for (Type type : types) {
-            timePoints.add(type.effectDateTime);
-            timePoints.add(type.expireDateTime);
+            timePoints.add(type.effectDateTime());
+            timePoints.add(type.expireDateTime());
         }
 
         // 연속된 시점 쌍으로 기간 생성

@@ -4,9 +4,11 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
+import javax.inject.Singleton;
+
 @Module
 public interface ApiModule {
-    @Provides static FetchApi fetch() { 
+    @Provides @Singleton static FetchApi fetch() { 
         return new FetchApi() {
             @Override
             public elemental2.promise.Promise<elemental2.dom.Response> request(String url) {
@@ -18,6 +20,17 @@ public interface ApiModule {
             }
         };
     }
+
+    @Provides @Singleton static dev.sayaya.handbook.usecase.LanguagePackRepository languagePackRepository(FetchApi fetchApi) {
+        return lang -> {
+            elemental2.promise.Promise<dev.sayaya.handbook.domain.Labels> promise = fetchApi.request("js/language." + lang + ".json")
+                    .then(r -> r.ok ? r.json() : elemental2.promise.Promise.reject("HTTP " + r.status))
+                    .then(obj -> elemental2.promise.Promise.resolve((dev.sayaya.handbook.domain.Labels) obj))
+                    .catch_(err -> elemental2.promise.Promise.resolve(dev.sayaya.handbook.domain.Labels.empty()));
+            return dev.sayaya.rx.subject.AsyncSubject.await(promise);
+        };
+    }
+
     @Binds TypeRepository typeRepository(TypeApi impl);
     @Binds LayoutRepository layoutRepository(LayoutApi impl);
 }

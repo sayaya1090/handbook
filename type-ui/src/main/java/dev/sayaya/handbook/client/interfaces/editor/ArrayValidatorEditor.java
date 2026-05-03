@@ -49,11 +49,11 @@ public class ArrayValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        if (value != null && value.elementType != null && value.elementType.type != null) {
-            typeSelect.selectByValue(value.elementType.type);
+        if (value != null && value.elementType() != null && value.elementType().type() != null) {
+            typeSelect.selectByValue(value.elementType().type());
             onTypeChanged();
             if (currentSubEditor != null) {
-                currentSubEditor.load(value.elementType);
+                currentSubEditor.load(value.elementType());
             }
         } else {
             typeSelect.selectByValue("text");
@@ -69,7 +69,7 @@ public class ArrayValidatorEditor implements ValidatorEditor {
             elementType = currentSubEditor.collect();
         } else {
             elementType = new AttributeType();
-            elementType.type = selected;
+            elementType.type(selected);
         }
         return AttributeType.array(elementType);
     }

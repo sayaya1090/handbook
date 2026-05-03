@@ -15,15 +15,30 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @NoArgsConstructor
 public final class AttributeType {
-    @JsonProperty("type") @JsProperty private String type;
-    @JsonProperty("referencedType") @JsProperty private String referencedType;
-    @JsonProperty("elementType") @JsProperty private AttributeType elementType;
-    @JsonProperty("allowedValues") @JsProperty private String[] allowedValues;
+    @JsonProperty("type") @JsProperty(name = "type") public String type;
+    @JsonProperty("referenced_type") @JsProperty(name = "referenced_type") public String referencedType;
+    @JsonProperty("element_type") @JsProperty(name = "element_type") public AttributeType elementType;
+    @JsonProperty("key_type") @JsProperty(name = "key_type") public AttributeType keyType;
+    @JsonProperty("value_type") @JsProperty(name = "value_type") public AttributeType valueType;
+    @JsonProperty("allowed_values") @JsProperty(name = "allowed_values") public String[] allowedValues;
+    @JsonProperty("regex_patterns") @JsProperty(name = "regex_patterns") public String[] regexPatterns;
+    @JsonProperty("min") @JsProperty(name = "min") public Double min;
+    @JsonProperty("max") @JsProperty(name = "max") public Double max;
+    @JsonProperty("after") @JsProperty(name = "after") public Double after;
+    @JsonProperty("before") @JsProperty(name = "before") public Double before;
+    @JsonProperty("extensions") @JsProperty(name = "extensions") public String[] extensions;
 
     @JsOverlay @JsIgnore
     public static AttributeType text() {
         AttributeType atv = new AttributeType();
         atv.type("text");
+        return atv;
+    }
+
+    @JsOverlay @JsIgnore
+    public static AttributeType text(String[] regexPatterns) {
+        AttributeType atv = text();
+        atv.regexPatterns(regexPatterns);
         return atv;
     }
 
@@ -43,9 +58,25 @@ public final class AttributeType {
     }
 
     @JsOverlay @JsIgnore
+    public static AttributeType number(Double min, Double max) {
+        AttributeType atv = number();
+        atv.min(min);
+        atv.max(max);
+        return atv;
+    }
+
+    @JsOverlay @JsIgnore
     public static AttributeType date() {
         AttributeType atv = new AttributeType();
         atv.type("date");
+        return atv;
+    }
+
+    @JsOverlay @JsIgnore
+    public static AttributeType date(Double after, Double before) {
+        AttributeType atv = date();
+        atv.after(after);
+        atv.before(before);
         return atv;
     }
 
@@ -72,14 +103,39 @@ public final class AttributeType {
         return atv;
     }
 
+    @JsOverlay @JsIgnore
+    public static AttributeType map(AttributeType keyType, AttributeType valueType) {
+        AttributeType atv = new AttributeType();
+        atv.type("map");
+        atv.keyType(keyType);
+        atv.valueType(valueType);
+        return atv;
+    }
+
+    @JsOverlay @JsIgnore
+    public static AttributeType file(String[] extensions) {
+        AttributeType atv = new AttributeType();
+        atv.type("file");
+        atv.extensions(extensions);
+        return atv;
+    }
+
     @JsOverlay
     public final String simplify() {
-        if ("array".equals(type()) && elementType() != null) {
-            return elementType().simplify() + "[]";
+        AttributeType current = this;
+        StringBuilder suffix = new StringBuilder();
+        while (current != null && "array".equals(current.type) && current.elementType != null) {
+            suffix.append("[]");
+            current = current.elementType;
         }
-        if ("document".equals(type())) {
-            return referencedType() != null ? referencedType() : "document";
+        if (current == null) return "unknown" + suffix;
+
+        String base;
+        if ("document".equals(current.type)) {
+            base = (current.referencedType != null) ? current.referencedType : "document";
+        } else {
+            base = (current.type != null) ? current.type : "unknown";
         }
-        return type() != null ? type() : "unknown";
+        return base + suffix.toString();
     }
 }

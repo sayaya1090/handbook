@@ -24,8 +24,8 @@ public class NumberValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        minField.value(value != null && value.min != null ? String.valueOf(value.min) : "");
-        maxField.value(value != null && value.max != null ? String.valueOf(value.max) : "");
+        minField.value(value != null && value.min() != null ? String.valueOf(value.min()) : "");
+        maxField.value(value != null && value.max() != null ? String.valueOf(value.max()) : "");
     }
 
     @Override

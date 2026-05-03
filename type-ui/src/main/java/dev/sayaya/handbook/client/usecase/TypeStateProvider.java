@@ -30,24 +30,24 @@ public class TypeStateProvider implements StateProvider {
         for (Type t : types) {
             if (!first) sb.append(",");
             first = false;
-            sb.append("{\"id\":\"").append(escape(t.id)).append("\"");
-            sb.append(",\"version\":\"").append(escape(t.version)).append("\"");
+            sb.append("{\"id\":\"").append(escape(t.id())).append("\"");
+            sb.append(",\"version\":\"").append(escape(t.version())).append("\"");
             sb.append(",\"key\":\"").append(escape(t.key())).append("\"");
-            if (t.description != null) {
-                sb.append(",\"description\":\"").append(escape(t.description)).append("\"");
+            if (t.description() != null) {
+                sb.append(",\"description\":\"").append(escape(t.description())).append("\"");
             }
             sb.append(",\"attributes\":[");
-            if (t.attributes != null) {
+            if (t.attributes() != null) {
                 boolean afirst = true;
-                for (Attribute a : t.attributes) {
+                for (Attribute a : t.attributes()) {
                     if (!afirst) sb.append(",");
                     afirst = false;
-                    sb.append("{\"name\":\"").append(escape(a.name)).append("\"");
-                    sb.append(",\"order\":").append(a.order);
-                    if (a.type != null) {
-                        sb.append(",\"type\":\"").append(escape(a.type.simplify())).append("\"");
+                    sb.append("{\"name\":\"").append(escape(a.name())).append("\"");
+                    sb.append(",\"order\":").append(a.order());
+                    if (a.type() != null) {
+                        sb.append(",\"type\":\"").append(escape(a.type().simplify())).append("\"");
                     }
-                    sb.append(",\"nullable\":").append(a.nullable);
+                    sb.append(",\"nullable\":").append(a.nullable());
                     sb.append("}");
                 }
             }

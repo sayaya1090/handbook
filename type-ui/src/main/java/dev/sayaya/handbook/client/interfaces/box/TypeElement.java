@@ -85,14 +85,14 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         this.canvasMode = canvasMode;
 
         nameLabel = div().css("type-name").element();
-        nameLabel.textContent = type.id;
+        nameLabel.textContent = type.id();
         nameLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
             canvasMode.getCurrentState().onNameDblClick(e, this::startInlineEdit);
         });
 
         versionLabel = div().css("type-version").element();
-        versionLabel.textContent = type.version;
+        versionLabel.textContent = type.version();
         versionLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
             canvasMode.getCurrentState().onVersionDblClick(e, this::startVersionEdit);
@@ -134,14 +134,14 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     }
 
     private void applyPosition(Position p) {
-        root.style.setProperty("left", p.x + "px");
-        root.style.setProperty("top", p.y + "px");
-        root.style.setProperty("width", p.width + "px");
-        root.style.setProperty("min-height", p.height + "px");
+        root.style.setProperty("left", p.x() + "px");
+        root.style.setProperty("top", p.y() + "px");
+        root.style.setProperty("width", p.width() + "px");
+        root.style.setProperty("height", p.height() + "px");
     }
 
     private void updateAttributes() {
-        valueList.update(type.attributes);
+        valueList.update(type.attributes());
     }
 
     private void initEventHandlers() {
@@ -163,7 +163,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private void startInlineEdit() {
         HTMLInputElement input = (HTMLInputElement) DomGlobal.document.createElement("input");
         input.classList.add("type-name-input");
-        input.value = type.id;
+        input.value = type.id();
         nameLabel.textContent = "";
         nameLabel.appendChild(input);
         input.focus();
@@ -171,22 +171,22 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
         Runnable commit = () -> {
             String newName = input.value.trim();
-            if (!newName.isEmpty() && !newName.equals(type.id)) {
-                Type after = Type.create(newName, type.version, type.effectDateTime, type.expireDateTime);
-                after.description = type.description;
-                after.primitive = type.primitive;
-                after.parent = type.parent;
-                after.attributes = type.attributes;
+            if (!newName.isEmpty() && !newName.equals(type.id())) {
+                Type after = Type.create(newName, type.version(), type.effectDateTime(), type.expireDateTime());
+                after.description(type.description());
+                after.primitive(type.primitive());
+                after.parent(type.parent());
+                after.attributes(type.attributes());
                 actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
             }
-            nameLabel.textContent = type.id;
+            nameLabel.textContent = type.id();
         };
 
         input.addEventListener("blur", e -> commit.run());
         input.addEventListener("keydown", e -> {
             elemental2.dom.KeyboardEvent ke = (elemental2.dom.KeyboardEvent) e;
             if ("Enter".equals(ke.key)) input.blur();
-            else if ("Escape".equals(ke.key)) { input.value = type.id; input.blur(); }
+            else if ("Escape".equals(ke.key)) { input.value = type.id(); input.blur(); }
         });
     }
 
@@ -194,7 +194,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private void startVersionEdit() {
         HTMLInputElement input = (HTMLInputElement) DomGlobal.document.createElement("input");
         input.classList.add("type-version-input");
-        input.value = type.version;
+        input.value = type.version();
         versionLabel.textContent = "";
         versionLabel.appendChild(input);
         input.focus();
@@ -202,22 +202,22 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
         Runnable commit = () -> {
             String newVersion = input.value.trim();
-            if (!newVersion.isEmpty() && !newVersion.equals(type.version)) {
-                Type after = Type.create(type.id, newVersion, type.effectDateTime, type.expireDateTime);
-                after.description = type.description;
-                after.primitive = type.primitive;
-                after.parent = type.parent;
-                after.attributes = type.attributes;
+            if (!newVersion.isEmpty() && !newVersion.equals(type.version())) {
+                Type after = Type.create(type.id(), newVersion, type.effectDateTime(), type.expireDateTime());
+                after.description(type.description());
+                after.primitive(type.primitive());
+                after.parent(type.parent());
+                after.attributes(type.attributes());
                 actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
             }
-            versionLabel.textContent = type.version;
+            versionLabel.textContent = type.version();
         };
 
         input.addEventListener("blur", e -> commit.run());
         input.addEventListener("keydown", e -> {
             elemental2.dom.KeyboardEvent ke = (elemental2.dom.KeyboardEvent) e;
             if ("Enter".equals(ke.key)) input.blur();
-            else if ("Escape".equals(ke.key)) { input.value = type.version; input.blur(); }
+            else if ("Escape".equals(ke.key)) { input.value = type.version(); input.blur(); }
         });
     }
 
@@ -225,9 +225,16 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private void editAttribute(Attribute attr) {
         editorDialog.show(attr, applied -> {
             Type before = type;
-            Attribute[] newAttrs = Arrays.stream(before.attributes)
-                    .map(a -> a.name.equals(attr.name) && a.order == attr.order ? applied : a)
-                    .toArray(Attribute[]::new);
+            Attribute[] oldAttrs = before.attributes();
+            Attribute[] newAttrs = new Attribute[oldAttrs.length];
+            for (int i = 0; i < oldAttrs.length; i++) {
+                Attribute a = oldAttrs[i];
+                if (a.name().equals(attr.name()) && a.order() == attr.order()) {
+                    newAttrs[i] = applied;
+                } else {
+                    newAttrs[i] = a;
+                }
+            }
             Type after = before.withAttributes(newAttrs);
             actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
         });
@@ -236,9 +243,14 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     // ── 속성 삭제 ──
     private void deleteAttribute(Attribute attr) {
         Type before = type;
-        Attribute[] newAttrs = Arrays.stream(before.attributes)
-                .filter(a -> !(a.name.equals(attr.name) && a.order == attr.order))
-                .toArray(Attribute[]::new);
+        Attribute[] oldAttrs = before.attributes();
+        java.util.List<Attribute> list = new java.util.ArrayList<>();
+        for (Attribute a : oldAttrs) {
+            if (!(a.name().equals(attr.name()) && a.order() == attr.order())) {
+                list.add(a);
+            }
+        }
+        Attribute[] newAttrs = list.toArray(new Attribute[0]);
         Type after = before.withAttributes(newAttrs);
         actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
     }
@@ -263,9 +275,9 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                         elemental2.dom.MouseEvent mv = (elemental2.dom.MouseEvent) evt;
                         int dx = (int) mv.clientX - startXY[0];
                         int dy = (int) mv.clientY - startXY[1];
-                        int newW = Math.max(120, gridSnap.snap(startPos[0].width + dx));
-                        int newH = Math.max(60, gridSnap.snap(startPos[0].height + dy));
-                        positionMap.put(type.key(), Position.of(startPos[0].x, startPos[0].y, newW, newH));
+                        int newW = Math.max(120, gridSnap.snap(startPos[0].width() + dx));
+                        int newH = Math.max(60, gridSnap.snap(startPos[0].height() + dy));
+                        positionMap.put(type.key(), Position.of(startPos[0].x(), startPos[0].y(), newW, newH));
                     }
                 };
 
@@ -275,7 +287,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                         DomGlobal.document.removeEventListener("mouseup", this);
                         Position endPos = positionMap.get(type.key());
                         if (endPos != null && startPos[0] != null &&
-                                (endPos.width != startPos[0].width || endPos.height != startPos[0].height)) {
+                                (endPos.width() != startPos[0].width() || endPos.height() != startPos[0].height())) {
                             // 이미 적용됨. undo용 액션만 기록.
                             Position before = startPos[0];
                             Position after = endPos;
@@ -296,8 +308,8 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
     public void setType(Type type) {
         this.type = type;
-        nameLabel.textContent = type.id;
-        versionLabel.textContent = type.version;
+        nameLabel.textContent = type.id();
+        versionLabel.textContent = type.version();
         updateAttributes();
     }
 

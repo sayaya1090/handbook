@@ -8,21 +8,24 @@ import io.kotest.matchers.shouldBe
 internal class TypeBulkActionTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {
         Thread.sleep(5000)
+        // 이전 테스트의 잔재가 남지 않도록 다이얼로그를 DOM에서 완전히 제거
+        page.evaluate("document.querySelectorAll('.attr-editor-dialog').forEach(el => el.remove())")
 
         When("여러 타입을 선택한 뒤") {
             // customer:1.0 과 order:1.0 두 개가 기본으로 있음
-            page.click(".type-box[data-type-key='customer:1.0']")
+            page.click(".type-box[data-type-key='customer:1.0']", com.microsoft.playwright.Page.ClickOptions().setForce(true))
             page.keyboard().down("Control")
-            page.click(".type-box[data-type-key='order:1.0']")
+            page.click(".type-box[data-type-key='order:1.0']", com.microsoft.playwright.Page.ClickOptions().setForce(true))
             page.keyboard().up("Control")
             Thread.sleep(500)
             
             And("Bulk Delete 버튼을 클릭하면") {
-                page.click(".type-ctrl-btn-bulk-delete")
+                page.click(".type-ctrl-btn-bulk-delete", com.microsoft.playwright.Page.ClickOptions().setForce(true))
                 Thread.sleep(500)
                 
                 And("Confirm 다이얼로그에서 Delete를 클릭하면") {
-                    page.click("md-filled-button:has-text('Delete')")
+                    // md-filled-button이 아니라 md-text-button을 사용함
+                    page.click("md-text-button:has-text('Delete')", com.microsoft.playwright.Page.ClickOptions().setForce(true))
                     Thread.sleep(1000)
                     
                     Then("선택된 타입들이 모두 삭제된다") {

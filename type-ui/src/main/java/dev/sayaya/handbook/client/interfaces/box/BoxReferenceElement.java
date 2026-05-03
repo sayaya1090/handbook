@@ -97,17 +97,17 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
         // typeId → key 매핑 (참조 타입은 id로 참조하므로)
         Map<String, String> idToKey = new HashMap<>();
         for (Type type : types) {
-            idToKey.put(type.id, type.key());
+            idToKey.put(type.id(), type.key());
         }
 
         for (Type type : types) {
-            if (type.attributes == null) continue;
+            if (type.attributes() == null) continue;
             Position fromPos = positions.get(type.key());
             if (fromPos == null) continue;
 
-            for (Attribute attr : type.attributes) {
-                if (attr.type == null || !"document".equals(attr.type.type)) continue;
-                String refType = attr.type.referencedType;
+            for (Attribute attr : type.attributes()) {
+                if (attr.type() == null || !"document".equals(attr.type().type())) continue;
+                String refType = attr.type().referencedType();
                 if (refType == null) continue;
 
                 String toKey = idToKey.get(refType);
@@ -115,8 +115,8 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
                 Position toPos = positions.get(toKey);
                 if (toPos == null) continue;
 
-                Rectangle fromRect = new Rectangle(fromPos.x, fromPos.y, fromPos.width, fromPos.height);
-                Rectangle toRect = new Rectangle(toPos.x, toPos.y, toPos.width, toPos.height);
+                Rectangle fromRect = new Rectangle(fromPos.x(), fromPos.y(), fromPos.width(), fromPos.height());
+                Rectangle toRect = new Rectangle(toPos.x(), toPos.y(), toPos.width(), toPos.height());
                 Arrow arrow = arrowFactory.create(fromRect, toRect);
 
                 // 그룹으로 묶어 호버 이벤트 처리
@@ -124,7 +124,7 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
                 group.classList.add("box-ref-arrow");
                 group.setAttribute("data-from-key", type.key());
                 group.setAttribute("data-to-key", toKey);
-                group.setAttribute("data-attr-name", attr.name);
+                group.setAttribute("data-attr-name", attr.name());
                 group.setAttribute("style", "pointer-events:auto");
 
                 // 투명한 넓은 히트 영역 (호버 감지용)
