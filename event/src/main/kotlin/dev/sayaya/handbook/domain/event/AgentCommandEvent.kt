@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.domain.event
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.io.Serializable
 import java.util.*
 
 /**
@@ -29,4 +28,7 @@ data class AgentCommandEvent(
         val target: Map<String, Any>? = null,
         val description: String? = null,
     ) : Serializable
+}
+ull,
+    )
 }

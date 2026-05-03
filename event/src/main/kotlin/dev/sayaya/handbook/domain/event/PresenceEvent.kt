@@ -1,7 +1,6 @@
 package dev.sayaya.handbook.domain.event
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.io.Serializable
 import java.util.*
 
 /**
@@ -37,3 +36,5 @@ data class PresencePayload(
     /** 편집 중인 필드명 */
     val field: String? = null,
 ) : Serializable
+g? = null,
+)

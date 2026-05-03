@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import java.io.Serializable
 import java.util.*
 
 /**
@@ -29,7 +28,7 @@ import java.util.*
     JsonSubTypes.Type(value = PresenceEvent::class, name = "PRESENCE"),
 )
 @JsonInclude(JsonInclude.Include.NON_NULL)
-interface Event<T : Serializable> : Serializable {
+interface Event<T> {
     val id: UUID
     val workspace: UUID
     @get:JsonProperty("event_type")
