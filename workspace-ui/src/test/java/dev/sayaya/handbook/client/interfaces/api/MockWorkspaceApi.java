@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 public class MockWorkspaceApi implements WorkspaceApi {
     @Inject MockWorkspaceApi() {}
     @Override public Observable<Workspace> update(String id, String n, String d) { return Observable.from(new Workspace()); }
+    @Override public Observable<Void> delete(String id) { return Observable.of(null); }
     @Override public Observable<Group[]> listGroups(String ws) { return Observable.from(new Group[0]); }
     @Override public Observable<Group> createGroup(String ws, String n, String d) { return Observable.from(new Group()); }
     @Override public Observable<Void> deleteGroup(String ws, String gid) { return Observable.of(null); }
