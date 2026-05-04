@@ -19,18 +19,18 @@
 - `url`이 정의된 도구는 클릭 시 `HistoryManager`를 통해 주소창을 해당 경로로 갱신하며, 이를 통해 딥링크를 지원한다.
 - `urlRegex`는 쉘의 `UrlBasedToolResolver`가 현재 활성화된 도구를 자동 선택할 때 사용된다.
 
-### Client-side synthetic menus
+### 4.2 온보딩 메뉴 (Onboarding Menu)
 
-백엔드 `/menus` 집계 밖에서 **Shell 이 런타임에 합성**하는 가상 메뉴. 초기에는 `MenuList`에 등록되지 않는 제약이 있었으나, 현재는 `WorkspaceOnboardingBootstrapper`가 생성한 온보딩 메뉴를 `MenuList`에 동적으로 추가하여 `UrlBasedMenuResolver`의 정규식(`^/workspaces/onboarding$`) 매칭과 라우팅을 정상적으로 지원한다.
+사용자의 워크스페이스가 존재하지 않을 때 `workspace-query` 공급자가 반환하는 메뉴 엔트리이다.
 
-| 합성 소스 | 트리거 | 로드 대상 | UC |
-|----------|--------|----------|-----|
-| `shell-ui/WorkspaceOnboardingBootstrapper` | `WorkspaceList` 가 empty 방출 | `js/onboarding/onboarding.nocache.js` (onboarding-ui Create/Join) | UC-12 / UC-S21 |
-
-**제약**
-- `urlRegex`가 `^/workspaces/onboarding$`으로 지정되어 딥링크 및 URL 기반 자동 선택이 가능하다.
-- `loaded` 플래그로 세션 내 최초 1회만 주입된다. 이후에는 라우터를 통해 자유롭게 접근 가능하다.
-- 외부 에이전트 또한 `navigate` 커맨드로 `/workspaces/onboarding` 경로를 지정하여 온보딩 화면을 명시적으로 호출할 수 있다.
+| 필드 | 값 | 비고 |
+|------|----|------|
+| `title` | `"workspace.onboarding"` | i18n 키 |
+| `order` | `"S0"` | 가장 상단 노출 |
+| `script` | `"/js/onboarding/onboarding.nocache.js"` | 온보딩 UI 모듈 |
+| `url` | `"/workspaces/onboarding"` | 온보딩 경로 |
+| `urlRegex` | `["^/workspaces/onboarding$"]` | 자동 매칭용 |
+| `allowedSessionStates`| `["AUTHENTICATED"]` | 로그인 후 워크스페이스 없는 사용자에게만 노출 |
 
 ## Client-side routing table
 

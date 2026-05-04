@@ -13,7 +13,7 @@
 | UC-11 | 워크스페이스 삭제 | — (workspace-command) | 해당 없음 |
 | UC-85 | 외부 AI Tool Use (`list_workspace_menu`, `list_workspaces`) | `MenuController` + `WorkspaceController` + OpenAPI `/v3/api-docs` | 구현 |
 
-## UC-04 시퀀스 — 메뉴 공급
+## UC-04 시퀀스 — 메뉴 공급 (서버 주도 온보딩)
 
 ```mermaid
 sequenceDiagram
@@ -26,8 +26,12 @@ sequenceDiagram
     Browser->>Gateway: GET /menus
     Gateway->>MenuService: menus(headers)
     par "병렬 집계"
-        MenuService->>SW: GET /menus
-        SW-->>MenuService: [workspaces]
+        MenuService->>SW: GET /menus (사용자 서브 포함)
+        alt 워크스페이스 0개
+            SW-->>MenuService: [onboarding-menu]
+        else 워크스페이스 1개 이상
+            SW-->>MenuService: [workspaces]
+        end
     and
         MenuService->>Others: GET /menus
         Others-->>MenuService: [login, types, documents, ...]

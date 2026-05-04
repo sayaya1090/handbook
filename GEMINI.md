@@ -38,9 +38,8 @@
 - **신규 모듈 배포**: 신규 모듈 추가 시 Helm Chart(`charts/`)와 GitHub Actions 워크플로가 세트로 생성되었는가?
 - **로컬 테스트 필수**: 수정한 모듈은 `./gradlew :<module>:test` 로 그린 확인 후 커밋.
 
-### I18N (다국어)
-- **UI 텍스트는 LabelProvider를 통해 다국어 처리.** 한국어 하드코딩 금지.
-- 언어 파일: `src/main/i18n/language.{ko,en}.json` → 빌드 시 머지
+### [원칙] UI 진입점의 서버 주도 관리
+온보딩, 로그인 유도 등 UI 진입을 위한 메뉴/경로는 클라이언트가 상태를 판단해 주입하지 않고, 항상 `/menus` 엔트리 등 백엔드의 상태 기반 공급을 우선한다. 클라이언트의 가상 메뉴 주입(Synthetic Menu)은 시스템 일관성을 저해하므로 금지한다.
 
 ### 디자인 언어 통일
 - **MD3 디자인 토큰만 사용.** 하드코딩 금지. 상세는 `.gemini/skills/design-tokens.md` 참조.

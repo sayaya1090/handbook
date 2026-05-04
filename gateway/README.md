@@ -147,6 +147,16 @@ spring:
 - navigate: 해당 없음 (인프라 계층)
 - highlight/mutate selector 패턴: 해당 없음
 
+## 메뉴 엔트리 확장 가이드 (서버 주도 온보딩 포함)
+
+새로운 서비스를 `/menus` 집계에 추가하거나 온보딩과 같은 서버 주도 라우팅 메뉴를 추가하려면 다음 단계를 수행합니다:
+
+1. 서비스 내에 `MenuSupplier` 구현체(예: `MenuController`)를 작성합니다.
+2. `allowedSessionStates`를 명시적으로 선언하여 보안을 확보합니다.
+3. 서비스가 실행 중이고 `/menus` 엔드포인트가 `/menus` GET 요청에 응답하도록 설정합니다.
+4. 온보딩 메뉴처럼 조건부로 메뉴를 공급하려면, 서비스 컨트롤러에서 워크스페이스 조회 로직을 연동하여 조건부로 응답합니다.
+5. `charts/handbook/gateway/templates/configmap.yaml`의 `gateway.routes`와 `services` 목록에 새 서비스의 이름을 등록합니다. (운영 환경 적용 시)
+
 ## 메뉴 수집 설정
 
 ```yaml

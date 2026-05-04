@@ -1794,13 +1794,9 @@ visible(menu, state) =
 | 워크스페이스 생성/참여 | `{AUTHENTICATED, IN_WORKSPACE}` | 로그인 사용자 — 워크스페이스 보유자도 추가 생성 가능 |
 | 타입/문서/워크스페이스 관리 | `{IN_WORKSPACE}` | 워크스페이스 소속자만 |
 
-#### 3.24.6 `WorkspaceOnboardingBootstrapper` 와의 관계
+#### 3.24.6 서버 주도 온보딩 메뉴 공급
 
-기존 shell-ui `WorkspaceOnboardingBootstrapper` 는 `WorkspaceList` 가 empty 일 때 workspace-ui 스크립트를 client-side synthetic 메뉴로 주입해 "빈 워크스페이스 자동 온보딩" (UC-12) 을 수행한다. Phase 1 `allowedSessionStates` 도입 이후:
-
-- `workspace-query` 의 워크스페이스 관리 메뉴는 `allowedSessionStates = {AUTHENTICATED, IN_WORKSPACE}` 로 공급.
-- 워크스페이스 생성/참여 엔트리를 **별도 공급자** 가 `{AUTHENTICATED, IN_WORKSPACE}` 로 공급하면, `AUTHENTICATED` 상태 사용자에게도 enabled 로 노출 → 클릭 시 Create/Join 화면으로 자연 라우팅.
-- **onboarding bootstrapper 유지 (2026-04-23)** — `allowedSessionStates` 기반의 명시적 CTA (클릭 유도) 가 가능하더라도, 워크스페이스가 없는 신규 사용자를 위한 자동 진입 로직은 UX 마찰을 줄이기 위해 유지한다.
+기존의 `WorkspaceOnboardingBootstrapper`는 제거된다. 이제 백엔드(Gateway/Workspace-Query)가 사용자의 워크스페이스 보유 여부를 판단하여, 워크스페이스가 없을 경우 `onboarding-menu`를 메뉴 목록에 포함하여 내려준다. Shell UI는 일반적인 메뉴 선택 메커니즘을 통해 온보딩 메뉴를 감지하고, 해당 메뉴에 연결된 온보딩 모듈(`onboarding-ui`)을 로드하여 화면에 표시한다.
 
 #### 3.24.7 구현 책임
 

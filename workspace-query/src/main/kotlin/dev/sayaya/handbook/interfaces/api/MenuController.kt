@@ -3,6 +3,7 @@ package dev.sayaya.handbook.interfaces.api
 import dev.sayaya.handbook.domain.Menu
 import dev.sayaya.handbook.domain.SessionStateKind
 import dev.sayaya.handbook.domain.Tool
+import dev.sayaya.handbook.usecase.WorkspaceReadRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import java.security.Principal
+import java.util.UUID
 
 /**
  * 워크스페이스 도메인의 `/menus` 공급자.
@@ -43,7 +45,7 @@ import java.security.Principal
     description = "Workspace 도메인의 /menus 공급자. shell-ui Drawer 하단 엔트리와 " +
         "AI 에이전트가 워크스페이스 관련 화면을 navigate 할 때 참조하는 메타데이터를 제공한다."
 )
-class MenuController {
+class MenuController(private val repository: WorkspaceReadRepository) {
     companion object {
         val MENU: Menu = Menu.builder()
             .title("workspaces")
@@ -61,10 +63,19 @@ class MenuController {
                 Tool.builder().title("permissions").order("S9").icon("fa-key").iconType("sharp")
                     .url("/workspaces/{workspaceId}/permissions").urls("^/workspaces/\\{workspaceId\\}/permissions$").build(),
             ).url("/workspaces/{workspaceId}").urls("^/workspaces/\\{workspaceId\\}(/.*)?$")
-            // 워크스페이스 관리 메뉴는 활성 워크스페이스 선택 후에만 의미가 있음.
-            // 계층 추론 없음 — AUTHENTICATED 만 선언하면 IN_WORKSPACE 에서 안 보이므로 두 값 다 필요하진 않지만,
-            // 이 메뉴는 IN_WORKSPACE 전용이라 단일 선언으로 충분.
             .allowedSessionStates(SessionStateKind.AUTHENTICATED, SessionStateKind.IN_WORKSPACE)
+            .build()
+
+        val ONBOARDING_MENU: Menu = Menu.builder()
+            .title("workspace.onboarding")
+            .order("S0")
+            .icon("fa-circle-plus")
+            .iconType("sharp")
+            .script("/js/onboarding/onboarding.nocache.js")
+            .bottom(true)
+            .url("/workspaces/onboarding")
+            .urls("^/workspaces/onboarding$")
+            .allowedSessionStates(SessionStateKind.AUTHENTICATED)
             .build()
     }
 
@@ -80,5 +91,11 @@ class MenuController {
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)
     fun menus(principal: Principal?): Flux<Menu> =
-        if (principal == null) Flux.empty() else Flux.just(MENU)
+        if (principal == null) Flux.empty()
+        else repository.findByUserSub(UUID.fromString(principal.name))
+            .hasElements()
+            .flatMapMany { hasWorkspaces ->
+                if (hasWorkspaces) Flux.just(MENU)
+                else Flux.just(ONBOARDING_MENU)
+            }
 }

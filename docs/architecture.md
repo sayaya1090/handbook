@@ -182,27 +182,24 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-    participant B as WorkspaceOnboardingBootstrapper
-    participant S as SessionStateProvider
-    participant M as MenuList
+    participant GW as Gateway
+    participant SW as workspace-query
+    participant Shell as Shell UI
     participant H as HistoryManager
 
-    Note over B: "initialize() 호출"
-    par "데이터 로딩 (비동기)"
-        Gateway->>S: "/user (SessionState: AUTHENTICATED)"
-        Gateway->>M: "/menus (MenuList: Loaded)"
+    Note over GW,SW: "/menus 로 요청"
+    alt 워크스페이스 없음
+        GW->>SW: menus() 조회
+        SW-->>GW: [onboarding-menu]
+    else 워크스페이스 있음
+        GW->>SW: menus() 조회
+        SW-->>GW: [workspace-menu]
     end
-
-    S->>B: "stateChanged (subscribe)"
-    B->>B: "recompute() - MenuList 가 비었으면 대기"
+    GW-->>Shell: 정렬된 Menu Flux (onboarding 포함)
+    Shell->>Shell: 메뉴 수신 및 Drawer 렌더
     
-    M->>B: "menusChanged (subscribe)"
-    B->>B: "recompute() - 모든 조건 충족 확인"
-
-    alt "Clean URL Navigation 필요"
-        B->>H: "window.history.pushState(null, '', '/workspaces')"
-    else "이미 URL 이 설정된 경우"
-        B->>B: "MenuSelected.next(menu) 직접 호출 (지연 로딩 트리거)"
+    alt 온보딩 메뉴 선택
+        Shell->>H: "onboarding.nocache.js 로드 및 렌더"
     end
 ```
 
