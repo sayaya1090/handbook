@@ -21,25 +21,30 @@
 
 ### Client-side synthetic menus
 
-백엔드 `/menus` 집계 밖에서 **Shell 이 런타임에 합성**하는 가상 메뉴. `MenuList` 에 등록되지 않고 `urlRegex` 도 미지정이므로 `UrlBasedMenuResolver` 매칭 대상이 아니며, MenuRail / MobileTabs 에도 노출되지 않는다. 오직 `MenuSelected` 스트림에만 push 되어 기존 `ModuleScriptManager` 파이프라인으로 모듈 스크립트 로드를 유도한다.
+백엔드 `/menus` 집계 밖에서 **Shell 이 런타임에 합성**하는 가상 메뉴. 초기에는 `MenuList`에 등록되지 않는 제약이 있었으나, 현재는 `WorkspaceOnboardingBootstrapper`가 생성한 온보딩 메뉴를 `MenuList`에 동적으로 추가하여 `UrlBasedMenuResolver`의 정규식(`^/workspaces/onboarding$`) 매칭과 라우팅을 정상적으로 지원한다.
 
 | 합성 소스 | 트리거 | 로드 대상 | UC |
 |----------|--------|----------|-----|
 | `shell-ui/WorkspaceOnboardingBootstrapper` | `WorkspaceList` 가 empty 방출 | `js/onboarding/onboarding.nocache.js` (onboarding-ui Create/Join) | UC-12 / UC-S21 |
 
 **제약**
-- `urlRegex` 미지정 → 딥링크·URL 기반 자동 선택 불가. 합성 메뉴는 일시 상태 (도메인 조건 복귀 시 더 이상 발화하지 않음) 에만 사용.
-- `loaded` 플래그로 세션 내 1회 발화 보장 — 도메인 조건이 재진입해도 반복 push 금지.
-- 외부 에이전트의 navigate 커맨드로 직접 트리거 불가 (MenuList 부재). 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.
+- `urlRegex`가 `^/workspaces/onboarding$`으로 지정되어 딥링크 및 URL 기반 자동 선택이 가능하다.
+- `loaded` 플래그로 세션 내 최초 1회만 주입된다. 이후에는 라우터를 통해 자유롭게 접근 가능하다.
+- 외부 에이전트 또한 `navigate` 커맨드로 `/workspaces/onboarding` 경로를 지정하여 온보딩 화면을 명시적으로 호출할 수 있다.
 
-## 소비자 (Consumers)
+## Client-side routing table
 
-- **gateway** — `MenuService` 가 모든 공급자를 병렬 호출해 집계
-  - `usecase/MenuService.kt`, `usecase/MenuSupplier.kt`
-  - `interfaces/api/MenuController.kt` → `GET /menus`
-- **shell-ui** — `UrlBasedMenuResolver` 가 URL의 **정규화된 pathname**을 정규식으로 매칭하여 자동 선택
-  - `client/usecase/UrlBasedMenuResolver.java`
-  - 정규화 로직: `origin`, `port`, `protocol` 을 제거한 순수 경로(예: `/workspaces/123/types`) 만 남겨 매칭.
+| URL 패턴 (Regex) | 대상 모듈 | 설명 |
+|-------------------|-----------|------|
+| `^/$` | `shell-ui` | 루트 경로 |
+| `^/workspaces$` | `onboarding-ui` | 온보딩 전용 경로 (빈 워크스페이스 상태) |
+| `^/workspaces/onboarding$` | `onboarding-ui` | 온보딩 생성/참여 화면 |
+| `^/workspaces/\{workspaceId\}$` | `workspace-ui` | 워크스페이스 대시보드 |
+| `^/workspaces/\{workspaceId\}/documents(/.*)?$` | `document-ui` | 문서 관리 |
+| `^/workspaces/\{workspaceId\}/types(/.*)?$` | `type-ui` | 타입 스키마 관리 |
+| `^/workspaces/\{workspaceId\}/info$` | `workspace-ui` | 워크스페이스 정보 |
+| `^/workspaces/\{workspaceId\}/groups$` | `workspace-ui` | 그룹 관리 |
+| `^/workspaces/\{workspaceId\}/permissions$` | `workspace-ui` | 권한 관리 |
 
 ## 변경 시 체크 대상
 
