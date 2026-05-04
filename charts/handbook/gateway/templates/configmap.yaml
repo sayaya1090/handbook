@@ -29,7 +29,7 @@ data:
             - id: ui-clean-urls
               uri: http://ceph-rgw:80
               predicates:
-                - Path=/types,/documents,/workspaces,/dashboard,/workspace/*/**
+                - Path=/types,/documents,/workspaces/**,/dashboard
                 - Method=GET
                 # Accept 헤더에 html은 포함되되, json/vnd.sayaya는 포함되지 않은 경우에만 매칭 (REST API 충돌 방지)
                 - Header=Accept, ^(?!.*application/(json|vnd\.sayaya)).*text/html.*
