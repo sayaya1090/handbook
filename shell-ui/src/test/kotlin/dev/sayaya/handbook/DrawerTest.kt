@@ -674,19 +674,6 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
-        When("URI가 /workspaces로 변경되면") {
-            page.evaluate("window.__handbook_uri('/workspaces')")
-            Thread.sleep(500)
-            Then("document.body에 data-onboarding=\"true\" 속성이 부여된다") {
-                val hasAttr = page.evaluate("document.body.hasAttribute('data-onboarding')").toString()
-                hasAttr shouldBe "true"
-                val attrValue = page.evaluate("document.body.getAttribute('data-onboarding')").toString()
-                attrValue shouldBe "true"
-            }
-            // 원복
-            page.evaluate("document.body.removeAttribute('data-onboarding')")
-        }
-
         Then("워크스페이스 목록이 비어있을 때 WorkspaceSelectElement의 style.display가 \"none\"이 된다") {
             // 이 테스트에서는 워크스페이스 상태를 직접 조작하기 어려우므로 UI 결과만 시뮬레이션하거나
             // WorkspaceSelectElement 의 update 로직에 의해 변경될 수 있는 style.display 속성 동작을 검증.

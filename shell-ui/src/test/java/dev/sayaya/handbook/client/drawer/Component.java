@@ -20,7 +20,6 @@ public interface Component {
     HistoryManager historyManager();
     UrlBasedMenuResolver urlBasedToolResolver();
     ToolBasedMenuResolver toolBasedMenuResolver();
-    WorkspaceOnboardingBootstrapper bootstrapper();
     UriStore uri();
     ProgressStore progress();
 }
