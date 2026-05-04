@@ -356,6 +356,17 @@ shell-ui는 독립 GWT 모듈로 컴파일되며, agent-ui 등 다른 GWT 모듈
 
 `.frame` 은 위 토큰 + 상하좌우 16px 여백을 적용해 패널들이 엣지·rail·AppBar 에 닿지 않도록 한다.
 
+## 에이전트 연동
+
+### 내부 assistant
+- 역할: `AGENT_COMMAND` 수신 및 UI 반영 오케스트레이터.
+- 내비게이션: `navigate` 커맨드 수신 시 해당 URL로 라우팅 및 모듈 로드.
+- UI 피드백: `attention` 커맨드 수신 시 AppBar 뱃지 표시 또는 Coachmark 실행.
+
+### Agent Command 타겟
+- highlight: `.menu-item`, `.tab-item`, `.shell-app-bar-action`
+- selector 패턴: `[data-menu-id="{id}"]`, `[data-tool-id="{id}"]`
+
 ## 의존성
 
 - **activity** — Menu, Tool, ToolFunction, Render 도메인 클래스

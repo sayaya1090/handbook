@@ -79,3 +79,24 @@ sequenceDiagram
 | UC-WM2 | 그룹 관리 | 🚧 부분 구현 (API 완료, UI 미구현) | GroupsTabElement, WorkspaceApi |
 | UC-WM3 | 사용자 배정 | 🚧 부분 구현 (API 완료, UI 미구현) | GroupsTabElement, WorkspaceApi |
 | UC-WM4 | 권한 부여 | 🚧 부분 구현 (API 완료, UI 미구현) | PermissionsTabElement, WorkspaceApi |
+
+## 에이전트 연동
+
+### 시나리오 — 권한 설정 안내
+
+```mermaid
+sequenceDiagram
+    participant AS as assistant
+    participant EB as event-broadcaster
+    participant SU as shell-ui
+    participant WU as workspace-ui
+
+    AS->>EB: AGENT_COMMAND (navigate: "/workspaces/1/permissions")
+    EB-->>SU: SSE push (AGENT_COMMAND)
+    SU->>SU: "permissions" 탭 자동 선택
+    SU->>WU: workspace-ui 렌더링
+    AS->>EB: AGENT_COMMAND (highlight: ".user-row[data-id='user-1']")
+    EB-->>SU: SSE push (AGENT_COMMAND)
+    SU->>WU: HighlightEffect 적용 요청
+    WU->>WU: 해당 사용자 행 강조
+```

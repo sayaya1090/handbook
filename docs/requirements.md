@@ -1817,10 +1817,11 @@ visible(menu, state) =
 
 ### 5.1 기술 스택
 
-- **백엔드**: Kotlin, Spring Boot, Spring WebFlux (리액티브)
-- **프론트엔드**: Java (GWT → JavaScript 컴파일), Material Design 3
+- **백엔드**: Kotlin 2.3.0, Spring Boot 4.0.1, Spring WebFlux (리액티브)
+- **프론트엔드**: Java (GWT 2.13.0 → JavaScript 컴파일), Material Design 3
 - **데이터베이스**: PostgreSQL (R2DBC, 리액티브)
 - **메시징**: Kafka (Spring Cloud Stream)
+- **검색**: Elasticsearch 9.3.3 (전문 검색 및 복합 필터링)
 - **인프라**: Kubernetes, Helm Charts, Jib 컨테이너화
 - **서비스 디스커버리**: Zookeeper
 
@@ -1953,4 +1954,4 @@ visible(menu, state) =
 - **테스트 커버리지 80% (미구현)**: 전 모듈 Kover 최소 커버리지 충족. 에러 경로/타임아웃 테스트 보강.
 - **누락 Javadoc 보완 (미구현)**: 헬퍼/유틸리티 클래스 문서화.
 문서화.
-�.
+�.

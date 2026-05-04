@@ -143,3 +143,25 @@ sequenceDiagram
 | UC-DB6 (감사 로그) | — | AuditLogWidget, AgentActivityList, DashboardApi, LabelProvider | ❌ 테스트 미작성 (AuditLogWidget 구현 완료) |
 | UC-DB7 (빈 상태 UI) | — | EmptyStateElement, StatsCardElement, QualityPanelElement | ❌ 미구현 (계획) |
 | UC-DB8 (성공 피드백) | — | ToastContainer | ❌ 미구현 (계획) |
+
+## 에이전트 연동
+
+### 시나리오 — 데이터 품질 이슈 안내 및 이동
+
+```mermaid
+sequenceDiagram
+    participant AS as assistant
+    participant EB as event-broadcaster
+    participant SU as shell-ui
+    participant DU as dashboard-ui
+
+    AS->>EB: AGENT_COMMAND (notify: "데이터 품질 이슈 5건 발견")
+    EB-->>SU: SSE push (AGENT_COMMAND)
+    SU->>SU: dashboard 메뉴 아이템에 알림 뱃지 표시
+    User->>SU: dashboard 메뉴 선택
+    SU->>DU: dashboard-ui 렌더링
+    AS->>EB: AGENT_COMMAND (highlight: ".quality-item[data-id='q-1']")
+    EB-->>SU: SSE push (AGENT_COMMAND)
+    SU->>DU: HighlightEffect 적용 요청
+    DU->>DU: 해당 이슈 카드 pulse 애니메이션 및 스크롤
+```

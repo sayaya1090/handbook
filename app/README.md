@@ -32,6 +32,10 @@ src/main/webapp/
 - `service-worker.js`: 정적 리소스 캐싱 (manifest.json 등)
 - `app.html`에서 서비스 워커 자동 등록
 
+## 에이전트 연동
+**에이전트 연동: 없음 (정적 자산 호스트).**
+실제 에이전트와의 상호작용은 본 HTML에 포함된 `shell-ui` 및 `agent-ui` 모듈에서 담당한다.
+
 ## 개발 환경
 
 프로젝트 루트의 `docker-compose.yml`을 사용하여 로컬 개발 환경을 구성할 수 있다.

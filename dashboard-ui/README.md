@@ -123,6 +123,16 @@ Shell이 `ModuleScriptManager`로 `js/dashboard/dashboard.nocache.js`를 동적 
 | `TimelineProvider` | 시계열 통계 (BehaviorSubject) |
 | `DistributionProvider` | 분포 통계 (BehaviorSubject) |
 
+## 에이전트 연동
+
+### 내부 assistant
+- 시나리오: "워크스페이스 건강 상태 보여줘" -> assistant 가 `dashboard` 화면으로 `navigate`.
+- 데이터 품질 안내: 품질 이슈 발견 시 해당 이슈 카드를 `attention` (spotlight)으로 강조.
+
+### Agent Command 타겟
+- navigate: `dashboard`
+- highlight selector 패턴: `.stats-card`, `.quality-item`, `.agent-activity-row`
+
 ### 구현 현황
 
 | 기능 | 상태 | 구현체 |

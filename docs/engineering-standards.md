@@ -4,7 +4,29 @@
 
 ---
 
-## 1. 공용 도메인 모델 (Shared Domain) 전략
+## 1. 기술 스택 표준 (2026-04-28 정립)
+
+### 1.1 서버 사이드
+- **Kotlin 2.3.0**: 코루틴 및 리액티브 프로그래밍 최적화
+- **Spring Boot 4.0.1**: Jakarta EE 11 및 Java 21+ 최적화
+- **Jackson 3**: Spring Boot 4의 기본 직렬화 도구. 패키지명이 `tools.jackson.*`으로 변경되었음에 유의한다.
+  - 신규 코드는 `tools.jackson.databind.*`, `tools.jackson.core.*` 패키지를 사용한다.
+  - 애너테이션은 하위 호환성을 위해 `com.fasterxml.jackson.annotation.*`을 유지한다.
+- **R2DBC**: 리액티브 드라이버를 통한 논블로킹 DB 접근
+
+### 1.2 클라이언트 사이드
+- **GWT 2.13.0**: Java 21+ 호환성 및 Elemental2 활용
+- **Material Design 3**: MD3 디자인 시스템 및 토큰 준수
+- **Playwright**: 헤드리스 브라우저 기반 UI 테스트 자동화
+
+### 1.3 데이터 및 메시징
+- **PostgreSQL 17+**: JSONB 및 리액티브 연동
+- **Kafka**: Spring Cloud Stream 기반 이벤트 소싱
+- **Elasticsearch 9.3.3**: 전문 검색 및 복합 필터링 최적화
+
+---
+
+## 2. 공용 도메인 모델 (Shared Domain) 전략
 
 백엔드(JVM)와 프론트엔드(GWT)가 동일한 Java 소스 파일을 공유하여 **단일 출처(SSOT)**를 유지하고 **제로 카피(Zero-copy)** 통신을 실현한다.
 

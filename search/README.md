@@ -40,6 +40,10 @@ fun search(@PathVariable id: UUID, search: Search): Flux<Type> = ...
 
 - Spring WebFlux
 
+## 에이전트 연동
+**에이전트 연동: 없음 (서버 사이드 라이브러리).**
+검색 파라미터 표준화 기능을 제공하며, 에이전트는 본 라이브러리를 사용하는 `document-query` 등의 API를 통해 간접적으로 연동된다.
+
 ## 실행
 
 ```bash
