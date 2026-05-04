@@ -10,12 +10,13 @@ spring:
         - id: ui-clean-urls
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
-            - Path=/types,/documents,/workspaces,/dashboard,/workspaces/*/**
+            - Path=/types,/documents,/workspaces/**,/dashboard
             - Method=GET
             - Header=Accept, ^(?!.*application/(json|vnd\.sayaya)).*text/html.*
           filters:
             - SetPath=/app.html
           order: 0
+
         # 인증
         - id: login
           uri: ${gateway.routes.login:http://localhost:8081}
