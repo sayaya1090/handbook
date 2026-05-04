@@ -252,6 +252,16 @@ sequenceDiagram
 | **정상 흐름** | 1. `MenuApi`/`UserApi`가 API 호출 시 `Observer<Progress>`에 `Progress.indeterminate()`를 발행한다.<br>2. `ProgressElement`가 구독하여 프로그레스 바를 표시한다.<br>3. 응답 수신 시 `Progress.hide()`를 발행하여 숨긴다.<br>4. 에이전트의 `ProgressHandler`도 동일한 `Observer<Progress>`를 사용하여 진행률 표시. |
 | **특이사항** | API 로딩과 에이전트 진행률이 단일 프로그레스 바를 공유한다. |
 
+## UC-S18: 빈 워크스페이스 오버레이 표시
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (자동) |
+| **선행조건** | Shell 로딩 완료 |
+| **정상 흐름** | 1. `WorkspaceList`가 비어있는 상태로 발행된다.<br>2. `EmptyWorkspacePresenter`가 현재 세션 상태를 확인한다.<br>3. 세션 상태가 `AUTHENTICATED` (로그인 완료 & 워크스페이스 없음)일 때만 "Get Started" 오버레이(`EmptyWorkspaceOverlay`)를 표시한다.<br>4. 사용자가 버튼을 클릭하면 온보딩(생성/참여) 화면으로 이동하며 오버레이가 사라진다. |
+| **대안 흐름** | 세션 상태가 `ANONYMOUS` (미인증)인 경우, 로그인 화면이 표시되어야 하므로 빈 워크스페이스 오버레이를 표시하지 않는다. |
+| **상태** | ✅ 구현 완료 (`EmptyWorkspacePresenter`) |
+
 ## 모바일 Drawer 전환 시퀀스 (드릴인 패턴)
 
 모바일에서는 하단 바 한 줄을 컨텍스트에 따라 스왑한다: 평소에는 `MenuRail` 을 하단
@@ -379,7 +389,7 @@ sequenceDiagram
 | UC-S15 (언어/테마) | — | Drawer UI | UserPreferences, ThemeToggle, BrowserLanguageDetector, LabelProvider | ✅ 구현 완료 (DrawerTest: 테마 토글 및 퍼시스턴스) |
 | UC-S16 (설정패널) | — | Drawer UI | ThemeToggle, UserPreferences | ❌ 테스트 미작성 (패널 UI 미완) |
 | UC-S17 (세션관리) | — | Frame+API | SessionPollingService, FetchApi, ToastContainer, LabelProvider | ✅ 구현 완료 (SessionPollingService) |
-| UC-S18 (빈 상태 UI) | — | Frame+API | EmptyStateElement, ContentElement | ❌ 미구현 (계획) |
+| UC-S18 (빈 상태 UI) | — | Frame+API | EmptyWorkspaceOverlay, EmptyWorkspacePresenter | ✅ 구현 완료 |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, ProgressSharing, 0, LabelSharing | ❌ 테스트 미작성 |
 

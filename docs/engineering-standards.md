@@ -81,6 +81,10 @@ public final class MyDomain {
 4. **경계에서만 subscribe**: 화면 마운트 시 등 명확한 라이프사이클 경계에서만 구독한다.
 5. **반드시 구독 해제**: `Subscription.unsubscribe()`를 통해 메모리 누수를 방지한다.
 
+### 3.3 GWT UI 테스트 표준 (Playwright)
+- **비동기 렌더링 대응**: GWT 모듈의 로딩 및 초기화 지연으로 인해 `querySelector`는 `null`을 반환할 위험이 높다. 반드시 **`page.waitForSelector(".selector")`**를 사용하여 요소가 나타날 때까지 대기한 후 검증을 수행한다.
+- **빌드 구성 누락 방지**: 신규 테스트용 GWT 모듈(`*Test.gwt.xml`) 추가 시, 해당 프로젝트의 `build.gradle.kts` 내 `gwt { devMode { modules = [...] } }` 목록에 반드시 명시하여 컴파일 대상에 포함시킨다.
+
 ---
 
 ## 4. UI 렌더링 및 통신 표준

@@ -23,7 +23,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Login", "dev.sayaya.handbook.Logout")
+        modules = listOf("dev.sayaya.handbook.Login", "dev.sayaya.handbook.Logout", "dev.sayaya.handbook.LoginTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

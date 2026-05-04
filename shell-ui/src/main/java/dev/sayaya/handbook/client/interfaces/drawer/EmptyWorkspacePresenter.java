@@ -1,7 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
+import dev.sayaya.handbook.client.usecase.SessionStateProvider;
+import dev.sayaya.handbook.client.domain.SessionState;
 import dev.sayaya.handbook.client.usecase.UriStore;
-import dev.sayaya.handbook.client.usecase.WorkspaceList;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -12,26 +13,26 @@ import javax.inject.Singleton;
 @Singleton
 public class EmptyWorkspacePresenter {
     private final EmptyWorkspaceOverlay view;
-    private final WorkspaceList workspaceList;
+    private final SessionStateProvider sessionState;
     private final UriStore uri;
 
     @Inject
-    public EmptyWorkspacePresenter(EmptyWorkspaceOverlay view, WorkspaceList workspaceList, UriStore uri) {
+    public EmptyWorkspacePresenter(EmptyWorkspaceOverlay view, SessionStateProvider sessionState, UriStore uri) {
         this.view = view;
-        this.workspaceList = workspaceList;
+        this.sessionState = sessionState;
         this.uri = uri;
     }
 
     public void initialize() {
-        workspaceList.subscribe(list -> update());
+        sessionState.subscribe(state -> update());
         uri.subscribe(path -> update());
     }
 
     private void update() {
-        var list = workspaceList.getValue();
+        SessionState state = sessionState.getValue();
         String path = uri.getValue();
-        if (list == null) return;
-        if (list.isEmpty() && path != null && !path.equals("/workspaces")) {
+        if (state == null) return;
+        if (state.kind() == dev.sayaya.handbook.domain.SessionStateKind.AUTHENTICATED && path != null && !path.equals("/workspaces")) {
             view.show();
         } else {
             view.hide();
