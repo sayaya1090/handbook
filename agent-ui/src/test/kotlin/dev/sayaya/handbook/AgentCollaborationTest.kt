@@ -5,6 +5,10 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-A14: DELEGATE 커맨드 수신 시 UI 안정성
+ * UC-A15: 다중 에이전트 연속 완료 + 아티팩트 패널
+ */
 @GwtHtml("agenttest.html")
 internal class AgentCollaborationTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {

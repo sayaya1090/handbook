@@ -7,6 +7,9 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
+/**
+ * UC-DB3: 에이전트 활동 타임라인
+ */
 @GwtHtml("dashboardtest.html")
 internal class DashboardActivityTest: GwtTestSpec({
     Given("대시보드 에이전트 활동 로그가 초기화됨") {

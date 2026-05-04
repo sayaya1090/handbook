@@ -135,11 +135,11 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
 |----|---|---|---|
-| UC-DB1 (통계 조회) | 초기 로딩 | Application, DashboardApi, StatsProvider, StatsCardElement | DashboardStatsTest: 통계 카드 3개 렌더링, 값(12/1245/8) 검증, 라벨 존재 및 비어있지 않음 검증 |
-| UC-DB2 (품질 현황) | 초기 로딩 | DashboardApi, QualityIssueList, QualityPanelElement | DashboardQualityTest: 품질 패널/헤더/리스트 존재, 이슈 2건, severity 배지(error/warning), 메시지에 타입/시리얼 포함, CSS 클래스 검증 |
-| UC-DB3 (에이전트 활동) | 초기 로딩 | DashboardApi, AgentActivityList, ActivityLogElement | DashboardActivityTest: 활동 패널/헤더/리스트 존재, 활동 2건, 타임스탬프 HH:MM 형식, 상태 COMPLETE, 의도에 커맨드 수 포함, CSS 클래스 검증 |
-| UC-DB4 (실행 상태) | 실시간 실행 상태 위젯 | DashboardApi, ActiveExecutionsWidget, ActiveExecutionList, SSE AGENT_COMMAND | DashboardAgentWidgetsTest: 활성 실행 위젯/헤더/리스트 존재, 실행 2건, 의도 텍스트, 진행률 바/fill/텍스트(슬래시 형식), 상태 RUNNING 검증 |
-| UC-DB5 (아티팩트) | 아티팩트 목록 위젯 | DashboardApi, ArtifactListWidget, AgentActivityList | DashboardAgentWidgetsTest: 아티팩트 위젯/헤더/아이템 존재, 2건, 요약 텍스트, 변경 수(2), 시간, 상세 초기 숨김, 클릭 → 펼침/접기 토글, 변경 라인 존재 검증 |
+| UC-DB1 (통계 조회) | 초기 로딩 | Application, DashboardApi, StatsProvider, StatsCardElement | ✅ 구현 완료 (DashboardStatsTest: 카드 렌더링 3개, 값(12/1245/8) 및 라벨 검증) |
+| UC-DB2 (품질 현황) | 초기 로딩 | DashboardApi, QualityIssueList, QualityPanelElement | ✅ 구현 완료 (DashboardQualityTest: 품질 패널/헤더/리스트 존재, severity 배지(error/warning), 메시지 검증) |
+| UC-DB3 (에이전트 활동) | 초기 로딩 | DashboardApi, AgentActivityList, ActivityLogElement | ✅ 구현 완료 (DashboardActivityTest: 활동 패널/헤더/리스트 존재, 타임스탬프 형식, COMPLETE 상태, 의도 텍스트 검증) |
+| UC-DB4 (실시간 실행 상태) | 실시간 실행 상태 위젯 | DashboardApi, ActiveExecutionsWidget, ActiveExecutionList, SSE AGENT_COMMAND | ✅ 구현 완료 (DashboardAgentWidgetsTest: 활성 실행 위젯/헤더/리스트, 진행률 바/fill/텍스트 실시간 갱신 검증) |
+| UC-DB5 (아티팩트) | 아티팩트 목록 위젯 | DashboardApi, ArtifactListWidget, AgentActivityList | ✅ 구현 완료 (DashboardAgentWidgetsTest: 아티팩트 위젯/헤더/아이템, 변경 수/시간 표시, 상세 토글 갱신 검증) |
 | UC-DB6 (감사 로그) | — | AuditLogWidget, AgentActivityList, DashboardApi, LabelProvider | ❌ 테스트 미작성 (AuditLogWidget 구현 완료) |
 | UC-DB7 (빈 상태 UI) | — | EmptyStateElement, StatsCardElement, QualityPanelElement | ❌ 미구현 (계획) |
 | UC-DB8 (성공 피드백) | — | ToastContainer | ❌ 미구현 (계획) |

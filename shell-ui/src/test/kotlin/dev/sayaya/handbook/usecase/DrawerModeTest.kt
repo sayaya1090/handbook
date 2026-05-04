@@ -6,6 +6,10 @@ import dev.sayaya.handbook.client.domain.ToolRailState
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
+/**
+ * UC-S5: Drawer 토글
+ * UC-S13: 모바일 반응형 레이아웃 (상태 전이)
+ */
 class DrawerModeTest : DescribeSpec({
 
     describe("MenuRailMode(데스크탑)는") {

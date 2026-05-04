@@ -8,6 +8,9 @@ import io.kotest.matchers.string.shouldStartWith
 import java.time.Instant
 import java.util.*
 
+/**
+ * UC-SD5: 문서 내보내기 (CSV 직렬화)
+ */
 class CsvSerializerTest : BehaviorSpec({
     fun createDataMap(data: Map<String, String>): jsinterop.base.JsPropertyMap<String> {
         return java.lang.reflect.Proxy.newProxyInstance(

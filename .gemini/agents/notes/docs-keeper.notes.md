@@ -1,6 +1,7 @@
 # docs-keeper 에이전트 노트
 
 ## 요청 로그
+- 2026-05-24: 프로젝트 전수 문서 무결성 감사 → DESIGN.md 누락, UC 코드 충돌, Soft Delete 미구현 등 발견.
 - 2026-05-18: 커밋 7257216 문서 크로스체크 → Shared Domain/Versioning 계약 불일치 발견 및 승격 제안.
 - 2026-05-14: 최근 discrepancies.md 및 요구사항/아키텍처/테스트 크로스체크 감사 수행 → 불일치 5건 확인 및 테스트 누락 탐지
 - 2026-05-14: 문서 보완 및 구현 상태 갱신 → 미구현(Soft Delete 등) 표시 및 AI/ES/SessionState 상세 보완 완료

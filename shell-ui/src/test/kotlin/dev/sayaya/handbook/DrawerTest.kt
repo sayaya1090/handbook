@@ -8,6 +8,16 @@ import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-S1: 사용자 인증 및 초기 로딩
+ * UC-S2: 메뉴 선택 및 모듈 로딩
+ * UC-S3: 도구 선택 및 실행 (Partial)
+ * UC-S6: 메뉴 호버 상태 기반 UX
+ * UC-S7: 워크스페이스 전환 (UI 존재 확인)
+ * UC-S10: 다국어 (i18n)
+ * UC-S13: 모바일 반응형 레이아웃
+ * UC-S15: 사용자 설정 — 언어/테마 퍼시스턴스
+ */
 @GwtHtml("drawer.html")
 internal class DrawerTest: GwtTestSpec({
     Given("메뉴가 초기화됨") {

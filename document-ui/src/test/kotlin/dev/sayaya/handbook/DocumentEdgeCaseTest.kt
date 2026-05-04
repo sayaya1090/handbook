@@ -5,6 +5,11 @@ import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-D4: 문서 삭제 (행 미선택 삭제)
+ * UC-D6: 타입 전환 (빠른 탭 전환)
+ * UC-D8: 페이지네이션 (경계 클릭)
+ */
 @GwtHtml("documenttest.html")
 internal class DocumentEdgeCaseTest: GwtTestSpec({
     Given("문서 UI 엣지 케이스") {

@@ -6,6 +6,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
+/**
+ * UC-S12: 진행률 표시
+ */
 @GwtHtml("progress.html")
 internal class ProgressTest: GwtTestSpec({
     Given("프로그레스 바가 준비됨") {

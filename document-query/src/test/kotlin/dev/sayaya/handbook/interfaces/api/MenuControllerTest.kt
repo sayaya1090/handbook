@@ -6,6 +6,9 @@ import io.kotest.matchers.shouldBe
 import org.springframework.test.web.reactive.server.WebTestClient
 
 // UC-SD3: 메뉴 제공
+/**
+ * UC-SD3: 메뉴 제공
+ */
 class MenuControllerTest : BehaviorSpec({
     val controller = MenuController()
     val client = WebTestClient.bindToController(controller).build()

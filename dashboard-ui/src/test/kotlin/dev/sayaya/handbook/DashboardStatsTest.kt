@@ -6,6 +6,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotBeBlank
 
+/**
+ * UC-DB1: 통계 조회
+ */
 @GwtHtml("dashboardtest.html")
 internal class DashboardStatsTest: GwtTestSpec({
     Given("대시보드 통계 카드가 초기화됨") {

@@ -22,7 +22,7 @@ description: 디버깅 패턴 및 문제 해결 가이드
 | MockK slot 다중 캡처 에러 | 같은 mock에서 여러 verify + slot | 각 Given에서 별도 mock 생성 |
 | Dagger `MissingBinding` | 새 의존성 추가 후 `@Provides` 누락 | Module에 provider 메서드 추가 |
 | `cannot find symbol` (테스트) | 인터페이스에 메서드 추가 후 Mock 구현 미추가 | Mock 클래스에 새 메서드 구현 추가 |
-| GWT 컴파일 실패 (record) | Java record를 GWT 모듈에서 사용 | GWT 2.13.0은 Java record 미지원. 일반 class로 변환 |
+| GWT 컴파일 실패 (record) | Java record를 GWT 모듈에서 사용 | GWT 2.13.0 이상은 Java record를 지원하나 불안정할 수 있음. 적극적 사용 지양 및 버그 주의 |
 
 ## Playwright 테스트 검증 패턴
 

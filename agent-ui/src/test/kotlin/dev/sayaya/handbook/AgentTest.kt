@@ -5,6 +5,18 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-A1: 에이전트에게 자연어 요청
+ * UC-A2: 에이전트 커맨드 수신 및 라우팅
+ * UC-A3: 화면 네비게이션
+ * UC-A4: 요소 하이라이트 / 주의 환기
+ * UC-A5: 변경 미리보기 및 확인
+ * UC-A6: 데이터 변경 (Mutation)
+ * UC-A7: 알림 및 진행률
+ * UC-A8: 작업 완료 및 아티팩트 표시
+ * UC-A9: 에이전트 작업 중단
+ * UC-A12: 모바일 반응형 레이아웃
+ */
 @GwtHtml("agenttest.html")
 internal class AgentTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {

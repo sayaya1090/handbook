@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-A11: 에이전트 검색 시각화
+ */
 @GwtHtml("agenttest.html")
 internal class AgentSearchVisualizationTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {

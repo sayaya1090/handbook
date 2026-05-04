@@ -141,9 +141,9 @@ sequenceDiagram
 
 ## 트레이서빌리티 매트릭스
 
-| UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 |
-|----|---|---|---|
-| UC-LUI1 (로그인 화면) | 로그인 화면 로딩 | Application, DaggerComponent, ContentElement, ConsoleElement, LineElement, Log, AuthenticationProviderButtonFactory, AuthenticationProviderButton | LoginTest |
-| UC-LUI2 (로그인 실행) | OAuth2 로그인 | AuthenticationProviderButton, OAuthApi | LoginTest |
-| UC-LUI3 (로그아웃) | 로그아웃 | LogoutApplication, OAuthApi, FetchApi | LogTest |
-| UC-LUI4 (커맨드 핸들러) | — | LoginCommandRouter, LoginCommandDispatcher, LoginNotifyHandler, LoginAttentionHandler, LoginHighlightHandler, LoginProgressHandler | LoginTest |
+| UC | 시퀀스 다이어그램 | 주요 클래스 | 테스트 | 상태 |
+|----|---|---|---|------|
+| UC-LUI1 (로그인 화면) | 로그인 화면 로딩 | Application, DaggerComponent, ContentElement, ConsoleElement, LineElement, Log, AuthenticationProviderButtonFactory, AuthenticationProviderButton | ✅ 구현 완료 (LoginTest: DOM 요소 존재 확인) | ✅ 구현 완료 |
+| UC-LUI2 (로그인 실행) | OAuth2 로그인 | AuthenticationProviderButton, OAuthApi | ✅ 구현 완료 (LoginTest: 버튼 클릭 트리거 확인) | ✅ 구현 완료 |
+| UC-LUI3 (로그아웃) | 로그아웃 | LogoutApplication, OAuthApi, FetchApi | — | ✅ 구현 완료 |
+| UC-LUI4 (커맨드 핸들러) | — | LoginCommandRouter, LoginCommandDispatcher, LoginNotifyHandler, LoginAttentionHandler, LoginHighlightHandler, LoginProgressHandler | ✅ 구현 완료 (LoginTest: 커맨드 처리 및 출력) | ✅ 구현 완료 |

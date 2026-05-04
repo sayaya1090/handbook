@@ -93,7 +93,7 @@ dev 네임스페이스는 자유롭게 실험 가능. staging/prod 는 Kargo pro
 - **JSNI 사용 금지.** Elemental2/JsInterop으로 대체. 사용법은 `.gemini/skills/sayaya-ui.md` 참조.
 - **JsInterop 제약**: `@JsType(isNative = true)`가 선언된 클래스는 어떠한 클래스도 상속받을 수 없으며, 어떠한 인터페이스도 구현(`implements`)할 수 없다. **`java.io.Serializable`조차도 허용되지 않는다.** (GWT 컴파일러가 네이티브 객체로 처리하기 때문)
 - `@JsOverlay` 인스턴스 메서드에서 재귀 호출 금지 → static 헬퍼로 우회
-- **Java record 사용 제한**: GWT 2.12 이상에서 Java Record를 지원하나, 특정 빌드 환경에서 컴파일 오류가 발생할 수 있으므로 가급적 일반 class 사용을 권장한다. (다중 생성자 금지 → static 팩토리 메서드 `of()`로 대체 필수)
+- **Java record 사용**: GWT 2.13.0 이상에서 Java Record를 지원한다. 다만, 컴파일러 및 런타임 안정성이 아직 완전히 검증되지 않았으므로 가급적 일반 class 사용을 유지하되, 필요한 경우에만 제한적으로 사용한다. 적극적인 사용은 예기치 못한 버그를 유발할 우려가 있다. (다중 생성자 금지 → static 팩토리 메서드 `of()`로 대체 필수)
 - Dagger `@Module`에 새 의존성 추가 시 `@Provides` 누락 주의
 - 테스트 Mock에서 인터페이스 메서드 추가 시 구현도 함께 추가
 - **UI 모듈 `Application.onModuleLoad()` 는 `body().add()` 금지 — `WindowRenderBridge.next(render)` 경유 필수.** 전역 CSS `body{position:fixed; inset:0}` + shell `#content{height:100dvh}` 뒤에 스택되어 뷰포트 밖으로 밀려나 보이지 않는 회귀가 반복적으로 발생. shell `FrameUpdater` 가 Frame 엘리먼트를 배치·여백 관리하고 모듈은 `frame.append(container)` 로 Frame 내부에만 mount. 계약은 `docs/contracts/frame.md`. 예외: login-ui 의 `LogoutApplication` 처럼 전면 리다이렉트 페이지만 허용.
@@ -145,7 +145,7 @@ E2E=true ./gradlew :e2e:test      # E2E 테스트 (서버 실행 필요)
 | `switchIfEmpty` eager evaluation | 인자가 즉시 실행됨 | `Mono.defer { }` 감싸기 |
 | Jackson `event_type` null | 역직렬화 시 필드 매핑 실패 | `@JsonProperty("event_type")` 추가 |
 | GWT `ReferenceError` | `@JsOverlay` 재귀 호출 | static 헬퍼로 우회 |
-| GWT 컴파일 실패 (record) | Java record를 GWT 모듈에서 사용 | GWT 2.13.0은 record 미지원, 일반 class 사용 |
+| GWT 컴파일 실패 (record) | Java record를 GWT 모듈에서 사용 | GWT 2.13.0 이상은 record를 지원하나 아직 불안정함. 문제 발생 시 일반 class로 회귀 |
 | MockK slot 다중 캡처 | 같은 mock에서 여러 verify | 각 Given에서 별도 mock 생성 |
 | jib `Obtaining project build output files failed` | 의존 서비스 모듈에 `tasks.jar { enabled = false }` → 라이브러리 variant 없음 | 해당 모듈에서 `tasks.jar` 비활성화 라인 제거 (Spring Boot 기본 동작 복원) |
 | jib `MainClassInferenceException: Multiple valid main classes` | Kotlin `companion object` + `@JvmStatic fun main` → `Application`과 `Application$Companion` 둘 다 main 후보 | top-level `fun main { runApplication<Application>(*args) }` 패턴으로 변경 |

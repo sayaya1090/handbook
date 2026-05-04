@@ -5,6 +5,19 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-T1: 타입 조회
+ * UC-T2: 타입 생성
+ * UC-T3: 타입 삭제
+ * UC-T4: 타입 이동
+ * UC-T5: 타입 리사이즈
+ * UC-T6: 타입 이름/버전 편집
+ * UC-T7: 속성 추가/편집 (기본)
+ * UC-T8: 레이아웃 기간 이동 (UI 존재 확인)
+ * UC-T9: Undo/Redo
+ * UC-T10: 저장/다시 로드 (UI 존재 확인)
+ * UC-T13: 모바일 반응형 레이아웃 (Toolbar)
+ */
 @GwtHtml("canvastest.html")
 internal class CanvasTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {

@@ -4,6 +4,9 @@ import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 
+/**
+ * UC-T23: 벌크 삭제 (타입 다중 선택 일괄 삭제)
+ */
 @GwtHtml("canvastest.html")
 internal class TypeBulkActionTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {

@@ -193,11 +193,11 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-W1 (생성) | 워크스페이스 생성 | 전체 | SectionElement, CreateWorkspaceMode, CreateWorkspaceParam, SubmitButton, WorkspaceRepository, WorkspaceApi | WorkspaceCreateTest: 다이얼로그/섹션 2개/라디오 2개(같은 name)/입력 필드 2개/Submit 존재 + 초기 비활성, CREATE 라디오 + 이름 입력 → Submit 활성화 + 입력값 반영 |
-| UC-W2 (참여) | 워크스페이스 참여 요청 | 전체 | SectionElement, CreateWorkspaceMode(JOIN), CreateWorkspaceParam, SubmitButton | WorkspaceJoinTest: JOIN 섹션/라디오/입력 필드 존재, JOIN 선택 → checked + CREATE 해제 + Submit 비활성, 코드 입력 → Submit 활성화, JOIN→CREATE 전환 → Submit 비활성 |
-| UC-W3 (에이전트) | 에이전트 워크스페이스 생성 | 전체 | AgentWorkspaceHandler, MutationReceiver, CreateWorkspaceMode, CreateWorkspaceParam, WorkspaceRepository | WorkspaceCreateTest: WS_MODE CREATE 이벤트 → 다이얼로그/섹션 유지 |
-| UC-W4 (단계별) | 에이전트 워크스페이스 생성 (alt) | 전체 | AgentWorkspaceHandler(WS_MODE/WS_INPUT/WS_SUBMIT/WS_CREATE) | WorkspaceCreateTest: WS_INPUT 이벤트 → 다이얼로그/Submit 유지 |
-| UC-W5 (모바일) | 모바일 다이얼로그 전환 | 전체 | ViewportObserver, DialogElement(fullscreen bottom sheet), SectionElement(touch area 48px+), input(full-width) | WorkspaceCreateTest: 뷰포트 375x667 → 다이얼로그 표시(display!=none), Submit 존재, 입력 필드 2개 유지 |
+| UC-W1 (생성) | 워크스페이스 생성 | 전체 | SectionElement, CreateWorkspaceMode, CreateWorkspaceParam, SubmitButton, WorkspaceRepository, WorkspaceApi | ✅ 구현 완료 (WorkspaceCreateTest: 입력 활성화 및 네비게이션) |
+| UC-W2 (참여) | 워크스페이스 참여 요청 | 전체 | SectionElement, CreateWorkspaceMode(JOIN), CreateWorkspaceParam, SubmitButton | ✅ 구현 완료 (WorkspaceJoinTest: 코드 입력 및 모드 전환) |
+| UC-W3 (에이전트) | 에이전트 워크스페이스 생성 | 전체 | AgentWorkspaceHandler, MutationReceiver, CreateWorkspaceMode, CreateWorkspaceParam, WorkspaceRepository | ✅ 구현 완료 (WorkspaceCreateTest: WS_MODE CREATE 이벤트 처리) |
+| UC-W4 (단계별) | 에이전트 워크스페이스 생성 (alt) | 전체 | AgentWorkspaceHandler(WS_MODE/WS_INPUT/WS_SUBMIT/WS_CREATE) | ✅ 구현 완료 (WorkspaceCreateTest: WS_INPUT 이벤트 처리) |
+| UC-W5 (모바일) | 모바일 다이얼로그 전환 | 전체 | ViewportObserver, DialogElement(fullscreen bottom sheet), SectionElement(touch area 48px+), input(full-width) | ✅ 구현 완료 (WorkspaceCreateTest: 모바일 뷰포트 레이아웃) |
 | UC-W6 (빈 상태 UI) | — | 전체 | EmptyStateElement, SectionElement | ❌ 미구현 (계획) |
 | UC-W7 (삭제 확인) | — | 전체 | ConfirmDialog | ❌ 미구현 (계획) |
 | UC-W8 (성공 피드백) | — | 전체 | ToastContainer, SubmitButton | ❌ 미구현 (계획) |

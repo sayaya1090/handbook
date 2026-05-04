@@ -8,6 +8,11 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
+/**
+ * UC-LUI1: 로그인 화면 표시
+ * UC-LUI2: OAuth2 로그인 실행 (Trigger)
+ * UC-LUI4: 커맨드 핸들러 처리
+ */
 @GwtHtml("logintest.html")
 internal class LoginTest : GwtTestSpec({
     Given("로그인 화면이 로드됨") {

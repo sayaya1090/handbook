@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-D10: 모바일 반응형 레이아웃
+ */
 @GwtHtml("documenttest.html")
 internal class DocumentMobileTest: GwtTestSpec({
     Given("문서 UI가 모바일 뷰포트에서 초기화됨") {

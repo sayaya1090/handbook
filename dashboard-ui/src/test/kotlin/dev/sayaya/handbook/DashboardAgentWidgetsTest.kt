@@ -7,6 +7,10 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
+/**
+ * UC-DB4: 실시간 에이전트 실행 상태 조회
+ * UC-DB5: 에이전트 아티팩트 목록 조회
+ */
 @GwtHtml("dashboardtest.html")
 internal class DashboardAgentWidgetsTest: GwtTestSpec({
     Given("대시보드 에이전트 위젯이 초기화됨") {

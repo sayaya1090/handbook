@@ -7,6 +7,11 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-D2: 문서 생성 (.created 클래스 적용)
+ * UC-D5: 저장 (Undo 후 Save 비활성화)
+ * UC-D7: Undo/Redo
+ */
 @GwtHtml("documenttest.html")
 internal class DocumentUndoRedoTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {

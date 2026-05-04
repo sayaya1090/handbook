@@ -4,6 +4,9 @@ import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 
+/**
+ * UC-WM1: 워크스페이스 정보 수정
+ */
 @GwtHtml("workspace_management_test.html")
 internal class WorkspaceManagementTest: GwtTestSpec({
     Given("워크스페이스 관리 UI가 초기화됨") {

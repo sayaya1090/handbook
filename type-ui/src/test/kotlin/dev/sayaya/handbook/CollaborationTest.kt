@@ -5,6 +5,11 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-T11: 에이전트에 의한 타입 조작
+ * UC-T12: 에이전트에 의한 타입 검색
+ * UC-T25: 워크스페이스 전환 (동적 데이터 재로딩)
+ */
 @GwtHtml("canvastest.html")
 internal class CollaborationTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {

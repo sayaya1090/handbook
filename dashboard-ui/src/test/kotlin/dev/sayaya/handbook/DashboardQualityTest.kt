@@ -7,6 +7,9 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 
+/**
+ * UC-DB2: 품질 현황 조회
+ */
 @GwtHtml("dashboardtest.html")
 internal class DashboardQualityTest: GwtTestSpec({
     Given("대시보드 품질 패널이 초기화됨") {

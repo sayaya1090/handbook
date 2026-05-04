@@ -73,12 +73,12 @@ sequenceDiagram
 
 ## 트레이서빌리티 매트릭스
 
-| UC | 설명 | 상태 | 주요 클래스 |
-|----|------|------|------------|
-| UC-WM1 | 정보 수정 | 🚧 부분 구현 (API 완료, UI 진행 중) | InfoTabElement, WorkspaceApi |
-| UC-WM2 | 그룹 관리 | 🚧 부분 구현 (API 완료, UI 미구현) | GroupsTabElement, WorkspaceApi |
-| UC-WM3 | 사용자 배정 | 🚧 부분 구현 (API 완료, UI 미구현) | GroupsTabElement, WorkspaceApi |
-| UC-WM4 | 권한 부여 | 🚧 부분 구현 (API 완료, UI 미구현) | PermissionsTabElement, WorkspaceApi |
+| UC | 설명 | 상태 | 주요 클래스 | 테스트 |
+|----|------|------|------------|-------|
+| UC-WM1 | 정보 수정 | ✅ 구현 완료 | InfoTabElement, WorkspaceApi | WorkspaceManagementTest: 워크스페이스 정보 수정 검증 |
+| UC-WM2 | 그룹 관리 | ❌ 미구현 | GroupsTabElement, WorkspaceApi | — |
+| UC-WM3 | 사용자 배정 | ❌ 미구현 | GroupsTabElement, WorkspaceApi | — |
+| UC-WM4 | 권한 부여 | ❌ 미구현 | PermissionsTabElement, WorkspaceApi | — |
 
 ## 에이전트 연동
 

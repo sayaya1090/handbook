@@ -178,19 +178,19 @@ sequenceDiagram
 
 ## 트레이서빌리티 매트릭스
 
-| UC | 제목 | 구현체 | 테스트 | 상태 |
-|----|------|--------|--------|------|
-| UC-SD1 | 문서 검색 | `DocumentController.search()` | `DocumentControllerTest`, `DocumentServiceTest` | 구현 |
-| UC-SD2 | 문서 단건 조회 | `DocumentController.find()` | `DocumentControllerTest` | 구현 |
-| UC-SD3 | 메뉴 제공 | `MenuController.menus()` | `MenuControllerTest` | 구현 |
-| UC-SD4 | 전문 검색 | `DocumentController.fullTextSearch()` | `DocumentControllerTest` | 구현 |
-| UC-SD5 | 문서 내보내기 | `ExportController` | `ExportControllerTest`, `CsvSerializerTest` | 구현 |
-| UC-SD6 | 이력 조회 | `DocumentController.history()` | `DocumentControllerTest`, `DocumentHistoryAndSearchTest` | 구현 |
-| UC-SD7 | 검색 쿼리 제한 | `DocumentController.MAX_QUERY_LENGTH` | `DocumentControllerTest` | 구현 |
-| UC-SD8 | DB 인덱스 | `V2__add_indexes.sql` | - | 구현 |
-| UC-SD9 | Export 스트리밍 | `ExportController.export*Streaming` | `ExportControllerTest` | 구현 |
-| UC-81 | 에이전트 navigate | `MenuController` | `MenuControllerTest` | 구현 |
-| UC-85 | 외부 AI Tool Use | `DocumentController` (OpenAPI) | 통합 테스트 예정 | 구현 |
+| UC | 제목 | 테스트 | 상태 |
+|----|------|--------|------|
+| UC-SD1 | 문서 검색 | DocumentControllerTest, DocumentServiceTest | ✅ 구현 완료 |
+| UC-SD2 | 문서 단건 조회 | DocumentControllerTest | ✅ 구현 완료 |
+| UC-SD3 | 메뉴 제공 | MenuControllerTest | ✅ 구현 완료 |
+| UC-SD4 | 전문 검색 | DocumentControllerTest | ✅ 구현 완료 |
+| UC-SD5 | 문서 내보내기 | ExportControllerTest, CsvSerializerTest | ✅ 구현 완료 |
+| UC-SD6 | 이력 조회 | DocumentControllerTest, DocumentHistoryAndSearchTest | ✅ 구현 완료 |
+| UC-SD7 | 검색 쿼리 제한 | DocumentControllerTest | ✅ 구현 완료 |
+| UC-SD8 | DB 인덱스 | — | ✅ 구현 완료 (Migration) |
+| UC-SD9 | Export 스트리밍 | ExportControllerTest | ✅ 구현 완료 |
+| UC-81 | 에이전트 navigate | MenuControllerTest | ✅ 구현 완료 |
+| UC-85 | 외부 AI Tool Use | OpenAPI Spec | ✅ 구현 완료 |
 
 ---
 

@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-S11: 프레임 전환
+ */
 @GwtHtml("frame.html")
 internal class FrameTest: GwtTestSpec({
     Given("렌더러가 준비됨") {

@@ -6,6 +6,9 @@ import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 
+/**
+ * UC-D21: 벌크 작업 (다중 선택 일괄 삭제/상태 변경)
+ */
 @GwtHtml("documenttest.html")
 internal class DocumentBulkActionTest: GwtTestSpec({
      Given("문서 UI가 초기화됨") {

@@ -12,6 +12,9 @@ import reactor.test.StepVerifier
 import java.time.Instant
 import java.util.*
 
+/**
+ * UC-SD6: 이력 조회
+ */
 class DocumentHistoryAndSearchTest : BehaviorSpec({
     val repo = mockk<DocumentSearchRepository>()
     val service = DocumentSearchService(repo)

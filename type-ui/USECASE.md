@@ -660,31 +660,31 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-T1 (조회) | 타입 조회 (초기 로딩 및 전환) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, WindowWorkspaceEventBridge | CanvasTest: 캔버스 렌더링 |
-| UC-T2 (생성) | 타입 생성 → 저장 | Action 계층, 캔버스, 컨트롤러 | CreateTBoxAction, PushOutOverlapAction, ComplexAction, AddTypeButton, CanvasContextMenuElement, ContextMenuHelper, ChangeTracker | CanvasTest: Add Type 클릭 → 박스 1개 추가 검증, EdgeCaseTest: 속성 0개 타입 생성, 연속 빠른 클릭 3회 → 정확히 3개 추가 |
-| UC-T3 (삭제) | — | Action 계층, 컨트롤러 | DeleteTBoxAction, RemoveTypeButton, ChangeTracker | CanvasTest: 선택 후 Delete 키 → 박스 삭제 검증 |
-| UC-T4 (이동) | 드래그 & 드롭 | Action 계층, 캔버스, 상태 관리 | DragShapeElement, MoveTBoxAction, PushOutOverlapAction, ComplexAction, GridSnap, PositionMap, SelectedTBoxElement | CanvasTest: 클릭 → selected 속성 활성화 검증 |
-| UC-T5 (리사이즈) | 리사이즈 | Action 계층, 캔버스, 상태 관리 | ResizeTBoxAction, TypeElement, GridSnap, PositionMap | CanvasTest: 리사이즈 핸들 존재 확인 |
-| UC-T6 (이름편집) | — | Action 계층, 캔버스, 상태 관리 | TypeElement, EditTBoxAction, CanvasMode | CanvasTest: 타입 이름 요소 편집 가능 확인 |
-| UC-T7 (속성) | 속성 편집 | Action 계층, 속성 편집 다이얼로그, 캔버스 | AttributeEditorDialog, ValidatorEditorFactory, ValidatorEditor, ArrayValidatorEditor, MapValidatorEditor, EditTBoxAction | CanvasTest: 속성 표시 검증 + 우클릭 컨텍스트 메뉴 표시 |
-| UC-T8 (기간이동) | — | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | CanvasTest: Before/After 버튼 존재 확인 |
-| UC-T9 (Undo) | 에이전트 타입 조작 | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | CanvasTest: Undo/Redo 기능 검증 |
-| UC-T10 (저장) | 타입 생성 → 저장 | Action 계층, API 어댑터, 컨트롤러 | SaveAction, LoadAction, SaveButton, ReloadButton, ChangeTracker | CanvasTest: Save/Reload 버튼 존재 확인 |
-| UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, AgentMutation | CollaborationTest: 에이전트 조작 검증 |
-| UC-T12 (검색) | — | 에이전트 연동 | TypeSearchProvider, AgentSearch | CollaborationTest: 검색 기능 연동 확인 |
-| UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement, TypeElement, DragShapeElement, AttributeEditorDialog | CanvasTest: 컨트롤러 툴바 레이아웃 확인 |
-| UC-T14 (RBAC) | — | — | RbacGuard, CanvasMode | 🚧 UI 연동 미구현 (RbacGuard 유틸리티 구현 완료) |
-| UC-T15 (실시간협업) | 실시간 협업 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList | ✅ 구현 완료 |
-| UC-T16 (충돌방지) | 충돌 방지 | 상태 관리 | @Version 낙관적 잠금, ChangeTracker | ✅ 구현 완료 |
-| UC-T17 (프레즌스) | 프레즌스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 |
-| UC-T18 (화살표호버) | 참조 화살표 호버 | 캔버스 | TBoxReferenceElement, ArrowFactory, TypeElement | ✅ 구현 완료 |
-| UC-T19 (동시편집) | — | 에이전트 연동, 캔버스 | AgentMutationHandler, ActionManager, SelectedTBoxElement | ✅ 구현 완료 |
-| UC-T20 (다중프레즌스) | — | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 |
-| UC-T21 (에이전트Undo) | — | 에이전트 연동, Action 계층 | AgentMutationHandler, ActionManager | ✅ 구현 완료 |
-| UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver | ✅ 구현 완료 |
-| UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedTBoxElement, DeleteTBoxAction | 🚧 테스트 미작성 (기능 구현 완료) |
-| UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | 🚧 테스트 미작성 (기능 구현 완료) |
-| UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | CollaborationTest: 쉘 워크스페이스 변경 이벤트 시 데이터 갱신 확인 (UC-T25) |
+| UC-T1 (조회) | 타입 조회 (초기 로딩 및 전환) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, WindowWorkspaceEventBridge | ✅ 구현 완료 (CanvasTest: 타입 및 속성 렌더링) |
+| UC-T2 (생성) | 타입 생성 → 저장 | Action 계층, 캔버스, 컨트롤러 | CreateTBoxAction, PushOutOverlapAction, ComplexAction, AddTypeButton, CanvasContextMenuElement, ContextMenuHelper, ChangeTracker | ✅ 구현 완료 (CanvasTest: Add Type 버튼 클릭 검증) |
+| UC-T3 (삭제) | — | Action 계층, 컨트롤러 | DeleteTBoxAction, RemoveTypeButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Delete 키 입력 검증) |
+| UC-T4 (이동) | 드래그 & 드롭 | Action 계층, 캔버스, 상태 관리 | DragShapeElement, MoveTBoxAction, PushOutOverlapAction, ComplexAction, GridSnap, PositionMap, SelectedTBoxElement | ✅ 구현 완료 (CanvasTest: 선택 및 드래그(Mock)) |
+| UC-T5 (리사이즈) | 리사이즈 | Action 계층, 캔버스, 상태 관리 | ResizeTBoxAction, TypeElement, GridSnap, PositionMap | ✅ 구현 완료 (CanvasTest: 리사이즈 핸들 존재 확인) |
+| UC-T6 (이름편집) | — | Action 계층, 캔버스, 상태 관리 | TypeElement, EditTBoxAction, CanvasMode | ✅ 구현 완료 (CanvasTest: 타입 이름 편집 확인) |
+| UC-T7 (속성) | 속성 편집 | Action 계층, 속성 편집 다이얼로그, 캔버스 | AttributeEditorDialog, ValidatorEditorFactory, ValidatorEditor, ArrayValidatorEditor, MapValidatorEditor, EditTBoxAction | ✅ 구현 완료 (CanvasTest: 속성 표시 검증) |
+| UC-T8 (기간이동) | — | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | ✅ 구현 완료 (CanvasTest: Before/After 버튼 확인) |
+| UC-T9 (Undo) | 에이전트 타입 조작 | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | ✅ 구현 완료 (CanvasTest: Undo/Redo 기능 검증) |
+| UC-T10 (저장) | 타입 생성 → 저장 | Action 계층, API 어댑터, 컨트롤러 | SaveAction, LoadAction, SaveButton, ReloadButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Save/Reload 버튼 확인) |
+| UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, AgentMutation | ✅ 구현 완료 (CollaborationTest: 에이전트 조작 검증) |
+| UC-T12 (검색) | — | 에이전트 연동 | TypeSearchProvider, AgentSearch | ✅ 구현 완료 (CollaborationTest: 검색 기능 연동 확인) |
+| UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement, TypeElement, DragShapeElement, AttributeEditorDialog | ✅ 구현 완료 (CanvasTest: 컨트롤러 툴바 flex-wrap) |
+| UC-T14 (RBAC) | — | — | RbacGuard, CanvasMode | ❌ 미구현 (RbacGuard 유틸리티 구현 완료) |
+| UC-T15 (실시간협업) | 실시간 협업 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList | ✅ 구현 완료 (CollaborationTest) |
+| UC-T16 (충돌방지) | 충돌 방지 | 상태 관리 | @docs\contracts\versioning.md 낙관적 잠금, ChangeTracker | ✅ 구현 완료 (CollaborationTest) |
+| UC-T17 (프레즌스) | 프레즌스 | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 (CollaborationTest) |
+| UC-T18 (화살표호버) | 참조 화살표 호버 | 캔버스 | TBoxReferenceElement, ArrowFactory, TypeElement | ✅ 구현 완료 (CollaborationTest) |
+| UC-T19 (동시편집) | — | 에이전트 연동, 캔버스 | AgentMutationHandler, ActionManager, SelectedTBoxElement | ✅ 구현 완료 (CollaborationTest) |
+| UC-T20 (다중프레즌스) | — | 상태 관리, 캔버스 | PresenceHandler, PresenceRenderer, WorkspaceEventReceiver | ✅ 구현 완료 (CollaborationTest) |
+| UC-T21 (에이전트Undo) | — | 에이전트 연동, Action 계층 | AgentMutationHandler, ActionManager | ✅ 구현 완료 (CollaborationTest) |
+| UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver | ✅ 구현 완료 (CollaborationTest) |
+| UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedTBoxElement, DeleteTBoxAction | ✅ 구현 완료 (TypeBulkActionTest) |
+| UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | ❌ 테스트 미작성 (기능 구현 완료) |
+| UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest: 워크스페이스 전환 확인) |
 | UC-T26 (빈 상태 UI) | — | — | SpreadsheetElement | ✅ 구현 완료 |
 | UC-T27 (삭제 확인) | — | — | ConfirmDialog | ✅ 구현 완료 |
 | UC-T28 (성공 피드백) | — | — | SaveButton, SubmitButton | ✅ 구현 완료 |

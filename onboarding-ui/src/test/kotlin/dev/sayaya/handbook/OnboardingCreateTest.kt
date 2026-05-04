@@ -5,6 +5,12 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-W1: 워크스페이스 생성
+ * UC-W3: 에이전트에 의한 워크스페이스 생성
+ * UC-W4: 에이전트 단계별 UI 조작
+ * UC-W5: 모바일 반응형 레이아웃
+ */
 @GwtHtml("onboardingtest.html")
 internal class WorkspaceCreateTest: GwtTestSpec({
     Given("워크스페이스 CREATE UI가 초기화됨") {

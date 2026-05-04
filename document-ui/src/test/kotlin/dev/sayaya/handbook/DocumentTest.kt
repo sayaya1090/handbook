@@ -7,6 +7,16 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-D1: 문서 조회
+ * UC-D2: 문서 생성
+ * UC-D3: 문서 편집
+ * UC-D4: 문서 삭제
+ * UC-D5: 저장
+ * UC-D6: 타입 전환
+ * UC-D7: Undo/Redo
+ * UC-D8: 페이지네이션
+ */
 @GwtHtml("documenttest.html")
 internal class DocumentTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {

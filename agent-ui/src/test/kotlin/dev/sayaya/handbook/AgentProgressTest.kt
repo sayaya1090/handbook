@@ -5,6 +5,11 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-A7: 알림 및 진행률 (그룹 수준)
+ * UC-A8: 작업 완료 및 아티팩트 표시 (상세)
+ * UC-A13: 서브에이전트 진행률 이벤트 수신
+ */
 @GwtHtml("agenttest.html")
 internal class AgentProgressTest: GwtTestSpec({
     Given("에이전트 UI가 준비됨") {

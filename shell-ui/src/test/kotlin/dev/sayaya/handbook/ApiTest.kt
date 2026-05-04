@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-S8: 토큰 자동 갱신
+ */
 @GwtHtml("apitest.html")
 internal class ApiTest: GwtTestSpec({
     Given("FetchMock 기반 API가 초기화됨") {

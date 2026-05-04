@@ -4,6 +4,11 @@ import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 
+/**
+ * UC-A7: 알림 및 진행률 (0/0 경계)
+ * UC-A8: 작업 완료 (아티팩트 없음/변경 0건)
+ * UC-A14: Malformed 커맨드 수신 시 UI 안정성
+ */
 @GwtHtml("agenttest.html")
 internal class AgentEdgeCaseTest: GwtTestSpec({
     Given("에이전트 UI 엣지 케이스") {

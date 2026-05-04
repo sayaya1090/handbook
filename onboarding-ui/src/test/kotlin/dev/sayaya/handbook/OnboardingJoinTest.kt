@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-W2: 워크스페이스 참여 요청
+ */
 @GwtHtml("onboardingtest.html")
 internal class WorkspaceJoinTest: GwtTestSpec({
     Given("워크스페이스 JOIN UI가 초기화됨") {

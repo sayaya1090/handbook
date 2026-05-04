@@ -355,20 +355,20 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-A1 (요청) | 에이전트 요청 → 실행 → 완료 | 핸들러+UI, 인터페이스 구현 | AgentInputElement, AgentSseClient, AgentSession, CommandRouter | AgentTest: 입력 컨테이너/필드, 전송 버튼 |
-| UC-A2 (라우팅) | 에이전트 요청 → 실행 → 완료 (loop) | 인터페이스 구현 | CommandRouter(10개 BehaviorSubject), AgentSseClient | AgentTest: 각 커맨드 버튼으로 핸들러 동작 검증 |
-| UC-A3 (네비) | shell-ui: 에이전트 화면 이동 | 핸들러+UI | NavigateHandler, Observer\<URI\> | AgentTest: Navigate 버튼 → 인디케이터 표시 |
-| UC-A4 (하이라이트) | — (단순) | 핸들러+UI | HighlightHandler, ScrollHandler, OverlayElement | AgentTest: highlight 클래스 토글, attention 오버레이 표시/닫기 |
-| UC-A5 (미리보기) | 변경 미리보기 → 확인 → Mutation | 핸들러+UI, 인터페이스 구현 | PreviewPanelElement, ConfirmDialogElement, AgentSseClient | AgentTest: preview 패널 토글, diff 표시, confirm 다이얼로그 |
-| UC-A6 (Mutation) | 변경 미리보기 (후반) | 핸들러+UI | MutateHandler, WindowMutationBridge | AgentTest: Mutate 버튼 → 변경 로그 표시, 항목 2개 검증 |
-| UC-A7 (진행률) | 그룹 수준 진행률 및 아티팩트 표시 (전반) | 핸들러+UI | NotifyHandler, ProgressHandler, ProgressElement | AgentTest: Notify 버튼 → 토스트 표시, Scroll 버튼 → 스크롤 이동, AgentProgressTest: Progress Group 클릭 → 프로그레스 바 표시 + 그룹 정보(2/5) 라벨, AgentEdgeCaseTest: 0/0 진행률 → UI 에러 없이 유지 |
-| UC-A8 (완료+아티팩트) | 그룹 수준 진행률 및 아티팩트 표시 (후반) | 핸들러+UI | CompleteHandler, ArtifactSummaryPanel, AgentSession(COMPLETED) | AgentTest: complete 커맨드 시 send 버튼 복원, AgentProgressTest: Complete Artifact → 아티팩트 패널 표시/요약 텍스트/변경 3건/닫기 버튼, 완료 토스트 변경 건수, AgentEdgeCaseTest: 아티팩트 없는 complete → 패널 미표시, 변경 0건 아티팩트 → 변경 행 0개 |
-| UC-A9 (중단) | 에이전트 중단 | 핸들러+UI, 인터페이스 구현 | AgentInputElement, AgentSseClient, AgentSession(ABORTED) | AgentTest: confirm 커맨드 시 abort 버튼 표시 |
-| UC-A10 (조작) | type-ui: 에이전트 타입 조작 | 핸들러+UI | MutateHandler, WindowMutationBridge → AgentMutationHandler (type-ui), AgentWorkspaceHandler (workspace-ui) | CollaborationTest (type-ui): 에이전트 CREATE/SET 명령 검증 |
-| UC-A11 (검색시각화) | UC-A11 내 시퀀스 | 핸들러+UI, 도메인 | SearchVisualizationHandler, SearchVisualizationRequest, CommandRouter (search 분기), ProgressHandler, NavigateHandler, HighlightHandler, OverlayElement, PreviewPanelElement, ConfirmDialogElement | AgentSearchVisualizationTest |
-| UC-A12 (모바일) | 모바일 입력 적응 | 핸들러+UI | ViewportObserver, AgentInputElement(bottom fixed, visualViewport), ConfirmDialogElement(bottom sheet), PreviewPanelElement(vertical stack) | AgentTest: 모바일 뷰포트 입력 컨테이너/필드/전송 버튼 존재 확인 |
-| UC-A13 (서브진행률) | — | 핸들러+UI | ProgressHandler, ProgressElement, CommandRouter | AgentProgressTest: 서브에이전트 진행률 이벤트 → 프로그레스 컨테이너 표시, 라벨에 숫자 포함 검증 |
-| UC-A14 (DELEGATE) | — | 핸들러+UI | CommandRouter | AgentCollaborationTest: DELEGATE 커맨드 수신 → 입력 컨테이너/필드/전송 버튼 정상 유지 검증, AgentEdgeCaseTest: malformed AGENT_COMMAND → UI 에러 없이 유지 |
-| UC-A15 (다중완료) | — | 핸들러+UI | CompleteHandler, ArtifactSummaryPanel | AgentCollaborationTest: 2건 연속 complete + artifact → 아티팩트 패널 표시, Complete 커맨드 → 전송 버튼 복원 |
+| UC-A1 (요청) | 에이전트 요청 → 실행 → 완료 | 핸들러+UI, 인터페이스 구현 | AgentInputElement, AgentSseClient, AgentSession, CommandRouter | ✅ 구현 완료 (AgentTest: 입력 컨테이너/필드, 전송 버튼) |
+| UC-A2 (라우팅) | 에이전트 요청 → 실행 → 완료 (loop) | 인터페이스 구현 | CommandRouter(10개 BehaviorSubject), AgentSseClient | ✅ 구현 완료 (AgentTest: 각 커맨드 버튼으로 핸들러 동작 검증) |
+| UC-A3 (네비) | shell-ui: 에이전트 화면 이동 | 핸들러+UI | NavigateHandler, Observer\<URI\> | ✅ 구현 완료 (AgentTest: Navigate 버튼 → 인디케이터 표시) |
+| UC-A4 (하이라이트) | — (단순) | 핸들러+UI | HighlightHandler, ScrollHandler, OverlayElement | ✅ 구현 완료 (AgentTest: highlight 클래스 토글, attention 오버레이 표시/닫기) |
+| UC-A5 (미리보기) | 변경 미리보기 → 확인 → Mutation | 핸들러+UI, 인터페이스 구현 | PreviewPanelElement, ConfirmDialogElement, AgentSseClient | ✅ 구현 완료 (AgentTest: preview 패널 토글, diff 표시, confirm 다이얼로그) |
+| UC-A6 (Mutation) | 변경 미리보기 (후반) | 핸들러+UI | MutateHandler, WindowMutationBridge | ✅ 구현 완료 (AgentTest: Mutate 버튼 → 변경 로그 표시, 항목 2개 검증) |
+| UC-A7 (진행률) | 그룹 수준 진행률 및 아티팩트 표시 (전반) | 핸들러+UI | NotifyHandler, ProgressHandler, ProgressElement | ✅ 구현 완료 (AgentTest: Notify 버튼 → 토스트 표시, Scroll 버튼 → 스크롤 이동, AgentProgressTest: 진행률 바 + 그룹 정보(2/5) 라벨, AgentEdgeCaseTest: 0/0 진행률 안정성) |
+| UC-A8 (완료+아티팩트) | 그룹 수준 진행률 및 아티팩트 표시 (후반) | 핸들러+UI | CompleteHandler, ArtifactSummaryPanel, AgentSession(COMPLETED) | ✅ 구현 완료 (AgentTest: complete 커맨드 시 send 버튼 복원, AgentProgressTest: Complete Artifact → 아티팩트 패널 표시/요약 텍스트/변경 3건, AgentEdgeCaseTest: 아티팩트 없는 complete 안정성) |
+| UC-A9 (중단) | 에이전트 중단 | 핸들러+UI, 인터페이스 구현 | AgentInputElement, AgentSseClient, AgentSession(ABORTED) | ✅ 구현 완료 (AgentTest: confirm 커맨드 시 abort 버튼 표시) |
+| UC-A10 (조작) | type-ui: 에이전트 타입 조작 | 핸들러+UI | MutateHandler, WindowMutationBridge → AgentMutationHandler (type-ui), AgentWorkspaceHandler (workspace-ui) | ✅ 구현 완료 (CollaborationTest (type-ui): 에이전트 CREATE/SET 명령 검증) |
+| UC-A11 (검색시각화) | UC-A11 내 시퀀스 | 핸들러+UI, 도메인 | SearchVisualizationHandler, SearchVisualizationRequest, CommandRouter (search 분기), ProgressHandler, NavigateHandler, HighlightHandler, OverlayElement, PreviewPanelElement, ConfirmDialogElement | ✅ 구현 완료 (AgentSearchVisualizationTest) |
+| UC-A12 (모바일) | 모바일 입력 적응 | 핸들러+UI | ViewportObserver, AgentInputElement(bottom fixed, visualViewport), ConfirmDialogElement(bottom sheet), PreviewPanelElement(vertical stack) | ✅ 구현 완료 (AgentTest: 모바일 뷰포트 입력 컨테이너/필드/전송 버튼 존재 확인) |
+| UC-A13 (서브진행률) | — | 핸들러+UI | ProgressHandler, ProgressElement, CommandRouter | ✅ 구현 완료 (AgentProgressTest: 서브에이전트 진행률 이벤트 → 프로그레스 컨테이너 표시) |
+| UC-A14 (DELEGATE) | — | 핸들러+UI | CommandRouter | ✅ 구현 완료 (AgentCollaborationTest: DELEGATE 커맨드 수신 → UI 안정성, AgentEdgeCaseTest: malformed AGENT_COMMAND 안정성) |
+| UC-A15 (다중완료) | — | 핸들러+UI | CompleteHandler, ArtifactSummaryPanel | ✅ 구현 완료 (AgentCollaborationTest: 2건 연속 complete + artifact → 아티팩트 패널 갱신) |
 | UC-A16 (빈 상태 UI) | — | 핸들러+UI | EmptyStateElement, AgentInputElement | ❌ 미구현 (계획) |
 | UC-A17 (성공 피드백) | — | 핸들러+UI | ToastContainer, CompleteHandler | ❌ 미구현 (계획) |

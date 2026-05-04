@@ -12,6 +12,13 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 import java.util.*
 
+/**
+ * UC-SD1: 문서 검색
+ * UC-SD2: 문서 단건 조회
+ * UC-SD4: 전문 검색
+ * UC-SD6: 이력 조회
+ * UC-SD7: 검색 쿼리 제한
+ */
 class DocumentControllerTest : BehaviorSpec({
     val service = mockk<DocumentSearchService>()
     val controller = DocumentController(service)

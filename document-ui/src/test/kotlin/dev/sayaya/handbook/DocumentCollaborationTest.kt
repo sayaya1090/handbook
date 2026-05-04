@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-D9: 에이전트에 의한 문서 조작
+ */
 @GwtHtml("documenttest.html")
 internal class DocumentCollaborationTest: GwtTestSpec({
     Given("문서 UI가 초기화됨") {

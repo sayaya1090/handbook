@@ -13,6 +13,10 @@ import tools.jackson.module.kotlin.KotlinModule
 import java.time.Instant
 import java.util.*
 
+/**
+ * UC-SD5: 문서 내보내기
+ * UC-SD9: Export 스트리밍
+ */
 class ExportControllerTest : BehaviorSpec({
     fun createDataMap(data: Map<String, String>): jsinterop.base.JsPropertyMap<String> {
         return java.lang.reflect.Proxy.newProxyInstance(

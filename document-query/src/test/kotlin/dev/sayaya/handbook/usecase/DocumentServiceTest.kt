@@ -12,6 +12,9 @@ import reactor.test.StepVerifier
 import java.time.Instant
 import java.util.*
 
+/**
+ * UC-SD1: 문서 검색
+ */
 class DocumentServiceTest : BehaviorSpec({
     val repo = mockk<DocumentSearchRepository>()
     val service = DocumentSearchService(repo)
