@@ -98,13 +98,14 @@ data:
                   args:
                     name: assistantCB
                     fallbackUri: forward:/fallback/empty
-            # 정적 리소스 — S3(ceph-rgw)
-            - id: static
+            # 정적 리소스 — 모든 경로의 확장자 기반 라우팅
+            - id: static-assets
               uri: http://ceph-rgw:80
               predicates:
-                - Path=/js/**,/css/**,/icons/**,/manifest.json,/service-worker.js,/wav/**,/favicon.ico,/app.html
+                - Path=/**/*.js,/**/*.css,/**/*.json,/**/*.png,/**/*.ico,/**/*.wav,/**/*.svg
               filters:
                 - RewritePath=/(?<segment>.*), /handbook-{{ .Values.stage.name | default "dev" }}/static/${segment}
+              order: -1
     server:
       port: 8080
     cors:
