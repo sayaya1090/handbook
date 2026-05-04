@@ -1,6 +1,5 @@
 ## 요청 로그
-
-(아직 기록 없음)
+- 2026-04-28: docs-keeper 에이전트 연동 누락 감사 → login/USECASE.md 보강 및 authentication 확인 완료
 
 ---
 

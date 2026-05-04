@@ -1,4 +1,5 @@
 ## 요청 로그
+- 2026-05-24: 에이전트 연동 누락 보완 → README.md, USECASE.md 상단 내부 전용 명시
 - 2026-05-01: TypeApi 리팩토링 → TypeValue를 Type으로 변경 및 컴파일 오류 해결
 
 - 2026-05-01: type-ui 내 TypeValue/AttributeValue를 Type/Attribute로 일괄 리팩토링 진행

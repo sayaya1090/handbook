@@ -1,5 +1,13 @@
 # Login 유스케이스
 
+## 에이전트 연동
+
+1. **내부 assistant 연동** — 직접 REST 호출 없음. 사용자가 assistant 를 호출하기 전에 먼저 OAuth 로그인으로 세션 쿠키를 발급받는다.
+2. **외부 AI Tool Use** — `/user`, `/auth/refresh` 는 `/openapi.json` 에 노출. `/oauth2/*`, `/login/oauth2/*` 는 브라우저 플로우 전용이라 비공개.
+3. **OpenAPI 어노테이션** — `/user`, `/auth/refresh` 컨트롤러에 springdoc `@Operation` 기입 예정 (TODO).
+4. **감사 경로** — 로그인/로그아웃/refresh 시 `AuditEntry` 발행 (`caller_type=USER` 또는 `EXTERNAL_AGENT`). 상세 이벤트 스키마는 [audit.md](../docs/contracts/audit.md).
+5. **Agent Command 타겟** — login 모듈은 UI 가 아니므로 navigate/highlight/mutate 타겟 아님.
+
 ## OAuth2 로그인 → JWT 발행 시퀀스
 
 ```mermaid

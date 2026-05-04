@@ -1,5 +1,5 @@
 ## 요청 로그
-
+- 2026-05-04: app, ui-components 모듈 에이전트 연동 명세 추가 -> README.md 및 USECASE.md 갱신 완료
 - 2026-05-04: GWT Native JsType 제약 사항 수정 (필드 초기화 금지) 및 대시보드 컴파일 에러 해결 -> 완료
 - 2026-04-28: shell-ui 아키텍처 분석 → 의존성 단방향 흐름, Dagger 2 모범 사례 준수 확인 및 DOM 직접 접근 리팩토링 제안
 - 2026-04-27: 동적 툴 프로바이더 설계 및 구현 제안 → agent-bridge/activity 연동 설계 및 코드(ToolProvider, Bridges) 생성

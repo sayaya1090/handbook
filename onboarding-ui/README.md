@@ -17,10 +17,21 @@
 
 ## 에이전트 연동
 
-에이전트는 shell의 `AGENT_COMMAND navigate`를 통해 `/workspaces` URL로 진입합니다.
-`onboarding-ui`의 `AgentWorkspaceHandler`는 `MutationReceiver`를 통해 에이전트의 커맨드를 수신하며, 내부적으로 Presenter를 통해 상태를 갱신합니다.
+### 내부 assistant
+- 호출 경로: `AGENT_COMMAND` 대상
+- 시나리오: "새 워크스페이스를 만들어줘" → `WS_MODE CREATE`, `WS_INPUT`, `WS_SUBMIT` 커맨드를 통해 온보딩 화면 조작 및 워크스페이스 생성 실행.
 
-- **연동 시퀀스**: `AgentMutation` -> `MutationReceiver` -> `AgentWorkspaceHandler` -> `Store` -> `Presenter` -> `View`
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: 없음
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음
+- 감사 경로: 해당 없음
+
+### (후속) MCP
+- 관련 Tool 매니페스트: 없음
+
+### Agent Command 타겟
+- navigate: `/workspaces`
+- highlight/mutate selector 패턴: `.ws-content`, `.ws-dialog` 및 내부 요소 (AgentWorkspaceHandler에서 커스텀 이벤트 처리)
 
 ## 계층 구조
 

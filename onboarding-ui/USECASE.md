@@ -74,7 +74,7 @@ sequenceDiagram
     Note over Btn: ⚠️ JOIN 처리 미구현
 ```
 
-## 에이전트 워크스페이스 생성 시퀀스
+## 에이전트 연동 시나리오
 
 ```mermaid
 sequenceDiagram
