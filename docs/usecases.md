@@ -572,7 +572,8 @@ sequenceDiagram
     alt 워크스페이스 0개
         SW-->>GW: "302 Found (Location: /workspaces/onboarding)"
         GW-->>Shell: "302 Found (Location: /workspaces/onboarding)"
-        Shell->>Shell: "라우팅 감지 및 /workspaces/onboarding 이동"
+        Note over Shell: "FetchApi 가 redirected 감지"
+        Shell->>Shell: "HistoryManager 를 통해 /workspaces/onboarding 이동"
         Shell->>MSM: "onboarding.nocache.js 로드 요청"
         MSM->>OUI: "프레임 렌더 및 모듈 실행"
         OUI-->>User: "Create/Join 온보딩 화면 표시"

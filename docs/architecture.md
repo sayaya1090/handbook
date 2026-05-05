@@ -178,7 +178,7 @@ graph LR
 
 ### Shell-UI 초기화 및 온보딩 시퀀스
 
-워크스페이스가 없는 사용자의 자동 진입 흐름은 API 레벨의 302 리다이렉트와 쉘의 라우팅 감지로 이루어진다.
+워크스페이스가 없는 사용자의 자동 진입 흐름은 API 레벨의 302 리다이렉트와 쉘의 명시적 핸들링으로 이루어진다.
 
 ```mermaid
 sequenceDiagram
@@ -193,7 +193,8 @@ sequenceDiagram
     alt 워크스페이스 0개
         SW-->>GW: 302 Found (Location: /workspaces/onboarding)
         GW-->>Shell: 302 Found (Location: /workspaces/onboarding)
-        Shell->>H: "Location 헤더 감지 또는 URL 변경 반응"
+        Note over Shell: "응답의 redirected 속성 감지"
+        Shell->>H: "HistoryManager.next('/workspaces/onboarding') 호출"
         H->>H: history.pushState(null, '', '/workspaces/onboarding')
         Shell->>Shell: "온보딩 모듈 로드 및 렌더"
     else 워크스페이스 1개 이상

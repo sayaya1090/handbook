@@ -30,7 +30,8 @@ gwt {
             "dev.sayaya.handbook.DrawerTest",
             "dev.sayaya.handbook.FrameTest",
             "dev.sayaya.handbook.ProgressTest",
-            "dev.sayaya.handbook.HistoryTest"
+            "dev.sayaya.handbook.HistoryTest",
+            "dev.sayaya.handbook.RedirectTest"
         )
         war = file("src/test/webapp")
     }

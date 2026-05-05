@@ -1,6 +1,7 @@
 # docs-keeper 에이전트 노트
 
 ## 요청 로그
+- 2026-05-24: shell-ui UC-12 매트릭스 갱신 → WorkspaceRedirectTest 매핑 및 문서/계약 무결성 검증
 - 2026-05-24: 최근 변경내역 크로스체크 → 에이전트 연동 섹션 누락(document 등 10개 모듈) 및 계약 일치성 검증 완료
 - 2026-05-24: 프로젝트 전수 문서 무결성 감사 → DESIGN.md 누락, UC 코드 충돌, Soft Delete 미구현 등 발견.
 - 2026-05-18: 커밋 7257216 문서 크로스체크 → Shared Domain/Versioning 계약 불일치 발견 및 승격 제안.

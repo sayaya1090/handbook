@@ -16,10 +16,11 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 @Singleton
 public class MenuSelected {
     @Delegate private final BehaviorSubject<Menu> _this = behavior(null);
-    @Inject MenuSelected(ToolSelected tool) {
+    @Inject public MenuSelected(ToolSelected tool) {
         _this.distinctUntilChanged().subscribe(selected -> {
             if(selected != null && selected.tools() != null && selected.tools().length == 1)
                 tool.next(selected.tools()[0]);
         });
     }
+
 }

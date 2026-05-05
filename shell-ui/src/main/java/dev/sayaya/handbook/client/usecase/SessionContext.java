@@ -24,8 +24,7 @@ public class SessionContext {
     private final Map<String, String> values = new HashMap<>();
     private final BehaviorSubject<Map<String, String>> subject = behavior(new HashMap<>());
 
-    @Inject
-    SessionContext() {}
+    @Inject public SessionContext() {}
 
     /**
      * 컨텍스트 변수를 설정하거나 제거한다.

@@ -18,8 +18,7 @@ import java.util.Map;
 public class PlaceholderResolver {
     private final SessionContext context;
 
-    @Inject
-    PlaceholderResolver(SessionContext context) {
+    @Inject public PlaceholderResolver(SessionContext context) {
         this.context = context;
     }
 

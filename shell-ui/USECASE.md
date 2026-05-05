@@ -382,14 +382,14 @@ sequenceDiagram
 | UC-S9 (에이전트) | 에이전트 화면 이동 | 유스케이스 | UrlBasedMenuResolver, MenuSelected, ModuleScriptManager, HostSharedModule(uri) | ✅ 구현 완료 (UrlBasedMenuResolverTest (agent-ui 연계)) |
 | UC-S10 (i18n) | i18n (다국어) | Frame+API | BrowserLanguageDetector, FetchLanguagePackRepository, LabelProvider | ✅ 구현 완료 (DrawerTest: 라벨 텍스트 존재 확인) |
 | UC-S11 (프레임전환) | — (단순) | Frame+API | FrameUpdater, FrameFactory, FrameElement, ContentElement | ✅ 구현 완료 (FrameTest: 렌더러 전환 및 개수 유지) |
-| UC-12 (온보딩) | 빈 워크스페이스 감지 → 서버 주도 메뉴 공급 | — | ModuleScriptManager | 구현 완료 |
+| UC-12 (온보딩) | 빈 워크스페이스 302 응답 감지 → 클라이언트 라우팅 이동 | — | WorkspaceApi, HistoryManager, ModuleScriptManager | ✅ 구현 완료 (WorkspaceRedirectTest) |
 | UC-S12 (진행률) | — (단순) | Frame+API | ProgressElement, Observer\<Progress\> | ✅ 구현 완료 (ProgressTest: 바 가시성 및 값 제어) |
 | UC-S13 (모바일) | 모바일 드릴인/드릴백 | Drawer UI | ViewportObserver, MobileTabsElement, MobileTabsPresenter, NavEntryFactory, MenuTabBuilder, OverflowMenuView, ResponsiveOverflow, ShellAppBarElement, MenuRailMode/ToolRailMode, CloseToolRailButton | ✅ 구현 완료 (DrawerTest: 모바일 뷰포트 속성 및 탭 렌더) |
 | UC-S14 (실시간협업) | — (SSE 이벤트 수신) | Frame+API | SSE /workspaces/{id}/messages, 이벤트 타입별 UI 갱신 | ✅ 구현 완료 (UrlBasedMenuResolverTest (agent-bridge 연계)) |
 | UC-S15 (언어/테마) | — | Drawer UI | UserPreferences, ThemeToggle, BrowserLanguageDetector, LabelProvider | ✅ 구현 완료 (DrawerTest: 테마 토글 및 퍼시스턴스) |
 | UC-S16 (설정패널) | — | Drawer UI | ThemeToggle, UserPreferences | ❌ 테스트 미작성 (패널 UI 미완) |
 | UC-S17 (세션관리) | — | Frame+API | SessionPollingService, FetchApi, ToastContainer, LabelProvider | ✅ 구현 완료 (SessionPollingService) |
-| UC-S18 (빈 상태 UI) | — | Frame+API | EmptyWorkspaceOverlay, EmptyWorkspacePresenter | ✅ 구현 완료 |
+| UC-S18 (빈 상태 UI) | — | Frame+API | EmptyWorkspaceOverlay, EmptyWorkspacePresenter | ✅ 구현 완료 (OnboardingTest) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, ProgressSharing, 0, LabelSharing | ❌ 테스트 미작성 |
 
