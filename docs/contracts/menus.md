@@ -19,13 +19,26 @@
 - `url`이 정의된 도구는 클릭 시 `HistoryManager`를 통해 주소창을 해당 경로로 갱신하며, 이를 통해 딥링크를 지원한다.
 - `urlRegex`는 쉘의 `UrlBasedToolResolver`가 현재 활성화된 도구를 자동 선택할 때 사용된다.
 
+### 4.1 워크스페이스 메뉴 (Workspace Menu)
+
+사용자가 하나 이상의 워크스페이스에 참여 중일 때 `workspace-query` 공급자가 반환하는 메뉴 엔트리이다.
+
+| 필드 | 값 | 비고 |
+|------|----|------|
+| `title` | `"workspaces"` | i18n 키 ("워크스페이스 관리") |
+| `supportingText` | `"workspace.menu.supporting"` | i18n 키 |
+| `order` | `"S"` | 하단 배치 |
+| `bottom` | `true` | |
+| `allowedSessionStates`| `["AUTHENTICATED", "IN_WORKSPACE"]` | 로그인한 모든 사용자 |
+
 ### 4.2 온보딩 메뉴 (Onboarding Menu)
 
 사용자의 워크스페이스가 존재하지 않을 때 `workspace-query` 공급자가 반환하는 메뉴 엔트리이다.
 
 | 필드 | 값 | 비고 |
 |------|----|------|
-| `title` | `"workspace.onboarding"` | i18n 키 |
+| `title` | `"workspace.onboarding"` | i18n 키 ("워크스페이스 시작하기") |
+| `supportingText` | `"workspace.onboarding.supporting"` | i18n 키 |
 | `order` | `"S0"` | 가장 상단 노출 |
 | `script` | `"/js/onboarding/onboarding.nocache.js"` | 온보딩 UI 모듈 |
 | `url` | `"/workspaces/onboarding"` | 온보딩 경로 |

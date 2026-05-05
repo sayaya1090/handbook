@@ -23,6 +23,7 @@ class MenuControllerTest : BehaviorSpec({
         When("정적 메뉴 상수(MENU, ONBOARDING_MENU)의 속성을 검사하면") {
             Then("MENU의 기본 속성이 올바르다") {
                 MenuController.MENU.title() shouldBe "workspaces"
+                MenuController.MENU.supportingText() shouldBe "workspace.menu.supporting"
                 MenuController.MENU.bottom() shouldBe true
                 MenuController.MENU.isAllowedFor(SessionStateKind.IN_WORKSPACE) shouldBe true
                 val toolTitles = MenuController.MENU.tools().map { it.title() }
@@ -30,6 +31,7 @@ class MenuControllerTest : BehaviorSpec({
             }
             Then("ONBOARDING_MENU의 기본 속성이 올바르다") {
                 MenuController.ONBOARDING_MENU.title() shouldBe "workspace.onboarding"
+                MenuController.ONBOARDING_MENU.supportingText() shouldBe "workspace.onboarding.supporting"
                 MenuController.ONBOARDING_MENU.url() shouldBe "/workspaces/onboarding"
                 MenuController.ONBOARDING_MENU.isAllowedFor(SessionStateKind.AUTHENTICATED) shouldBe true
             }

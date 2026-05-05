@@ -1,8 +1,12 @@
 {
-  "workspaces": "Workspaces",
-  "workspace info": "Workspace Info",
-  "groups": "Groups",
-  "permissions": "Permissions",
+  "workspaces": "Workspace Management",
+  "workspace info": "Workspace Information",
+  "groups": "Team & Group Management",
+  "permissions": "Access Control & Permissions",
+
+  "workspace.menu.supporting": "Configure team members and access roles.",
+  "workspace.onboarding": "Get Started",
+  "workspace.onboarding.supporting": "Set up your first workspace to collaborate.",
 
   "workspace.dialog.title": "Start your workspace",
   "workspace.dialog.subtitle": "Create a new workspace or join an existing one to get started.",
@@ -10,14 +14,14 @@
   "workspace.create": "Create a new workspace",
   "workspace.create.hint": "Pick a name for your team or project.",
   "workspace.create.name": "New workspace name",
-  "workspace.create.submit": "Create",
+  "workspace.create.submit": "Create Workspace",
 
   "workspace.or": "or",
 
   "workspace.join": "Join an existing workspace",
   "workspace.join.hint": "Ask your administrator for the workspace ID.",
   "workspace.join.id": "Workspace ID to join",
-  "workspace.join.submit": "Request to join",
+  "workspace.join.submit": "Join Workspace",
 
   "workspace.name.invalid": "Workspace name must contain only alphanumeric, Korean, hyphen, or underscore characters (max 255).",
 

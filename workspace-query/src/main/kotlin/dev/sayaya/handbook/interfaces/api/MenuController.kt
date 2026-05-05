@@ -49,7 +49,7 @@ class MenuController(private val repository: WorkspaceReadRepository) {
     companion object {
         val MENU: Menu = Menu.builder()
             .title("workspaces")
-            .supportingText("Name, Group, and Permission")
+            .supportingText("workspace.menu.supporting")
             .order("S")
             .icon("fa-briefcase")
             .iconType("sharp")
@@ -68,6 +68,7 @@ class MenuController(private val repository: WorkspaceReadRepository) {
 
         val ONBOARDING_MENU: Menu = Menu.builder()
             .title("workspace.onboarding")
+            .supportingText("workspace.onboarding.supporting")
             .order("S0")
             .icon("fa-circle-plus")
             .iconType("sharp")

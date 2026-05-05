@@ -1,8 +1,12 @@
 {
-  "workspaces": "워크스페이스",
-  "workspace info": "워크스페이스 정보",
-  "groups": "그룹",
-  "permissions": "권한",
+  "workspaces": "워크스페이스 관리",
+  "workspace info": "워크스페이스 기본 정보",
+  "groups": "그룹 및 멤버 관리",
+  "permissions": "역할 및 권한 설정",
+
+  "workspace.menu.supporting": "조직의 멤버와 권한 체계를 구성합니다.",
+  "workspace.onboarding": "워크스페이스 시작하기",
+  "workspace.onboarding.supporting": "협업을 위한 첫 번째 워크스페이스를 준비합니다.",
 
   "workspace.dialog.title": "워크스페이스 시작하기",
   "workspace.dialog.subtitle": "새로 만들거나 기존 워크스페이스에 참여하여 작업을 시작하세요.",
@@ -10,14 +14,14 @@
   "workspace.create": "새 워크스페이스 만들기",
   "workspace.create.hint": "팀 또는 프로젝트 이름을 입력하세요.",
   "workspace.create.name": "새 워크스페이스 이름",
-  "workspace.create.submit": "만들기",
+  "workspace.create.submit": "워크스페이스 생성하기",
 
   "workspace.or": "또는",
 
   "workspace.join": "기존 워크스페이스 참여",
   "workspace.join.hint": "관리자에게 워크스페이스 ID를 문의하세요.",
   "workspace.join.id": "참여할 워크스페이스 ID",
-  "workspace.join.submit": "참여 요청",
+  "workspace.join.submit": "워크스페이스 참여하기",
 
   "workspace.name.invalid": "워크스페이스 이름은 영문·한글·숫자·공백·하이픈·밑줄만 가능하며 최대 255자입니다.",
 
