@@ -4,8 +4,11 @@
   "document.delete": "Delete",
   "document.undo": "Undo",
   "document.redo": "Redo",
-  "document.event.changed": "Another user has modified the document",
+  "document.event.changed": "Another user has changed the document",
   "document.pagination.empty": "No results",
-  "documents": "Documents",
+  "documents": "Master Data Management",
+  "document.menu.supporting": "Manage and edit data based on defined types.",
+  "dashboard": "Activity & Quality Dashboard",
+  "dashboard.menu.supporting": "Monitor compliance results and agent activities.",
   "document_editor": "Document Editor"
 }

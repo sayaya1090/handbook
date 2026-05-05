@@ -10,8 +10,9 @@
   "type.attr.apply": "Apply",
   "type.attr.close": "Close",
   "type.attr.nullable": "Nullable",
-  "type.event.changed": "Another user has modified the type",
-  "types": "Types",
+  "type.event.changed": "Another user has changed the type",
+  "types": "Data Type Design",
+  "type.menu.supporting": "Define data structures, properties, and relations.",
   "type_definition": "Type Definition",
   "type_canvas": "Type Canvas"
 }

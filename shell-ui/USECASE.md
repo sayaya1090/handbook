@@ -146,7 +146,7 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 |
-| **정상 흐름** | 1. 페이지 로드 시 `UserApi`가 `/user` 엔드포인트에서 사용자 정보를 가져온다.<br>2. `UserProvider`가 사용자를 발행하면 `MenuList`가 `/menus` 엔드포인트에서 메뉴 목록을 로딩한다.<br>3. `WorkspaceList`가 사용자의 워크스페이스 목록을 추출한다.<br>4. `DrawerMode`가 COLLAPSE로 전환되고, Drawer UI가 렌더링된다.<br>5. `UrlBasedMenuResolver`가 현재 URL을 메뉴 정규식과 매칭하여 해당 메뉴를 자동 선택한다. |
+| **정상 흐름** | 1. 페이지 로드 시 `UserApi`가 `/user` 엔드포인트에서 사용자 정보를 가져온다.<br>2. `UserProvider`가 사용자를 발행하면 `SessionStateProvider`가 상태를 계산한다.<br>3. `WorkspaceList`가 로딩되어 세션 상태가 확정(`AUTHENTICATED` 또는 `IN_WORKSPACE`)되면, `MenuList`가 `/menus` 엔드포인트에서 메뉴 목록을 로딩한다.<br>4. `DrawerMode`가 COLLAPSE로 전환되고, Drawer UI가 렌더링된다.<br>5. `UrlBasedMenuResolver`가 현재 URL을 메뉴 정규식과 매칭하여 해당 메뉴를 자동 선택한다. |
 | **대안 흐름** | 인증 실패 시(401) 사용자 정보가 null로 발행되고, DrawerMode가 HIDE로 전환된다. |
 
 ## UC-S2: 메뉴 선택 및 모듈 로딩
@@ -440,5 +440,8 @@ sequenceDiagram
 | 3 | OpenAPI 어노테이션 | N/A | 동일 사유 |
 | 4 | 감사 경로 | N/A (shell 자체) | shell 이 트리거한 백엔드 호출은 각 서비스에서 감사 기록 발행 |
 | 5 | Agent Command 타겟 | URL 패턴: `MenuList.urlRegex`. selector: `.menu-rail .item`, `.tool-rail .item`, `.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
+
+**UC-S21 특기사항**: 가상 onboarding Menu 는 `MenuList` 밖에서 합성되므로 `urlRegex` 미지정 — 외부 에이전트의 navigate 커맨드로 직접 트리거 불가능. 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.
+.mobile-tabs md-primary-tab`, `.app-bar` | mutate 커맨드는 frame bridge 를 통해 개별 모듈로 전파 |
 
 **UC-S21 특기사항**: 가상 onboarding Menu 는 `MenuList` 밖에서 합성되므로 `urlRegex` 미지정 — 외부 에이전트의 navigate 커맨드로 직접 트리거 불가능. 에이전트가 온보딩을 유도하려면 워크스페이스 제거(백엔드)를 통해 `WorkspaceList` 를 empty 로 만들거나, 신규 가입 사용자 컨텍스트에서만 발화한다.

@@ -45,6 +45,14 @@
 | `urlRegex` | `["^/workspaces/onboarding$"]` | 자동 매칭용 |
 | `allowedSessionStates`| `["AUTHENTICATED"]` | 로그인 후 워크스페이스 없는 사용자에게만 노출 |
 
+### 4.3 기타 도메인 메뉴
+
+| 메뉴 | title 키 | supportingText 키 | 공급자 |
+|------|----------|-------------------|--------|
+| **타입** | `types` | `type.menu.supporting` | `type-query` |
+| **문서** | `documents` | `document.menu.supporting` | `document-query` |
+| **대시보드** | `dashboard` | `dashboard.menu.supporting` | `document-query` |
+
 ## Client-side routing table
 
 | URL 패턴 (Regex) | 대상 모듈 | 설명 |

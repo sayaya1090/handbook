@@ -11,7 +11,8 @@
   "type.attr.close": "닫기",
   "type.attr.nullable": "널 허용",
   "type.event.changed": "다른 사용자가 타입을 변경했습니다",
-  "types": "타입",
+  "types": "타입 및 스키마 설계",
+  "type.menu.supporting": "문서의 구조와 속성, 데이터 간의 관계를 정의합니다.",
   "type_definition": "타입 정의",
   "type_canvas": "타입 캔버스"
 }

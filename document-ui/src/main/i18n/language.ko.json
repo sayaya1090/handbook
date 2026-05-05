@@ -6,6 +6,9 @@
   "document.redo": "다시 실행",
   "document.event.changed": "다른 사용자가 문서를 변경했습니다",
   "document.pagination.empty": "결과 없음",
-  "documents": "문서",
+  "documents": "마스터 데이터 편집",
+  "document.menu.supporting": "정의된 스키마에 따라 데이터를 기록하고 관리합니다.",
+  "dashboard": "활동 및 품질 대시보드",
+  "dashboard.menu.supporting": "데이터 정합성 검증 결과와 에이전트 활동을 모니터링합니다.",
   "document_editor": "문서 편집기"
 }

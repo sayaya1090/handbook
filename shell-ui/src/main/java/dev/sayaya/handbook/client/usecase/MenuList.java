@@ -33,11 +33,18 @@ public class MenuList {
         this.menuRepository = menuRepository;
         this.sessionStateProvider = sessionStateProvider;
         this.menuSelected = menuSelected;
-        userProvider.subscribe(this::update);
-        sessionStateProvider.subscribe(state -> filterAndPublish());
+        
+        // 2026-05-05 순차 로딩 도입: 사용자 정보만으로는 부족하며, 
+        // 워크스페이스 목록까지 로딩되어 세션 상태가 확정된 후 메뉴를 조회한다.
+        sessionStateProvider.subscribe(state -> {
+            if (state != null && state.kind() != dev.sayaya.handbook.domain.SessionStateKind.ANONYMOUS) {
+                updateMenus();
+            }
+            filterAndPublish();
+        });
     }
 
-    private void update(User user) {
+    private void updateMenus() {
         menuRepository.findAll().subscribe(list -> {
             this.allMenus = list;
             filterAndPublish();
