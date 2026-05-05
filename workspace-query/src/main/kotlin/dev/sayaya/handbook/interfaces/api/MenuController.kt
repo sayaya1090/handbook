@@ -90,12 +90,17 @@ class MenuController(private val repository: WorkspaceReadRepository) {
     )
     @GetMapping(value = ["/menus"], produces = ["application/vnd.sayaya.handbook.v1+json"])
     @ResponseStatus(HttpStatus.OK)
-    fun menus(principal: Principal?): Flux<Menu> =
-        if (principal == null) Flux.empty()
-        else repository.findByUserSub(UUID.fromString(principal.name))
+    fun menus(principal: Principal?): Flux<Menu> {
+        if (principal !is dev.sayaya.handbook.interfaces.authentication.UserAuthentication) return Flux.empty()
+        
+        val userId = principal.sub ?: principal.id ?: return Flux.empty()
+        val userUuid = runCatching { UUID.fromString(userId) }.getOrNull() ?: return Flux.empty()
+        
+        return repository.findByUserSub(userUuid)
             .hasElements()
             .flatMapMany { hasWorkspaces ->
                 if (hasWorkspaces) Flux.just(MENU)
                 else Flux.just(ONBOARDING_MENU)
             }
+    }
 }

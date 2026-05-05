@@ -44,9 +44,10 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 
 | Method | Path | 설명 |
 |--------|------|------|
-| POST | /workspaces | 워크스페이스 생성 |
-| POST | /workspaces/{id}/join | 워크스페이스 조인 |
-| POST | /workspaces/{ws}/groups | 그룹 생성 |
+| POST | `/workspaces` | 워크스페이스 생성 |
+| POST | `/workspaces/{id}/join` | 워크스페이스 조인 |
+| GET | `/workspaces/onboarding` | 302 리다이렉트 추적 방어용 더미 엔드포인트 (204 반환) |
+| POST | `/workspaces/{ws}/groups` | 그룹 생성 |
 | GET | /workspaces/{ws}/groups | 그룹 목록 조회 |
 | DELETE | /workspaces/{ws}/groups/{gid} | 그룹 삭제 |
 | POST | /workspaces/{ws}/groups/{gid}/members/{uid} | 그룹 멤버 추가 |

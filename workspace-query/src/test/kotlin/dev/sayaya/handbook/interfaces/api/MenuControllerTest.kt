@@ -47,7 +47,16 @@ class MenuControllerTest : BehaviorSpec({
         }
 
         When("인증된 사용자의 워크스페이스가 존재하면") {
-            val principal = Principal { UUID.randomUUID().toString() }
+            val principal = dev.sayaya.handbook.interfaces.authentication.UserAuthentication(
+                sub = UUID.randomUUID().toString(),
+                id = "test-jti",
+                username = "testuser",
+                issuer = "test-issuer",
+                issuedDateTime = java.time.LocalDateTime.now(),
+                notBeforeDateTime = java.time.LocalDateTime.now(),
+                expireDateTime = java.time.LocalDateTime.now().plusHours(1),
+                token = "test-token"
+            )
             every { repository.findByUserSub(any()) } returns Flux.just(mockk<Workspace>())
             Then("workspaces 메뉴를 반환한다") {
                 StepVerifier.create(controller.menus(principal))
@@ -57,7 +66,16 @@ class MenuControllerTest : BehaviorSpec({
         }
 
         When("인증된 사용자의 워크스페이스가 없으면") {
-            val principal = Principal { UUID.randomUUID().toString() }
+            val principal = dev.sayaya.handbook.interfaces.authentication.UserAuthentication(
+                sub = UUID.randomUUID().toString(),
+                id = "test-jti",
+                username = "testuser",
+                issuer = "test-issuer",
+                issuedDateTime = java.time.LocalDateTime.now(),
+                notBeforeDateTime = java.time.LocalDateTime.now(),
+                expireDateTime = java.time.LocalDateTime.now().plusHours(1),
+                token = "test-token"
+            )
             every { repository.findByUserSub(any()) } returns Flux.empty()
             Then("onboarding 메뉴를 반환한다") {
                 StepVerifier.create(controller.menus(principal))
