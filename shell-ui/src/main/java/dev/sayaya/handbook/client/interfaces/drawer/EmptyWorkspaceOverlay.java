@@ -26,7 +26,7 @@ public class EmptyWorkspaceOverlay implements IsElement<HTMLDivElement> {
         var message = p().css("empty-message").element();
         var actionBtn = ButtonElementBuilder.button().filled()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", "fa-plus"))
-                .on(EventType.click, e -> UriSharing.navigate("/workspaces"))
+                .on(EventType.click, e -> UriSharing.navigate("/workspaces/onboarding"))
                 .element();
 
         root = div().css("shell-empty-overlay")

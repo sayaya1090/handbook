@@ -32,7 +32,7 @@ public class EmptyWorkspacePresenter {
         SessionState state = sessionState.getValue();
         String path = uri.getValue();
         if (state == null) return;
-        if (state.kind() == dev.sayaya.handbook.domain.SessionStateKind.AUTHENTICATED && path != null && !path.equals("/workspaces")) {
+        if (state.kind() == dev.sayaya.handbook.domain.SessionStateKind.AUTHENTICATED && path != null && !path.startsWith("/workspaces")) {
             view.show();
         } else {
             view.hide();

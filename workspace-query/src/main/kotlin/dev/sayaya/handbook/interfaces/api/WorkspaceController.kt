@@ -75,6 +75,19 @@ class WorkspaceController(
     }
 
     @Operation(
+        summary = "Dummy endpoint for onboarding redirect",
+        description = "Handles automatic redirect following by browsers when workspaces list is empty.",
+        hidden = true
+    )
+    @GetMapping(
+        value = ["/workspaces/onboarding"],
+        produces = ["application/vnd.sayaya.handbook.v1+json"],
+    )
+    fun onboardingDummy(): Mono<ResponseEntity<Void>> {
+        return Mono.just(ResponseEntity.noContent().build())
+    }
+
+    @Operation(
         summary = "Get workspace by id (read-only)",
         description = "Returns a single workspace by its UUID.",
     )
