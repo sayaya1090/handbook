@@ -7,7 +7,7 @@
 | UC | 제목 | 구현체 | 상태 |
 |----|------|--------|------|
 | UC-04 | 워크스페이스 홈 화면 진입 (메뉴 렌더링) | `MenuController.menus(Principal?)` | 구현 (비인증 빈 목록) |
-| UC-05 | 워크스페이스 전환 | 간접 (메뉴 재렌더링 + `/workspaces` 조회) | 구현 |
+| UC-05 | 워크스페이스 전환 | `WorkspaceController.list(Principal)` | 구현 (0개 시 302 리다이렉트) |
 | UC-06 | 워크스페이스 참여 | — (workspace-command 담당) | 해당 없음 |
 | UC-10 | 워크스페이스 생성 | — (workspace-command) | 해당 없음 |
 | UC-11 | 워크스페이스 삭제 | — (workspace-command) | 해당 없음 |
@@ -39,6 +39,26 @@ sequenceDiagram
     MenuService->>MenuService: order 기준 정렬
     MenuService-->>Gateway: 정렬된 Menu Flux
     Gateway-->>Browser: 200 OK + 집계 메뉴
+```
+
+## UC-05 시퀀스 — 워크스페이스 목록 조회 (302 리다이렉트)
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Gateway
+    participant SW as workspace-query
+
+    Browser->>Gateway: GET /workspaces (JSON)
+    Gateway->>SW: list(Principal)
+    alt 워크스페이스 0개
+        SW-->>Gateway: 302 Found (Location: /workspaces/onboarding)
+        Gateway-->>Browser: 302 Found (Location: /workspaces/onboarding)
+        Note over Browser: SPA 내비게이션 및 온보딩 모듈 로드
+    else 워크스페이스 1개 이상
+        SW-->>Gateway: 200 OK + [Workspaces]
+        Gateway-->>Browser: 200 OK + [Workspaces]
+    end
 ```
 
 ## 테스트 매핑

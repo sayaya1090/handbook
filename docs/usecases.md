@@ -552,52 +552,47 @@ sequenceDiagram
 
 | 항목 | 내용 |
 |------|------|
-| **액터** | Shell UI (시스템) |
+| **액터** | 시스템 |
 | **선행 조건** | 사용자가 로그인 완료 상태이며, 참여 중인 워크스페이스 목록이 비어 있다 |
-| **후행 조건** | `workspace-ui` 모듈이 자동 로드되어 Create/Join 온보딩 화면이 표시된다 |
+| **후행 조건** | `GET /workspaces` 호출 시 `302 Found`가 반환되어 쉘 UI가 온보딩 화면으로 즉시 이동한다 |
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant User as 사용자
     participant Shell as Shell UI
-    participant WL as WorkspaceList
-    participant OB as WorkspaceOnboardingBootstrapper
-    participant MS as MenuSelected
+    participant GW as Gateway
+    participant SW as workspace-query
     participant MSM as ModuleScriptManager
     participant OUI as "onboarding-ui (iframe)"
 
     User->>Shell: "로그인 완료"
-    Shell->>WL: "워크스페이스 목록 조회"
-    WL-->>OB: "empty 방출 (distinctUntilChanged)"
-    OB->>OB: "loaded 플래그 확인 (중복 가드)"
-    OB->>MS: "가상 onboarding Menu push<br/>(title=workspace.onboarding,<br/>script=/js/onboarding/onboarding.nocache.js,<br/>icon=fa-circle-plus, order=0)"
-    MS-->>MSM: "메뉴 선택 이벤트"
-    MSM->>OUI: "onboarding.nocache.js 로드 + 프레임 렌더"
-    OUI-->>User: "Create/Join 온보딩 화면 표시"
-
-    Note over User,OUI: "사용자가 워크스페이스 생성/조인 완료 시"
-    User->>WL: "워크스페이스 생성 (UC-10) 또는 조인 (UC-06)"
-    WL-->>Shell: "non-empty 방출"
-    Shell->>Shell: "UrlBasedMenuResolver 정상 경로 복귀"
+    Shell->>GW: "GET /workspaces (JSON 요청)"
+    GW->>SW: "list() 조회"
+    alt 워크스페이스 0개
+        SW-->>GW: "302 Found (Location: /workspaces/onboarding)"
+        GW-->>Shell: "302 Found (Location: /workspaces/onboarding)"
+        Shell->>Shell: "라우팅 감지 및 /workspaces/onboarding 이동"
+        Shell->>MSM: "onboarding.nocache.js 로드 요청"
+        MSM->>OUI: "프레임 렌더 및 모듈 실행"
+        OUI-->>User: "Create/Join 온보딩 화면 표시"
+    else 워크스페이스 1개 이상
+        SW-->>GW: "200 OK + [workspaces]"
+        GW-->>Shell: "정상 진입 (UC-04)"
+    end
 ```
 
 **기본 흐름:**
-1. 사용자가 로그인하면 Shell 이 `WorkspaceList` 를 구독한다.
-2. `WorkspaceList` 가 빈 목록을 방출한다.
-3. `WorkspaceOnboardingBootstrapper` 가 이를 감지하고 `loaded` 플래그로 중복 실행을 가드한다.
-4. 가상 onboarding `Menu` (title=`workspace.onboarding`, script=`js/workspaces/workspace.nocache.js`, icon=`fa-circle-plus`, iconType=`solid`, order=`0`) 를 `MenuSelected` 에 1회 push 한다.
-5. `ModuleScriptManager` 가 기존 파이프라인에 따라 `workspace.nocache.js` 를 로드하고 프레임을 렌더한다.
-6. 사용자는 UC-10 (생성) 또는 UC-06 (조인) 을 수행한다.
-
-**대안 흐름:**
-- 4a. 가상 Menu 는 `MenuList` 에 등록되지 않으므로 MenuRail / MobileTabs 에는 노출되지 않는다 (오직 `MenuSelected` 스트림에만 흐름).
-- 6a. 사용자가 워크스페이스를 생성/조인하여 `WorkspaceList` 가 non-empty 로 전환되면 `UrlBasedMenuResolver` 의 정상 경로로 복귀한다. Bootstrapper 는 `loaded=true` 로 고정되어 재실행되지 않는다.
-- 2a. `WorkspaceList` 가 non-empty 를 먼저 방출하면 Bootstrapper 는 push 를 수행하지 않고, UC-04 의 기본 흐름(마지막 액션 워크스페이스 진입)이 진행된다.
+1. 사용자가 로그인하면 Shell이 초기 데이터 로딩을 위해 `GET /workspaces`를 호출한다.
+2. 백엔드(`workspace-query`)는 사용자의 워크스페이스 보유 여부를 판단한다.
+3. 워크스페이스가 없을 경우, `302 Found` 상태 코드와 `Location: /workspaces/onboarding` 헤더를 응답한다.
+4. Shell UI(또는 브라우저)는 302 리다이렉트를 감지하고, `/workspaces/onboarding` 경로로 이동한다.
+5. Shell UI의 라우터가 온보딩 모듈(`onboarding-ui`)을 로드하여 화면에 표시한다.
+6. 사용자는 온보딩 화면에서 워크스페이스 생성(UC-10) 또는 조인(UC-06)을 수행한다.
 
 **관련 컴포넌트:**
-- `shell-ui/src/main/java/dev/sayaya/handbook/client/usecase/WorkspaceOnboardingBootstrapper.java`
-- `WorkspaceList`, `MenuSelected`, `ModuleScriptManager` (shell-ui)
+- `workspace-query` (302 리다이렉트 수행)
+- `shell-ui` (리다이렉트 감지 및 라우팅)
 - `workspace-ui` 모듈 (`workspace.nocache.js`)
 
 ---

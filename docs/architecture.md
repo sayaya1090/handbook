@@ -178,28 +178,27 @@ graph LR
 
 ### Shell-UI 초기화 및 온보딩 시퀀스
 
-워크스페이스가 없는 사용자의 자동 진입 흐름은 여러 비동기 데이터의 결합으로 이루어진다.
+워크스페이스가 없는 사용자의 자동 진입 흐름은 API 레벨의 302 리다이렉트와 쉘의 라우팅 감지로 이루어진다.
 
 ```mermaid
 sequenceDiagram
+    participant Shell as Shell UI
     participant GW as Gateway
     participant SW as workspace-query
-    participant Shell as Shell UI
     participant H as HistoryManager
 
-    Note over GW,SW: "/menus 로 요청"
-    alt 워크스페이스 없음
-        GW->>SW: menus() 조회
-        SW-->>GW: [onboarding-menu]
-    else 워크스페이스 있음
-        GW->>SW: menus() 조회
-        SW-->>GW: [workspace-menu]
-    end
-    GW-->>Shell: 정렬된 Menu Flux (onboarding 포함)
-    Shell->>Shell: 메뉴 수신 및 Drawer 렌더
-    
-    alt 온보딩 메뉴 선택
-        Shell->>H: "onboarding.nocache.js 로드 및 렌더"
+    Note over Shell: "로그인 완료 후 데이터 로딩"
+    Shell->>GW: GET /workspaces (JSON)
+    GW->>SW: list() 호출
+    alt 워크스페이스 0개
+        SW-->>GW: 302 Found (Location: /workspaces/onboarding)
+        GW-->>Shell: 302 Found (Location: /workspaces/onboarding)
+        Shell->>H: "Location 헤더 감지 또는 URL 변경 반응"
+        H->>H: history.pushState(null, '', '/workspaces/onboarding')
+        Shell->>Shell: "온보딩 모듈 로드 및 렌더"
+    else 워크스페이스 1개 이상
+        SW-->>GW: 200 OK + [workspaces]
+        GW-->>Shell: 200 OK + [workspaces]
     end
 ```
 
