@@ -42,7 +42,7 @@ class RouteLoadingTest(
                 "login", "type-query", "type-command",
                 "document-query", "document-command",
                 "workspace-query", "workspace-command",
-                "assistant", "static"
+                "assistant", "static-assets-root", "static-assets-domains"
             )
         }
 
