@@ -105,6 +105,8 @@ public class WorkspaceEventListener {
         // 쿼리스트링 제거
         int queryIdx = wsId.indexOf('?');
         if (queryIdx >= 0) wsId = wsId.substring(0, queryIdx);
+        // 온보딩 경로는 워크스페이스 ID가 아님
+        if ("onboarding".equals(wsId)) return null;
         return wsId.isEmpty() ? null : wsId;
     }
 }
