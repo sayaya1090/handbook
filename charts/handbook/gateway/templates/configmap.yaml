@@ -98,13 +98,21 @@ data:
                   args:
                     name: assistantCB
                     fallbackUri: forward:/fallback/empty
-            # 정적 리소스 — 모든 경로의 확장자 기반 라우팅
-            - id: static-assets
+            # 정적 리소스 - 도메인 하위 경로 매핑 (JS, CSS, JSON 등)
+            - id: static-assets-domains
               uri: http://ceph-rgw:80
               predicates:
-                - Path=/**/*.js,/**/*.css,/**/*.json,/**/*.png,/**/*.ico,/**/*.wav,/**/*.svg
+                - Path=/{domain:(?:workspaces|types|documents|dashboard)}/{dir:(?:js|css|json|wav|svg|ico)}/**
               filters:
-                - RewritePath=/(?<segment>.*), /handbook-{{ .Values.stage.name | default "dev" }}/static/${segment}
+                - RewritePath=/(?:workspaces|types|documents|dashboard)/(?<dir>js|css|json|wav|svg|ico)/(?<file>.*), /handbook-{{ .Values.stage.name | default "dev" }}/static/${dir}/${file}
+              order: -1
+            # 정적 리소스 - 루트 경로 매핑
+            - id: static-assets-root
+              uri: http://ceph-rgw:80
+              predicates:
+                - Path=/js/**, /css/**, /json/**, /wav/**, /svg/**, /ico/**, /manifest.json, /service-worker.js, /favicon.ico, /app.html
+              filters:
+                - RewritePath=/(?<file>.*), /handbook-{{ .Values.stage.name | default "dev" }}/static/${file}
               order: -1
     server:
       port: 8080

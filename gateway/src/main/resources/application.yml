@@ -88,12 +88,22 @@ spring:
                 name: assistantCB
                 fallbackUri: forward:/fallback/empty
           order: 9
-        # 정적 리소스
-        - id: static
+        # 정적 리소스 - 도메인 하위 경로 매핑 (JS, CSS, JSON 등)
+        - id: static-assets-domains
           uri: ${gateway.routes.static:http://localhost:8080}
           predicates:
-            - Path=/js/**,/css/**,/icons/**,/manifest.json,/service-worker.js,/wav/**,/favicon.ico
-          order: 10
+            - Path=/{domain:(?:workspaces|types|documents|dashboard)}/{dir:(?:js|css|json|wav|svg|ico)}/**
+          filters:
+            - RewritePath=/(?:workspaces|types|documents|dashboard)/(?<dir>js|css|json|wav|svg|ico)/(?<file>.*), /static/${dir}/${file}
+          order: -1
+        # 정적 리소스 - 루트 경로 매핑
+        - id: static-assets-root
+          uri: ${gateway.routes.static:http://localhost:8080}
+          predicates:
+            - Path=/js/**, /css/**, /json/**, /wav/**, /svg/**, /ico/**, /manifest.json, /service-worker.js, /favicon.ico, /app.html
+          filters:
+            - RewritePath=/(?<file>.*), /static/${file}
+          order: -1
         # SPA Fallback
         - id: ui-fallback
           uri: ${gateway.routes.static:http://localhost:8080}
