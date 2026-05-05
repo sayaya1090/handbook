@@ -19,8 +19,6 @@ public class UiInitializer {
     @SuppressWarnings("unused") private final ToolRailPresenter toolRailPresenter;
     private final ProgressElement progressElement;
     private final ContentElement contentElement;
-    private final EmptyWorkspaceOverlay emptyWorkspaceOverlay;
-    private final EmptyWorkspacePresenter emptyWorkspacePresenter;
 
     @Inject
     public UiInitializer(
@@ -31,9 +29,7 @@ public class UiInitializer {
             MenuRailPresenter menuRailPresenter,
             ToolRailPresenter toolRailPresenter,
             ProgressElement progressElement,
-            ContentElement contentElement,
-            EmptyWorkspaceOverlay emptyWorkspaceOverlay,
-            EmptyWorkspacePresenter emptyWorkspacePresenter
+            ContentElement contentElement
     ) {
         this.appBar = appBar;
         this.mobileTabs = mobileTabs;
@@ -43,8 +39,6 @@ public class UiInitializer {
         this.toolRailPresenter = toolRailPresenter;
         this.progressElement = progressElement;
         this.contentElement = contentElement;
-        this.emptyWorkspaceOverlay = emptyWorkspaceOverlay;
-        this.emptyWorkspacePresenter = emptyWorkspacePresenter;
     }
 
     public void initialize() {
@@ -52,8 +46,6 @@ public class UiInitializer {
         body().add(mobileTabs);
         body().add(progressElement);
         body().add(contentElement);
-        body().add(emptyWorkspaceOverlay);
-        emptyWorkspacePresenter.initialize();
     }
 }
 

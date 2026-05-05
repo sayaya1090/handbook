@@ -389,7 +389,6 @@ sequenceDiagram
 | UC-S15 (언어/테마) | — | Drawer UI | UserPreferences, ThemeToggle, BrowserLanguageDetector, LabelProvider | ✅ 구현 완료 (DrawerTest: 테마 토글 및 퍼시스턴스) |
 | UC-S16 (설정패널) | — | Drawer UI | ThemeToggle, UserPreferences | ❌ 테스트 미작성 (패널 UI 미완) |
 | UC-S17 (세션관리) | — | Frame+API | SessionPollingService, FetchApi, ToastContainer, LabelProvider | ✅ 구현 완료 (SessionPollingService) |
-| UC-S18 (빈 상태 UI) | — | Frame+API | EmptyWorkspaceOverlay, EmptyWorkspacePresenter | ✅ 구현 완료 (OnboardingTest) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, ProgressSharing, 0, LabelSharing | ❌ 테스트 미작성 |
 
