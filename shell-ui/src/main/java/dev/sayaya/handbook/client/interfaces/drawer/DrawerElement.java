@@ -2,10 +2,12 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.client.interfaces.ShellStylesheet;
+import dev.sayaya.handbook.client.usecase.MenuHover;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
@@ -34,13 +36,8 @@ import static org.jboss.elemento.Elements.nav;
  *   <li>{@link MenuRailElement} / {@link ToolRailElement} — rail 자식</li>
  *   <li>{@link MenuToggleButton} — drawer 상단 햄버거 (rail 과 독립)</li>
  *   <li>{@link ShellStylesheet} — 생성자 주입으로 shell.css 로드 강제</li>
+ *   <li>{@link MenuHover} — 호버 터널링 상태 관리</li>
  * </ul></p>
- *
- * <p><b>비고 (2026-04):</b> 이전에 있던 엣지 스와이프 제스처(왼쪽 가장자리에서 오른쪽으로
- * 스와이프하여 OVERLAY 로 열기) 는 모바일에서 MenuRail 이 {@code display:none} 으로 숨어
- * 있고 MobileTabs 가 네비게이션을 대체하면서 OVERLAY 진입 동기가 소실되었다. swipe 관련
- * 필드·리스너·상수는 전부 제거되었고, OVERLAY 상태 자체는 상태 머신({@link DrawerState})
- * 에는 보존되어 있어 향후 명시적 Drawer 트리거(햄버거 재도입 등) 시 복원 가능하다.</p>
  */
 @Singleton
 public class DrawerElement implements IsElement<HTMLElement> {
@@ -48,21 +45,24 @@ public class DrawerElement implements IsElement<HTMLElement> {
     private final HTMLDivElement scrim;
 
     @Inject DrawerElement(MenuRailElement navMenu, ToolRailElement navTools,
-                          MenuToggleButton navToggle, ShellStylesheet shellStylesheet) {
+                          MenuToggleButton navToggle, ShellStylesheet shellStylesheet,
+                          MenuHover hover) {
         // shellStylesheet 는 생성자 주입만으로 shell.css 를 document.head 에 붙인다.
-        // DrawerElement 가 shell-ui 의 UI 엔트리이므로 여기서 의존성을 강제하면 추가 부트스트랩 없이 자동 로드.
         assert shellStylesheet != null;
         scrim = div().css("drawer-scrim").element();
 
-        // AppBar / MobileTabs 는 viewport 최상단 fixed 요소로서 body 직속에 배치된다 —
-        // {@link dev.sayaya.handbook.client.ShellInitializer} 가 Composition Root 에서
-        // 명시적 순서로 append. DrawerElement 는 rail 본체 + 햄버거 토글을 담당한다.
-        // 햄버거는 drawer 의 첫 자식으로 둬 rail[hide] 와 독립적으로 유지 — rail 이 width:0 으로
-        // 잘려도 drawer 자체가 visible 이면 햄버거는 노출되어야 하기 때문.
+        var body = div().css("body")
+                .add(navMenu).add(navTools);
+        
+        // 2026-05-05: '호버 터널' 문제 해결. 
+        // 메뉴 레일에서 마우스가 나가더라도 툴 레일(자식)로 이동 중이라면 호버를 유지해야 한다.
+        // 따라서 두 레일을 감싸는 부모인 .body 에 mouseleave 핸들러를 두어, 
+        // 드로어 영역 전체를 벗어날 때만 호버 상태를 초기화한다.
+        body.on(EventType.mouseleave, e -> hover.next(null));
+
         _this.css("drawer")
                 .add(navToggle)
-                .add(div().css("body")
-                        .add(navMenu).add(navTools));
+                .add(body);
     }
 
     public void onOverlayClick(Runnable action) {
@@ -112,4 +112,3 @@ public class DrawerElement implements IsElement<HTMLElement> {
         }
     }
 }
-

@@ -113,17 +113,20 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
         
         // anchor 의 위치를 drawer .body 컨테이너 기준으로 계산
         elemental2.dom.DomGlobal.requestAnimationFrame(t -> {
-            double anchorTop = anchor.element().getBoundingClientRect().top;
-            double containerTop = element().parentElement.getBoundingClientRect().top;
+            var anchorEl = anchor.element();
+            var containerEl = (HTMLElement) element().parentElement;
+            if (anchorEl == null || containerEl == null) return;
+            
+            double anchorTop = anchorEl.getBoundingClientRect().top;
+            double containerTop = containerEl.getBoundingClientRect().top;
             double delta = anchorTop - containerTop;
             
-            // 정렬 디버깅 로그
-            elemental2.dom.DomGlobal.console.log("ToolRailElement.offset: delta=" + delta + ", anchor=" + anchor.element().className);
-
             double height = children.stream().mapToDouble(i -> i.element().offsetHeight).sum();
-            double bottom = element().clientHeight;
-            if(bottom > 0) {
-                if(height + delta > bottom) delta = bottom - height;
+            double containerHeight = containerEl.clientHeight;
+            
+            if(containerHeight > 0) {
+                // 도구 목록이 컨테이너 하단을 벗어나지 않도록 조정
+                if(height + delta > containerHeight) delta = containerHeight - height;
                 if(delta < 0) delta = 0;
                 element().style.paddingTop = elemental2.dom.CSSProperties.PaddingTopUnionType.of(delta + "px");
             }

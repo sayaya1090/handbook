@@ -29,34 +29,39 @@ public class ToolList {
     @Delegate private final BehaviorSubject<List<Tool>> _this = behavior(List.of());
     private final MenuSelected menuSelected;
     private final MenuHover menuHover;
+    private List<Tool> externalTools = List.of();
 
     @Inject ToolList(MenuSelected menu, MenuHover hover, dev.sayaya.handbook.usecase.ToolProvider toolProvider) {
         this.menuSelected = menu;
         this.menuHover = hover;
-        
+
         // 1. 내부 메뉴(선택/호버) 변경 감지
-        menu.subscribe(m -> update(toolProvider));
-        hover.subscribe(h -> update(toolProvider));
-        
+        menu.subscribe(m -> {
+            update();
+            // 선택된 메뉴의 도구만 외부 브릿지로 발행한다 (Peeking 도구는 발행하지 않음)
+            List<Tool> tools = fromMenu(m);
+            toolProvider.publish(tools.toArray(new Tool[0]));
+        });
+        hover.subscribe(h -> update());
+
         // 2. 외부 모듈로부터의 도구 목록 수신 (ToolProvider 브릿지)
-        // 외부 목록이 들어오면 이를 최우선으로 반영한다.
         toolProvider.tools().subscribe(tools -> {
-            if (tools != null) {
-                List<Tool> list = Arrays.asList(tools);
-                next(list);
-            }
+            this.externalTools = tools != null ? Arrays.asList(tools) : List.of();
+            update();
         });
         toolProvider.subscribe(tools -> {});
     }
 
-    private void update(dev.sayaya.handbook.usecase.ToolProvider toolProvider) {
+    private void update() {
         Menu h = menuHover.getValue();
-        Menu m = menuSelected.getValue();
-        Menu active = h != null ? h : m;
-        List<Tool> list = fromMenu(active);
+        // 호버 중이면 호버 메뉴의 도구를, 아니면 선택된 메뉴의 도구 또는 외부 도구를 표시한다.
+        List<Tool> list;
+        if (h != null) list = fromMenu(h);
+        else {
+            Menu m = menuSelected.getValue();
+            list = !externalTools.isEmpty() ? externalTools : fromMenu(m);
+        }
         next(list);
-        // 외부에도 현재 활성화된 도구 목록을 알림 (동기화)
-        toolProvider.publish(list.toArray(new Tool[0]));
     }
 
     private List<Tool> fromMenu(Menu menu) {

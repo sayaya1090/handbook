@@ -31,6 +31,7 @@ public class ToolRailMode {
             update(drawerMode.getValue(), menuMode.getValue(), toolList.getValue().size() > 1);
         });
         drawerMode.subscribe(drawerState -> update(drawerState, menuMode.getValue(), toolList.getValue().size() > 1));
+        menuMode.subscribe(menuState -> update(drawerMode.getValue(), menuState, toolList.getValue().size() > 1));
         toolList.subscribe(tools -> update(drawerMode.getValue(), menuMode.getValue(), tools.size() > 1));
     }
     private void update(DrawerState drawerState, MenuRailState menuState, boolean hasMultipleChildren) {
