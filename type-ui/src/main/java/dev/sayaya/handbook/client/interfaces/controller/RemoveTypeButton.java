@@ -1,13 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.client.components.ActionManager;
-import dev.sayaya.handbook.client.components.ChangeTracker;
-import dev.sayaya.handbook.client.components.ConfirmDialog;
-import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
-import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
-import dev.sayaya.handbook.domain.Labels;
-import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.client.usecase.TypeToolManager;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
@@ -38,34 +31,16 @@ import java.util.Set;
 @Singleton
 public class RemoveTypeButton implements IsElement<HTMLElement> {
     @Delegate private final ButtonElementBuilder.OutlinedButtonElementBuilder _this;
-    private Labels currentLabels = Labels.empty();
 
     @Inject
-    RemoveTypeButton(ActionManager actionManager, TypeList typeList, ChangeTracker tracker,
-                     SelectedBoxElement selection, ConfirmDialog confirmDialog,
-                     LabelProvider labelProvider) {
+    RemoveTypeButton(TypeToolManager toolManager, LabelProvider labelProvider) {
         _this = ButtonElementBuilder.button().outlined()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash"))
                 .css("type-ctrl-btn", "type-ctrl-btn-remove");
 
-        _this.onClick(e -> {
-            Set<String> selected = selection.getValue();
-            if (selected.isEmpty()) return;
-            String headline = currentLabels.getOrDefault("confirm.delete", "Are you sure you want to delete?");
-            String yes = currentLabels.getOrDefault("confirm.yes", "Delete");
-            String no = currentLabels.getOrDefault("confirm.no", "Cancel");
-            confirmDialog.show(headline, new String[]{no, yes}, option -> {
-                if (!option.equals(yes)) return;
-                for (Type type : typeList.getValue()) {
-                    if (selected.contains(type.key())) {
-                        actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
-                    }
-                }
-            });
-        });
+        _this.onClick(e -> toolManager.executeRemove());
 
         labelProvider.subscribe(labels -> {
-            currentLabels = labels;
             _this.text(labels.getOrDefault("type.remove", "Remove"));
         });
     }

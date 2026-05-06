@@ -2,12 +2,16 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.components.ConfirmDialog;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
+import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.LoadAction;
 import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Tool;
-import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
-import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
+import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ToolProvider;
 
@@ -15,6 +19,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Type-UI의 모든 도구를 관리하고 쉘의 Tool Rail과 연동한다.
@@ -34,6 +39,8 @@ public class TypeToolManager {
     private final LabelProvider labelProvider;
     private final CanvasMode canvasMode;
     private final GridSnap gridSnap;
+    private final SelectedBoxElement selection;
+    private final ConfirmDialog confirmDialog;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -41,7 +48,8 @@ public class TypeToolManager {
                     TypeRepository typeRepository, LayoutRepository layoutRepository, TypeList typeList,
                     PositionMap positionMap, LayoutProvider layoutProvider, LayoutList layoutList,
                     dev.sayaya.handbook.client.components.ToastContainer toastContainer,
-                    LabelProvider labelProvider, CanvasMode canvasMode, GridSnap gridSnap) {
+                    LabelProvider labelProvider, CanvasMode canvasMode, GridSnap gridSnap,
+                    SelectedBoxElement selection, ConfirmDialog confirmDialog) {
         this.toolProvider = toolProvider;
         this.actionManager = actionManager;
         this.tracker = tracker;
@@ -55,6 +63,8 @@ public class TypeToolManager {
         this.labelProvider = labelProvider;
         this.canvasMode = canvasMode;
         this.gridSnap = gridSnap;
+        this.selection = selection;
+        this.confirmDialog = confirmDialog;
     }
 
     public void init() {
@@ -67,6 +77,7 @@ public class TypeToolManager {
         tracker.hasChangesObservable().subscribe(v -> publishTools());
         canvasMode.observable().subscribe(v -> publishTools());
         gridSnap.enabled().subscribe(v -> publishTools());
+        selection.subscribe(v -> publishTools());
         
         labelProvider.subscribe(labels -> {
             this.currentLabels = labels;
@@ -77,13 +88,10 @@ public class TypeToolManager {
         toolProvider.onSelect(id -> {
             switch (id) {
                 case "add": executeAdd(); break;
-                case "undo": actionManager.undo(); break;
-                case "redo": actionManager.redo(); break;
-                case "save": executeSave(); break;
-                case "reload": executeReload(); break;
+                case "remove": executeRemove(); break;
+                case "bulk-delete": executeBulkDelete(); break;
                 case "mode-layout": canvasMode.setMode(CanvasMode.Mode.LAYOUT); break;
                 case "mode-type": canvasMode.setMode(CanvasMode.Mode.TYPE); break;
-                case "snap": gridSnap.setEnabled(!gridSnap.isEnabled()); break;
             }
         });
     }
@@ -97,24 +105,23 @@ public class TypeToolManager {
         tools.add(Tool.builder().id("mode-type").icon("fa-pen")
                 .title(currentLabels.getOrDefault("type.mode.type", "Type Mode")).order("011").build());
         
-        // 기본 액션
+        // 생성 도구
         tools.add(Tool.builder().id("add").icon("fa-plus").title(currentLabels.getOrDefault("type.add", "Add")).order("020").build());
         
-        // 편집 액션
-        tools.add(Tool.builder().id("undo").icon("fa-undo").title(currentLabels.getOrDefault("type.undo", "Undo")).order("030").build());
-        tools.add(Tool.builder().id("redo").icon("fa-redo").title(currentLabels.getOrDefault("type.redo", "Redo")).order("031").build());
-        
-        // 스냅
-        tools.add(Tool.builder().id("snap").icon("fa-grid-round").title(currentLabels.getOrDefault("type.snap", "Grid Snap")).order("040").build());
-        
-        // 저장/동기화
-        tools.add(Tool.builder().id("save").icon("fa-save").title(currentLabels.getOrDefault("type.save", "Save")).order("050").build());
-        tools.add(Tool.builder().id("reload").icon("fa-sync").title(currentLabels.getOrDefault("type.reload", "Reload")).order("051").build());
+        // 삭제 도구 (선택 상태에 따라 분기하거나 둘 다 노출)
+        Set<String> selected = selection.getValue();
+        if (selected.size() > 1) {
+            tools.add(Tool.builder().id("bulk-delete").icon("fa-trash-can-list")
+                    .title(currentLabels.getOrDefault("type.bulk_delete", "Bulk Delete")).order("030").build());
+        } else if (selected.size() == 1) {
+            tools.add(Tool.builder().id("remove").icon("fa-trash")
+                    .title(currentLabels.getOrDefault("type.remove", "Remove")).order("030").build());
+        }
 
         toolProvider.publish(tools.toArray(new Tool[0]));
     }
 
-    private void executeAdd() {
+    public void executeAdd() {
         var period = layoutProvider.getValue();
         if (period == null) {
             elemental2.dom.DomGlobal.console.warn("[handbook-error] Cannot add type: No active layout period.");
@@ -129,11 +136,50 @@ public class TypeToolManager {
         ));
     }
 
-    private void executeSave() {
+    public void executeRemove() {
+        Set<String> selected = selection.getValue();
+        if (selected.isEmpty()) return;
+        String headline = currentLabels.getOrDefault("confirm.delete", "Are you sure you want to delete?");
+        String yes = currentLabels.getOrDefault("confirm.yes", "Delete");
+        String no = currentLabels.getOrDefault("confirm.no", "Cancel");
+        confirmDialog.show(headline, new String[]{no, yes}, option -> {
+            if (!option.equals(yes)) return;
+            for (Type type : typeList.getValue()) {
+                if (selected.contains(type.key())) {
+                    actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
+                }
+            }
+        });
+    }
+
+    public void executeBulkDelete() {
+        Set<String> selected = selection.getValue();
+        if (selected.isEmpty()) return;
+
+        String headline = currentLabels.getOrDefault("confirm.delete", "Are you sure you want to delete?");
+        String yes = currentLabels.getOrDefault("confirm.yes", "Delete");
+        String no = currentLabels.getOrDefault("confirm.no", "Cancel");
+        confirmDialog.show(headline, new String[]{no, yes}, option -> {
+            if (!option.equals(yes)) return;
+
+            List<Type> toDelete = new ArrayList<>();
+            for (Type type : typeList.getValue()) {
+                if (selected.contains(type.key())) {
+                    toDelete.add(type);
+                }
+            }
+            for (Type type : toDelete) {
+                actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
+            }
+            selection.clear();
+        });
+    }
+
+    public void executeSave() {
         new SaveAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, toastContainer, currentLabels).execute();
     }
 
-    private void executeReload() {
+    public void executeReload() {
         new LoadAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, layoutList).execute();
     }
 }

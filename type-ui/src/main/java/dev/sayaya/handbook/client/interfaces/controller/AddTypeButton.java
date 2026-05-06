@@ -13,6 +13,7 @@ import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.client.usecase.TypeToolManager;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
@@ -43,26 +44,12 @@ public class AddTypeButton implements IsElement<HTMLElement> {
     @Delegate private final ButtonElementBuilder.FilledButtonElementBuilder _this;
 
     @Inject
-    AddTypeButton(ActionManager actionManager, TypeList typeList, PositionMap positionMap,
-                  ChangeTracker tracker, LayoutProvider layoutProvider, LabelProvider labelProvider) {
+    AddTypeButton(TypeToolManager toolManager, LabelProvider labelProvider) {
         _this = ButtonElementBuilder.button().filled()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-plus"))
                 .css("type-ctrl-btn", "type-ctrl-btn-add");
 
-        _this.onClick(e -> {
-            LayoutPeriod period = layoutProvider.getValue();
-            if (period == null) {
-                elemental2.dom.DomGlobal.console.warn("[handbook-error] Cannot add type: No active layout period.");
-                return;
-            }
-            String id = ContextMenuHelper.uniqueTypeId(typeList);
-            Type newType = Type.create(id, "1.0", 0.0, 0.0); // Skip setting effectDateTime, expireDateTime
-            Position pos = Position.of(50, 80, 240, 160);
-            actionManager.execute(new ComplexAction(
-                    new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
-                    new PushOutOverlapAction(positionMap, newType.key(), 10)
-            ));
-        });
+        _this.onClick(e -> toolManager.executeAdd());
 
         labelProvider.subscribe(labels ->
                 _this.text(labels.getOrDefault("type.add", "Add")));
