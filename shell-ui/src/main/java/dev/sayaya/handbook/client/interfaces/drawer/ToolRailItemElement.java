@@ -57,12 +57,17 @@ public class ToolRailItemElement extends NavigationRailItemElement {
         if (tool.title() != null) element().dataset.set("toolTitle", tool.title());
         initEventHandlers(tool, selected, hover);
         selected.subscribe(select -> {
-            // 2026-05-06: JsInterop 네비티브 객체는 equals() 오버레이가 상황에 따라 참조 비교로 
-            // 폴백될 수 있으므로, 컴포넌트 레벨에서 명시적으로 ID와 Title 을 비교한다.
-            boolean isSelected = select != null && (
-                (tool.id() != null && tool.id().equals(select.id())) ||
-                (tool.id() == null && select.id() == null && Objects.equals(tool.title(), select.title()))
-            );
+            // 2026-05-06: JsInterop 네비티브 객체는 equals() 오버라이드가 불가능하여 참조 비교로 폴백된다.
+            // URL을 통해 도구가 활성화된 경우(동적 도구) ID가 null일 수 있으므로 명시적 비교가 필수적이다.
+            boolean isSelected = false;
+            if (select != null) {
+                if (tool.id() != null && select.id() != null) {
+                    isSelected = tool.id().equals(select.id());
+                } else {
+                    // 한 쪽에 ID가 없다면 타이틀로 비교 (static 메뉴의 URL-based navigation 지원)
+                    isSelected = Objects.equals(tool.title(), select.title());
+                }
+            }
             select(isSelected);
         });
     }
