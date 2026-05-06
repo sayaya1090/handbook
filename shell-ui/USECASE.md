@@ -157,7 +157,7 @@ sequenceDiagram
 | **선행조건** | 메뉴 목록 로딩 완료 |
 | **정상 흐름** | 1. Menu Rail에서 메뉴 아이템을 클릭한다.<br>2. `MenuSelected`에 선택된 메뉴가 발행된다.<br>3. 도구가 1개뿐이면 `ToolSelected`에 자동 선택된다.<br>4. `ModuleScriptManager`가 메뉴의 `script` 필드에 지정된 JavaScript를 동적으로 `<script>` 태그로 주입한다.<br>5. `HistoryManager`가 `Menu.url()` 필드가 있는 경우 `pushState()`로 URL을 업데이트한다.<br>6. `DrawerMode`가 COLLAPSE로 전환된다. |
 | **대안 흐름** | 도구가 여러 개이면 Tool Rail이 EXPAND되어 도구 목록을 표시한다. |
-| **선택 시각 표현** | 선택된 아이템은 `[selected]` 속성이 붙고 (1) 아이콘이 `fa-light` outline → `fa-solid` filled 로 교체되며, (2) `md-item` headline 라벨 색이 `--md-sys-color-primary` 로 변한다. 배경 채움은 사용하지 않는다 (MD3 nav rail 가이드: "선택 시 filled, 미선택 시 outlined"). 아이콘 스왑은 두 weight 를 동시 렌더해 두고 CSS 로 가시성을 토글하는 방식이라 JS 재렌더가 필요 없다. |
+| **선택 시각 표현** | 선택된 아이템은 `[selected]` 속성이 붙고 (1) 아이콘이 `fa-light` outline → `fa-solid` filled 로 교체되며, (2) `md-item` headline 라벨 색이 `--md-sys-color-primary` 로 변한다. 배경 채움은 사용하지 않는다 (MD3 nav rail 가이드: "선택 시 filled, 미선택 시 outlined"). 아이콘 스왑은 두 weight 를 동시 렌더해 두고 CSS 로 가시성을 토글하는 방식이라 JS 재렌더가 필요 없다. 동적 도구(URL 네비게이션)의 경우 ID가 null 일 수 있으므로 `title` 값을 보조 식별자로 사용하는 하이라이트 fallback 로직을 적용한다. |
 
 ## UC-S3: 도구 선택 및 실행
 
@@ -201,7 +201,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자, 시스템 (초기 로드) |
 | **선행조건** | 워크스페이스가 1개 이상 |
-| **정상 흐름** | 1. **자동 선택**: 로그인 후 첫 진입 시 `WorkspaceList`가 로딩되면 드롭다운(`WorkspaceSelectElement`)이 목록의 첫 번째 워크스페이스를 자동으로 선택하고 값을 동기화한다.<br>2. **수동 변경**: 사용자가 드롭다운을 클릭하여 다른 워크스페이스를 선택한다.<br>3. `WorkspaceSelected` 스트림에 새 워크스페이스가 발행된다.<br>4. 현재 선택된 메뉴가 `{workspaceId}` 예약어를 포함한 `url`을 가진 경우, 새 워크스페이스 ID로 치환된 URL로 `HistoryManager.replaceState()`를 호출하여 주소창을 갱신한다.<br>5. `UrlBasedMenuResolver`가 치환된 `urlRegex`를 사용하여 현재 메뉴가 여전히 유효한지 재매칭한다.<br>6. 컨텍스트가 전환되어 해당 워크스페이스의 데이터가 로딩된다. |
+| **정상 흐름** | 1. **자동 선택**: 로그인 후 첫 진입 시 `WorkspaceList`가 로딩되면 드롭다운(`WorkspaceSelectElement`)이 목록의 첫 번째 워크스페이스를 자동으로 선택하고 값을 동기화한다. 이때 `<md-outlined-select>`의 내부 섀도우 DOM 렌더링 타이틀을 고려하여 `requestAnimationFrame`을 통해 비동기적으로 값을 할당한다.<br>2. **수동 변경**: 사용자가 드롭다운을 클릭하여 다른 워크스페이스를 선택한다.<br>3. `WorkspaceSelected` 스트림에 새 워크스페이스가 발행된다.<br>4. 현재 선택된 메뉴가 `{workspaceId}` 예약어를 포함한 `url`을 가진 경우, 새 워크스페이스 ID로 치환된 URL로 `HistoryManager.replaceState()`를 호출하여 주소창을 갱신한다.<br>5. `UrlBasedMenuResolver`가 치환된 `urlRegex`를 사용하여 현재 메뉴가 여전히 유효한지 재매칭한다.<br>6. 컨텍스트가 전환되어 해당 워크스페이스의 데이터가 로딩된다. |
 | **테스트** | ✅ 구현 완료 (DrawerTest: 첫 번째 워크스페이스 자동 선택 검증) |
 
 ## UC-S8: 토큰 자동 갱신
@@ -317,7 +317,7 @@ sequenceDiagram
 | **DOM 구조** | `body > header.shell-app-bar + div.menu-tabs + div.progress-container + div#content(nav.drawer > .body > .menu-rail + .tool-rail) + .agent-input-container`. 조립 순서는 Composition Root(`ShellInitializer`) 가 명시. |
 | **AppBar (데스크톱·모바일 공통)** | leading=예비(appBarSlot="leading" 동적 메뉴만) / center=WorkspaceSelect / trailing=ThemeToggle + appBarSlot="trailing" 메뉴(Sign In/Out). 햄버거는 MenuRail 상단으로 이관 (2026-04, rail expand 시 우측 밀림 회귀 해결). `ShellAppBarElement` 가 자기 slot 을 SRP 경계에서 채움. |
 | **상단 Tabs (모바일 전용)** | `MobileTabsElement` 가 `MenuList` 구독 → `appBarSlot==null` 메뉴만 렌더. 상단정렬(`bottom=false`) 은 `order` 오름차순 leading, 하단정렬(`bottom=true`) 은 `order` 내림차순 trailing. `ResponsiveOverflow` 3단계 폴백: 평면 → hidden overflow 버튼 / 공간 부족 → 하단정렬 md-menu 팝업 수렴 / 상단정렬까지 넘침 → `md-tabs[scrollable]` 가로 스크롤 + sticky trailing overflow 버튼. |
-| **하단 드릴인 (ToolRail)** | 사용자가 도구가 2개 이상인 탭을 선택하면 `ToolList` 채워져 `ToolRailMode=EXPAND` → 하단 바 자리 차지 (slide-up). `MenuRailMode=HIDE` 는 여전히 동작하나 모바일에선 MenuRail 자체가 `display:none` 이라 가시 전환 없음. 드릴백은 `CloseToolRailButton` 탭으로 `MenuSelected.next(null)` → 도구 비움 → `ToolRailMode=HIDE` 로 복귀 (MobileTabs 가 다시 유일한 상단 네비). |
+| **하단 드릴인 (ToolRail)** | 사용자가 도구가 2개 이상인 탭을 선택하면 `ToolList` 채워져 `ToolRailMode=EXPAND` → 하단 바 자리 차지 (slide-up). `MenuRailMode=HIDE` 는 여전히 동작하나 모바일에선 MenuRail 자체가 `display:none` 이라 가시 전환 없음. 드릴백은 `CloseToolRailButton` 탭으로 `MenuSelected.next(null)` → 도구 비움 → `ToolRailMode=HIDE` 로 복귀 (MobileTabs 가 다시 유일한 상단 네비). 데스크톱 `COLLAPSE` 모드에서는 뒤로가기 버튼의 높이를 포함하여 상단 패딩(`padding-top`) 오프셋을 정밀하게 재계산하여 버튼이 잘리는 현상을 방지한다. |
 | **하단 agent dock** | `agent-ui` 의 `.agent-input-container` 가 모바일에서도 `bottom:0` dock (2026-04 복귀). Fitts 원칙상 가장 빈번한 입력은 엄지 도달 최적인 하단. ToolRail 드릴인 시 `.agent-mutate-log` / `.agent-artifact-panel` 은 input dock 높이(~80px) 위로 offset. |
 | **전환(리사이즈)** | `ViewportObserver` 의 matchMedia(768px) 전환 시 `.menu-rail[mobile] → display:none`, `.menu-tabs[hide]` 제거, `.menu-rail[mobile] > #menu-toggle-button { display:none }` 로 햄버거 숨김. 모든 전환은 DOM 이동 없이 속성/CSS 토글만으로 처리되어 flash 없음. |
 | **특이사항** | (1) 모바일에서 햄버거는 MenuRail 상단에 DOM 으로 존재하되 CSS 로 숨김 — MenuRail 이 display:none 이고 네비가 Tabs 로 이전되어 실질 용도 없음. (2) `MenuRailState`/`ToolRailState` 는 `EXPAND/COLLAPSE/HIDE` 세 가지만, 모바일 여부는 `[mobile]` 속성으로 직교 표현. (3) `appBarSlot` 이 지정된 메뉴는 네비(Tabs/Rail) 에서 제외되고 AppBar slot 으로 승격 — semantic 분리(네비 vs 세션/전역 액션). |
