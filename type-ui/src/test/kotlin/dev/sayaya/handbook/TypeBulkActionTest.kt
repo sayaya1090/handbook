@@ -23,7 +23,7 @@ internal class TypeBulkActionTest: GwtTestSpec({
             Thread.sleep(500)
             
             And("Bulk Delete 버튼을 클릭하면") {
-                page.click(".type-ctrl-btn-bulk-delete", com.microsoft.playwright.Page.ClickOptions().setForce(true))
+                page.click(".type-ctrl-btn-delete", com.microsoft.playwright.Page.ClickOptions().setForce(true))
                 Thread.sleep(500)
                 
                 And("Confirm 다이얼로그에서 Delete를 클릭하면") {

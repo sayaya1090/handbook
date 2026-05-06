@@ -39,8 +39,8 @@ internal class UndoRedoTest: GwtTestSpec({
 
         // UC-T8: 기간 이동 버튼 존재 확인
         Then("Before/After 버튼이 존재한다") {
-            page.querySelector(".type-controller .type-ctrl-btn-before") shouldNotBe null
-            page.querySelector(".type-controller .type-ctrl-btn-after") shouldNotBe null
+            page.querySelector(".type-status-header .type-ctrl-btn-before") shouldNotBe null
+            page.querySelector(".type-status-header .type-ctrl-btn-after") shouldNotBe null
         }
 
         // UC-T10: 저장/로드 버튼 존재 확인
