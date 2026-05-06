@@ -265,7 +265,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 워크스페이스 선택 완료, Shell이 type-ui 모듈을 로딩 |
-| **정상 흐름** | 1. Shell이 `type/type.nocache.js`를 동적 로딩한다.<br>2. `LoadAction`이 실행되어 백엔드에서 레이아웃 기간 목록을 가져온다.<br>3. `LayoutProvider`가 현재 시점과 가장 겹치는 기간을 자동 선택한다.<br>4. 선택된 기간의 타입과 위치를 로드하여 캔버스에 카드로 렌더링한다.<br>5. `PeriodRecalculationService`가 타입의 effectDateTime/expireDateTime으로 기간 목록을 자동 재계산한다.<br>6. Document 참조 속성이 있으면 `TBoxReferenceElement`가 `ArrowFactory`로 SVG 화살표를 자동으로 그린다. |
+| **정상 흐름** | 1. Shell이 `type/type.nocache.js`를 동적 로딩한다.<br>2. `LoadAction`이 실행되어 백엔드에서 레이아웃 기간 목록을 가져온다.<br>3. `LayoutProvider`가 현재 시점과 가장 겹치는 기간을 자동 선택한다.<br>4. **빈 워크스페이스 대응**: 레이아웃 목록이 비어있을 경우, 기본 기간(0 ~ Double.MAX_VALUE)을 생성하여 `LayoutProvider`에 주입한다.<br>5. 선택된 기간의 타입과 위치를 로드하여 캔버스에 카드로 렌더링한다.<br>6. `PeriodRecalculationService`가 타입의 effectDateTime/expireDateTime으로 기간 목록을 자동 재계산한다.<br>7. Document 참조 속성이 있으면 `TBoxReferenceElement`가 `ArrowFactory`로 SVG 화살표를 자동으로 그린다. |
 | **결과** | 캔버스에 타입 카드와 참조 화살표가 표시된다. |
 
 ## UC-T2: 타입 생성

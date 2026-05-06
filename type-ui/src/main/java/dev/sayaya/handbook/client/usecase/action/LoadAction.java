@@ -56,8 +56,16 @@ public class LoadAction implements Action {
     public void execute() {
         // 레이아웃 목록 로드 → 기간 선택 → 타입 + 위치 로드
         layoutRepository.layouts().subscribe(periods -> {
-            layoutList.replace(periods);
-            layoutProvider.selectBestMatch(periods);
+            if (periods == null || periods.isEmpty()) {
+                // 2026-05-05: 빈 워크스페이스 대응 - 기본 기간 생성 및 주입
+                dev.sayaya.handbook.domain.LayoutPeriod defaultPeriod = dev.sayaya.handbook.domain.LayoutPeriod.of(0, Double.MAX_VALUE);
+                layoutList.replace(java.util.List.of(defaultPeriod));
+                layoutProvider.replace(defaultPeriod);
+            } else {
+                layoutList.replace(periods);
+                layoutProvider.selectBestMatch(periods);
+            }
+            
             LayoutPeriod current = layoutProvider.getValue();
             if (current == null) return;
             typeRepository.list(current).subscribe(types -> {

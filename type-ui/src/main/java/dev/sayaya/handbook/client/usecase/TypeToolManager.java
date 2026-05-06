@@ -116,7 +116,10 @@ public class TypeToolManager {
 
     private void executeAdd() {
         var period = layoutProvider.getValue();
-        if (period == null) return;
+        if (period == null) {
+            elemental2.dom.DomGlobal.console.warn("[handbook-error] Cannot add type: No active layout period.");
+            return;
+        }
         String id = dev.sayaya.handbook.client.interfaces.ContextMenuHelper.uniqueTypeId(typeList);
         dev.sayaya.handbook.domain.Type newType = dev.sayaya.handbook.domain.Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         dev.sayaya.handbook.domain.Position pos = dev.sayaya.handbook.domain.Position.of(50, 80, 240, 160);

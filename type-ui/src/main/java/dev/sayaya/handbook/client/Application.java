@@ -80,17 +80,18 @@ public class Application implements EntryPoint {
 
     /**
      * URL에서 워크스페이스 ID를 추출한다. (WorkspaceEventListener와 동일 규약)
-     * 예: "/workspace/abc-123/types" -> "abc-123"
+     * 예: "/workspaces/abc-123/types" -> "abc-123"
      */
     private static String extractWorkspaceId(String path) {
         if (path == null) return null;
-        int idx = path.indexOf("/workspace/");
+        int idx = path.indexOf("/workspaces/");
         if (idx < 0) return null;
-        String rest = path.substring(idx + "/workspace/".length());
+        String rest = path.substring(idx + "/workspaces/".length());
         int slashIdx = rest.indexOf('/');
         String wsId = slashIdx >= 0 ? rest.substring(0, slashIdx) : rest;
         int queryIdx = wsId.indexOf('?');
         if (queryIdx >= 0) wsId = wsId.substring(0, queryIdx);
+        if ("onboarding".equals(wsId)) return null;
         return wsId.isEmpty() ? null : wsId;
     }
 

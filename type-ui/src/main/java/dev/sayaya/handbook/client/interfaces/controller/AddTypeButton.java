@@ -51,7 +51,10 @@ public class AddTypeButton implements IsElement<HTMLElement> {
 
         _this.onClick(e -> {
             LayoutPeriod period = layoutProvider.getValue();
-            if (period == null) return;
+            if (period == null) {
+                elemental2.dom.DomGlobal.console.warn("[handbook-error] Cannot add type: No active layout period.");
+                return;
+            }
             String id = ContextMenuHelper.uniqueTypeId(typeList);
             Type newType = Type.create(id, "1.0", 0.0, 0.0); // Skip setting effectDateTime, expireDateTime
             Position pos = Position.of(50, 80, 240, 160);
