@@ -72,6 +72,11 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         _this.element().style.display = "";
         _this.removeAllOptions();
         for (var workspace : workspaces) _this.option().value(workspace.id()).headline(workspace.name());
+        
+        // 초기 로딩 시나 선택된 워크스페이스가 없다면 첫 번째 항목을 자동 선택
+        if (_this.element().value == null || _this.element().value.isEmpty()) {
+            _this.element().value = workspaces.get(0).id();
+        }
     }
 
     public WorkspaceSelectElement css(String css) {
