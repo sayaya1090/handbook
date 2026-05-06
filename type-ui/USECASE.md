@@ -20,8 +20,8 @@ graph TD
 
 | 구분 | 컴포넌트 | 포함 기능 (버튼) | 역할 설명 |
 |:---|:---|:---|:---|
-| **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 뷰 설정 |
-| **좌측 레일** | `ControllerElement` | ModeToggle, AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 직접적인 편집 도구 |
+| **상단바** | `StatusHeaderElement` | Save (Icon), Reload, Undo, Redo, ModeToggle, Before/After, Snap (Icon) | 데이터 영속성 관리, 히스토리 제어, 모드 전환, 뷰 설정 |
+| **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 직접적인 편집 도구 |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
 
@@ -693,3 +693,22 @@ sequenceDiagram
 | UC-T26 (빈 상태 UI) | — | — | SpreadsheetElement | ✅ 구현 완료 |
 | UC-T27 (삭제 확인) | — | — | ConfirmDialog | ✅ 구현 완료 |
 | UC-T28 (성공 피드백) | — | — | SaveButton, SubmitButton | ✅ 구현 완료 |
+
+---
+
+## 에이전트 연동 (Agent Integration)
+
+### 체크리스트
+1. **내부 Assistant 연동**:
+    - `type-ui`는 `AgentMutationHandler`를 통해 `AGENT_COMMAND` (mutate)를 처리함.
+    - `TypeStateProvider`를 통해 현재 상태를 에이전트에게 노출함.
+2. **외부 AI Tool Use**:
+    - GWT 클라이언트 모듈로, 직접적인 OpenAPI 노출은 없으나 `type-query` 및 `type-command` API를 소비함.
+3. **OpenAPI 어노테이션**: N/A (UI 모듈)
+4. **감사 경로**:
+    - 에이전트에 의한 Mutate 시 `AuditEntry` 발행 여부는 `type-command` 레이어에서 보장됨.
+5. **Agent Command 타겟**:
+    - **Navigate**: `#!type/{workspaceId}`
+    - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`
+    - **Mutate**: `CREATE type`, `DELETE type`, `ADD field`, `REMOVE field`, `SET type`
+    - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
