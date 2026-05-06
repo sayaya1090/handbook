@@ -79,6 +79,7 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
             case HIDE -> hide();
         }
         refreshCloseButton();
+        offset(parent.getValue());
     }
 
     public void setMobile(boolean m) {
@@ -86,6 +87,7 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
         if (m) element().setAttribute("mobile", true);
         else element().removeAttribute("mobile");
         refreshCloseButton();
+        offset(parent.getValue());
     }
 
     /**
@@ -123,6 +125,9 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
             double delta = anchorTop - bodyTop;
             
             double railHeight = children.stream().mapToDouble(i -> i.element().offsetHeight).sum();
+            if (close.element().parentNode != null) {
+                railHeight += close.element().offsetHeight;
+            }
             double bodyHeight = bodyEl.clientHeight;
             
             if(bodyHeight > 0) {
