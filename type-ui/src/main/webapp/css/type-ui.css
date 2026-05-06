@@ -489,6 +489,19 @@
     .type-header {
         padding: 12px 14px;
     }
+    .type-status-header {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        gap: 12px;
+        padding: 8px;
+    }
+    .type-status-header::-webkit-scrollbar {
+        display: none;
+    }
+    .type-status-header > * {
+        flex-shrink: 0;
+    }
 
     /* 속성 편집 다이얼로그 — 모바일 bottom sheet */
     .attr-editor-dialog {
