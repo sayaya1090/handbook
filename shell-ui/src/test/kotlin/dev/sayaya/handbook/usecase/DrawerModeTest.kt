@@ -51,11 +51,14 @@ class DrawerModeTest : DescribeSpec({
         it("드로어 EXPAND + 도구 1개 이하 시 HIDE") {
             computeToolRailState(DrawerState.EXPAND, MenuRailState.EXPAND, hasMultipleChildren = false) shouldBe ToolRailState.HIDE
         }
-        it("드로어 COLLAPSE + 메뉴 COLLAPSE 시 항상 HIDE") {
-            computeToolRailState(DrawerState.COLLAPSE, MenuRailState.COLLAPSE, hasMultipleChildren = true) shouldBe ToolRailState.HIDE
+        it("드로어 COLLAPSE + 메뉴 COLLAPSE 상태에서도 도구가 2개 이상이면 EXPAND (peeking)") {
+            computeToolRailState(DrawerState.COLLAPSE, MenuRailState.COLLAPSE, hasMultipleChildren = true) shouldBe ToolRailState.EXPAND
         }
-        it("드로어 COLLAPSE + 메뉴 HIDE + 도구 2개 이상 시 COLLAPSE") {
-            computeToolRailState(DrawerState.COLLAPSE, MenuRailState.HIDE, hasMultipleChildren = true) shouldBe ToolRailState.COLLAPSE
+        it("드로어 COLLAPSE + 메뉴 COLLAPSE + 도구 1개 이하 시 HIDE") {
+            computeToolRailState(DrawerState.COLLAPSE, MenuRailState.COLLAPSE, hasMultipleChildren = false) shouldBe ToolRailState.HIDE
+        }
+        it("드로어 COLLAPSE + 메뉴 HIDE + 도구 2개 이상 시 EXPAND (peeking)") {
+            computeToolRailState(DrawerState.COLLAPSE, MenuRailState.HIDE, hasMultipleChildren = true) shouldBe ToolRailState.EXPAND
         }
         it("드로어 OVERLAY + 도구 2개 이상 시 EXPAND") {
             computeToolRailState(DrawerState.OVERLAY, MenuRailState.EXPAND, hasMultipleChildren = true) shouldBe ToolRailState.EXPAND
@@ -134,8 +137,10 @@ class DrawerModeTest : DescribeSpec({
                 DrawerState.EXPAND -> if (hasMultipleChildren) ToolRailState.EXPAND else ToolRailState.HIDE
                 DrawerState.OVERLAY -> if (hasMultipleChildren) ToolRailState.EXPAND else ToolRailState.HIDE
                 DrawerState.COLLAPSE -> {
-                    if (menuState == MenuRailState.COLLAPSE) ToolRailState.HIDE
-                    else if (hasMultipleChildren) ToolRailState.COLLAPSE
+                    // 2026-05-05: peeking 지원. 
+                    // 드로어가 접혀있더라도 호버 등에 의해 도구가 생겼다면(hasMultipleChildren) 
+                    // 해당 도구들을 노출(EXPAND)한다.
+                    if (hasMultipleChildren) ToolRailState.EXPAND
                     else ToolRailState.HIDE
                 }
             }

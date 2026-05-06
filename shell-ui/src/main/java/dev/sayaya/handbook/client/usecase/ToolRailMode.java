@@ -43,8 +43,11 @@ public class ToolRailMode {
             case EXPAND -> next(hasMultipleChildren ? EXPAND : HIDE);
             case OVERLAY -> next(hasMultipleChildren ? EXPAND : HIDE);
             case COLLAPSE -> {
-                if(menuState == MenuRailState.COLLAPSE) next(HIDE);
-                else next(hasMultipleChildren ? COLLAPSE : HIDE);
+                // 2026-05-05: peeking 지원. 
+                // 드로어가 접혀있더라도 호버 등에 의해 도구가 생겼다면(hasMultipleChildren) 
+                // 해당 도구들을 노출(EXPAND)한다.
+                if (hasMultipleChildren) next(EXPAND);
+                else next(HIDE);
             }
         }
     }

@@ -19,10 +19,10 @@ import static java.util.Comparator.nullsLast;
 /**
  * 선택/호버된 메뉴의 도구 목록을 관리한다.
  *
- * <p><b>주의:</b> {@link MenuHover} 는 MenuRail EXPAND 상태에서만 발행되므로
- * COLLAPSE/모바일 상태에서는 merge 가 사실상 {@link MenuSelected} 단독 구독처럼 작동한다.
- * 이로써 CloseToolRailButton 으로 복귀한 후 hover 만으로 ToolRail 이 재전환되는
- * 구 UC-S6 이슈가 제거되며, EXPAND 탐색 중에는 peek UX 가 유지된다.</p>
+ * <p><b>주의:</b> {@link MenuHover} 가 2026-05-05 부터 다시 활성화되었습니다. 
+ * 이로써 데스크톱 "아이콘만 보기(COLLAPSE)" 상태에서도 호버 시 도구 목록이 즉시 peek 되는 
+ * UX 가 지원됩니다. 단, 사용자가 명시적으로 닫기 버튼을 누른 경우의 예외 처리는 
+ * {@link ToolRailMode} 가 담당합니다.</p>
  */
 @Singleton
 public class ToolList {

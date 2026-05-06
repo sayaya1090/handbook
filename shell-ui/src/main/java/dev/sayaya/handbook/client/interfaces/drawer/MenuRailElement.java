@@ -1,9 +1,11 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.domain.MenuRailState;
+import dev.sayaya.handbook.client.usecase.MenuHover;
 import dev.sayaya.handbook.domain.Menu;
 import elemental2.dom.HTMLDivElement;
 import lombok.experimental.Delegate;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
 import javax.inject.Inject;
@@ -43,12 +45,14 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     private final MenuRailItemFactory factory;
     private final List<MenuRailItemElement> children = new LinkedList<>();
 
-    @Inject MenuRailElement(MenuRailItemFactory factory) {
+    @Inject MenuRailElement(MenuRailItemFactory factory, MenuHover hover) {
         this.factory = factory;
         // 초기 가시성은 HIDE. [mobile] 을 mode 구독보다 먼저 설정하지 않으면 BehaviorSubject
         // 의 즉시 emit 으로 expand() 가 호출되어 한 프레임 동안 desktop [expand] 레이아웃
         // (좌측 컬럼) 이 노출된 뒤 [mobile] 이 붙어 하단 바로 점프하는 flash 가 생긴다.
         element().setAttribute("hide", true);
+        
+        on(EventType.mouseleave, e -> hover.next(null));
     }
 
     private static final Comparator<Menu> MENU_COMPARATOR = nullsLast(comparing((Menu i) -> TRUE.equals(i.bottom())).thenComparing(Menu::order));
