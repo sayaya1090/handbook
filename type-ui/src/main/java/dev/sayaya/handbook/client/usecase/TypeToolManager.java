@@ -90,20 +90,12 @@ public class TypeToolManager {
                 case "add": executeAdd(); break;
                 case "remove": executeRemove(); break;
                 case "bulk-delete": executeBulkDelete(); break;
-                case "mode-layout": canvasMode.setMode(CanvasMode.Mode.LAYOUT); break;
-                case "mode-type": canvasMode.setMode(CanvasMode.Mode.TYPE); break;
             }
         });
     }
 
     private void publishTools() {
         List<Tool> tools = new ArrayList<>();
-        
-        // 모드 전환
-        tools.add(Tool.builder().id("mode-layout").icon("fa-arrows-up-down-left-right")
-                .title(currentLabels.getOrDefault("type.mode.layout", "Layout Mode")).order("010").build());
-        tools.add(Tool.builder().id("mode-type").icon("fa-pen")
-                .title(currentLabels.getOrDefault("type.mode.type", "Type Mode")).order("011").build());
         
         // 생성 도구
         tools.add(Tool.builder().id("add").icon("fa-plus").title(currentLabels.getOrDefault("type.add", "Add")).order("020").build());
