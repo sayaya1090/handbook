@@ -10,9 +10,10 @@ import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.LoadAction;
+import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
-import dev.sayaya.ui.elements.ButtonElementBuilder;
+import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
@@ -22,7 +23,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * 서버에서 타입과 레이아웃을 다시 로드하는 Text 버튼.
+ * 서버에서 타입과 레이아웃을 다시 로드하는 버튼.
  *
  * <p><b>책임:</b> 클릭 시 {@link LoadAction}을 생성하여 실행한다.
  * 레이아웃 목록 → 기간 자동 선택 → 타입 + 위치 로드를 수행한다.</p>
@@ -38,14 +39,14 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class ReloadButton implements IsElement<HTMLElement> {
-    @Delegate private final ButtonElementBuilder.TextButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
 
     @Inject
     ReloadButton(TypeRepository typeRepository, LayoutRepository layoutRepository,
                  TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                  ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList,
                  LabelProvider labelProvider) {
-        _this = ButtonElementBuilder.button().text()
+        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate"))
                 .css("type-ctrl-btn", "type-ctrl-btn-reload");
 

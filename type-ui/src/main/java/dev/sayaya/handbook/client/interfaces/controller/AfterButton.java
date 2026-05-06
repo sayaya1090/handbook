@@ -5,7 +5,7 @@ import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.action.ChangeLayoutAction;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.ui.elements.ButtonElementBuilder;
+import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
@@ -29,11 +29,11 @@ import java.util.List;
  */
 @Singleton
 public class AfterButton implements IsElement<HTMLElement> {
-    @Delegate private final ButtonElementBuilder.TextButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
 
     @Inject
     AfterButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
-        _this = ButtonElementBuilder.button().text()
+        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-right"))
                 .css("type-ctrl-btn", "type-ctrl-btn-after");
 

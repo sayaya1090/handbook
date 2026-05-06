@@ -13,7 +13,7 @@ import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
-import dev.sayaya.ui.elements.ButtonElementBuilder;
+import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
 import lombok.experimental.Delegate;
@@ -40,7 +40,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class SaveButton implements IsElement<HTMLElement> {
-    @Delegate private final ButtonElementBuilder.OutlinedButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -48,7 +48,7 @@ public class SaveButton implements IsElement<HTMLElement> {
                TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                ActionManager actionManager, LayoutProvider layoutProvider,
                ToastContainer toastContainer, LabelProvider labelProvider) {
-        _this = ButtonElementBuilder.button().outlined()
+        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-floppy-disk"))
                 .css("type-ctrl-btn", "type-ctrl-btn-save");
 
