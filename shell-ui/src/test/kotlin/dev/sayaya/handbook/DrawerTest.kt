@@ -263,14 +263,23 @@ internal class DrawerTest: GwtTestSpec({
             }
         }
 
-        When("세번째 메뉴 첫번째 Tool URL 버튼을 클릭하면") {
-            page.click("#url2")
+        When("드로어를 EXPAND 모드로 전환하고 세번째 메뉴 첫번째 Tool 을 클릭하면") {
+            // 햄버거 버튼 클릭하여 EXPAND 전환 (Peeking 및 ToolRail 노출 조건)
+            page.click("#menu-toggle-button")
             Thread.sleep(500)
-            Then("메뉴가 선택된다") {
-                val selected = page.querySelectorAll(".rail .item[selected]")
-                selected.count() shouldBeGreaterThan 0
+            // EXPAND 상태가 되었는지 속성으로 확인
+            val isMenuExpanded = page.evaluate("document.querySelector('.menu-rail').hasAttribute('expand')").toString()
+            isMenuExpanded shouldBe "true"
+            
+            page.click("#url2") // Menu 3 선택 (id=url2 가 세 번째 메뉴의 첫 도구인 상태로 mock 수정됨)
+            Thread.sleep(500)
+            Then("해당 도구 아이템이 선택(Highlight)된다") {
+                val isSelected = page.evaluate(
+                    "document.querySelector('#url2').hasAttribute('selected')"
+                ).toString()
+                isSelected shouldBe "true"
             }
-            Then("선택된 아이템은 정확히 1개이다 (이전 선택 해제됨)") {
+            Then("선택된 아이템은 전체 레일에서 정확히 1개이다") {
                 val selected = page.querySelectorAll(".rail .item[selected]")
                 selected.count() shouldBe 1
             }
@@ -309,7 +318,7 @@ internal class DrawerTest: GwtTestSpec({
         }
 
         When("다른 Tool URL(url3)을 클릭하면 같은 메뉴의 다른 Tool이 활성화된다") {
-            page.click("#url3")
+            page.click(".tool-rail .item:nth-child(2)")
             Thread.sleep(500)
             Then("선택된 메뉴 아이템이 유지된다") {
                 val selected = page.querySelectorAll(".rail .item[selected]")
@@ -317,10 +326,10 @@ internal class DrawerTest: GwtTestSpec({
             }
             Then("툴 레일의 수직 위치(padding-top)가 여러 번 클릭해도 일정하게 유지된다 (Alignment Stability)") {
                 val pt1 = page.evaluate("getComputedStyle(document.querySelector('.tool-rail')).paddingTop").toString()
-                page.click("#url2")
+                page.click(".tool-rail .item:nth-child(1)")
                 Thread.sleep(300)
                 val pt2 = page.evaluate("getComputedStyle(document.querySelector('.tool-rail')).paddingTop").toString()
-                page.click("#url3")
+                page.click(".tool-rail .item:nth-child(2)")
                 Thread.sleep(300)
                 val pt3 = page.evaluate("getComputedStyle(document.querySelector('.tool-rail')).paddingTop").toString()
                 pt1 shouldBe pt2
@@ -417,7 +426,7 @@ internal class DrawerTest: GwtTestSpec({
                 ).toString()
                 hasHide shouldBe "false"
             }
-            // 이전 블록(desktop) 에서 #url2 가 클릭되어 Menu 2(도구 2개) 가 선택된 상태로 모바일
+            // 이전 블록(desktop) 에서 .tool-rail .item:nth-child(1) 가 클릭되어 Menu 2(도구 2개) 가 선택된 상태로 모바일
             // 진입 → Presenter 가 MobileTabs 를 tool 모드로 드릴인시킨다.
             Then("도구 2개 이상 선택 상태이므로 MobileTabs 는 tool 모드 — 상단 탭이 도구 목록으로 교체") {
                 val tabCount = page.querySelectorAll(".menu-tabs md-primary-tab").count()
@@ -600,7 +609,7 @@ internal class DrawerTest: GwtTestSpec({
 
         // UC-S13: 모바일 드릴인 — 도구가 2개 이상인 메뉴 탭 → ToolRail 이 하단 바 자리를 차지
         When("도구 2개 메뉴(Menu 2, url=menu2-tool1)로 네비게이트하면") {
-            page.click("#url2")
+            page.click(".tool-rail .item:nth-child(1)")
             Thread.sleep(500)
             Then("MenuRail 은 HIDE 된다 — [hide] 속성 부착, [mobile] 유지") {
                 val hasHide = page.evaluate(

@@ -29,7 +29,7 @@ public class DrawerMock {
             .script("js/scene1.js")
             .url("/menu1-tool1")
             .urls("^/menu1-tool1")
-            .tool(Tool.builder().title("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").build())
+            .tool(Tool.builder().id("url0").title("menu1-tool1").order("BA").icon("fa-circle").iconType("sharp").build())
             .build(),
         Menu.builder()
             .title("Menu 2")
@@ -40,8 +40,8 @@ public class DrawerMock {
             .script("js/scene2.js")
             .url("/menu2-tool1")
             .urls("^/menu2-tool1", "^/menu2-tool2")
-            .tool(Tool.builder().title("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").build())
-            .tool(Tool.builder().title("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").build())
+            .tool(Tool.builder().id("url1").title("menu2-tool1").order("AA").icon("fa-pen").iconType("sharp").build())
+            .tool(Tool.builder().id("url2").title("menu2-tool2").order("AB").icon("fa-user").iconType("sharp").build())
             .build(),
         Menu.builder()
             .title("Menu 3")
@@ -51,8 +51,8 @@ public class DrawerMock {
             .bottom(true)
             .url("/menu3-tool1")
             .urls("^/menu3-tool1", "^/menu3-tool2")
-            .tool(Tool.builder().title("menu3-tool1").order("1A").icon("fa-user").iconType("sharp").build())
-            .tool(Tool.builder().title("menu3-tool2").order("1B").icon("fa-user").iconType("sharp").build())
+            .tool(Tool.builder().id("url3").title("menu3-tool1").order("1A").icon("fa-user").iconType("sharp").build())
+            .tool(Tool.builder().id("url4").title("menu3-tool2").order("1B").icon("fa-user").iconType("sharp").build())
             .build(),
         Menu.builder()
             .title("Menu 4")
@@ -62,7 +62,7 @@ public class DrawerMock {
             .url("/menu4-tool1")
             .urls("^/menu4-tool1")
             .bottom(true)
-            .tool(Tool.builder().title("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
+            .tool(Tool.builder().id("url5").title("menu4-tool1").order("0A").icon("fa-user").iconType("sharp").build())
             .build(),
         // appBarSlot="trailing" — AppBar 로 승격되는 세션 액션 (login 의 Sign In/Out 을 mock).
         // MenuRail / MobileTabs 렌더에서는 제외되고 ShellAppBarElement trailing 에 아이콘 버튼으로 노출.
@@ -134,4 +134,3 @@ public class DrawerMock {
         };
     }
 }
-

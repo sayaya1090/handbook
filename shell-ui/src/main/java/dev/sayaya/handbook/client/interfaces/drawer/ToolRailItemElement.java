@@ -57,7 +57,12 @@ public class ToolRailItemElement extends NavigationRailItemElement {
         if (tool.title() != null) element().dataset.set("toolTitle", tool.title());
         initEventHandlers(tool, selected, hover);
         selected.subscribe(select -> {
-            boolean isSelected = select != null && tool.id() != null && tool.id().equals(select.id());
+            // 2026-05-06: JsInterop 네비티브 객체는 equals() 오버레이가 상황에 따라 참조 비교로 
+            // 폴백될 수 있으므로, 컴포넌트 레벨에서 명시적으로 ID와 Title 을 비교한다.
+            boolean isSelected = select != null && (
+                (tool.id() != null && tool.id().equals(select.id())) ||
+                (tool.id() == null && select.id() == null && Objects.equals(tool.title(), select.title()))
+            );
             select(isSelected);
         });
     }
