@@ -160,9 +160,9 @@ public class MenuRailItemElement extends NavigationRailItemElement {
         });
         on(EventType.mouseover, evt -> {
             if (element().hasAttribute("disabled")) return;
-            // 2026-05-05: 데스크톱 COLLAPSE 모드에서도 peeking 지원 복원. 
-            // 모바일(HIDE)이 아닐 때만 peek 허용.
-            if (menuRailMode.getValue() == MenuRailState.HIDE) return;
+            // 2026-05-06: 호버 탐색(Peeking)은 오직 메뉴바가 펼쳐진(EXPAND) 상태에서만 허용한다.
+            // COLLAPSE 모드에서 뒤로가기 버튼 클릭 후 의도치 않게 다시 툴레일이 열리는 루프 현상을 방지함.
+            if (menuRailMode.getValue() != MenuRailState.EXPAND) return;
             if (hover.getValue() == menu) return;
             hover.next(menu);
         });
