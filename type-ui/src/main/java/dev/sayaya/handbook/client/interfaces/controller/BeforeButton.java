@@ -15,6 +15,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
 
+import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
+
 /**
  * 이전 레이아웃 기간으로 이동하는 탐색 버튼.
  *
@@ -29,12 +31,11 @@ import java.util.List;
  */
 @Singleton
 public class BeforeButton implements IsElement<HTMLElement> {
-    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
     @Inject
     BeforeButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
-        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-left"))
+        _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-chevron-left"))
                 .css("type-ctrl-btn", "type-ctrl-btn-before");
 
         _this.onClick(e -> navigate(layoutProvider, layoutList, actionManager, -1));

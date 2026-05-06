@@ -8,11 +8,17 @@ import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
+import dev.sayaya.handbook.client.components.ActionManager;
+import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.components.ToastContainer;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
@@ -21,6 +27,8 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
 /**
  * 변경 사항을 서버에 저장하는 버튼.
@@ -40,7 +48,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class SaveButton implements IsElement<HTMLElement> {
-    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -48,8 +56,7 @@ public class SaveButton implements IsElement<HTMLElement> {
                TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                ActionManager actionManager, LayoutProvider layoutProvider,
                ToastContainer toastContainer, LabelProvider labelProvider) {
-        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-floppy-disk"))
+        _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-floppy-disk"))
                 .css("type-ctrl-btn", "type-ctrl-btn-save");
 
         _this.onClick(e ->

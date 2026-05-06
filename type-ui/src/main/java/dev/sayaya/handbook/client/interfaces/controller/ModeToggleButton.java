@@ -13,13 +13,20 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static org.jboss.elemento.Elements.div;
 
 /**
  * LAYOUT / TYPE 모드 전환 토글 버튼 그룹.
  *
- * <p><b>책임:</b> 두 개의 Outlined IconButton으로 캔버스 모드를 전환한다.
+ * <p><b>책임:</b> 두 개의 Plain IconButton으로 캔버스 모드를 전환한다.
  * LAYOUT 모드에서는 박스 이동/리사이즈가, TYPE 모드에서는 인라인 편집이 활성화된다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link CanvasMode} — 현재 모드 상태 관리</li>
+ *   <li>{@link LabelProvider} — 다국어 툴팁</li>
+ * </ul></p>
+ * <p><b>주의:</b> selected 속성으로 현재 활성 모드를 시각적으로 표시한다.
+ * LAYOUT 아이콘: arrows-move, TYPE 아이콘: pen.</p>
  */
 @Singleton
 public class ModeToggleButton implements IsElement<HTMLDivElement> {
@@ -29,15 +36,13 @@ public class ModeToggleButton implements IsElement<HTMLDivElement> {
 
     @Inject
     ModeToggleButton(CanvasMode canvasMode, LabelProvider labelProvider) {
-        layoutBtn = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrows-up-down-left-right"))
+        layoutBtn = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-arrows-up-down-left-right"))
                 .css("type-ctrl-btn")
                 .toggle(true)
                 .on(EventType.click, e -> canvasMode.setMode(Mode.LAYOUT))
                 .element();
 
-        typeBtn = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-pen"))
+        typeBtn = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-pen"))
                 .css("type-ctrl-btn")
                 .toggle(true)
                 .on(EventType.click, e -> canvasMode.setMode(Mode.TYPE))

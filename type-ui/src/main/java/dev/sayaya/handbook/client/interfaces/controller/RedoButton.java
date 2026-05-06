@@ -11,6 +11,8 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
+
 /**
  * 되돌린 액션을 다시 실행하는 Redo 버튼.
  *
@@ -24,12 +26,11 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class RedoButton implements IsElement<HTMLElement> {
-    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
     @Inject
     RedoButton(ActionManager actionManager, LabelProvider labelProvider) {
-        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate-right"))
+        _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate-right"))
                 .css("type-ctrl-btn", "type-ctrl-btn-redo");
 
         _this.onClick(e -> actionManager.redo());

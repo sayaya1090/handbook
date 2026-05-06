@@ -191,8 +191,8 @@
     gap: 4px;
 }
 .type-ctrl-btn[selected] {
-    background: var(--md-sys-color-primary-container, #e3f2fd);
-    color: var(--md-sys-color-on-primary-container, #1565c0);
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
 }
 .type-ctrl-group:not(:last-child)::after {
     content: '';

@@ -1,8 +1,5 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
-import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
-
-
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.LayoutList;
@@ -13,6 +10,7 @@ import dev.sayaya.handbook.client.usecase.action.LoadAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
@@ -21,6 +19,8 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
 /**
  * 서버에서 타입과 레이아웃을 다시 로드하는 버튼.
@@ -39,15 +39,14 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class ReloadButton implements IsElement<HTMLElement> {
-    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
     @Inject
     ReloadButton(TypeRepository typeRepository, LayoutRepository layoutRepository,
                  TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                  ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList,
                  LabelProvider labelProvider) {
-        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate"))
+        _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate"))
                 .css("type-ctrl-btn", "type-ctrl-btn-reload");
 
         _this.onClick(e ->

@@ -11,21 +11,31 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
+
 /**
  * 선택된 모든 타입을 일괄 삭제하는 버튼.
  *
  * <p><b>책임:</b> 클릭 시 {@link dev.sayaya.handbook.client.components.ConfirmDialog}로 삭제 확인을 요청한 뒤,
  * 확인 시 {@link dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement}에서 선택된 모든 타입 키를 조회하고,
- * 각 타입에 대해 {@link dev.sayaya.handbook.client.usecase.action.DeleteBoxAction}을 실행하여 일괄 삭제 마킹한다.</p>
+ * 각 타입에 대해 {@link dev.sayaya.handbook.client.usecase.action.DeleteBoxAction}을 실행하여 일괄 삭제 마킹한다.
+ * 기존 {@link RemoveTypeButton}과 동일한 패턴이지만 복수 선택에 최적화되어 있다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link dev.sayaya.handbook.client.components.ActionManager} — 액션 실행</li>
+ *   <li>{@link dev.sayaya.handbook.client.usecase.TypeList} — 타입 목록 조회</li>
+ *   <li>{@link dev.sayaya.handbook.client.components.ChangeTracker} — 삭제 상태 마킹</li>
+ *   <li>{@link dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement} — 현재 선택된 타입 키</li>
+ *   <li>{@link dev.sayaya.handbook.client.components.ConfirmDialog} — 삭제 확인 다이얼로그</li>
+ *   <li>{@link LabelProvider} — 다국어 레이블</li>
+ * </ul></p>
  */
 @Singleton
 public class BulkDeleteButton implements IsElement<HTMLElement> {
-    @Delegate private final IconButtonElementBuilder.OutlinedIconButtonElementBuilder _this;
+    @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
     @Inject
     BulkDeleteButton(TypeToolManager toolManager, LabelProvider labelProvider) {
-        _this = new IconButtonElementBuilder.OutlinedIconButtonElementBuilder()
-                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash-can"))
+        _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash-can"))
                 .css("type-ctrl-btn", "type-ctrl-btn-delete");
 
         _this.onClick(e -> toolManager.executeBulkDelete());
