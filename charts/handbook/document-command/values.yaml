@@ -1,7 +1,7 @@
 image:
-  name:
-  tag:
-color: ""
+  name: image-registry.openshift-image-registry.svc:5000/handbook/document-command
+  tag: 5e42398
+color: "red"
 
 stage:
   name: ""
