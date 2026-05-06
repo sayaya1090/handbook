@@ -2,7 +2,6 @@ package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.client.domain.SessionState;
 import dev.sayaya.handbook.domain.Menu;
-import dev.sayaya.handbook.domain.User;
 import dev.sayaya.rx.subject.BehaviorSubject;
 import lombok.experimental.Delegate;
 
@@ -25,6 +24,7 @@ public class MenuList {
     private final SessionStateProvider sessionStateProvider;
     private final MenuSelected menuSelected;
     private List<Menu> allMenus = new ArrayList<>();
+    private dev.sayaya.handbook.domain.SessionStateKind lastKind;
 
     @Inject MenuList(UserProvider userProvider, 
                     SessionStateProvider sessionStateProvider,
@@ -34,13 +34,14 @@ public class MenuList {
         this.sessionStateProvider = sessionStateProvider;
         this.menuSelected = menuSelected;
         
-        // 2026-05-05 순차 로딩 도입: 사용자 정보만으로는 부족하며, 
-        // 워크스페이스 목록까지 로딩되어 세션 상태가 확정된 후 메뉴를 조회한다.
+        // 2026-05-05 정합성 개선: 세션 상태(ANONYMOUS, AUTHENTICATED, IN_WORKSPACE)가 
+        // 변경될 때마다 해당 상태에 맞는 메뉴를 서버에서 다시 조회한다.
         sessionStateProvider.subscribe(state -> {
-            if (state != null && state.kind() != dev.sayaya.handbook.domain.SessionStateKind.ANONYMOUS) {
+            if (state == null) return;
+            if (state.kind() != lastKind) {
+                this.lastKind = state.kind();
                 updateMenus();
             }
-            filterAndPublish();
         });
     }
 
