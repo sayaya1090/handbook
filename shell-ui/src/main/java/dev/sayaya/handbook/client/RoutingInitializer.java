@@ -1,10 +1,7 @@
 package dev.sayaya.handbook.client;
 
 import dev.sayaya.handbook.client.interfaces.frame.FrameUpdater;
-import dev.sayaya.handbook.client.usecase.HistoryManager;
-import dev.sayaya.handbook.client.usecase.ModuleScriptManager;
-import dev.sayaya.handbook.client.usecase.ToolBasedMenuResolver;
-import dev.sayaya.handbook.client.usecase.UrlBasedMenuResolver;
+import dev.sayaya.handbook.client.usecase.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,6 +13,7 @@ public class RoutingInitializer {
     private final ToolBasedMenuResolver toolBasedMenuResolver;
     private final FrameUpdater frameUpdater;
     private final ModuleScriptManager scriptManager;
+    private final HomeRedirector homeRedirector;
 
     @Inject
     public RoutingInitializer(
@@ -23,13 +21,15 @@ public class RoutingInitializer {
             UrlBasedMenuResolver urlBasedMenuResolver,
             ToolBasedMenuResolver toolBasedMenuResolver,
             FrameUpdater frameUpdater,
-            ModuleScriptManager scriptManager
+            ModuleScriptManager scriptManager,
+            HomeRedirector homeRedirector
     ) {
         this.historyManager = historyManager;
         this.urlBasedMenuResolver = urlBasedMenuResolver;
         this.toolBasedMenuResolver = toolBasedMenuResolver;
         this.frameUpdater = frameUpdater;
         this.scriptManager = scriptManager;
+        this.homeRedirector = homeRedirector;
     }
 
     public void initialize() {
@@ -38,5 +38,6 @@ public class RoutingInitializer {
         toolBasedMenuResolver.initialize();
         frameUpdater.initialize();
         scriptManager.initialize();
+        homeRedirector.initialize();
     }
 }

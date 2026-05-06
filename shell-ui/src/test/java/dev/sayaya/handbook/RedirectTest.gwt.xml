@@ -7,6 +7,6 @@
     <inherits name="dev.sayaya.Rx" />
     <inherits name="dev.sayaya.handbook.Activity" />
     <inherits name="dev.sayaya.handbook.UiComponents" />
-    <entry-point class="dev.sayaya.handbook.client.redirect.Application"/>
+    <entry-point class="dev.sayaya.handbook.client.usecase.Application"/>
     <source path="client"/>
 </module>

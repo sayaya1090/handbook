@@ -1,7 +1,6 @@
-package dev.sayaya.handbook.client.redirect;
+package dev.sayaya.handbook.client.usecase;
 
-import dev.sayaya.handbook.client.usecase.HistoryManager;
-import dev.sayaya.handbook.client.usecase.WorkspaceRepository;
+import dev.sayaya.rx.Observer;
 
 import javax.inject.Singleton;
 
@@ -10,4 +9,7 @@ import javax.inject.Singleton;
 public interface Component {
     WorkspaceRepository workspaceRepository();
     HistoryManager historyManager();
+    UriStore uriStore();
+    WorkspaceList workspaceList();
+    Observer<String> uriObserver();
 }

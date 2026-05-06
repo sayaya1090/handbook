@@ -363,7 +363,26 @@ sequenceDiagram
 | **선행조건** | 사용자 인증 완료 |
 | **정상 흐름** | 1. 토큰 만료 전 refresh token을 사용하여 자동 갱신한다.<br>2. 비활성 타임아웃 5분 전 경고 알림을 표시한다.<br>3. 세션 만료 시 로그인 페이지로 리다이렉트하고 알림을 표시한다. |
 | **요구사항** | 6.11 세션 관리 |
-| **상태** | 구현 완료 (SessionPollingService) |
+| 상태 | 구현 완료 (SessionPollingService) |
+
+## UC-S20: 브릿지 게시 (모듈 간 통신 초기화)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (자동) |
+| **선행조건** | shell-ui 초기화 완료 (UC-S1 이후) |
+| **정상 흐름** | 1. `ShellInitializer`가 모든 로직 초기화를 마친다.<br>2. `StateSharing.publish()` 등을 호출하여 전역 `window` 객체에 공유 상태를 게시한다. |
+| **상태** | ❌ 테스트 미작성 |
+
+## UC-S21: 홈 자동 리다이렉트
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 시스템 (자동) |
+| **선행조건** | 로그인 완료, 루트 경로(`/`) 진입 |
+| **정상 흐름** | 1. `WorkspaceList`가 로딩되어 참여 중인 워크스페이스 목록이 존재함을 확인한다.<br>2. 현재 URL이 `/` 인 경우, 목록의 첫 번째 워크스페이스 ID를 선택한다.<br>3. `UriStore`에 `/workspaces/{workspaceId}/dashboard`를 발행하여 자동 리다이렉트한다. |
+| **비고** | 추후 "마지막 진입 워크스페이스" 저장 로직 도입 시 해당 워크스페이스를 우선 선택하도록 확장 예정. |
+| **상태** | 🏗️ 구현 중 (`HomeRedirector`) |
 
 ---
 
@@ -391,6 +410,7 @@ sequenceDiagram
 | UC-S17 (세션관리) | — | Frame+API | SessionPollingService, FetchApi, ToastContainer, LabelProvider | ✅ 구현 완료 (SessionPollingService) |
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, ProgressSharing, 0, LabelSharing | ❌ 테스트 미작성 |
+| UC-S21 (홈 리다이렉트) | 홈 자동 리다이렉트 | 조합 (DI) | HomeRedirector, UriStore, WorkspaceList | 🏗️ 구현 중 |
 
 ---
 
