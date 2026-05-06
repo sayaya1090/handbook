@@ -1,0 +1,36 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: document-query
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: document-query
+data:
+  # /app/resources/application.yml 에 subPath 마운트되어 jar 의 application.yml 을
+  # 파일 단위로 덮어쓴다. 머지가 아니라 완전 대체이므로 운영 환경에서 필요한 모든
+  # 설정은 jar 와 중복되더라도 이 파일에 다 적는다.
+  application.yml: |
+    spring:
+      application:
+        name: document-query
+      main:
+        web-application-type: reactive
+      threads:
+        virtual:
+          enabled: true
+      config:
+        import:
+          - classpath:observability.yaml
+          - classpath:authentication.yaml
+          - classpath:postgresql.yaml
+          - classpath:kafka.yaml
+      r2dbc:
+        pool:
+          max-size: 20
+          initial-size: 5
+          max-idle-time: 30m
+          validation-query: SELECT 1
+      kafka:
+        bootstrap-servers: ${KAFKA_BROKERS}
+      elasticsearch:
+        uris: ${SPRING_ELASTICSEARCH_URIS}

@@ -1,0 +1,19 @@
+image:
+  name:
+  tag:
+color: ""
+
+stage:
+  name: ""
+  color: ""
+  prev: ""
+
+jvmBackend:
+  fragments:
+    - observability
+    - authentication
+    - postgresql
+    - kafka
+  extraEnv:
+    - name: SPRING_ELASTICSEARCH_URIS
+      value: "elasticsearch:9200"

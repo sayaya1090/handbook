@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-document-command
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: document-command
+  ports:
+    - name: http-document-command
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      appProtocol: http

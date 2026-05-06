@@ -86,3 +86,15 @@ services:
     kind: frontend
     color: navy
     stages: [dev, staging, prod]
+  - name: document-command
+    kind: backend
+    color: red
+    stages: [dev, staging, prod]
+  - name: document-query
+    kind: backend
+    color: brick
+    stages: [dev, staging, prod]
+  - name: document-ui
+    kind: frontend
+    color: brown
+    stages: [dev, staging, prod]
