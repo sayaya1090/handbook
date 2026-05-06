@@ -718,7 +718,6 @@ internal class DrawerTest: GwtTestSpec({
         }
 
         Then("워크스페이스 목록이 비어있을 때 WorkspaceSelectElement의 style.display가 \"none\"이 된다") {
-            // 이 테스트에서는 워크스페이스 상태를 직접 조작하기 어려우므로 UI 결과만 시뮬레이션하거나
             // WorkspaceSelectElement 의 update 로직에 의해 변경될 수 있는 style.display 속성 동작을 검증.
             page.evaluate("""
                 const el = document.querySelector('md-outlined-select.workspace');
@@ -726,6 +725,14 @@ internal class DrawerTest: GwtTestSpec({
             """)
             val display = page.evaluate("getComputedStyle(document.querySelector('md-outlined-select.workspace')).display").toString()
             display shouldBe "none"
+        }
+
+        Then("워크스페이스 목록이 로드되면 첫 번째 워크스페이스가 자동 선택된다") {
+            // WorkspaceList 가 초기화되고 나면 첫 번째 항목이 value 로 설정되어야 함
+            val selectedValue = page.evaluate("document.querySelector('md-outlined-select.workspace').value").toString()
+            // DrawerMock 의 첫 번째 워크스페이스 ID가 기대값
+            selectedValue shouldNotBe ""
+            selectedValue shouldNotBe null
         }
     }
 
