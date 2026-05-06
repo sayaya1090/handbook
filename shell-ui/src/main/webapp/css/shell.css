@@ -541,6 +541,9 @@ body,
 body:has(nav.drawer .menu-rail[expand]) {
     --shell-drawer-width: 16rem;
 }
+body:has(nav.drawer .menu-rail[collapse]):has(nav.drawer .tool-rail[collapse]) {
+    --shell-drawer-width: 7rem;
+}
 body:has(nav.drawer .menu-rail[collapse]):has(nav.drawer .tool-rail[expand]) {
     --shell-drawer-width: calc(3.5rem + 16rem);
 }

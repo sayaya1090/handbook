@@ -24,8 +24,8 @@ public interface RedirectModule {
         FetchMock mock = new FetchMock();
         
         // URL 에서 workspaces 파라미터 확인 (Scenario 2 시뮬레이션)
-        String search = elemental2.dom.DomGlobal.window.location.search;
-        boolean hasWorkspace = search != null && search.contains("workspaces=");
+        String href = elemental2.dom.DomGlobal.window.location.href;
+        boolean hasWorkspace = href != null && href.contains("workspaces=");
         
         if (hasWorkspace) {
             // Scenario 2: 워크스페이스 존재

@@ -35,7 +35,10 @@ public class HomeRedirector {
         List<Workspace> workspaces = workspaceList.getValue();
         
         // 1. 루트 경로(/) 인지 확인 (null 또는 empty 도 루트로 간주)
-        boolean isHome = currentPath == null || currentPath.isEmpty() || "/".equals(currentPath) || "/app.html".equals(currentPath);
+        boolean isHome = currentPath == null || currentPath.isEmpty() 
+                || "/".equals(currentPath) 
+                || "/app.html".equals(currentPath)
+                || "/redirecttest.html".equals(currentPath);
         if (!isHome) return;
 
         // 2. 참여 중인 워크스페이스가 있는지 확인

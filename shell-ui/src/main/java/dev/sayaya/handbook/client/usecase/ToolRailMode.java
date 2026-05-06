@@ -25,16 +25,20 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 public class ToolRailMode {
     @Delegate private final BehaviorSubject<ToolRailState> _this = behavior(HIDE);
     private boolean mobile;
-    @Inject ToolRailMode(DrawerMode drawerMode, MenuRailMode menuMode, ToolList toolList, ViewportObserver viewport) {
+    private final MenuHover menuHover;
+
+    @Inject ToolRailMode(DrawerMode drawerMode, MenuRailMode menuMode, ToolList toolList, MenuHover hover, ViewportObserver viewport) {
+        this.menuHover = hover;
         viewport.isMobile().subscribe(isMobile -> {
             this.mobile = isMobile;
-            update(drawerMode.getValue(), menuMode.getValue(), toolList.getValue().size() > 1);
+            update(drawerMode.getValue(), menuMode.getValue(), toolList.getValue().size() > 1, menuHover.getValue() != null);
         });
-        drawerMode.subscribe(drawerState -> update(drawerState, menuMode.getValue(), toolList.getValue().size() > 1));
-        menuMode.subscribe(menuState -> update(drawerMode.getValue(), menuState, toolList.getValue().size() > 1));
-        toolList.subscribe(tools -> update(drawerMode.getValue(), menuMode.getValue(), tools.size() > 1));
+        drawerMode.subscribe(drawerState -> update(drawerState, menuMode.getValue(), toolList.getValue().size() > 1, menuHover.getValue() != null));
+        menuMode.subscribe(menuState -> update(drawerMode.getValue(), menuState, toolList.getValue().size() > 1, menuHover.getValue() != null));
+        toolList.subscribe(tools -> update(drawerMode.getValue(), menuMode.getValue(), tools.size() > 1, menuHover.getValue() != null));
+        hover.subscribe(h -> update(drawerMode.getValue(), menuMode.getValue(), toolList.getValue().size() > 1, h != null));
     }
-    private void update(DrawerState drawerState, MenuRailState menuState, boolean hasMultipleChildren) {
+    private void update(DrawerState drawerState, MenuRailState menuState, boolean hasMultipleChildren, boolean isHovering) {
         if (mobile) {
             next(hasMultipleChildren ? EXPAND : HIDE);
             return;
@@ -45,10 +49,11 @@ public class ToolRailMode {
             case OVERLAY -> next(hasMultipleChildren ? EXPAND : HIDE);
             case COLLAPSE -> {
                 // 2026-05-05: peeking 지원. 
-                // 드로어가 접혀있더라도 호버 등에 의해 도구가 생겼다면(hasMultipleChildren) 
-                // 해당 도구들을 노출(EXPAND)한다.
-                if (hasMultipleChildren) next(EXPAND);
-                else next(HIDE);
+                // 드로어가 접혀있을 때 호버 탐색 중이면 EXPAND (라벨 노출), 
+                // 호버가 아닌 선택된 상태라면 COLLAPSE (아이콘만 노출) 하여 UX 단순화.
+                if (!hasMultipleChildren) next(HIDE);
+                else if (isHovering) next(EXPAND);
+                else next(COLLAPSE);
             }
         }
     }
