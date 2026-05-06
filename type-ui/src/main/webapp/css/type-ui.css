@@ -30,7 +30,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     cursor: grab;
     outline: none;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.1s ease, z-index 0s;
     overflow: hidden;
 }
 .type-box:hover {
@@ -38,12 +38,18 @@
     transform: translateY(-1px);
 }
 .type-box[selected] {
+    z-index: 10;
     border-color: var(--md-sys-color-primary, #2196F3);
-    box-shadow: 0 0 0 2px var(--md-sys-color-primary, #2196F3), 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 0 0 2px var(--md-sys-color-primary, #2196F3), 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
 }
 .type-box:active {
     cursor: grabbing;
     transform: scale(0.99);
+}
+.type-box[selected]:active {
+    /* 선택된 상태에서는 안쪽으로 들어가는 효과(scale)를 제거하여 높은 뎁스를 유지한다. */
+    transform: translateY(-2px);
 }
 .type-box:focus-visible {
     outline: 2px solid var(--md-sys-color-primary, #2196F3);
