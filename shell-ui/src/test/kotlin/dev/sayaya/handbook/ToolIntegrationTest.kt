@@ -49,6 +49,27 @@ internal class ToolIntegrationTest: GwtTestSpec({
                 val selectedId = page.evaluate("window.__handbook_tool_selected_id").toString()
                 selectedId shouldBe "tool-2"
             }
+            Then("선택된 도구(Delete Tool)에 [selected] 속성이 부여된다") {
+                val hasSelected = page.evaluate(
+                    "document.querySelector('.tool-rail .item[data-tool-title=\"Delete Tool\"]').hasAttribute('selected')"
+                ).toString()
+                hasSelected shouldBe "true"
+            }
+        }
+        When("도구가 다시 발행되어도 (ID 동일)") {
+            page.evaluate("""
+                window.__handbook_tool_publisher([
+                    { id: 'tool-1', icon: 'fa-plus', title: 'Add Tool', order: '001' },
+                    { id: 'tool-2', icon: 'fa-trash', title: 'Delete Tool', order: '002' }
+                ])
+            """.trimIndent())
+            Thread.sleep(500)
+            Then("선택 상태가 유지된다 (Highlight Persistence)") {
+                val hasSelected = page.evaluate(
+                    "document.querySelector('.tool-rail .item[data-tool-title=\"Delete Tool\"]').hasAttribute('selected')"
+                ).toString()
+                hasSelected shouldBe "true"
+            }
         }
     }
 })

@@ -283,6 +283,17 @@ internal class DrawerTest: GwtTestSpec({
                 val selected = page.querySelectorAll(".rail .item[selected]")
                 selected.count() shouldBe 1
             }
+            Then("툴 레일의 수직 위치(padding-top)가 여러 번 클릭해도 일정하게 유지된다 (Alignment Stability)") {
+                val pt1 = page.evaluate("getComputedStyle(document.querySelector('.tool-rail')).paddingTop").toString()
+                page.click("#url2")
+                Thread.sleep(300)
+                val pt2 = page.evaluate("getComputedStyle(document.querySelector('.tool-rail')).paddingTop").toString()
+                page.click("#url3")
+                Thread.sleep(300)
+                val pt3 = page.evaluate("getComputedStyle(document.querySelector('.tool-rail')).paddingTop").toString()
+                pt1 shouldBe pt2
+                pt2 shouldBe pt3
+            }
         }
 
         // UC-S4: URL 기반 딥링크

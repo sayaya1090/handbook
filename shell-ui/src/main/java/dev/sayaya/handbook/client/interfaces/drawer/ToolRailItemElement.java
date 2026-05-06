@@ -56,7 +56,10 @@ public class ToolRailItemElement extends NavigationRailItemElement {
 
         if (tool.title() != null) element().dataset.set("toolTitle", tool.title());
         initEventHandlers(tool, selected, hover);
-        selected.subscribe(select -> select(Objects.equals(tool, select)));
+        selected.subscribe(select -> {
+            boolean isSelected = select != null && tool.id() != null && tool.id().equals(select.id());
+            select(isSelected);
+        });
     }
 
     private void updateTooltip(ToolRailState state, Menu h) {
