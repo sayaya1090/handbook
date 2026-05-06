@@ -190,6 +190,9 @@
     align-items: center;
     gap: 4px;
 }
+.type-ctrl-btn {
+    border-radius: 50%;
+}
 .type-ctrl-btn[selected] {
     background-color: var(--md-sys-color-secondary-container);
     color: var(--md-sys-color-on-secondary-container);
