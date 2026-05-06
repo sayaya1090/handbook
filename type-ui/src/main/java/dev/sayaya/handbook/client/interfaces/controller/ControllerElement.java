@@ -29,10 +29,9 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div();
 
     @Inject
-    ControllerElement(ModeToggleButton modeToggle, AddTypeButton addBtn, 
+    ControllerElement(AddTypeButton addBtn, 
                       RemoveTypeButton removeBtn, BulkDeleteButton bulkDeleteBtn) {
         _this.css("type-controller")
-                .add(modeToggle)
                 .add(div().css("type-ctrl-group")
                         .add(addBtn).add(removeBtn).add(bulkDeleteBtn));
     }

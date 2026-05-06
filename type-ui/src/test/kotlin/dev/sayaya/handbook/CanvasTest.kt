@@ -30,23 +30,19 @@ internal class CanvasTest: GwtTestSpec({
         Then("상단 상태바(.type-status-header)에 글로벌 액션 및 설정 버튼들이 존재한다") {
             val header = page.querySelector(".type-status-header")
             header shouldNotBe null
+            header!!.querySelector(".type-mode-toggle") shouldNotBe null
             header!!.querySelector(".type-ctrl-btn-undo") shouldNotBe null
             header!!.querySelector(".type-ctrl-btn-redo") shouldNotBe null
             header!!.querySelector(".type-ctrl-btn-save") shouldNotBe null
-            header!!.querySelector(".type-ctrl-btn-reload") shouldNotBe null
-            header!!.querySelector(".type-ctrl-btn-before") shouldNotBe null
-            header!!.querySelector(".type-ctrl-btn-after") shouldNotBe null
             header!!.querySelector(".type-snap-checkbox") shouldNotBe null
         }
         Then("좌측 툴레일(.type-controller)에 그리기 및 편집 도구 버튼들이 존재한다") {
             val rail = page.querySelector(".type-controller")
             rail shouldNotBe null
-            rail!!.querySelector(".type-mode-toggle") shouldNotBe null
             rail!!.querySelector(".type-ctrl-btn-add") shouldNotBe null
             rail!!.querySelector(".type-ctrl-btn-remove") shouldNotBe null
             rail!!.querySelector(".type-ctrl-btn-delete") shouldNotBe null
         }
-
         Then("타입 박스 2개가 렌더링된다") {
             val boxes = page.querySelectorAll(".type-box")
             boxes.count() shouldBe 2

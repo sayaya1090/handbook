@@ -25,11 +25,13 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("type-status-header");
 
     @Inject
-    StatusHeaderElement(BeforeButton beforeBtn, AfterButton afterBtn,
+    StatusHeaderElement(ModeToggleButton modeToggle,
+                        BeforeButton beforeBtn, AfterButton afterBtn,
                         UndoButton undoBtn, RedoButton redoBtn,
                         SaveButton saveBtn, ReloadButton reloadBtn,
                         SnapCheckbox snapCheckbox) {
-        _this.add(div().css("type-ctrl-group").add(beforeBtn).add(afterBtn))
+        _this.add(modeToggle)
+             .add(div().css("type-ctrl-group").add(beforeBtn).add(afterBtn))
              .add(div().css("type-ctrl-group").add(undoBtn).add(redoBtn))
              .add(div().css("type-ctrl-group").add(saveBtn).add(reloadBtn))
              .add(snapCheckbox);
