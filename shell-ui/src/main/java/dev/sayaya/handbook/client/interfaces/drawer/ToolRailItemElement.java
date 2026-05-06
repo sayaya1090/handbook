@@ -15,6 +15,8 @@ import elemental2.dom.HTMLDivElement;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 
+import java.util.Objects;
+
 import static org.jboss.elemento.Elements.div;
 
 /**
@@ -28,13 +30,11 @@ public class ToolRailItemElement extends NavigationRailItemElement {
     private final HTMLContainerBuilder<HTMLDivElement> headline = div();
     private final Tool tool;
     private final TooltipCard tooltip;
-    private final MenuSelectedElementProvider selectedElement;
 
     @AssistedInject 
     ToolRailItemElement(@Assisted Tool tool, ToolSelected selected, LabelProvider labelProvider, 
-                        ToolRailMode toolRailMode, MenuHover hover, MenuSelectedElementProvider selectedElement) {
+                        ToolRailMode toolRailMode, MenuHover hover) {
         this.tool = tool;
-        this.selectedElement = selectedElement;
         icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"))
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled"))
                 .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"))
@@ -52,20 +52,11 @@ public class ToolRailItemElement extends NavigationRailItemElement {
         
         // 2026-05-05: peeking 중(MenuHover 에 값이 있음)에는 툴팁 비활성화 (라벨이 이미 보이거나 간섭 방지)
         toolRailMode.subscribe(state -> updateTooltip(state, hover.getValue()));
-        hover.subscribe(h -> {
-            updateTooltip(toolRailMode.getValue(), h);
-            // 호버가 해제되었을 때 내가 선택된 상태라면 다시 나의 위치를 발행 (정착 정렬 복귀)
-            if (h == null && selected.getValue() != null && tool.id() != null && tool.id().equals(selected.getValue().id())) selectedElement.next(this);
-        });
+        hover.subscribe(h -> updateTooltip(toolRailMode.getValue(), h));
 
         if (tool.title() != null) element().dataset.set("toolTitle", tool.title());
         initEventHandlers(tool, selected, hover);
-        selected.subscribe(select -> {
-            boolean isSelected = select != null && tool.id() != null && tool.id().equals(select.id());
-            select(isSelected);
-            // 호버 중이 아닐 때만 선택된 아이템의 위치를 발행하여 ToolRail 정렬 기준으로 삼음
-            if (isSelected && hover.getValue() == null) selectedElement.next(this);
-        });
+        selected.subscribe(select -> select(Objects.equals(tool, select)));
     }
 
     private void updateTooltip(ToolRailState state, Menu h) {

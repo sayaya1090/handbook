@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Objects;
+
 /**
  * 도구 모음(ToolRail) 항목 도메인 객체.
  *
@@ -37,6 +39,19 @@ public final class Tool {
     private String[] urlRegex;
     @Setter(onMethod_ = {@JsOverlay, @JsIgnore})
     private ToolFunction function;
+
+    @Override @JsOverlay @JsIgnore
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tool tool = (Tool) o;
+        return Objects.equals(title, tool.title);
+    }
+    @Override @JsOverlay @JsIgnore
+    public int hashCode() {
+        return Objects.hash(title);
+    }
+
     @JsOverlay @JsIgnore
     public static ToolBuilder builder() {
         return new ToolBuilder();
