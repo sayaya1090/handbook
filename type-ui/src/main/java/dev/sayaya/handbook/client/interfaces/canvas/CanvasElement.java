@@ -176,7 +176,6 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     }
 
     private void initBoxHandlers(TypeElement elem) {
-        touchAdapter.bind(elem.element());
         elem.element().addEventListener("mousedown", e -> {
             MouseEvent me = (MouseEvent) e;
             if (me.button != 0) return;

@@ -55,10 +55,10 @@ public class TouchEventAdapter {
         if (e.touches.length != 1) return;
         Touch touch = e.touches.item(0);
 
-        // 이동 거리가 10px 이상이면 롱프레스 취소
+        // 이동 거리가 5px 이상이면 롱프레스 취소
         double dx = touch.clientX - startX;
         double dy = touch.clientY - startY;
-        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
             cancelLongpress();
         }
 
@@ -69,7 +69,9 @@ public class TouchEventAdapter {
     private void onTouchEnd(Event evt) {
         TouchEvent e = (TouchEvent) evt;
         cancelLongpress();
-        if (!longpressFired) {
+        // 2026-05-06: 롱프레스 발화 여부와 관계없이 터치가 종료되면 무조건 mouseup 발행.
+        // 이를 통해 모바일에서 드래그 중 롱프레스가 떠도 손가락을 떼면 드롭 액션이 정상 실행됨.
+        if (e.changedTouches.length > 0) {
             Touch touch = e.changedTouches.item(0);
             dispatchMouseEvent(e.target, "mouseup", touch);
         }

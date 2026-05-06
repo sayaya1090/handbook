@@ -68,6 +68,8 @@ public class ToolRailItemElement extends NavigationRailItemElement {
             // 2026-05-05: 도구 선택 시 호버 상태를 명시적으로 해제하여 
             // ToolRail 이 즉시 COLLAPSE(아이콘만 노출) 되도록 유도.
             hover.next(null);
+            // 클릭 시 툴팁을 즉시 숨겨 시각적 잔상을 제거한다.
+            tooltip.hideImmediate();
         });
     }
 }

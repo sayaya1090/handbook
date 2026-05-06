@@ -294,7 +294,7 @@ sequenceDiagram
 | **선행조건** | LAYOUT 모드, 타입 1개 이상 선택 |
 | **정상 흐름** | 1. 선택된 타입 박스에서 mousedown → `DragShapeElement`가 고스트를 생성한다.<br>2. mousemove → 고스트가 마우스 델타만큼 이동한다. (스냅 활성 시 20px 격자 정렬)<br>3. mouseup → 고스트를 숨기고 `ComplexAction(MoveTBoxAction + PushOutOverlapAction)`을 실행한다.<br>4. 실제 박스가 최종 위치로 이동하고, 겹치는 박스가 BFS로 밀려난다. |
 | **대안 흐름** | 화살표 키로 5px(또는 스냅 시 20px) 이동. Shift+화살표로 20px 이동. |
-| **대안 흐름 (모바일)** | `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환하여 터치 드래그를 지원한다. |
+| **대안 흐름 (모바일)** | `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환하여 터치 드래그를 지원한다. 롱프레스 시에도 드래그 세션이 정상 종료(mouseup 강제 발행)되도록 보장한다. |
 
 ## UC-T5: 타입 리사이즈
 
