@@ -142,10 +142,10 @@ internal class AttributeEditorTest: GwtTestSpec({
             }
         }
 
-        // MD3 체크박스 확인
-        Then("스냅 체크박스가 MD3 Checkbox로 렌더링된다") {
-            val checkbox = page.querySelector("md-checkbox")
-            checkbox shouldNotBe null
+        // MD3 버튼 확인
+        Then("스냅 버튼이 MD3 Outlined Button으로 렌더링된다") {
+            val button = page.querySelector("md-outlined-button")
+            button shouldNotBe null
         }
     }
 })

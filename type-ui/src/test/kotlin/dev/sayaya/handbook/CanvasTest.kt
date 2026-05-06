@@ -34,7 +34,7 @@ internal class CanvasTest: GwtTestSpec({
             header!!.querySelector(".type-ctrl-btn-undo") shouldNotBe null
             header!!.querySelector(".type-ctrl-btn-redo") shouldNotBe null
             header!!.querySelector(".type-ctrl-btn-save") shouldNotBe null
-            header!!.querySelector(".type-snap-checkbox") shouldNotBe null
+            header!!.querySelector(".type-snap-button") shouldNotBe null
         }
         Then("좌측 툴레일(.type-controller)에 그리기 및 편집 도구 버튼들이 존재한다") {
             val rail = page.querySelector(".type-controller")
@@ -126,9 +126,9 @@ internal class CanvasTest: GwtTestSpec({
             page.querySelector(".type-mode-toggle") shouldNotBe null
         }
 
-        // 스냅 체크박스 존재 확인
-        Then("스냅 체크박스가 존재한다") {
-            page.querySelector(".type-snap-checkbox") shouldNotBe null
+        // 스냅 버튼 존재 확인
+        Then("스냅 버튼이 존재한다") {
+            page.querySelector(".type-snap-button") shouldNotBe null
         }
     }
 })

@@ -29,12 +29,12 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
                         BeforeButton beforeBtn, AfterButton afterBtn,
                         UndoButton undoBtn, RedoButton redoBtn,
                         SaveButton saveBtn, ReloadButton reloadBtn,
-                        SnapCheckbox snapCheckbox) {
+                        SnapButton snapButton) {
         _this.add(modeToggle)
              .add(div().css("type-ctrl-group").add(beforeBtn).add(afterBtn))
              .add(div().css("type-ctrl-group").add(undoBtn).add(redoBtn))
              .add(div().css("type-ctrl-group").add(saveBtn).add(reloadBtn))
-             .add(snapCheckbox);
+             .add(snapButton);
     }
 
     @Override
