@@ -2,7 +2,7 @@
 .agent-input-container {
     position: fixed; bottom: 0; left: 0; right: 0;
     display: flex; justify-content: center; align-items: center;
-    padding: 16px 24px 24px; z-index: 9998;
+    padding: 16px 24px 24px; z-index: 850;
     pointer-events: none;
     transition-property: background-color, color, border-color, box-shadow, fill, stroke;
     transition-duration: 600ms;
@@ -32,6 +32,7 @@
     transition-duration: 600ms;
     transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
+
 .agent-input-send, .agent-input-abort {
     display: flex; align-items: center; justify-content: center;
     padding: 10px 20px; border-radius: 22px;
@@ -50,7 +51,7 @@
 /* ── Navigate indicator ── */
 .agent-navigate-indicator {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    z-index: 10002; padding: 16px 28px; border-radius: 12px;
+    z-index: 1050; padding: 16px 28px; border-radius: 12px;
     background: var(--md-sys-color-primary, #1565c0); color: var(--md-sys-color-on-primary, white);
     font-size: 16px; font-weight: 500;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
@@ -63,7 +64,7 @@
 /* ── Mutate log ── */
 .agent-mutate-log {
     position: fixed; left: 20px; bottom: 100px;
-    z-index: 10002; padding: 12px 16px; border-radius: 10px;
+    z-index: 860; padding: 12px 16px; border-radius: 10px;
     background: var(--md-sys-color-primary-container); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-primary-container);
     font-size: 13px; min-width: 280px; max-width: 400px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.1); animation: ui-toast-in 0.3s ease;
@@ -73,14 +74,14 @@
 
 /* ── Progress bar ── */
 /* AppBar(shell-ui) 바로 아래에 붙는다. `--shell-app-bar-height` 는 shell.css 가 정의한
-   공용 토큰 — safe-area-inset-top 도 AppBar 가 흡수하므로 여기서 동일 표현을 따라간다.
+   공용 토큰 — safe-area-inset-top 도 AppBar 가 이미 흡수하므로 여기서 동일 표현을 따라간다.
    z-index 는 AppBar(950) 보다 높게 유지하되 top 을 AppBar 아래로 내려 AppBar elevation
    가림 없음. */
 .progress-container {
     position: fixed;
     top: calc(var(--shell-app-bar-height, 56px) + env(safe-area-inset-top, 0px));
     left: 0; right: 0;
-    z-index: 10002; display: flex; flex-direction: column;
+    z-index: 960; display: flex; flex-direction: column;
     transition: opacity 0.3s ease;
 }
 .progress-label {
@@ -89,7 +90,7 @@
     color: var(--md-sys-color-on-surface, #333);
 }
 
-/* ── 모바일 (< 768px) ── */
+/* ── Mobile (< 768px) ── */
 @media (max-width: 768px) {
     /* AgentInputElement: shell-ui MenuRail 이 상단 MobileTabsElement 로 교체됨에 따라
        과거 "하단 MenuRail 회피용 상단 고정" 예외를 제거하고 하단 dock 으로 복귀한다.
@@ -145,7 +146,7 @@
     .ui-confirm-wrapper {
         position: fixed;
         bottom: 0; left: 0; right: 0; top: 0;
-        z-index: 10003;
+        z-index: 1060;
         display: flex;
         align-items: flex-end;
         justify-content: center;
@@ -186,7 +187,7 @@
 /* ── Artifact Summary Panel ── */
 .agent-artifact-panel {
     position: fixed; right: 24px; bottom: 100px;
-    z-index: 10001;
+    z-index: 870;
     display: flex; flex-direction: column;
     width: 380px; max-height: 60vh;
     background: var(--md-sys-color-surface-container-low);
@@ -196,6 +197,7 @@
     overflow: hidden;
     animation: agent-artifact-in 0.3s var(--md-sys-motion-easing-standard, ease);
 }
+
 .agent-artifact-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 16px;
@@ -253,6 +255,7 @@
     color: var(--md-sys-color-on-surface);
     flex-shrink: 0;
 }
+.agent-artifact-change-target:hover { text-decoration: underline; cursor: pointer; }
 .agent-artifact-change-desc {
     font-family: var(--md-sys-typescale-body-small-font, monospace);
     font-size: var(--md-sys-typescale-body-small-size, 0.6875rem);
