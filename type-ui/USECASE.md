@@ -30,21 +30,23 @@ graph TD
 ```mermaid
 sequenceDiagram
     participant C as Type-UI
+    participant TM as TypeToolManager
     participant TP as ToolProvider (activity)
     participant B as WindowBridge (agent-bridge)
     participant S as Shell (shell-ui)
 
-    Note over C: "캔버스 초기화 또는 상태 변경"
-    C->>TP: "publish([Add, Undo, Redo, ...])"
+    Note over C: "캔버스 초기화"
+    C->>TM: "init()"
+    TM->>TP: "publish([ModeToggle, Add, Remove, ...])"
     TP->>B: "ToolPublisher.publish(tools)"
     B->>S: "window.dispatchEvent(published)"
     S->>S: "Tool Rail UI 갱신"
 
-    Note over S: "사용자가 'Undo' 도구 클릭"
-    S->>B: "ToolSubscriber.select('undo')"
+    Note over S: "사용자가 'Add' 도구 클릭"
+    S->>B: "ToolSubscriber.select('add')"
     B->>TP: "이벤트 수신"
-    TP->>C: "onSelect 핸들러 트리거"
-    C->>C: "ActionManager.undo() 실행"
+    TP->>TM: "onSelect('add')"
+    TM->>TM: "executeAdd() 실행"
 ```
 
 ## 타입 생성 → 저장 시퀀스
@@ -52,28 +54,24 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User as 사용자
-    participant Canvas as CanvasElement
+    participant Header as StatusHeaderElement
+    participant TM as TypeToolManager
     participant AM as ActionManager
     participant TL as TypeList
     participant PM as PositionMap
     participant CT as ChangeTracker
     participant API as TypeApi/LayoutApi
 
-    User->>Canvas: "Add Type 클릭"
-    Canvas->>AM: "execute(ComplexAction)"
+    User->>TM: "Add Tool 클릭"
+    TM->>AM: "execute(ComplexAction)"
     AM->>TL: "CreateTBoxAction.execute()"
-    TL-->>Canvas: "타입 카드 렌더링"
+    TL-->>TM: "타입 카드 렌더링"
     AM->>PM: "위치 등록"
     AM->>PM: "PushOutOverlapAction (겹침 해소)"
     AM->>CT: "CHANGED 마킹"
 
-    User->>Canvas: "속성 편집 (더블클릭)"
-    Canvas->>AM: "execute(EditTBoxAction)"
-    AM->>TL: "타입 업데이트"
-    TL-->>Canvas: "카드 다시 그리기"
-
-    User->>Canvas: "Save 버튼 클릭"
-    Canvas->>AM: "execute(SaveAction)"
+    User->>Header: "Save 버튼 클릭"
+    Header->>AM: "execute(SaveAction)"
     AM->>API: "PUT /workspaces/{id}/types"
     AM->>API: "PUT /workspaces/{id}/layouts"
     AM->>CT: "초기화"
