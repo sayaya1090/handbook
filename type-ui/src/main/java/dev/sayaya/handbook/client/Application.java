@@ -67,8 +67,8 @@ public class Application implements EntryPoint {
                 .add(component.attributeEditor());
         
         if (RenderSharing.isRegistered()) {
-            // 쉘과 통합된 상태라면 기존 헤더와 컨트롤러 숨김
-            component.statusHeader().element().style.display = "none";
+            // 쉘과 통합된 상태라면 툴바(좌측 레일) 숨김 — 쉘의 레일로 도구들이 통합됨.
+            // 단, 상단바(statusHeader)는 포토샵 스타일 UX를 위해 노출 유지.
             component.controller().element().style.display = "none";
         }
 

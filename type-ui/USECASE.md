@@ -1,20 +1,27 @@
 # Type-UI 유스케이스
 
-## 툴바 분리 레이아웃
+## 역할 분리 레이아웃 (Photoshop-style UX)
 
-기존 상단 컨트롤러가 '상단 상태바'와 '좌측 툴레일'로 분리되어 캔버스 작업 영역을 최대화합니다.
+작업의 효율성과 직관성을 높이기 위해 상단바는 '시스템 및 글로벌 설정', 좌측 툴레일은 '개체 생성 및 조작 도구'로 역할을 명확히 분리합니다.
 
 ```mermaid
 graph TD
     subgraph UI_Layout
-        Header[상단 상태바: 워크스페이스/타입 정보/상태]
-        ToolRail[좌측 툴레일: 툴 선택/액션 버튼]
+        Header[상단 상태바 StatusHeader: 저장/되돌리기/기간이동/스냅]
+        ToolRail[좌측 툴레일 ToolRail: 선택모드/타입추가/삭제]
         Canvas[캔버스 영역: 타입 카드/관계선]
     end
     
     Header --- Canvas
     ToolRail --- Canvas
 ```
+
+### 기능 배치 정의
+
+| 구분 | 컴포넌트 | 포함 기능 (버튼) | 역할 설명 |
+|:---|:---|:---|:---|
+| **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 뷰 설정 |
+| **좌측 레일** | `ControllerElement` | ModeToggle, AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 직접적인 편집 도구 |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
 

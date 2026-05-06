@@ -46,7 +46,7 @@ public class RemoveTypeButton implements IsElement<HTMLElement> {
                      LabelProvider labelProvider) {
         _this = ButtonElementBuilder.button().outlined()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash"))
-                .css("type-ctrl-btn", "type-ctrl-btn-delete");
+                .css("type-ctrl-btn", "type-ctrl-btn-remove");
 
         _this.onClick(e -> {
             Set<String> selected = selection.getValue();

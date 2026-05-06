@@ -55,7 +55,7 @@ public class BulkDeleteButton implements IsElement<HTMLElement> {
                      LabelProvider labelProvider) {
         _this = ButtonElementBuilder.button().outlined()
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash-can"))
-                .css("type-ctrl-btn", "type-ctrl-btn-bulk-delete");
+                .css("type-ctrl-btn", "type-ctrl-btn-delete");
 
         _this.onClick(e -> {
             Set<String> selected = selection.getValue();
