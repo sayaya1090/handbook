@@ -39,9 +39,11 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         workspaces.subscribe(this::update);
         sessionContext.subscribe(ctx -> {
             String wsId = ctx.get("workspaceId");
-            if (wsId != null && !wsId.equals(_this.element().value)) {
-                _this.element().value = wsId;
-            }
+            elemental2.dom.DomGlobal.requestAnimationFrame(ts -> {
+                if (wsId != null && !wsId.equals(_this.element().value)) {
+                    _this.element().value = wsId;
+                }
+            });
         });
         _this.on(EventType.change, evt -> {
             String wsId = _this.element().value;
@@ -71,12 +73,15 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         _this.disabled(false);
         _this.element().style.display = "";
         _this.removeAllOptions();
-        for (var workspace : workspaces) _this.option().value(workspace.id()).headline(workspace.name());
+        for (var workspace : workspaces) _this.option().value(workspace.id()).headline(workspace.name()).done();
         
         // 초기 로딩 시나 선택된 워크스페이스가 없다면 첫 번째 항목을 자동 선택
-        if (_this.element().value == null || _this.element().value.isEmpty()) {
-            _this.element().value = workspaces.get(0).id();
-        }
+        // md-outlined-select 는 자식 option 이 렌더링될 시간을 주어야 value 매핑이 정상 동작한다.
+        elemental2.dom.DomGlobal.requestAnimationFrame(ts -> {
+            if (_this.element().value == null || _this.element().value.isEmpty()) {
+                _this.element().value = workspaces.get(0).id();
+            }
+        });
     }
 
     public WorkspaceSelectElement css(String css) {
