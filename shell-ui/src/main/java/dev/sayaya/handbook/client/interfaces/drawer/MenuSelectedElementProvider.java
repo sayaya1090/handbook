@@ -23,6 +23,6 @@ import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
  */
 @Singleton
 public class MenuSelectedElementProvider {
-    @Delegate private final BehaviorSubject<MenuRailItemElement> _this = behavior(null);
+    @Delegate private final BehaviorSubject<NavigationRailItemElement> _this = behavior(null);
     @Inject MenuSelectedElementProvider() {}
 }

@@ -107,7 +107,7 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
         }
     }
 
-    public void offset(MenuRailItemElement anchor) {
+    public void offset(NavigationRailItemElement anchor) {
         if(anchor == null || mobile) return;
         
         elemental2.dom.DomGlobal.requestAnimationFrame(t -> {
