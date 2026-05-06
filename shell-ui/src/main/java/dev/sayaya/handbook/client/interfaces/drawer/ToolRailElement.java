@@ -107,14 +107,27 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
         }
     }
 
-    private void offset(MenuRailItemElement parent) {
-        if(parent == null) return;
+    public void offset(MenuRailItemElement anchor) {
+        if(anchor == null) return;
         if(mobile) return; // 모바일 하단 바는 수직 오프셋 불필요
-        var delta = parent.element().offsetTop - ((HTMLElement) parent.element().parentElement).offsetTop;
-        var height = children.stream().mapToInt(i -> i.element().offsetHeight).sum();
-        var bottom = element().clientHeight;
-        if(height + delta > bottom) delta = bottom - height;
-        element().style.paddingTop = CSSProperties.PaddingTopUnionType.of(delta + "px");
+        
+        // anchor 의 위치를 drawer .body 컨테이너 기준으로 계산
+        elemental2.dom.DomGlobal.requestAnimationFrame(t -> {
+            double anchorTop = anchor.element().getBoundingClientRect().top;
+            double containerTop = element().parentElement.getBoundingClientRect().top;
+            double delta = anchorTop - containerTop;
+            
+            // 정렬 디버깅 로그
+            elemental2.dom.DomGlobal.console.log("ToolRailElement.offset: delta=" + delta + ", anchor=" + anchor.element().className);
+
+            double height = children.stream().mapToDouble(i -> i.element().offsetHeight).sum();
+            double bottom = element().clientHeight;
+            if(bottom > 0) {
+                if(height + delta > bottom) delta = bottom - height;
+                if(delta < 0) delta = 0;
+                element().style.paddingTop = elemental2.dom.CSSProperties.PaddingTopUnionType.of(delta + "px");
+            }
+        });
     }
 }
 

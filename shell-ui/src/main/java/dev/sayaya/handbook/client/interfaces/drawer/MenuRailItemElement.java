@@ -74,7 +74,10 @@ public class MenuRailItemElement extends NavigationRailItemElement {
         });
 
         // Tooltip 은 COLLAPSE 에서만 활성. EXPAND 에선 headline 이 이미 보이고 hover peek 가 ToolRail 을 연다.
-        menuRailMode.subscribe(state -> tooltip.enabled(state == MenuRailState.COLLAPSE));
+        // 2026-05-05: peeking 중(MenuHover 에 값이 있음)에도 tooltip 을 비활성화하여 
+        // ToolRail 과의 시각적 간섭을 방지한다.
+        menuRailMode.subscribe(state -> updateTooltip(state, hover.getValue()));
+        hover.subscribe(h -> updateTooltip(menuRailMode.getValue(), h));
 
         // 세션 상태에 따라 가시성/활성/CTA 폴백을 재계산. menuList 변동 시에도 재평가.
         sessionStateProvider.subscribe(this::applyVisibility);
@@ -84,14 +87,30 @@ public class MenuRailItemElement extends NavigationRailItemElement {
         // agent-command highlight 가 .ui-highlight class 를 부여하면 tooltip 즉시 표시.
         // MutationObserver 세부는 HighlightEffect 로 캡슐화되어 있다 (Dependency Inversion).
         HighlightEffect.observe(element(), () -> tooltip.showImmediate(TooltipCard.AUTO_HIDE_HIGHLIGHT_MS));
-        selected.subscribe(select -> select(menu.equals(select)));
+        
+        selected.subscribe(select -> {
+            boolean isSelected = menu.equals(select);
+            select(isSelected);
+            // 호버 중이 아닐 때만 선택된 아이템의 위치를 발행하여 ToolRail 정렬 기준으로 삼음
+            if (isSelected && hover.getValue() == null) selectedElement.next(this);
+        });
+        hover.subscribe(h -> {
+            // 호버된 아이템이 나 자신이면 즉시 위치 발행 (peeking 정렬)
+            if (menu.equals(h)) selectedElement.next(this);
+            // 호버가 해제되었을 때 내가 선택된 상태라면 다시 나의 위치를 발행 (정착 정렬 복귀)
+            else if (h == null && menu.equals(selected.getValue())) selectedElement.next(this);
+        });
+    }
+
+    private void updateTooltip(MenuRailState state, Menu h) {
+        tooltip.enabled(state == MenuRailState.COLLAPSE && h == null);
     }
 
     /**
      * 현재 세션 상태 기준으로 이 메뉴가 허용되는지 평가해 {@code [disabled]} 속성과 CTA 폴백을 갱신한다.
      *
      * <p>허용 = {@code element().removeAttribute("disabled")} + {@code ctaFallback=null}.
-     * 비허용 = {@code [disabled]} 속성 + opacity/pointer-events 는 CSS 가 처리.
+     * 비허용 = {@code [disabled]} 속 + opacity/pointer-events 는 CSS 가 처리.
      * 클릭은 이벤트 핸들러가 살아있되 분기 처리 — {@link #initEventHandlers} 참조.</p>
      */
     private void applyVisibility(SessionState state) {
@@ -134,12 +153,10 @@ public class MenuRailItemElement extends NavigationRailItemElement {
                 // 없으면 클릭 무시 — 2026-04-18 "WS 있을 때 강제 진입" 회귀 회피.
                 if (ctaFallback != null) {
                     selected.next(ctaFallback);
-                    selectedElement.next(this);
                 }
                 return;
             }
             selected.next(menu);
-            selectedElement.next(this);
         });
         on(EventType.mouseover, evt -> {
             if (element().hasAttribute("disabled")) return;
@@ -148,7 +165,6 @@ public class MenuRailItemElement extends NavigationRailItemElement {
             if (menuRailMode.getValue() == MenuRailState.HIDE) return;
             if (hover.getValue() == menu) return;
             hover.next(menu);
-            selectedElement.next(this);
         });
     }
 

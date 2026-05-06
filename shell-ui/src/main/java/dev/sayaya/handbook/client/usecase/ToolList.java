@@ -27,16 +27,38 @@ import static java.util.Comparator.nullsLast;
 @Singleton
 public class ToolList {
     @Delegate private final BehaviorSubject<List<Tool>> _this = behavior(List.of());
+    private final MenuSelected menuSelected;
+    private final MenuHover menuHover;
+
     @Inject ToolList(MenuSelected menu, MenuHover hover, dev.sayaya.handbook.usecase.ToolProvider toolProvider) {
-        Observable.merge(
-            menu.asObservable().map(this::fromMenu),
-            hover.asObservable().map(this::fromMenu),
-            toolProvider.tools().map(Arrays::asList)
-        ).distinctUntilChanged().subscribe(this::next);
+        this.menuSelected = menu;
+        this.menuHover = hover;
         
-        // 쉘 초기화 시 윈도우 브릿지로부터 도구 목록 수신 시작
+        // 1. 내부 메뉴(선택/호버) 변경 감지
+        menu.subscribe(m -> update(toolProvider));
+        hover.subscribe(h -> update(toolProvider));
+        
+        // 2. 외부 모듈로부터의 도구 목록 수신 (ToolProvider 브릿지)
+        // 외부 목록이 들어오면 이를 최우선으로 반영한다.
+        toolProvider.tools().subscribe(tools -> {
+            if (tools != null) {
+                List<Tool> list = Arrays.asList(tools);
+                next(list);
+            }
+        });
         toolProvider.subscribe(tools -> {});
     }
+
+    private void update(dev.sayaya.handbook.usecase.ToolProvider toolProvider) {
+        Menu h = menuHover.getValue();
+        Menu m = menuSelected.getValue();
+        Menu active = h != null ? h : m;
+        List<Tool> list = fromMenu(active);
+        next(list);
+        // 외부에도 현재 활성화된 도구 목록을 알림 (동기화)
+        toolProvider.publish(list.toArray(new Tool[0]));
+    }
+
     private List<Tool> fromMenu(Menu menu) {
         if(menu == null) return List.of();
         var tools = menu.tools();

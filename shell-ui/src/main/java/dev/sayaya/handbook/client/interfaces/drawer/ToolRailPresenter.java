@@ -10,9 +10,10 @@ import javax.inject.Singleton;
 @Singleton
 public class ToolRailPresenter {
     @Inject
-    public ToolRailPresenter(ToolRailElement view, ToolList list, ToolRailMode mode, ViewportObserver viewport) {
+    public ToolRailPresenter(ToolRailElement view, ToolList list, ToolRailMode mode, ViewportObserver viewport, MenuSelectedElementProvider anchor) {
         list.distinctUntilChanged().subscribe(view::update);
         mode.distinctUntilChanged().subscribe(view::setMode);
         viewport.isMobile().subscribe(view::setMobile);
+        anchor.distinctUntilChanged().subscribe(view::offset);
     }
 }
