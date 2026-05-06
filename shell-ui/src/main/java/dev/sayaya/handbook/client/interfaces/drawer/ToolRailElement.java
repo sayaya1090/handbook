@@ -108,27 +108,31 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
     }
 
     public void offset(MenuRailItemElement anchor) {
-        if(anchor == null) return;
-        if(mobile) return; // 모바일 하단 바는 수직 오프셋 불필요
+        if(anchor == null || mobile) return;
         
-        // anchor 의 위치를 drawer .body 컨테이너 기준으로 계산
         elemental2.dom.DomGlobal.requestAnimationFrame(t -> {
-            var anchorEl = anchor.element();
-            var containerEl = (HTMLElement) element().parentElement;
-            if (anchorEl == null || containerEl == null) return;
+            HTMLElement anchorEl = anchor.element();
+            HTMLElement railEl = element();
+            HTMLElement bodyEl = (HTMLElement) railEl.parentElement;
             
+            if (anchorEl == null || bodyEl == null) return;
+            
+            // drawer-body 기준 수직 위치 계산 (절대 좌표 차이 이용)
             double anchorTop = anchorEl.getBoundingClientRect().top;
-            double containerTop = containerEl.getBoundingClientRect().top;
-            double delta = anchorTop - containerTop;
+            double bodyTop = bodyEl.getBoundingClientRect().top;
+            double delta = anchorTop - bodyTop;
             
-            double height = children.stream().mapToDouble(i -> i.element().offsetHeight).sum();
-            double containerHeight = containerEl.clientHeight;
+            double railHeight = children.stream().mapToDouble(i -> i.element().offsetHeight).sum();
+            double bodyHeight = bodyEl.clientHeight;
             
-            if(containerHeight > 0) {
-                // 도구 목록이 컨테이너 하단을 벗어나지 않도록 조정
-                if(height + delta > containerHeight) delta = containerHeight - height;
+            if(bodyHeight > 0) {
+                // 하단 경계 초과 방지
+                if(delta + railHeight > bodyHeight) delta = bodyHeight - railHeight;
                 if(delta < 0) delta = 0;
-                element().style.paddingTop = elemental2.dom.CSSProperties.PaddingTopUnionType.of(delta + "px");
+                
+                railEl.style.paddingTop = elemental2.dom.CSSProperties.PaddingTopUnionType.of(delta + "px");
+                // 디버깅용 로그 (나중에 제거 가능)
+                elemental2.dom.DomGlobal.console.log("ToolRail offset alignment: " + delta + "px at anchor " + anchorEl.dataset.get("menuTitle"));
             }
         });
     }

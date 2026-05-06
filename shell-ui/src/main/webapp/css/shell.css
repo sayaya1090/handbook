@@ -190,6 +190,11 @@ body,
 .rail .item[selected] .icon-filled {
     display: inline-block;
 }
+/* COLLAPSE 모드 선택 상태 배경 추가 (MenuRail/ToolRail 공통) */
+.rail[collapse] .item[selected] .collapse {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
 .rail .item[selected] .expand {
     --md-list-item-label-text-color: var(--md-sys-color-primary);
     --md-list-item-leading-icon-color: var(--md-list-item-label-text-color);
