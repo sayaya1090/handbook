@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.drawer;
 
 import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.domain.ToolRailState;
+import dev.sayaya.handbook.client.usecase.MenuHover;
 import dev.sayaya.handbook.client.usecase.MenuRailMode;
 import dev.sayaya.handbook.client.usecase.MenuSelected;
 import dev.sayaya.handbook.client.usecase.ToolRailMode;
@@ -32,11 +33,14 @@ public class CloseToolRailButton extends NavigationRailItemElement {
     private final ToolRailMode tools;
     private final MenuSelected menuSelected;
     private final ViewportObserver viewport;
-    @Inject CloseToolRailButton(MenuRailMode menu, ToolRailMode tools, MenuSelected menuSelected, ViewportObserver viewport) {
+    private final MenuHover hover;
+
+    @Inject CloseToolRailButton(MenuRailMode menu, ToolRailMode tools, MenuSelected menuSelected, ViewportObserver viewport, MenuHover hover) {
         this.menu = menu;
         this.tools = tools;
         this.menuSelected = menuSelected;
         this.viewport = viewport;
+        this.hover = hover;
         this.element().id = "close-tool-rail";
         icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-left"))
                 .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-left"));
@@ -45,8 +49,8 @@ public class CloseToolRailButton extends NavigationRailItemElement {
     }
     private void closeToolRail(Event evt) {
         evt.preventDefault();
+        hover.next(null); // 호버 상태 클리어
         if (viewport.isMobileNow()) {
-            // 드릴백: 선택 컨텍스트 자체를 비워 하단 바가 MenuRail 로 복귀하게 만든다.
             menuSelected.next(null);
         } else {
             menu.next(MenuRailState.COLLAPSE);

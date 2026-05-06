@@ -45,10 +45,12 @@ public final class Tool {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Tool tool = (Tool) o;
+        if (id != null && tool.id != null) return Objects.equals(id, tool.id);
         return Objects.equals(title, tool.title);
     }
     @Override @JsOverlay @JsIgnore
     public int hashCode() {
+        if (id != null) return Objects.hash(id);
         return Objects.hash(title);
     }
 

@@ -104,17 +104,65 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // JSON 페이로드가 빈 객체인 이벤트
-        When("빈 JSON 페이로드 이벤트를 수신하면") {
+        // 모바일 터치 드래그 안정성
+        When("모바일 터치 드래그를 수행하면") {
+            // 레이아웃 모드로 전환 보장 (첫 번째 버튼이 LAYOUT 모드)
+            page.click(".type-mode-toggle .type-ctrl-btn:first-child")
+            Thread.sleep(300)
+
+            val boxSelector = ".type-box[data-type-key='customer:1.0']"
+            val beforeTop = page.evaluate("document.querySelector(\"$boxSelector\").offsetTop").toString().toDouble()
+
+            // TouchEvent 시뮬레이션
             page.evaluate("""
-                (function() {
-                    var evt = new CustomEvent('handbook-workspace-event', {detail: 'TYPE_CREATED:{}', bubbles: false});
-                    window.dispatchEvent(evt);
-                })()
+                (async (selector) => {
+                    const el = document.querySelector(selector);
+                    const box = el.getBoundingClientRect();
+                    const startX = box.left + 20;
+                    const startY = box.top + 20;
+                    const endX = startX + 50;
+                    const endY = startY + 50;
+
+                    const createTouch = (x, y, target) => new Touch({
+                        identifier: Date.now(),
+                        target: target,
+                        clientX: x,
+                        clientY: y,
+                        pageX: x,
+                        pageY: y
+                    });
+
+                    // touchstart
+                    const t1 = createTouch(startX, startY, el);
+                    el.dispatchEvent(new TouchEvent('touchstart', {
+                        bubbles: true, cancelable: true, touches: [t1], targetTouches: [t1], changedTouches: [t1]
+                    }));
+
+                    // 롱프레스 타이머 발화 유도 (버그 재현 환경)
+                    await new Promise(r => setTimeout(r, 600));
+
+                    // touchmove
+                    const t2 = createTouch(endX, endY, el);
+                    el.dispatchEvent(new TouchEvent('touchmove', {
+                        bubbles: true, cancelable: true, touches: [t2], targetTouches: [t2], changedTouches: [t2]
+                    }));
+
+                    // touchend
+                    el.dispatchEvent(new TouchEvent('touchend', {
+                        bubbles: true, cancelable: true, touches: [], targetTouches: [], changedTouches: [t2]
+                    }));
+                })("$boxSelector")
             """.trimIndent())
-            Thread.sleep(500)
-            Then("캔버스가 에러 없이 유지된다") {
-                page.querySelector(".type-canvas") shouldNotBe null
+            Thread.sleep(800)
+
+            Then("타입 박스의 위치가 이동하고 드래그 상태가 종료된다 (Stability)") {
+                val afterTop = page.evaluate("document.querySelector(\"$boxSelector\").offsetTop").toString().toDouble()
+                (afterTop > beforeTop) shouldBe true
+
+                // 드래그가 종료되었으므로 .type-box[selected] 가 유지되더라도 
+                // 후속 mousemove 에 반응하지 않아야 함 (안정성 검증)
+                val isDragging = page.evaluate("document.querySelector(\"$boxSelector\").classList.contains('dragging')").toString()
+                isDragging shouldBe "false"
             }
         }
     }

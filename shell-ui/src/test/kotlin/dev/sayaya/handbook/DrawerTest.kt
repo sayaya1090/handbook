@@ -274,6 +274,38 @@ internal class DrawerTest: GwtTestSpec({
                 val selected = page.querySelectorAll(".rail .item[selected]")
                 selected.count() shouldBe 1
             }
+            Then("도구 클릭 시 툴팁이 즉시 숨겨진다 (UX Stability)") {
+                // 도구 버튼에 마우스를 올려 툴팁을 트리거한 뒤 클릭
+                val toolSelector = ".tool-rail .item[data-tool-title]"
+                page.hover(toolSelector)
+                Thread.sleep(100)
+                page.click(toolSelector)
+                Thread.sleep(50)
+                val visibleTooltips = page.evaluate("""
+                    Array.from(document.querySelectorAll('.ui-tooltip-portal'))
+                        .filter(p => getComputedStyle(p).display !== 'none').length
+                """.trimIndent()).toString().toInt()
+                visibleTooltips shouldBe 0
+            }
+        }
+
+        // ── Z-index 레이어 계층 자동 검증 ────────────────────────────────────
+        Then("Z-index 계층 구조가 표준을 준수한다 (Drawer > AppBar)") {
+            val hierarchy = page.evaluate("""
+                (() => {
+                    const getZ = (sel) => {
+                        const el = document.querySelector(sel);
+                        return el ? parseInt(getComputedStyle(el).zIndex) || 0 : -1;
+                    };
+                    return {
+                        drawer: getZ('nav.drawer'),
+                        appBar: getZ('.shell-app-bar')
+                    };
+                })()
+            """.trimIndent()) as Map<String, Int>
+            
+            // Drawer(1001) > AppBar(950)
+            (hierarchy["drawer"] as Int) shouldBeGreaterThan (hierarchy["appBar"] as Int)
         }
 
         When("다른 Tool URL(url3)을 클릭하면 같은 메뉴의 다른 Tool이 활성화된다") {
