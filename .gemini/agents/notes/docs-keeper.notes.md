@@ -1,6 +1,9 @@
 # docs-keeper 에이전트 노트
 
 ## 요청 로그
+- 2026-05-24: UC-T27/T28 크로스체크 → 일치 확인, 에러 피드백 검증 부족(1건)
+- 2026-05-24: type-ui UC-T27(새 버전 생성) 및 UC-T28(기간 편집) 분리 정의 및 매트릭스 갱신
+- 2026-05-24: type-ui UC-T27(새 버전 생성) 추가 → 문서 및 매트릭스 갱신 완료
 - 2026-05-24: type-ui 모바일 Speed Dial 구현에 따른 문서(CLASS-DIAGRAM/USECASE/README) 및 에이전트 연동 가이드 최신화 완료
 - 2026-04-28: type-ui 기간 표시 반영 → USECASE/CLASS-DIAGRAM/README 업데이트 완료
 - 2026-05-24: 최근 UI/UX 리팩토링(IconButton, 모바일 헤더, 레이아웃 자동 선택) 문서 최신화 및 무결성 감사 완료
