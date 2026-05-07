@@ -45,12 +45,20 @@ public class LayoutProvider {
         subject.subscribe(consumer::accept);
     }
 
-    /** 새 기간 목록이 들어오면 현재 선택과 가장 많이 겹치는 기간을 자동 선택한다. */
+    /** 
+     * 새 기간 목록이 들어오면 현재 선택과 가장 많이 겹치는 기간을 자동 선택한다.
+     * 선택된 기간이 없는 경우(초기 진입) 가장 마지막 날짜 구간(최신 레이아웃)을 선택한다.
+     */
     public void selectBestMatch(List<LayoutPeriod> periods) {
         if (periods == null || periods.isEmpty()) return;
         LayoutPeriod current = subject.getValue();
         if (current == null) {
-            subject.next(periods.get(0));
+            // 2026-05-06: 초기 진입 시 가장 최신 레이아웃(시작 시점이 가장 뒤인 것)을 기본 로딩한다.
+            LayoutPeriod latest = periods.get(0);
+            for (LayoutPeriod p : periods) {
+                if (p.effectDateTime() > latest.effectDateTime()) latest = p;
+            }
+            subject.next(latest);
             return;
         }
         LayoutPeriod best = periods.get(0);
