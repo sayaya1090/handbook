@@ -15,10 +15,19 @@ public class TestApplication implements EntryPoint {
     public void onModuleLoad() {
         TestComponent component = DaggerTestComponent.create();
 
-        // 초기 레이아웃 기간 설정
-        double now = System.currentTimeMillis();
-        component.layoutProvider().replace(LayoutPeriod.of(now, now + 86400000));
-        Type customer = Type.create("customer", "1.0", now, now + 86400000);
+        // 2026-05-06: 레이아웃 자동 선택 로직 검증을 위해 두 개의 기간을 주입
+        double now = 1714953600000.0; // 2024-05-06
+        double past = now - 86400000.0; // 어제
+        LayoutPeriod currentPeriod = LayoutPeriod.of(now, Double.MAX_VALUE);
+        LayoutPeriod pastPeriod = LayoutPeriod.of(past, now);
+        
+        // LayoutList 에 두 기간 등록
+        component.layoutList().replace(java.util.List.of(pastPeriod, currentPeriod));
+        
+        // LayoutProvider 에 선택 요청 (자동 선택 로직 발화)
+        component.layoutProvider().selectBestMatch(component.layoutList().getValue());
+
+        Type customer = Type.create("customer", "1.0", now, Double.MAX_VALUE);
         customer.description("고객");
         customer.attributes(new Attribute[] {
             Attribute.create(null, "name", 1, AttributeType.text()),

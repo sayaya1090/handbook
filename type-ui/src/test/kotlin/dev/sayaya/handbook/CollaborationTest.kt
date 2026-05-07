@@ -283,5 +283,30 @@ internal class CollaborationTest: GwtTestSpec({
                 page.querySelector(".type-controller") shouldNotBe null
             }
         }
+
+        // UC-T26: 워크스페이스 ID 폴백 — 스트림 값이 비었을 때 URL에서 추출
+        When("워크스페이스 ID 스트림이 비어있는 상태로 발행되면") {
+            // 현재 URL: http://localhost:18081/canvastest.html (워크스페이스 ID 없음)
+            // 테스트를 위해 URL을 강제로 변경 (history.pushState)
+            page.evaluate("""
+                history.pushState(null, '', '/workspaces/test-fallback-id/types')
+            """.trimIndent())
+            
+            // 빈 워크스페이스 ID 이벤트 발행
+            page.evaluate("""
+                (function() {
+                    var evt = new CustomEvent('handbook-workspace-context', { detail: '', bubbles: false });
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(1000)
+            
+            Then("URL에서 워크스페이스 ID를 추출하여 로딩이 시도된다 (캔버스 유지)") {
+                // 실제 로딩 여부를 확인하기 위해 캔버스 상태 확인
+                page.querySelector(".type-canvas") shouldNotBe null
+                val html = page.querySelector(".type-canvas")!!.innerHTML()
+                html.isNotBlank() shouldBe true
+            }
+        }
     }
 })

@@ -83,17 +83,20 @@ subprojects {
                 dependsOn(":shell-ui:syncShellCssFromMain", ":shell-ui:gwtGenerateTestHtml", ":shell-ui:gwtTestCompile")
             }
         }
-        // shell-ui 에 한해 main → test 의 shell.css 단방향 동기화 태스크를 추가해
-        // 정본(ShellStylesheet 가 런타임 주입하는 main/webapp/css/shell.css)과 테스트 사본의
-        // drift 를 막는다. shell-ui 의 test 계열 태스크들이 이 sync 에 의존.
+        // 각 모듈의 main/webapp/css → test/webapp/css 단방향 동기화 태스크를 추가해
+        // 정본(런타임 주입하는 CSS)과 테스트 사본의 drift 를 막는다.
+        val syncModuleCss = tasks.register<Copy>("syncModuleCssFromMain") {
+            from("${project.projectDir}/src/main/webapp/css")
+            into("${project.projectDir}/src/test/webapp/css")
+            include("*.css")
+        }
+        copyTestCss.configure { dependsOn(syncModuleCss) }
+        tasks.named("processTestResources").configure { dependsOn(syncModuleCss) }
+        tasks.withType<Test>().configureEach { dependsOn(syncModuleCss) }
+
+        // shell-ui 에 한해 shell.css 동기화 태스크 별칭 유지 (기존 의존성 고려)
         if (project.name == "shell-ui") {
-            val syncShellCss = tasks.register<Copy>("syncShellCssFromMain") {
-                from("${project.projectDir}/src/main/webapp/css/shell.css")
-                into("${project.projectDir}/src/test/webapp/css")
-            }
-            copyTestCss.configure { dependsOn(syncShellCss) }
-            tasks.named("processTestResources").configure { dependsOn(syncShellCss) }
-            tasks.withType<Test>().configureEach { dependsOn(syncShellCss) }
+            tasks.register("syncShellCssFromMain") { dependsOn(syncModuleCss) }
         }
         // I18N: 모든 모듈의 src/main/i18n/language.*.json을 머지하여 테스트 webapp에 출력
         val mergeI18n = tasks.register("mergeI18n") {

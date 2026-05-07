@@ -28,5 +28,6 @@ public interface TestComponent {
     TypeList typeList();
     PositionMap positionMap();
     LayoutProvider layoutProvider();
+    dev.sayaya.handbook.client.usecase.LayoutList layoutList();
     AgentMutationHandler agentMutationHandler();
 }
