@@ -66,7 +66,9 @@ public class Application implements EntryPoint {
                 .add(component.canvas())
                 .add(component.attributeEditor())
                 .add(component.dateCorrectionDialog())
-                .add(component.versionCreationDialog());
+                .add(component.versionCreationDialog())
+                .add(component.actionDial())
+                .add(component.settingsDial());
         
         if (RenderSharing.isRegistered()) {
             // 쉘과 통합된 상태라면 툴바(좌측 레일) 숨김 — 쉘의 레일로 도구들이 통합됨.

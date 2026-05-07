@@ -4,7 +4,9 @@ import dagger.Module;
 import dagger.Provides;
 import dev.sayaya.handbook.client.components.ConfirmDialog;
 import dev.sayaya.handbook.client.components.ToastContainer;
+import dev.sayaya.handbook.client.interfaces.controller.SpeedDialElement;
 import dev.sayaya.handbook.domain.Labels;
+import javax.inject.Named;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Render;
 import dev.sayaya.handbook.usecase.*;
@@ -47,6 +49,15 @@ public class TypeModule {
     @Provides @Singleton static ToastContainer toastContainer() {
         return new ToastContainer();
     }
+
+    @Provides @Singleton @Named("action") static SpeedDialElement actionDial() {
+        return new SpeedDialElement("fa-bolt", "action-dial");
+    }
+
+    @Provides @Singleton @Named("settings") static SpeedDialElement settingsDial() {
+        return new SpeedDialElement("fa-gear", "settings-dial").css("settings");
+    }
+
     @Provides @Singleton static ConfirmDialog confirmDialog() {
         return new ConfirmDialog();
     }

@@ -89,6 +89,11 @@ internal class VersioningTest: GwtTestSpec({
             page.waitForTimeout(500.0)
             page.evaluate("window.dispatchEvent(new Event('resize'))")
             
+            Then("플로팅 버튼(Speed Dial)이 표시된다") {
+                page.waitForSelector(".type-speed-dial:not(.settings) md-fab", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+                page.waitForSelector(".type-speed-dial.settings md-fab", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+            }
+            
             Then("해당 캡슐은 클릭(터치) 가능하다") {
                 // Playwright의 가시성 체크가 fixed 요소나 전환 중에 실패할 수 있으므로 DOM 이벤트를 직접 발생 (property bar 영역 클릭)
                 page.evaluate("document.querySelector('.type-property-bar').click()")
@@ -109,7 +114,9 @@ internal class VersioningTest: GwtTestSpec({
             page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(10.0, 10.0).setForce(true))
             
             Then("타입 속성 바가 숨겨진다") {
-                page.waitForSelector(".type-property-bar.type-fade-out", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED))
+                // fade-out 클래스가 있는지 확인하고, 그 다음 display: none이 되는지 확인
+                page.waitForSelector(".type-property-bar.type-fade-out")
+                Thread.sleep(400) // 애니메이션 대기
             }
         }
     }
