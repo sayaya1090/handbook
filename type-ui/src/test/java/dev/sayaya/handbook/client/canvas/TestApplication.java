@@ -1,11 +1,7 @@
 package dev.sayaya.handbook.client.canvas;
 
 import com.google.gwt.core.client.EntryPoint;
-import dev.sayaya.handbook.domain.Attribute;
-import dev.sayaya.handbook.domain.AttributeType;
-import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.domain.Position;
-import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.domain.*;
 
 import static org.jboss.elemento.Elements.body;
 import static org.jboss.elemento.Elements.div;
@@ -57,8 +53,8 @@ public class TestApplication implements EntryPoint {
                 .add(component.canvas())
                 .add(component.attributeEditor())
                 .add(component.dateCorrectionDialog())
-                .add(component.versionCreationDialog())
+                .add(component.versionCreationDialog()))
                 .add(component.actionDial())
-                .add(component.settingsDial()));
+                .add(component.settingsDial());
     }
 }

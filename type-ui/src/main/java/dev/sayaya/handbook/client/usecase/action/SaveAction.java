@@ -4,12 +4,13 @@ package dev.sayaya.handbook.client.usecase.action;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.*;
-import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
-import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
+
 import java.util.HashSet;
 import java.util.Set;
 

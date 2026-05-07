@@ -1,11 +1,9 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
 import dev.sayaya.handbook.domain.Attribute;
-import dev.sayaya.handbook.domain.AttributeType;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
-import jsinterop.base.Js;
 import org.jboss.elemento.IsElement;
 
 import java.util.function.Consumer;

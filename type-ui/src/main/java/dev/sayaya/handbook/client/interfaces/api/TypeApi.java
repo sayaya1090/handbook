@@ -5,7 +5,6 @@ import dev.sayaya.handbook.client.components.ErrorNotifier;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Progress;
 import dev.sayaya.handbook.domain.Type;
-import dev.sayaya.handbook.client.interfaces.api.FetchApi;
 import dev.sayaya.rx.Observable;
 import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;

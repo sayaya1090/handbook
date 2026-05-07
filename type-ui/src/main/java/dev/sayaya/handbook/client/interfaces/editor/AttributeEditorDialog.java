@@ -1,8 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
 import dev.sayaya.handbook.client.usecase.TypeList;
-import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.handbook.domain.Attribute;
+import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.TextFieldElementBuilder;

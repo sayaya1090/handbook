@@ -12,7 +12,6 @@ import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
-import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;

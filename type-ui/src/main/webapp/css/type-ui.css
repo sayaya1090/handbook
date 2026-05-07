@@ -332,14 +332,28 @@
 .type-speed-dial.settings {
     right: 96px;
 }
-.type-speed-dial[expanded] .speed-dial-menu {
+.type-speed-dial {
+    position: fixed;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    right: 24px;
     display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 12px;
+    z-index: 101;
 }
 .speed-dial-menu {
-    display: none;
+    position: absolute;
+    bottom: 60px; /* FAB 위쪽으로 배치 */
+    display: flex;
     flex-direction: column-reverse;
     gap: 8px;
-    margin-bottom: 4px;
+    visibility: hidden;
+    width: 40px; /* FAB과 동일한 너비 */
+    align-items: center;
+}
+.type-speed-dial[expanded] .speed-dial-menu {
+    visibility: visible;
 }
 .speed-dial-menu .type-ctrl-btn {
     background: var(--md-sys-color-surface-container-high);
@@ -349,8 +363,18 @@
     width: 40px;
     height: 40px;
     transform: scale(0);
-    animation: speed-dial-pop 0.2s forwards cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
 }
+.type-speed-dial[expanded] .speed-dial-menu .type-ctrl-btn {
+    transform: scale(1);
+    opacity: 1;
+}
+/* 각 버튼마다 순차적인 애니메이션 지연 부여 (추가 개선) */
+.type-speed-dial[expanded] .speed-dial-menu .type-ctrl-btn:nth-child(1) { transition-delay: 0.05s; }
+.type-speed-dial[expanded] .speed-dial-menu .type-ctrl-btn:nth-child(2) { transition-delay: 0.1s; }
+.type-speed-dial[expanded] .speed-dial-menu .type-ctrl-btn:nth-child(3) { transition-delay: 0.15s; }
+.type-speed-dial[expanded] .speed-dial-menu .type-ctrl-btn:nth-child(4) { transition-delay: 0.2s; }
 .type-speed-dial md-fab[css="settings-dial"] {
     --md-fab-container-color: var(--md-sys-color-tertiary-container);
     --md-fab-icon-color: var(--md-sys-color-on-tertiary-container);

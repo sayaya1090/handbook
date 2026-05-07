@@ -23,8 +23,6 @@ import elemental2.dom.HTMLInputElement;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 
-import java.util.Arrays;
-
 import static org.jboss.elemento.Elements.div;
 
 /**

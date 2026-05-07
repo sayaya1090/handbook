@@ -3,7 +3,6 @@ package dev.sayaya.handbook.client.interfaces.controller;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ViewportObserver;
 import elemental2.core.JsDate;
 import elemental2.dom.HTMLDivElement;
@@ -36,7 +35,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final SaveButton saveBtn;
     private final ReloadButton reloadBtn;
     private final SnapButton snapButton;
-    private boolean mobile = false;
 
     @Inject
     StatusHeaderElement(ModeToggleButton modeToggle,
@@ -64,7 +62,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
 
         layoutProvider.subscribe(this::updatePeriod);
         viewport.isMobile().subscribe(isMobile -> {
-            this.mobile = isMobile;
             this.updateLayout(isMobile);
             updateMobileInfoVisibility(selection.getValue().size() == 1);
         });
@@ -87,7 +84,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     }
 
     private void updateMobileInfoVisibility(boolean hasOne) {
-        if (hasOne && mobile) {
+        if (hasOne) {
             mobileInfoCapsule.classList.remove("type-fade-out");
             mobileInfoCapsule.classList.add("type-fade-in");
             mobileInfoCapsule.style.display = "flex";

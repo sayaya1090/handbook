@@ -3,7 +3,10 @@ package dev.sayaya.handbook.client.canvas;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.interfaces.box.BoxElementModule;
 import dev.sayaya.handbook.client.interfaces.canvas.CanvasElement;
-import dev.sayaya.handbook.client.interfaces.controller.*;
+import dev.sayaya.handbook.client.interfaces.controller.ActionDialElement;
+import dev.sayaya.handbook.client.interfaces.controller.ControllerElement;
+import dev.sayaya.handbook.client.interfaces.controller.SettingsDialElement;
+import dev.sayaya.handbook.client.interfaces.controller.StatusHeaderElement;
 import dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog;
 import dev.sayaya.handbook.client.interfaces.editor.DateCorrectionDialog;
 import dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog;
@@ -13,7 +16,6 @@ import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 
 import javax.inject.Singleton;
-import javax.inject.Named;
 
 @Singleton
 @dagger.Component(modules = { 
@@ -25,8 +27,8 @@ public interface TestComponent {
     CanvasElement canvas();
     ControllerElement controller();
     StatusHeaderElement statusHeader();
-    @Named("action") SpeedDialElement actionDial();
-    @Named("settings") SpeedDialElement settingsDial();
+    ActionDialElement actionDial();
+    SettingsDialElement settingsDial();
     AttributeEditorDialog attributeEditor();
     DateCorrectionDialog dateCorrectionDialog();
     VersionCreationDialog versionCreationDialog();

@@ -12,8 +12,6 @@ import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Type;
 
-import java.util.List;
-
 /**
  * 스키마 진화(새 버전 생성)를 처리하는 복합 액션.
  * 

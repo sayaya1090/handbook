@@ -3,14 +3,14 @@ package dev.sayaya.handbook.client.usecase.action;
 
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
+import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.LayoutPeriod;
-import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
-import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 
 /**
  * 서버에서 타입과 레이아웃을 로드하는 액션.

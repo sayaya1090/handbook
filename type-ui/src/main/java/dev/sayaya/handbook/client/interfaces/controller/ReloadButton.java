@@ -9,7 +9,6 @@ import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.LoadAction;
-import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;

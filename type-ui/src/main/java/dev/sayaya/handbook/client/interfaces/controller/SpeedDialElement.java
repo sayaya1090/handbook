@@ -9,7 +9,6 @@ import org.jboss.elemento.IsElement;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.htmlElement;
 
