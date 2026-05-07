@@ -127,8 +127,8 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         if (isMobile) {
             root.style.display = "block"; 
             
-            actionDial.element().style.display = ""; 
-            settingsDial.element().style.display = "";
+            actionDial.element().style.display = "flex"; 
+            settingsDial.element().style.display = "flex";
             mobileCapsule.style.display = "flex";
 
             // 모바일 캡슐 내부로 요소 이동. absolute(type-fade-item) 클래스는 제거해야 레이아웃이 안 깨짐

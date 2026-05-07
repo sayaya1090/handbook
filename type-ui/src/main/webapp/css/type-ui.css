@@ -646,7 +646,7 @@
         display: flex;
     }
     .type-speed-dial {
-        display: flex;
+        display: flex !important;
     }
     .type-controller {
         flex-wrap: wrap;
