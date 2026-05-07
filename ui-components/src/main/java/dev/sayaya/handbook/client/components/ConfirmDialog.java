@@ -33,7 +33,7 @@ public class ConfirmDialog implements IsElement<HTMLDivElement> {
         DialogElementBuilder dialogBuilder = DialogElementBuilder.dialog()
                 .css("ui-confirm-dialog")
                 .headline(headline)
-                .actions(actionsContainer);
+                .actions(div().add(actionsContainer));
 
         for (String option : options) {
             HTMLElement btn = ButtonElementBuilder.button().text()

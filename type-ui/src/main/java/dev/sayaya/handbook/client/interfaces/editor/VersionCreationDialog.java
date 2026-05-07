@@ -32,7 +32,7 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class VersionCreationDialog implements IsElement<HTMLElement> {
-    private final DialogElementBuilder _this;
+    private final DialogElementBuilder _this = DialogElementBuilder.dialog();
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder effectInput;
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder versionInput;
     
@@ -70,13 +70,13 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
                 .attr("id", "version-creation-version")
                 .label("New Version Name");
 
-        _this = DialogElementBuilder.dialog()
-                .attr("id", "version-creation-dialog")
+        _this.attr("id", "version-creation-dialog")
                 .headline("Create New Version")
                 .content(div().css("type-dialog-content").add(effectInput).add(versionInput))
-                .actions(ButtonElementBuilder.button().filled().attr("id", "version-creation-submit").text("Create").on(EventType.click, e -> submit()));
-        
-        _this.actions(ButtonElementBuilder.button().text().attr("id", "version-creation-close").text("Cancel").on(EventType.click, e -> _this.close()));
+                .actions(div()
+                        .add(ButtonElementBuilder.button().filled().attr("id", "version-creation-submit").text("Create").on(EventType.click, e -> submit()))
+                        .add(ButtonElementBuilder.button().text().id("version-creation-close").text("Cancel").on(EventType.click, e -> _this.close()))
+                );
     }
 
     public void show(Type type) {

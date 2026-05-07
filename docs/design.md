@@ -39,32 +39,32 @@ Handbook은 **Material Design 3 (MD3)** 기반의 디자인 시스템을 채택�
 
 다크 모드에서는 `color-scheme: dark`가 자동 적용되어 스크롤바, 폼 요소 등 브라우저 기본 UI도 다크 테마를 따른다.
 
-### Primary 팔레트 (Teal 계열)
+### Primary 팔레트 (Teal 계열: #006a64)
 
 | 역할 | 라이트 | 다크 | CSS 변수 |
 |------|--------|------|----------|
-| Primary | `rgb(0 106 100)` | `rgb(85 218 208)` | `--md-sys-color-primary` |
-| On Primary | `rgb(255 255 255)` | `rgb(0 55 52)` | `--md-sys-color-on-primary` |
-| Primary Container | `rgb(150 242 231)` | `rgb(0 80 75)` | `--md-sys-color-primary-container` |
-| On Primary Container | `rgb(0 32 29)` | `rgb(150 242 231)` | `--md-sys-color-on-primary-container` |
+| Primary | `#006a64` | `#66d7cd` | `--md-sys-color-primary` |
+| On Primary | `#ffffff` | `#003734` | `--md-sys-color-on-primary` |
+| Primary Container | `#84f3e6` | `#00504b` | `--md-sys-color-primary-container` |
+| On Primary Container | `#00201e` | `#84f3e6` | `--md-sys-color-on-primary-container` |
 
-### Secondary 팔레트 (Pink 계열)
-
-| 역할 | 라이트 | 다크 | CSS 변수 |
-|------|--------|------|----------|
-| Secondary | `rgb(160 0 79)` | `rgb(255 177 197)` | `--md-sys-color-secondary` |
-| On Secondary | `rgb(255 255 255)` | `rgb(101 0 48)` | `--md-sys-color-on-secondary` |
-| Secondary Container | `rgb(255 217 225)` | `rgb(143 0 70)` | `--md-sys-color-secondary-container` |
-| On Secondary Container | `rgb(63 0 27)` | `rgb(255 217 225)` | `--md-sys-color-on-secondary-container` |
-
-### Tertiary 팔레트 (Purple 계열)
+### Secondary 팔레트 (Teal-Blue 계열: #4a6360)
 
 | 역할 | 라이트 | 다크 | CSS 변수 |
 |------|--------|------|----------|
-| Tertiary | `rgb(129 0 150)` | `rgb(249 171 255)` | `--md-sys-color-tertiary` |
-| On Tertiary | `rgb(255 255 255)` | `rgb(87 0 102)` | `--md-sys-color-on-tertiary` |
-| Tertiary Container | `rgb(255 214 254)` | `rgb(123 0 143)` | `--md-sys-color-tertiary-container` |
-| On Tertiary Container | `rgb(53 0 63)` | `rgb(255 214 254)` | `--md-sys-color-on-tertiary-container` |
+| Secondary | `#4a6360` | `#b1ccc7` | `--md-sys-color-secondary` |
+| On Secondary | `#ffffff` | `#1c3532` | `--md-sys-color-on-secondary` |
+| Secondary Container | `#cce8e3` | `#334b48` | `--md-sys-color-secondary-container` |
+| On Secondary Container | `#05201d` | `#cce8e3` | `--md-sys-color-on-secondary-container` |
+
+### Tertiary 팔레트 (Pink 계열: #6d587c)
+
+| 역할 | 라이트 | 다크 | CSS 변수 |
+|------|--------|------|----------|
+| Tertiary | `#6d587c` | `#d9bfe9` | `--md-sys-color-tertiary` |
+| On Tertiary | `#ffffff` | `#3c2b4b` | `--md-sys-color-on-tertiary` |
+| Tertiary Container | `#f5d9ff` | `#544163` | `--md-sys-color-tertiary-container` |
+| On Tertiary Container | `#261635` | `#f5d9ff` | `--md-sys-color-on-tertiary-container` |
 
 ### Error 팔레트
 
