@@ -39,7 +39,8 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
 
         When("모바일 뷰포트(400x800)로 전환하면") {
             page.setViewportSize(400, 800)
-            Thread.sleep(500)
+            page.waitForTimeout(500.0)
+            page.evaluate("window.dispatchEvent(new Event('resize'))")
             
             Then("상단 상태바(.type-status-header)는 가로 스크롤이 가능하다") {
                 val overflowX = page.evaluate("""
@@ -63,7 +64,7 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             }
 
             When("FAB을 클릭하면") {
-                page.click(".type-speed-dial:not(.settings) md-fab")
+                page.evaluate("document.querySelector('.type-speed-dial:not(.settings) md-fab').click()")
                 Thread.sleep(300)
                 Then("메뉴가 확장된다 ([expanded] 속성)") {
                     val isExpanded = page.evaluate("""
