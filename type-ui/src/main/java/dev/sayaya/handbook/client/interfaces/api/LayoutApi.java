@@ -95,7 +95,12 @@ public class LayoutApi implements LayoutRepository {
 
         RequestInit init = RequestInit.create();
         init.setMethod("PUT");
-        init.setBody(Global.JSON.stringify(layout));
+        // 2026-05-06: GWT internal 필드($H 등)가 포함되어 서버에서 400/500 에러를 유발하는 것을 방지하기 위해 
+        // JSON.stringify 시 $로 시작하는 키를 제외하는 replacer를 사용한다.
+        init.setBody(Global.JSON.stringify(layout, (key, value) -> {
+            if (key.startsWith("$")) return Global.undefined;
+            return value;
+        }));
         init.setHeaders(new String[][]{
                 {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
         });

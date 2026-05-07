@@ -26,9 +26,9 @@ public class Application implements EntryPoint {
 
         // 워크스페이스 ID 구독 및 API 주입 (실시간 감시 포함)
         WorkspaceEvent.receiver().workspaceId().subscribe(workspaceId -> {
-            // workspaceId가 null이면 현재 URL에서 추출 시도 (새로고침 등 초기 진입 케이스)
-            String wsId = workspaceId != null ? workspaceId : extractWorkspaceId(DomGlobal.window.location.pathname);
-            if (wsId == null) return;
+            // workspaceId가 null이거나 비어있으면 현재 URL에서 추출 시도 (새로고침 등 초기 진입 케이스)
+            String wsId = (workspaceId != null && !workspaceId.isEmpty()) ? workspaceId : extractWorkspaceId(DomGlobal.window.location.pathname);
+            if (wsId == null || wsId.isEmpty()) return;
             
             if (component.typeRepository() instanceof TypeApi) {
                 ((TypeApi) component.typeRepository()).setWorkspace(wsId);
