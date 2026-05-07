@@ -54,6 +54,24 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
                 """.trimIndent()).toString()
                 shrink shouldBe "0"
             }
+
+            Then("모바일 플로팅 조작 버튼(Speed Dial)이 존재한다") {
+                val actionDial = page.querySelector(".type-speed-dial:not(.settings)")
+                actionDial shouldNotBe null
+                val settingsDial = page.querySelector(".type-speed-dial.settings")
+                settingsDial shouldNotBe null
+            }
+
+            When("FAB을 클릭하면") {
+                page.click(".type-speed-dial:not(.settings) md-fab")
+                Thread.sleep(300)
+                Then("메뉴가 확장된다 ([expanded] 속성)") {
+                    val isExpanded = page.evaluate("""
+                        document.querySelector('.type-speed-dial:not(.settings)').hasAttribute('expanded')
+                    """.trimIndent()).toString()
+                    isExpanded shouldBe "true"
+                }
+            }
         }
         
         // 원복

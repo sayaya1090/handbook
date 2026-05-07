@@ -56,6 +56,9 @@ public class TypeModule {
     @Provides @Singleton static ToolProvider toolProvider() {
         return new ToolProvider();
     }
+    @Provides @Singleton static ViewportObserver viewportObserver() {
+        return new ViewportObserver();
+    }
 
     /**
      * 브라우저 환경에서 사용자 언어를 감지한다.

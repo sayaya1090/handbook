@@ -184,8 +184,76 @@
     min-width: 180px;
     text-align: center;
 }
-.type-controller {
+
+/* ── Mobile Floating Controls (Speed Dial) ── */
+.type-floating-pill {
+    position: fixed;
+    top: calc(var(--shell-app-bar-height, 56px) + var(--shell-mobile-tabs-height, 0px) + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--md-sys-color-surface-container-highest, rgba(255, 255, 255, 0.9));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 100px;
     display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    box-shadow: var(--md-sys-elevation-level2);
+    z-index: 100;
+    transition: opacity 0.3s ease, top 0.3s ease;
+}
+.type-floating-pill .type-ctrl-btn {
+    width: 32px;
+    height: 32px;
+}
+.type-floating-pill .type-period-label {
+    min-width: auto;
+    font-size: var(--md-sys-typescale-label-small-size);
+    padding: 0 12px;
+}
+
+.type-speed-dial {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 12px;
+    z-index: 101;
+}
+.type-speed-dial.settings {
+    right: 96px;
+}
+.type-speed-dial[expanded] .speed-dial-menu {
+    display: flex;
+}
+.speed-dial-menu {
+    display: none;
+    flex-direction: column-reverse;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.speed-dial-menu .type-ctrl-btn {
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+    box-shadow: var(--md-sys-elevation-level1);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    transform: scale(0);
+    animation: speed-dial-pop 0.2s forwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+.type-speed-dial md-fab[css="settings-dial"] {
+    --md-fab-container-color: var(--md-sys-color-tertiary-container);
+    --md-fab-icon-color: var(--md-sys-color-on-tertiary-container);
+}
+@keyframes speed-dial-pop {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ── Type Controller (Left Rail) ── */
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
@@ -449,6 +517,15 @@
 
 /* ── 모바일 레이아웃 (< 768px) ── */
 @media (max-width: 768px) {
+    .type-status-header {
+        display: none !important;
+    }
+    .type-floating-pill {
+        display: flex;
+    }
+    .type-speed-dial {
+        display: flex;
+    }
     .type-controller {
         flex-wrap: wrap;
         gap: 4px;
