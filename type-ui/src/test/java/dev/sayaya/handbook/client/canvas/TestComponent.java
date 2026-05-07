@@ -24,6 +24,8 @@ public interface TestComponent {
     ControllerElement controller();
     StatusHeaderElement statusHeader();
     AttributeEditorDialog attributeEditor();
+    dev.sayaya.handbook.client.interfaces.editor.DateCorrectionDialog dateCorrectionDialog();
+    dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog();
     ActionManager actionManager();
     TypeList typeList();
     PositionMap positionMap();

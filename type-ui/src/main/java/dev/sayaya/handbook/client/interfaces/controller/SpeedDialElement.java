@@ -31,7 +31,10 @@ public class SpeedDialElement implements IsElement<HTMLDivElement> {
                 .attr("variant", "primary")
                 .css(colorClass)
                 .on(EventType.click, e -> toggle());
-        fab.element().appendChild((elemental2.dom.Element) IconElementBuilder.icon().attr("slot", "icon").css("fa-sharp", "fa-solid", icon).element());
+        
+        HTMLElement iconEl = IconElementBuilder.icon().attr("slot", "icon").css("fa-sharp", "fa-solid", icon).element();
+        fab.element().appendChild(iconEl);
+        
         this.mainFab = fab.element();
         
         this.root = div().css("type-speed-dial")

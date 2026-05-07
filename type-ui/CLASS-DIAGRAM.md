@@ -212,6 +212,12 @@ classDiagram
         -TypeValue before
         -TypeValue after
     }
+    class EditTBoxDateAction {
+        -TypeList typeList
+        -ChangeTracker tracker
+        -TypeValue before
+        -TypeValue after
+    }
     class MoveBoxAction {
         -PositionMap positionMap
         -Set~String~ typeKeys
@@ -327,6 +333,14 @@ classDiagram
         +update(typeCount, status)
         -updatePeriod(period: LayoutPeriod)
     }
+    class TypePropertyBar {
+        <<@Singleton>>
+        -EditorContext context
+        -HTMLDivElement infoContainer
+        +show(type: TypeValue)
+        +hide()
+        -editDate()
+    }
     class ToolRailElement {
         <<@Singleton>>
         -HTMLDivElement rail
@@ -408,8 +422,10 @@ classDiagram
     CanvasElement --> CanvasContextMenuElement
     CanvasElement --> BoxContextMenuElement
     CanvasElement --> StatusHeaderElement
+    CanvasElement --> TypePropertyBar
     CanvasElement --> ToolRailElement
     StatusHeaderElement --> EditorContext
+    TypePropertyBar --> EditorContext
     StatusHeaderElement *-- SpeedDialElement : actionDial, settingsDial
     ToolRailElement *-- Tool
     BoxElementFactory ..> TypeElement : creates

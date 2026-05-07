@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.interfaces.api.LayoutApi;
 import dev.sayaya.handbook.client.interfaces.api.TypeApi;
+import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.domain.LayoutPeriod;
@@ -26,16 +27,19 @@ import static org.jboss.elemento.Elements.*;
  */
 @Singleton
 public class StatusHeaderElement implements IsElement<HTMLDivElement> {
-    private final HTMLDivElement root = div().element();
-    private final HTMLContainerBuilder<HTMLDivElement> desktopBar = div().css("type-status-header");
+    private final HTMLDivElement root = div().css("type-status-header").element();
     private final HTMLElement periodLabel = span().css("type-period-label").element();
     
-    // 모바일 전용 요소들
+    // 모바일 전용 요소들 (Body에 직접 붙거나 fixed로 작동하도록 CSS에서 처리)
     private final HTMLElement mobileCapsule = div().css("type-floating-pill").element();
     private final SpeedDialElement actionDial = new SpeedDialElement("fa-bolt", "action-dial");
     private final SpeedDialElement settingsDial = new SpeedDialElement("fa-gear", "settings-dial").css("settings");
 
-    // 그룹 컨테이너들 (데스크톱 용)
+    // 타입 속성 바
+    private final TypePropertyBar propertyBar;
+    private final HTMLElement mobileInfoCapsule = div().css("type-floating-pill", "type-info").element();
+
+    // 그룹 컨테이너들
     private final HTMLElement historyGroup = div().css("type-ctrl-group").element();
     private final HTMLElement persistenceGroup = div().css("type-ctrl-group").element();
     private final HTMLElement navGroup = div().css("type-ctrl-group").element();
@@ -48,6 +52,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final SaveButton saveBtn;
     private final ReloadButton reloadBtn;
     private final SnapButton snapButton;
+    private boolean mobile = false;
 
     @Inject
     StatusHeaderElement(ModeToggleButton modeToggle,
@@ -56,7 +61,9 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
                         SaveButton saveBtn, ReloadButton reloadBtn,
                         SnapButton snapButton,
                         LayoutProvider layoutProvider,
-                        ViewportObserver viewport) {
+                        ViewportObserver viewport,
+                        TypePropertyBar propertyBar,
+                        SelectedBoxElement selection) {
         this.modeToggle = modeToggle;
         this.beforeBtn = beforeBtn;
         this.afterBtn = afterBtn;
@@ -65,56 +72,67 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         this.saveBtn = saveBtn;
         this.reloadBtn = reloadBtn;
         this.snapButton = snapButton;
+        this.propertyBar = propertyBar;
 
-        desktopBar.add(modeToggle)
-             .add(navGroup)
-             .add(historyGroup)
-             .add(persistenceGroup)
-             .add(snapButton);
-        
-        root.appendChild(desktopBar.element());
-        root.appendChild(mobileCapsule);
-        root.appendChild(actionDial.element());
-        root.appendChild(settingsDial.element());
-        
         layoutProvider.subscribe(this::updatePeriod);
-        viewport.isMobile().subscribe(this::updateLayout);
+        viewport.isMobile().subscribe(isMobile -> {
+            this.mobile = isMobile;
+            this.updateLayout(isMobile);
+            updateMobileInfoVisibility(selection.getValue().size() == 1);
+        });
+        
+        selection.subscribe(selected -> {
+            boolean hasOne = selected.size() == 1;
+            navGroup.style.display = hasOne ? "none" : "flex";
+            updateMobileInfoVisibility(hasOne);
+        });
+    }
+
+    private void updateMobileInfoVisibility(boolean hasOne) {
+        mobileInfoCapsule.style.display = (hasOne && mobile) ? "flex" : "none";
     }
 
     private void updateLayout(boolean isMobile) {
+        // 기존 자식들 제거
+        while (root.firstChild != null) root.removeChild(root.firstChild);
+        
         if (isMobile) {
-            desktopBar.element().style.display = "none";
-            mobileCapsule.style.display = "flex";
-            actionDial.element().style.display = "flex";
-            settingsDial.element().style.display = "flex";
+            root.style.display = "block"; 
+            root.appendChild(mobileCapsule);
+            root.appendChild(mobileInfoCapsule);
+            root.appendChild(actionDial.element());
+            root.appendChild(settingsDial.element());
 
             mobileCapsule.appendChild(beforeBtn.element());
             mobileCapsule.appendChild(periodLabel);
             mobileCapsule.appendChild(afterBtn.element());
             
+            mobileInfoCapsule.appendChild(propertyBar.element());
+            
             actionDial.clearItems();
             actionDial.addItem(undoBtn).addItem(redoBtn).addItem(saveBtn).addItem(reloadBtn);
-            
             settingsDial.clearItems();
             settingsDial.addItem(modeToggle).addItem(snapButton);
         } else {
-            desktopBar.element().style.display = "flex";
-            mobileCapsule.style.display = "none";
-            actionDial.element().style.display = "none";
-            settingsDial.element().style.display = "none";
-
-            desktopBar.element().insertBefore(modeToggle.element(), navGroup);
+            root.style.display = "flex";
+            root.appendChild(modeToggle.element());
+            
             navGroup.appendChild(beforeBtn.element());
             navGroup.appendChild(periodLabel);
             navGroup.appendChild(afterBtn.element());
+            root.appendChild(navGroup);
+            
+            root.appendChild(propertyBar.element());
             
             historyGroup.appendChild(undoBtn.element());
             historyGroup.appendChild(redoBtn.element());
+            root.appendChild(historyGroup);
             
             persistenceGroup.appendChild(saveBtn.element());
             persistenceGroup.appendChild(reloadBtn.element());
+            root.appendChild(persistenceGroup);
             
-            desktopBar.element().appendChild(snapButton.element());
+            root.appendChild(snapButton.element());
         }
     }
 

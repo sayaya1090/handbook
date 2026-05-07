@@ -175,6 +175,11 @@
     padding: 8px 16px;
     background: var(--md-sys-color-surface-container-low, white);
     border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+    width: 100%;
+}
+.type-status-header-container {
+    width: 100%;
+    z-index: 100;
 }
 .type-period-label {
     font-family: var(--md-sys-typescale-label-medium-font);
@@ -183,6 +188,41 @@
     padding: 0 8px;
     min-width: 180px;
     text-align: center;
+}
+.type-property-bar {
+    display: none; /* 기본 숨김, 선택 시 flex 전환 */
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 4px 24px;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: 100px;
+    height: 38px;
+    flex: 1;
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: var(--md-sys-typescale-label-medium-font);
+    font-size: var(--md-sys-typescale-label-medium-size);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.type-property-bar:hover {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+.type-property-id {
+    font-weight: bold;
+    color: var(--md-sys-color-primary);
+}
+.type-property-version {
+    color: var(--md-sys-color-secondary);
+}
+.type-property-dates {
+    /* hover effect moved to property-bar */
+}
+.type-property-divider {
+    color: var(--md-sys-color-outline-variant);
 }
 
 /* ── Mobile Floating Controls (Speed Dial) ── */
@@ -195,12 +235,22 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: 100px;
-    display: flex;
+    display: none; /* 기본 숨김 */
     align-items: center;
     padding: 4px 12px;
     box-shadow: var(--md-sys-elevation-level2);
     z-index: 100;
     transition: opacity 0.3s ease, top 0.3s ease;
+}
+.type-floating-pill.type-info {
+    top: calc(var(--shell-app-bar-height, 56px) + var(--shell-mobile-tabs-height, 0px) + 64px);
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    cursor: pointer;
+}
+.type-floating-pill.type-info .type-property-bar {
+    background: transparent;
+    padding: 0;
 }
 .type-floating-pill .type-ctrl-btn {
     width: 32px;
@@ -281,8 +331,11 @@
     margin-left: 8px;
 }
 
-/* ── Attribute Editor Dialog ── */
-.attr-editor-dialog {
+/* ── Dialogs ── */
+.attr-editor-dialog, 
+#date-correction-dialog, 
+#version-creation-dialog {
+    display: none !important; /* Java show() 전까지 무조건 숨김 */
     position: fixed;
     top: 50%;
     left: 50%;
@@ -295,7 +348,19 @@
     min-width: 360px;
     flex-direction: column;
     gap: 16px;
-    animation: dialog-open 0.2s ease;
+}
+.attr-editor-dialog[style*="display: flex"],
+.attr-editor-dialog[style*="display: block"],
+#date-correction-dialog[open],
+#version-creation-dialog[open] {
+    display: flex !important;
+}
+#date-correction-dialog, #version-creation-dialog {
+    border: none;
+    outline: none;
+}
+#date-correction-dialog::backdrop, #version-creation-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.4);
 }
 @keyframes dialog-open {
     from { opacity: 0; transform: translate(-50%, -48%); }

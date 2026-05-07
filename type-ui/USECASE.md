@@ -21,6 +21,7 @@ graph TD
 | 구분 | 컴포넌트 | 포함 기능 (버튼) | 역할 설명 |
 |:---|:---|:---|:---|
 | **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, ModeToggle, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 모드 전환. **원형 아이콘 버튼(Plain)** 표준 적용. |
+| **속성 바** | `TypePropertyBar` | ID, 버전, 유효기간 표시 및 편집 | 단일 타입 선택 시 노출 (데스크톱: 상단 / 모바일: 플로팅 캡슐). 버전 관리 및 기간 편집 진입점. |
 | **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 편집 도구. **원형 아이콘 버튼(Plain)** 표준 적용. |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
@@ -303,6 +304,26 @@ sequenceDiagram
     AM->>LP: "switchTo(newPeriodId)"
     LP-->>TL: "새 기간 데이터 로드 트리거"
     TL-->>Canvas: "새로운 레이아웃 렌더링"
+```
+
+## 타입 유효기간 편집 (Date Correction) 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant Bar as TypePropertyBar
+    participant Pop as DateEditPopup
+    participant AM as ActionManager
+    participant TL as TypeList
+    participant API as TypeApi
+
+    User->>Bar: "유효기간 클릭"
+    Bar->>Pop: "show(currentDates)"
+    User->>Pop: "날짜 수정 및 저장"
+    Pop->>AM: "execute(EditTBoxDateAction)"
+    AM->>TL: "updateDates(typeKey, newDates)"
+    AM->>API: "PATCH /types (only dates)"
+    TL-->>Bar: "변경된 기간 즉시 표시"
 ```
 
 ## UC-T1: 타입 조회
@@ -711,8 +732,19 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 특정 타입(Box) 선택 |
-| **정상 흐름** | 1. 캔버스에서 타입을 선택하고 우클릭하여 '새 버전 생성'을 선택한다.<br>2. `VersionCreationDialog`에서 새로운 개시 날짜/시각(effectDateTime)을 입력하고 필드 변경(속성 추가/삭제/수정)을 수행한다.<br>3. **기존 기간 마감**: 현재 활성화된 `LayoutPeriod` 및 **선택된 타입의 현재 버전**에 대해서만 `expireDateTime`을 입력받은 '개시 일시'로 업데이트한다.<br>4. **신규 기간 생성**: '개시 일시'부터 무한대(∞)까지를 범위로 하는 새로운 `LayoutPeriod`를 생성하고 기존 배치를 복사한다.<br>5. **새 버전 타입 등록**: 선택된 타입은 변경된 필드 정보를 반영하여 새 레코드로 등록한다.<br>6. **타입 공유**: 변경되지 않은 다른 타입들은 신규 레코드를 생성하지 않고 기존 유효 기간을 유지하여 새 레이아웃 기간에서도 공유되도록 한다.<br>7. 모든 처리는 원자적(Atomic)으로 수행된다.<br>8. 처리가 완료되면 자동으로 새로 생성된 미래 기간의 레이아웃으로 화면을 이동시킨다. |
-| **결과** | 신규 레이아웃 기간이 생성되고 선택한 타입의 새로운 버전이 등록되며 화면이 해당 기간으로 전환된다. |
+| **트리거** | 'Create New Version' 명령 (버튼 또는 메뉴) |
+| **정상 흐름** | 1. 캔버스에서 타입을 선택하고 '새 버전 생성'을 선택한다.<br>2. `VersionCreationDialog`에서 새로운 개시 날짜/시각(effectDateTime)을 입력하고 필드 변경(속성 추가/삭제/수정)을 수행한다.<br>3. **기존 기간 마감**: 현재 활성화된 `LayoutPeriod` 및 선택된 타입의 현재 버전에 대해 `expireDateTime`을 '개시 일시'로 업데이트한다.<br>4. **신규 기간 생성**: '개시 일시'부터 무한대(∞)까지의 새로운 `LayoutPeriod`를 생성하고 기존 배치를 복사한다.<br>5. **새 버전 타입 등록**: 변경된 필드 정보를 반영하여 새 레코드로 등록한다.<br>6. **타입 공유**: 변경되지 않은 다른 타입들은 신규 레코드를 생성하지 않고 기존 유효 기간을 유지하여 새 레이아웃 기간에서도 공유되도록 한다.<br>7. 모든 처리는 원자적(Atomic)으로 수행된다.<br>8. 처리가 완료되면 새로 생성된 미래 기간의 레이아웃으로 화면을 이동시킨다. |
+| **결과** | 신규 레이아웃 기간이 생성되고 선택한 타입의 새로운 버전이 등록된다. |
+
+## UC-T28: 타입 유효기간 편집 (Date Correction)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 특정 타입(Box) 선택, `TypePropertyBar` 노출됨 |
+| **트리거** | 속성 바의 '유효기간' 영역 클릭 |
+| **정상 흐름** | 1. 속성 바에서 유효기간 영역을 클릭한다.<br>2. 날짜/시간 편집 팝업이 열린다.<br>3. 현재 레코드의 `effectDateTime` 또는 `expireDateTime`을 직접 수정한다.<br>4. Save 클릭 시 새로운 버전 레코드를 생성하지 않고, 현재 데이터의 기간 경계값만 변경(PATCH)한다. |
+| **결과** | 현재 타입 버전의 유효 기간이 수정된다 (실수 교정용). |
 
 ---
 
@@ -746,7 +778,8 @@ sequenceDiagram
 | UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | ❌ 테스트 미작성 (기능 구현 완료) |
 | UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest: 워크스페이스 전환 확인) |
 | UC-T26 (ID 폴백) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | Application, WorkspaceEventListener | ✅ 구현 완료 (CollaborationTest: URL에서 ID 추출 검증) |
-| UC-T27 (새 버전 생성) | 타입 새 버전 생성 시퀀스 | Action 계층, 상태 관리, API 어댑터 | SchemaEvolutionAction, LayoutProvider, TypeApi | ❌ 미구현 |
+| UC-T27 (새 버전 생성) | 타입 새 버전 생성 시퀀스 | Action 계층, 상태 관리, API 어댑터 | SchemaEvolutionAction, LayoutProvider, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
+| UC-T28 (기간 편집) | 타입 유효기간 편집 시퀀스 | Action 계층, 상태 관리, API 어댑터 | EditTBoxDateAction, TypePropertyBar, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
 
 ---
 
@@ -766,4 +799,3 @@ sequenceDiagram
     - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`, `.type-speed-dial`, `.type-floating-pill`
     - **Mutate**: `CREATE type`, `DELETE type`, `ADD field`, `REMOVE field`, `SET type`
     - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
-정밀 제어 가능.

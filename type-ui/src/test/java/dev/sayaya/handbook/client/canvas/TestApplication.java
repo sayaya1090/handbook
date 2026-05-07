@@ -55,6 +55,8 @@ public class TestApplication implements EntryPoint {
                 .add(component.statusHeader())
                 .add(component.controller())
                 .add(component.canvas())
-                .add(component.attributeEditor()));
+                .add(component.attributeEditor())
+                .add(component.dateCorrectionDialog())
+                .add(component.versionCreationDialog()));
     }
 }
