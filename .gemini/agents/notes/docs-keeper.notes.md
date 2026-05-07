@@ -1,6 +1,7 @@
 # docs-keeper 에이전트 노트
 
 ## 요청 로그
+- 2026-05-24: type-ui 모바일 Speed Dial 구현에 따른 문서(CLASS-DIAGRAM/USECASE/README) 및 에이전트 연동 가이드 최신화 완료
 - 2026-04-28: type-ui 기간 표시 반영 → USECASE/CLASS-DIAGRAM/README 업데이트 완료
 - 2026-05-24: 최근 UI/UX 리팩토링(IconButton, 모바일 헤더, 레이아웃 자동 선택) 문서 최신화 및 무결성 감사 완료
 - 2026-05-24: 최근 UI/UX 리팩토링(shell-ui, type-ui) 문서 크로스체크 및 최신화 감식 → 발견 사항 도메인 에이전트 이관

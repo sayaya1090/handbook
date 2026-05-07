@@ -133,17 +133,23 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ## 컨트롤러 (ControllerElement)
 
-캔버스 상단 툴바. 각 버튼은 독립적인 `@Singleton` 컴포넌트로 Dagger에서 주입된다.
+캔버스 상단 툴바. 모바일 환경에서는 화면 영역 확보를 위해 플로팅 컨트롤로 전환된다. 각 버튼은 독립적인 `@Singleton` 컴포넌트로 Dagger에서 주입된다.
 
-| 그룹 | 버튼 / 요소 | 동작 |
-|------|------|------|
-| 모드 전환 | `ModeToggleButton` | LAYOUT/TYPE 모드 전환. 선택된 모드 버튼 하이라이트. |
-| 기간 이동 | `BeforeButton`, `AfterButton`, **Period Label** | `LayoutList`에서 이전/다음 기간으로 전환. 중앙 라벨에 현재 기간(YYYY-MM-DD) 표시. `ChangeLayoutAction`으로 undo 지원. 경계에서 자동 disabled. |
-| 타입 CRUD | `AddTypeButton`, `RemoveTypeButton` | 타입 추가(유니크 ID 자동 생성, 충돌 해소 포함) / 선택 타입 삭제 |
-| 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo. `ActionManager.canUndo/canRedo` 구독으로 자동 disabled. |
-| 저장 | `SaveButton`, `ReloadButton` | 변경사항 서버 저장 (`SaveAction`) / 서버에서 다시 로드 (`LoadAction`) |
-| 벌크 삭제 | `BulkDeleteButton` | 다중 선택(Shift+클릭, Ctrl+A) 타입 일괄 삭제 |
-| 스냅 | `SnapCheckbox` | 격자 스냅 on/off 토글 |
+| 그룹 | 버튼 / 요소 | 동작 | 모바일 UI |
+|------|------|------|------|
+| 모드 전환 | `ModeToggleButton` | LAYOUT/TYPE 모드 전환 | `settings-dial` 내부 |
+| 기간 이동 | `BeforeButton`, `AfterButton`, **Period Label** | 레이아웃 기간 전환 및 현재 기간 표시 | `type-floating-pill` (상단 캡슐) |
+| 타입 CRUD | `AddTypeButton`, `RemoveTypeButton` | 타입 추가/삭제 | 좌측 툴레일 (모바일 동일) |
+| 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo | `action-dial` 내부 |
+| 저장 | `SaveButton`, `ReloadButton` | 서버 저장 / 다시 로드 | `action-dial` 내부 |
+| 벌크 삭제 | `BulkDeleteButton` | 다중 선택 타입 일괄 삭제 | 툴레일 또는 상황별 노출 |
+| 스냅 | `SnapButton` | 격자 스냅 on/off 토글 | `settings-dial` 내부 |
+
+### 모바일 플로팅 컨트롤 (Speed Dial)
+
+- **상단 캡슐 (`.type-floating-pill`)**: 기간 탐색 및 정보 표시.
+- **액션 다이얼 (`.action-dial`)**: 저장, 되돌리기 등 실행형 액션 그룹.
+- **설정 다이얼 (`.settings-dial`)**: 편집 모드, 스냅 등 환경 설정 그룹.
 
 ---
 

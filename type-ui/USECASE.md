@@ -453,10 +453,10 @@ sequenceDiagram
 | **액터** | 사용자 (모바일/태블릿 디바이스) |
 | **선행조건** | 뷰포트 너비 < 768px |
 | **레이아웃 모델** | 2026-05 재정의. 상단바를 제거하고 화면 영역을 최대화하는 **멀티 플로팅 버튼(Speed Dial)** 패턴 적용. |
-| **상단 플로팅 캡슐** | 화면 상단 중앙에 투명 캡슐 형태로 기간 정보 및 내비게이션 배치. `[ < ] 2026-05-06 ~ ∞ [ > ]`. 정보 인지성을 유지하면서 편집 영역 간섭 최소화. |
-| **조작 Speed Dial (FAB)** | **우하단 배치**. 메인 FAB 클릭 시 수직으로 확장.<br>1. **History/Persistence**: `Save`, `Reload`, `Undo`, `Redo`. 액션 중심 그룹. |
-| **설정 Speed Dial (FAB)** | **우하단(메인 좌측)** 또는 다른 모서리 배치. 클릭 시 확장.<br>1. **View/Mode**: `Mode Toggle`, `Snap to Grid`. 상태/환경 설정 그룹. |
-| **정상 흐름** | 1. 모바일 진입 시 상단바(`.type-status-header`)가 숨겨지고 플로팅 요소들이 렌더링된다.<br>2. 사용자가 FAB을 터치하면 서브 메뉴 버튼들이 애니메이션과 함께 확장된다.<br>3. 확장된 버튼을 터치하여 즉시 액션을 실행하거나 상태를 토글한다.<br>4. 배경 터치 또는 FAB 재터치 시 메뉴가 축소된다. |
+| **상단 플로팅 캡슐** | 화면 상단 중앙에 투명 캡슐 형태로 기간 정보 및 내비게이션 배치 (`.type-floating-pill`). `[ < ] 2026-05-06 ~ ∞ [ > ]`. 정보 인지성을 유지하면서 편집 영역 간섭 최소화. |
+| **조작 Speed Dial (FAB)** | **우하단 배치** (`.action-dial`). 메인 FAB 클릭 시 수직으로 확장.<br>1. **History/Persistence**: `Save`, `Reload`, `Undo`, `Redo`. 액션 중심 그룹. |
+| **설정 Speed Dial (FAB)** | **우하단(메인 좌측) 배치** (`.settings-dial`). 클릭 시 확장.<br>1. **View/Mode**: `Mode Toggle`, `Snap to Grid`. 상태/환경 설정 그룹. |
+| **정상 흐름** | 1. 모바일 진입 시 상단바(`.type-status-header`)가 숨겨지고 플로팅 요소들이 렌더링된다.<br>2. 사용자가 FAB(`.type-speed-dial`)을 터치하면 서브 메뉴 버튼들이 애니메이션과 함께 확장된다.<br>3. 확장된 버튼을 터치하여 즉시 액션을 실행하거나 상태를 토글한다.<br>4. 배경 터치 또는 FAB 재터치 시 메뉴가 축소된다. |
 | **터치 지원** | `TouchEventAdapter` 기반 드래그/리사이즈/롱프레스 지원 유지. |
 
 ## UC-T14: RBAC 권한 검증 (계획)
@@ -712,7 +712,7 @@ sequenceDiagram
     - 에이전트에 의한 Mutate 시 `AuditEntry` 발행 여부는 `type-command` 레이어에서 보장됨.
 5. **Agent Command 타겟**:
     - **Navigate**: `#!type/{workspaceId}`
-    - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`
+    - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`, `.type-speed-dial`, `.type-floating-pill`
     - **Mutate**: `CREATE type`, `DELETE type`, `ADD field`, `REMOVE field`, `SET type`
     - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
 정밀 제어 가능.

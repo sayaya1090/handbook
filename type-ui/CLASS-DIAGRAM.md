@@ -410,6 +410,7 @@ classDiagram
     CanvasElement --> StatusHeaderElement
     CanvasElement --> ToolRailElement
     StatusHeaderElement --> EditorContext
+    StatusHeaderElement *-- SpeedDialElement : actionDial, settingsDial
     ToolRailElement *-- Tool
     BoxElementFactory ..> TypeElement : creates
     TypeElement *-- ValueListElement
@@ -615,6 +616,14 @@ classDiagram
     AgentMutationHandler --> MutationStrategy : uses
     MutationStrategy <|.. CreateTypeStrategy
     MutationStrategy <|.. DeleteTypeStrategy
+    MutationStrategy <|.. AddFieldStrategy
+    MutationStrategy <|.. RemoveFieldStrategy
+    MutationStrategy <|.. SetPropertyStrategy
+    AgentMutationHandler --> ActionManager : execute(Action)
+    TypeStateProvider --> TypeList : JSON 변환
+    TypeSearchProvider --> TypeList : 필터링
+```
+onStrategy <|.. DeleteTypeStrategy
     MutationStrategy <|.. AddFieldStrategy
     MutationStrategy <|.. RemoveFieldStrategy
     MutationStrategy <|.. SetPropertyStrategy
