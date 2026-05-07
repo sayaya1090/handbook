@@ -23,6 +23,12 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             isDisabled shouldBe "" // disabled 속성이 존재함
         }
 
+        Then("레이아웃 기간 정보(.type-period-label)가 표시된다") {
+            val label = page.querySelector(".type-period-label")
+            label shouldNotBe null
+            label!!.textContent().contains(" ~ ") shouldBe true
+        }
+
         Then("모든 도구 버튼(.type-ctrl-btn)은 원형(border-radius: 50%) 스타일을 가진다") {
             val radius = page.evaluate("""
                 getComputedStyle(document.querySelector('.type-ctrl-btn')).borderRadius
