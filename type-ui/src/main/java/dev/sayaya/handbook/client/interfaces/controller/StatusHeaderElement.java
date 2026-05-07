@@ -98,6 +98,11 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         
         if (isMobile) {
             root.style.display = "block"; 
+            
+            actionDial.element().style.display = ""; // CSS 클래스의 flex 적용을 위해 인라인 숨김 해제
+            settingsDial.element().style.display = "";
+            mobileCapsule.style.display = "flex";
+
             root.appendChild(mobileCapsule);
             root.appendChild(mobileInfoCapsule);
             root.appendChild(actionDial.element());
@@ -115,6 +120,12 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             settingsDial.addItem(modeToggle).addItem(snapButton);
         } else {
             root.style.display = "flex";
+            
+            actionDial.element().style.display = "none";
+            settingsDial.element().style.display = "none";
+            mobileCapsule.style.display = "none";
+            mobileInfoCapsule.style.display = "none";
+
             root.appendChild(modeToggle.element());
             
             navGroup.appendChild(beforeBtn.element());

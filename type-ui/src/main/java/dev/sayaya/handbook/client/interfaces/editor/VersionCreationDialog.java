@@ -73,7 +73,7 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
         _this = DialogElementBuilder.dialog()
                 .attr("id", "version-creation-dialog")
                 .headline("Create New Version")
-                .content(div().add(effectInput).add(versionInput))
+                .content(div().css("type-dialog-content").add(effectInput).add(versionInput))
                 .actions(ButtonElementBuilder.button().filled().attr("id", "version-creation-submit").text("Create").on(EventType.click, e -> submit()));
         
         _this.actions(ButtonElementBuilder.button().text().attr("id", "version-creation-close").text("Cancel").on(EventType.click, e -> _this.close()));

@@ -48,7 +48,7 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
         _this = DialogElementBuilder.dialog()
                 .attr("id", "date-correction-dialog")
                 .headline("Correct Validity Period")
-                .content(div().add(effectInput).add(expireInput))
+                .content(div().css("type-dialog-content").add(effectInput).add(expireInput))
                 .actions(ButtonElementBuilder.button().filled().attr("id", "date-correction-apply").text("Apply").on(EventType.click, e -> apply()));
         
         _this.actions(ButtonElementBuilder.button().text().attr("id", "date-correction-close").text("Cancel").on(EventType.click, e -> _this.close()));
