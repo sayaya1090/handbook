@@ -54,6 +54,8 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final SnapButton snapButton;
     private boolean mobile = false;
 
+    private final HTMLElement centerArea = div().css("type-header-center").element();
+
     @Inject
     StatusHeaderElement(ModeToggleButton modeToggle,
                         BeforeButton beforeBtn, AfterButton afterBtn,
@@ -74,6 +76,10 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         this.snapButton = snapButton;
         this.propertyBar = propertyBar;
 
+        propertyBar.element().classList.add("type-fade-item");
+        navGroup.classList.add("type-fade-item");
+        mobileInfoCapsule.classList.add("type-fade-item");
+
         layoutProvider.subscribe(this::updatePeriod);
         viewport.isMobile().subscribe(isMobile -> {
             this.mobile = isMobile;
@@ -83,13 +89,35 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         
         selection.subscribe(selected -> {
             boolean hasOne = selected.size() == 1;
-            navGroup.style.display = hasOne ? "none" : "flex";
+            if (hasOne) {
+                navGroup.classList.remove("type-fade-in");
+                navGroup.classList.add("type-fade-out");
+                propertyBar.element().classList.remove("type-fade-out");
+                propertyBar.element().classList.add("type-fade-in");
+            } else {
+                navGroup.classList.remove("type-fade-out");
+                navGroup.classList.add("type-fade-in");
+                propertyBar.element().classList.remove("type-fade-in");
+                propertyBar.element().classList.add("type-fade-out");
+            }
             updateMobileInfoVisibility(hasOne);
         });
     }
 
     private void updateMobileInfoVisibility(boolean hasOne) {
-        mobileInfoCapsule.style.display = (hasOne && mobile) ? "flex" : "none";
+        if (hasOne && mobile) {
+            mobileInfoCapsule.classList.remove("type-fade-out");
+            mobileInfoCapsule.classList.add("type-fade-in");
+            mobileInfoCapsule.style.display = "flex";
+        } else {
+            mobileInfoCapsule.classList.remove("type-fade-in");
+            mobileInfoCapsule.classList.add("type-fade-out");
+            elemental2.dom.DomGlobal.setTimeout(e -> {
+                if (!mobileInfoCapsule.classList.contains("type-fade-in")) {
+                    mobileInfoCapsule.style.display = "none";
+                }
+            }, 300);
+        }
     }
 
     private void updateLayout(boolean isMobile) {
@@ -99,9 +127,13 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         if (isMobile) {
             root.style.display = "block"; 
             
-            actionDial.element().style.display = ""; // CSS 클래스의 flex 적용을 위해 인라인 숨김 해제
+            actionDial.element().style.display = ""; 
             settingsDial.element().style.display = "";
             mobileCapsule.style.display = "flex";
+
+            // 모바일 캡슐 내부로 요소 이동. absolute(type-fade-item) 클래스는 제거해야 레이아웃이 안 깨짐
+            propertyBar.element().classList.remove("type-fade-item");
+            navGroup.classList.remove("type-fade-item");
 
             root.appendChild(mobileCapsule);
             root.appendChild(mobileInfoCapsule);
@@ -126,14 +158,20 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             mobileCapsule.style.display = "none";
             mobileInfoCapsule.style.display = "none";
 
+            // 데스크톱 크로스페이드를 위해 absolute(type-fade-item) 다시 추가
+            propertyBar.element().classList.add("type-fade-item");
+            navGroup.classList.add("type-fade-item");
+
             root.appendChild(modeToggle.element());
             
+            // 중앙 영역에 navGroup, propertyBar를 포개어 삽입
+            while (centerArea.firstChild != null) centerArea.removeChild(centerArea.firstChild);
             navGroup.appendChild(beforeBtn.element());
             navGroup.appendChild(periodLabel);
             navGroup.appendChild(afterBtn.element());
-            root.appendChild(navGroup);
-            
-            root.appendChild(propertyBar.element());
+            centerArea.appendChild(navGroup);
+            centerArea.appendChild(propertyBar.element());
+            root.appendChild(centerArea);
             
             historyGroup.appendChild(undoBtn.element());
             historyGroup.appendChild(redoBtn.element());

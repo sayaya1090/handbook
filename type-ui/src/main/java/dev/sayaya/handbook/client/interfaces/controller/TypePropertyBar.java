@@ -71,9 +71,7 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
                     .filter(t -> t.key().equals(key))
                     .findFirst()
                     .ifPresent(this::update);
-            root.style.display = "flex";
         } else {
-            root.style.display = "none";
             currentType = null;
         }
     }

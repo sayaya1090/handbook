@@ -171,7 +171,7 @@
 .type-status-header {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     padding: 8px 16px;
     background: var(--md-sys-color-surface-container-low, white);
     border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
@@ -181,16 +181,39 @@
     width: 100%;
     z-index: 100;
 }
+.type-header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 40px;
+}
+.type-fade-item {
+    position: absolute;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+.type-fade-out {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+.type-fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
 .type-period-label {
-    font-family: var(--md-sys-typescale-label-medium-font);
-    font-size: var(--md-sys-typescale-label-medium-size);
+    font-family: var(--md-sys-typescale-label-large-font, sans-serif);
+    font-size: var(--md-sys-typescale-label-large-size, 14px);
     color: var(--md-sys-color-on-surface-variant);
     padding: 0 8px;
     min-width: 180px;
     text-align: center;
 }
 .type-property-bar {
-    display: none; /* 기본 숨김, 선택 시 flex 전환 */
     align-items: center;
     justify-content: center;
     gap: 8px;
@@ -198,10 +221,8 @@
     background: var(--md-sys-color-secondary-container);
     color: var(--md-sys-color-on-secondary-container);
     border-radius: 100px;
-    height: 32px;
-    flex: 1;
+    height: 36px;
     max-width: 500px;
-    margin: 0 auto;
     font-family: var(--md-sys-typescale-label-large-font, sans-serif);
     font-size: var(--md-sys-typescale-label-large-size, 14px);
     cursor: pointer;
@@ -268,6 +289,30 @@
     height: 32px;
 }
 .type-floating-pill .type-period-label {
+.type-header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 40px;
+}
+.type-fade-item {
+    position: absolute;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+.type-fade-out {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+.type-fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
     min-width: auto;
     font-size: var(--md-sys-typescale-label-small-size);
     padding: 0 12px;
@@ -359,7 +404,7 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.25);
     min-width: 360px;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
 }
 .attr-editor-dialog[style*="display: flex"],
 .attr-editor-dialog[style*="display: block"],

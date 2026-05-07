@@ -109,7 +109,7 @@ internal class VersioningTest: GwtTestSpec({
             page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(10.0, 10.0).setForce(true))
             
             Then("타입 속성 바가 숨겨진다") {
-                page.waitForSelector(".type-property-bar", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
+                page.waitForSelector(".type-property-bar.type-fade-out", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED))
             }
         }
     }

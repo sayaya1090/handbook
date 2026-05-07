@@ -641,7 +641,7 @@ body:has(nav.drawer[overlay]) {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
 }
 /* AppBar center 에 편입된 WorkspaceSelect 의 폭 조정 — 기존 .drawer .header .workspace 스타일
    과 동등하게 max-width 제한과 텍스트 필드 레이블 높이 튜닝.
