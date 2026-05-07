@@ -20,8 +20,8 @@ graph TD
 
 | 구분 | 컴포넌트 | 포함 기능 (버튼) | 역할 설명 |
 |:---|:---|:---|:---|
-| **상단바** | `StatusHeaderElement` | Save (Icon), Reload, Undo, Redo, ModeToggle, Before/After, Snap (Icon) | 데이터 영속성 관리, 히스토리 제어, 모드 전환, 뷰 설정 |
-| **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 직접적인 편집 도구 |
+| **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, ModeToggle, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 모드 전환. **원형 아이콘 버튼(Plain)** 표준 적용. |
+| **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 편집 도구. **원형 아이콘 버튼(Plain)** 표준 적용. |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
 
@@ -37,7 +37,7 @@ sequenceDiagram
 
     Note over C: "캔버스 초기화"
     C->>TM: "init()"
-    TM->>TP: "publish([ModeToggle, Add, Remove, ...])"
+    TM->>TP: "publish([Add, Remove, BulkDelete]) (ModeToggle 제외)"
     TP->>B: "ToolPublisher.publish(tools)"
     B->>S: "window.dispatchEvent(published)"
     S->>S: "Tool Rail UI 갱신"
@@ -150,7 +150,7 @@ sequenceDiagram
     Note over Bridge: "CustomEvent('handbook-workspace-context')"
     
     App->>Bridge: "receiver().workspaceId().subscribe()"
-    Bridge-->>App: "workspaceId 발행"
+    Bridge-->>App: "workspaceId 발행 (누락 시 URL에서 폴백 추출)"
     
     App->>TA: "setWorkspace(id)"
     App->>LA: "setWorkspace(id)"
@@ -158,7 +158,7 @@ sequenceDiagram
     Note over App: "LoadAction 실행"
     App->>LA: "layouts()"
     LA-->>LL: "LayoutPeriod[] 발행"
-    LP->>LP: "selectBestMatch(periods)"
+    LP->>LP: "selectBestMatch(periods) (최신 레이아웃 자동 선택)"
     App->>TA: "list(selectedPeriod)"
     TA-->>TL: "Set<TypeValue> 발행"
     App->>LA: "positions(selectedPeriod)"
@@ -270,7 +270,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 워크스페이스 선택 완료, Shell이 type-ui 모듈을 로딩 |
-| **정상 흐름** | 1. Shell이 `type/type.nocache.js`를 동적 로딩한다.<br>2. `LoadAction`이 실행되어 백엔드에서 레이아웃 기간 목록을 가져온다.<br>3. `LayoutProvider`가 현재 시점과 가장 겹치는 기간을 자동 선택한다.<br>4. **빈 워크스페이스 대응**: 레이아웃 목록이 비어있을 경우, 기본 기간(0 ~ Double.MAX_VALUE)을 생성하여 `LayoutProvider`에 주입한다.<br>5. 선택된 기간의 타입과 위치를 로드하여 캔버스에 카드로 렌더링한다.<br>6. `PeriodRecalculationService`가 타입의 effectDateTime/expireDateTime으로 기간 목록을 자동 재계산한다.<br>7. Document 참조 속성이 있으면 `TBoxReferenceElement`가 `ArrowFactory`로 SVG 화살표를 자동으로 그린다. |
+| **정상 흐름** | 1. Shell이 `type/type.nocache.js`를 동적 로딩한다. (Workspace ID가 스트림에서 누락 시 URL 경로에서 추출하는 폴백 수행)<br>2. `LoadAction`이 실행되어 백엔드에서 레이아웃 기간 목록을 가져온다.<br>3. `LayoutProvider`가 현재 시점과 가장 겹치는 기간을 자동 선택한다. 동일 시점 내에 여러 레이아웃이 존재할 경우 `effectDateTime`이 가장 큰(최신) 레이아웃을 우선 선택한다.<br>4. **빈 워크스페이스 대응**: 레이아웃 목록이 비어있을 경우, 기본 기간(0 ~ Double.MAX_VALUE)을 생성하여 `LayoutProvider`에 주입한다.<br>5. 선택된 기간의 타입과 위치를 로드하여 캔버스에 카드로 렌더링한다.<br>6. `PeriodRecalculationService`가 타입의 effectDateTime/expireDateTime으로 기간 목록을 자동 재계산한다.<br>7. Document 참조 속성이 있으면 `TBoxReferenceElement`가 `ArrowFactory`로 SVG 화살표를 자동으로 그린다. |
 | **결과** | 캔버스에 타입 카드와 참조 화살표가 표시된다. |
 
 ## UC-T2: 타입 생성
@@ -452,7 +452,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 (모바일/태블릿 디바이스) |
 | **선행조건** | 뷰포트 너비 < 768px |
-| **정상 흐름** | 1. `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환한다.<br>2. 캔버스에 핀치 줌(두 손가락 확대/축소)과 터치 드래그가 활성화된다.<br>3. 타입 박스에 터치 롱프레스(500ms)로 컨텍스트 메뉴를 열 수 있다.<br>4. 상단 상태바와 좌측 툴레일이 모바일 대응 레이아웃으로 최적화된다 (툴레일 접기/펼치기 가능).<br>5. 속성 편집 다이얼로그가 전체 화면 bottom sheet로 전환된다. |
+| **정상 흐름** | 1. `TouchEventAdapter`가 터치 이벤트를 마우스 이벤트와 동일하게 변환한다.<br>2. 캔버스에 핀치 줌(두 손가락 확대/축소)과 터치 드래그가 활성화된다.<br>3. 타입 박스에 터치 롱프레스(500ms)로 컨텍스트 메뉴를 열 수 있다.<br>4. 상단 상태바(`.type-status-header`)가 모바일 뷰포트에서 가로 스크롤(`overflow-x: auto`) 및 `flex-shrink: 0`을 지원하여 버튼 접근성을 보장한다.<br>5. 좌측 툴레일이 모바일 대응 레이아웃으로 최적화된다 (툴레일 접기/펼치기 가능).<br>6. 속성 편집 다이얼로그가 전체 화면 bottom sheet로 전환된다. |
 
 ## UC-T14: RBAC 권한 검증 (계획)
 
@@ -665,7 +665,7 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-T1 (조회) | 타입 조회 (초기 로딩 및 전환) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, WindowWorkspaceEventBridge | ✅ 구현 완료 (CanvasTest: 타입 및 속성 렌더링) |
+| UC-T1 (조회) | 타입 조회 (초기 로딩 및 전환) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, WindowWorkspaceEventBridge | ✅ 구현 완료 (CanvasTest, TypeEditorRegressionTest: 최신 레이아웃 자동 선택) |
 | UC-T2 (생성) | 타입 생성 → 저장 | Action 계층, 캔버스, 컨트롤러 | CreateTBoxAction, PushOutOverlapAction, ComplexAction, AddTypeButton, CanvasContextMenuElement, ContextMenuHelper, ChangeTracker | ✅ 구현 완료 (CanvasTest: Add Type 버튼 클릭 검증) |
 | UC-T3 (삭제) | — | Action 계층, 컨트롤러 | DeleteTBoxAction, RemoveTypeButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Delete 키 입력 검증) |
 | UC-T4 (이동) | 드래그 & 드롭 | Action 계층, 캔버스, 상태 관리 | DragShapeElement, MoveTBoxAction, PushOutOverlapAction, ComplexAction, GridSnap, PositionMap, SelectedTBoxElement | ✅ 구현 완료 (CanvasTest: 선택 및 드래그(Mock)) |
@@ -677,7 +677,7 @@ sequenceDiagram
 | UC-T10 (저장) | 타입 생성 → 저장 | Action 계층, API 어댑터, 컨트롤러 | SaveAction, LoadAction, SaveButton, ReloadButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Save/Reload 버튼 확인) |
 | UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, AgentMutation | ✅ 구현 완료 (CollaborationTest: 에이전트 조작 검증) |
 | UC-T12 (검색) | — | 에이전트 연동 | TypeSearchProvider, AgentSearch | ✅ 구현 완료 (CollaborationTest: 검색 기능 연동 확인) |
-| UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement, TypeElement, DragShapeElement, AttributeEditorDialog | ✅ 구현 완료 (CanvasTest: 컨트롤러 툴바 flex-wrap) |
+| UC-T13 (모바일) | 모바일 터치 조작 | 캔버스, 컨트롤러 | TouchEventAdapter, PinchZoomHandler, CanvasElement, TypeElement, DragShapeElement, AttributeEditorDialog | ✅ 구현 완료 (CanvasTest, TypeEditorRegressionTest: 상단바 가로 스크롤) |
 | UC-T14 (RBAC) | — | — | RbacGuard, CanvasMode | ❌ 미구현 (RbacGuard 유틸리티 구현 완료) |
 | UC-T15 (실시간협업) | 실시간 협업 | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver, TypeRepository, TypeList | ✅ 구현 완료 (CollaborationTest) |
 | UC-T16 (충돌방지) | 충돌 방지 | 상태 관리 | @docs\contracts\versioning.md 낙관적 잠금, ChangeTracker | ✅ 구현 완료 (CollaborationTest) |
@@ -690,9 +690,7 @@ sequenceDiagram
 | UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedTBoxElement, DeleteTBoxAction | ✅ 구현 완료 (TypeBulkActionTest) |
 | UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | ❌ 테스트 미작성 (기능 구현 완료) |
 | UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest: 워크스페이스 전환 확인) |
-| UC-T26 (빈 상태 UI) | — | — | SpreadsheetElement | ✅ 구현 완료 |
-| UC-T27 (삭제 확인) | — | — | ConfirmDialog | ✅ 구현 완료 |
-| UC-T28 (성공 피드백) | — | — | SaveButton, SubmitButton | ✅ 구현 완료 |
+| UC-T26 (ID 폴백) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | Application, WorkspaceEventListener | ✅ 구현 완료 (CollaborationTest: URL에서 ID 추출 검증) |
 
 ---
 
