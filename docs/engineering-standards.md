@@ -126,3 +126,13 @@ val map = java.lang.reflect.Proxy.newProxyInstance(
     }
 } as JsPropertyMap<String>
 ```
+---
+
+## 6. 에이전트 컨텍스트 관리 표준 (Agent Context Management)
+
+에이전트가 프로젝트의 최신 아키텍처와 규칙을 항상 숙지할 수 있도록 자동 컨텍스트 주입 메커니즘을 사용한다.
+
+- **자동 로딩 (SessionStart Hook)**: 세션 시작 시 `.gemini/hooks/context-loader.sh`가 실행되어 핵심 설계 문서(`architecture.md`, `system-overview.md`, `engineering-standards.md`) 및 요구사항/유스케이스 요약을 컨텍스트에 주입한다.
+- **최신성 유지**: 모든 아키텍처 결정이나 규칙 변경은 반드시 관련 문서에 즉시 반영되어야 한다. 에이전트는 주입된 컨텍스트를 기반으로 동작하므로, 문서의 최신성이 에이전트의 품질을 결정한다.
+- **문서 구조**: 대규모 문서는 요약(Index)과 상세(Details)로 분리하여 에이전트가 필요한 시점에 상세 내용을 선택적으로 읽을 수 있도록 구성한다.
+

@@ -1,5 +1,18 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "name": "context-loader",
+            "type": "command",
+            "command": "bash \"$GEMINI_PROJECT_DIR\"/.gemini/hooks/context-loader.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
