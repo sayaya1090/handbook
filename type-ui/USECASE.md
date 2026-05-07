@@ -335,7 +335,7 @@ sequenceDiagram
 |------|------|
 | **액터** | 사용자 |
 | **선행조건** | 레이아웃 기간이 2개 이상 존재 |
-| **정상 흐름** | 1. 상태바의 기간 탐색 버튼을 클릭한다.<br>2. `ChangeLayoutAction`이 실행되어 `LayoutProvider`가 이전/다음 기간으로 전환된다.<br>3. 해당 기간의 타입과 위치가 다시 로드된다.<br>4. 경계에 도달하면 버튼이 자동으로 disabled. |
+| **정상 흐름** | 1. 상태바의 기간 탐색 버튼을 클릭한다.<br>2. `ChangeLayoutAction`이 실행되어 `LayoutProvider`가 이전/다음 기간으로 전환된다.<br>3. 해당 기간의 타입과 위치가 다시 로드된다.<br>4. **상단바 중앙의 기간 정보 라벨이 전환된 레이아웃의 유효 기간으로 갱신된다.**<br>5. 경계에 도달하면 버튼이 자동으로 disabled. |
 
 ## UC-T9: Undo/Redo
 
@@ -665,14 +665,14 @@ sequenceDiagram
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
 |----|---|---|---|---|
-| UC-T1 (조회) | 타입 조회 (초기 로딩 및 전환) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, WindowWorkspaceEventBridge | ✅ 구현 완료 (CanvasTest, TypeEditorRegressionTest: 최신 레이아웃 자동 선택) |
+| UC-T1 (조회) | 타입 조회 (초기 로딩 및 전환) | 상태 관리, API 어댑터, 캔버스 | LoadAction, LayoutApi, TypeApi, WindowWorkspaceEventBridge | ✅ 구현 완료 (CanvasTest, TypeEditorRegressionTest: 최신 레이아웃 자동 선택 및 기간 라벨 표시 확인) |
 | UC-T2 (생성) | 타입 생성 → 저장 | Action 계층, 캔버스, 컨트롤러 | CreateTBoxAction, PushOutOverlapAction, ComplexAction, AddTypeButton, CanvasContextMenuElement, ContextMenuHelper, ChangeTracker | ✅ 구현 완료 (CanvasTest: Add Type 버튼 클릭 검증) |
 | UC-T3 (삭제) | — | Action 계층, 컨트롤러 | DeleteTBoxAction, RemoveTypeButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Delete 키 입력 검증) |
 | UC-T4 (이동) | 드래그 & 드롭 | Action 계층, 캔버스, 상태 관리 | DragShapeElement, MoveTBoxAction, PushOutOverlapAction, ComplexAction, GridSnap, PositionMap, SelectedTBoxElement | ✅ 구현 완료 (CanvasTest: 선택 및 드래그(Mock)) |
 | UC-T5 (리사이즈) | 리사이즈 | Action 계층, 캔버스, 상태 관리 | ResizeTBoxAction, TypeElement, GridSnap, PositionMap | ✅ 구현 완료 (CanvasTest: 리사이즈 핸들 존재 확인) |
 | UC-T6 (이름편집) | — | Action 계층, 캔버스, 상태 관리 | TypeElement, EditTBoxAction, CanvasMode | ✅ 구현 완료 (CanvasTest: 타입 이름 편집 확인) |
 | UC-T7 (속성) | 속성 편집 | Action 계층, 속성 편집 다이얼로그, 캔버스 | AttributeEditorDialog, ValidatorEditorFactory, ValidatorEditor, ArrayValidatorEditor, MapValidatorEditor, EditTBoxAction | ✅ 구현 완료 (CanvasTest: 속성 표시 검증) |
-| UC-T8 (기간이동) | — | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | ✅ 구현 완료 (CanvasTest: Before/After 버튼 확인) |
+| UC-T8 (기간이동) | — | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | ✅ 구현 완료 (CanvasTest: Before/After 버튼 확인, TypeEditorRegressionTest: 기간 라벨 표시) |
 | UC-T9 (Undo) | 에이전트 타입 조작 | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | ✅ 구현 완료 (CanvasTest: Undo/Redo 기능 검증) |
 | UC-T10 (저장) | 타입 생성 → 저장 | Action 계층, API 어댑터, 컨트롤러 | SaveAction, LoadAction, SaveButton, ReloadButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Save/Reload 버튼 확인) |
 | UC-T11 (에이전트) | 에이전트 타입 조작 | 에이전트 연동, Action 계층 | AgentMutationHandler, TypeStateProvider, MutationReceiver, ActionManager, AgentMutation | ✅ 구현 완료 (CollaborationTest: 에이전트 조작 검증) |
@@ -710,3 +710,4 @@ sequenceDiagram
     - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`
     - **Mutate**: `CREATE type`, `DELETE type`, `ADD field`, `REMOVE field`, `SET type`
     - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
+정밀 제어 가능.

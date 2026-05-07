@@ -135,10 +135,10 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 캔버스 상단 툴바. 각 버튼은 독립적인 `@Singleton` 컴포넌트로 Dagger에서 주입된다.
 
-| 그룹 | 버튼 | 동작 |
+| 그룹 | 버튼 / 요소 | 동작 |
 |------|------|------|
 | 모드 전환 | `ModeToggleButton` | LAYOUT/TYPE 모드 전환. 선택된 모드 버튼 하이라이트. |
-| 기간 이동 | `BeforeButton`, `AfterButton` | `LayoutList`에서 이전/다음 기간으로 전환. `ChangeLayoutAction`으로 undo 지원. 경계에서 자동 disabled. |
+| 기간 이동 | `BeforeButton`, `AfterButton`, **Period Label** | `LayoutList`에서 이전/다음 기간으로 전환. 중앙 라벨에 현재 기간(YYYY-MM-DD) 표시. `ChangeLayoutAction`으로 undo 지원. 경계에서 자동 disabled. |
 | 타입 CRUD | `AddTypeButton`, `RemoveTypeButton` | 타입 추가(유니크 ID 자동 생성, 충돌 해소 포함) / 선택 타입 삭제 |
 | 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo. `ActionManager.canUndo/canRedo` 구독으로 자동 disabled. |
 | 저장 | `SaveButton`, `ReloadButton` | 변경사항 서버 저장 (`SaveAction`) / 서버에서 다시 로드 (`LoadAction`) |

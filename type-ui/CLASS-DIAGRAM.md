@@ -320,10 +320,12 @@ classDiagram
     class StatusHeaderElement {
         <<@Singleton>>
         -EditorContext context
+        -HTMLElement periodLabel
         -HTMLDivElement workspaceInfo
         -HTMLDivElement typeInfo
         -HTMLDivElement status
         +update(typeCount, status)
+        -updatePeriod(period: LayoutPeriod)
     }
     class ToolRailElement {
         <<@Singleton>>
