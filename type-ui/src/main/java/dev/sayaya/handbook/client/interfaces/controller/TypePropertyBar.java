@@ -9,6 +9,7 @@ import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.EditTBoxDateAction;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.EventType;
@@ -47,6 +48,7 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
                 .add(versionLabel)
                 .add(span().css("type-property-divider").text("|"))
                 .add(datesLabel)
+                .add(IconElementBuilder.icon().css("fa-sharp", "fa-solid", "fa-pen").style("font-size: 12px; margin-left: 4px; opacity: 0.7;"))
                 .element();
 
         selection.subscribe(selected -> this.refresh(selected, typeList.getValue()));

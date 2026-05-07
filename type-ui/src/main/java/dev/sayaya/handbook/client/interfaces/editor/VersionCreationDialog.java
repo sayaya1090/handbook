@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.editor;
 
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
@@ -10,6 +11,7 @@ import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.SchemaEvolutionAction;
+import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.DialogElementBuilder;
@@ -42,12 +44,14 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
     private final LayoutProvider layoutProvider;
     private final LayoutList layoutList;
     private final SelectedBoxElement selection;
+    private final ToastContainer toastContainer;
     private Type targetType;
 
     @Inject
     VersionCreationDialog(TypeRepository typeRepository, LayoutRepository layoutRepository,
                           TypeList typeList, ChangeTracker tracker, ActionManager actionManager,
-                          LayoutProvider layoutProvider, LayoutList layoutList, SelectedBoxElement selection) {
+                          LayoutProvider layoutProvider, LayoutList layoutList, SelectedBoxElement selection,
+                          ToastContainer toastContainer) {
         this.typeRepository = typeRepository;
         this.layoutRepository = layoutRepository;
         this.typeList = typeList;
@@ -56,6 +60,7 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
         this.layoutProvider = layoutProvider;
         this.layoutList = layoutList;
         this.selection = selection;
+        this.toastContainer = toastContainer;
 
         effectInput = TextFieldElementBuilder.textField().outlined()
                 .attr("id", "version-creation-effect")
@@ -78,10 +83,18 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
         elemental2.dom.DomGlobal.console.log("[VersionCreationDialog] show() - type: " + type.key());
         elemental2.dom.DomGlobal.console.log("[VersionCreationDialog] Attached to DOM: " + (_this.element().parentNode != null));
         this.targetType = type;
-        // 기본값으로 현재 시각 + 1일
-        effectInput.value(DateFormatter.format(System.currentTimeMillis() + 86400000L));
-        versionInput.value(type.version() + ".1");
+        
+        effectInput.element().removeAttribute("error");
+        effectInput.element().removeAttribute("error-text");
+        versionInput.element().removeAttribute("error");
+        versionInput.element().removeAttribute("error-text");
+        
         _this.show();
+        
+        elemental2.dom.DomGlobal.requestAnimationFrame(t -> {
+            effectInput.value(DateFormatter.format(System.currentTimeMillis() + 86400000L));
+            versionInput.value(type.version() + ".1");
+        });
     }
 
     private void submit() {
@@ -90,19 +103,41 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
         String newVersionName = versionInput.value();
         elemental2.dom.DomGlobal.console.log("[VersionCreationDialog] submit() - effect: " + effectVal + ", version: " + newVersionName);
         
-        double newEffect = DateFormatter.parse(effectVal);
+        effectInput.element().removeAttribute("error");
+        versionInput.element().removeAttribute("error");
         
-        Type updatedType = Type.create(targetType.id(), newVersionName, newEffect, 253402214400000.0);
-        updatedType.description(targetType.description());
-        updatedType.primitive(targetType.primitive());
-        updatedType.parent(targetType.parent());
-        updatedType.attributes(targetType.attributes());
+        if (newVersionName == null || newVersionName.trim().isEmpty()) {
+            versionInput.element().setAttribute("error", "");
+            versionInput.element().setAttribute("error-text", "Version name is required");
+            return;
+        }
+        
+        try {
+            double newEffect = DateFormatter.parse(effectVal);
+            
+            if (newEffect <= targetType.effectDateTime()) {
+                effectInput.element().setAttribute("error", "");
+                effectInput.element().setAttribute("error-text", "New version must start after the current version");
+                return;
+            }
+            
+            Type updatedType = Type.create(targetType.id(), newVersionName, newEffect, 253402214400000.0);
+            updatedType.description(targetType.description());
+            updatedType.primitive(targetType.primitive());
+            updatedType.parent(targetType.parent());
+            updatedType.attributes(targetType.attributes());
 
-        actionManager.execute(new SchemaEvolutionAction(
-                typeRepository, layoutRepository, typeList, layoutProvider, layoutList,
-                tracker, actionManager, selection, layoutProvider.getValue(), targetType, newEffect, updatedType
-        ));
-        _this.close();
+            actionManager.execute(new SchemaEvolutionAction(
+                    typeRepository, layoutRepository, typeList, layoutProvider, layoutList,
+                    tracker, actionManager, selection, layoutProvider.getValue(), targetType, newEffect, updatedType
+            ));
+            
+            toastContainer.show(ToastLevel.SUCCESS, "Created new version " + newVersionName + " for " + targetType.id());
+            _this.close();
+        } catch (IllegalArgumentException e) {
+            effectInput.element().setAttribute("error", "");
+            effectInput.element().setAttribute("error-text", "Invalid date format");
+        }
     }
 
     @Override

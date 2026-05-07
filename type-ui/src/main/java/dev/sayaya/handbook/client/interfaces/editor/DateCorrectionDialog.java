@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.client.interfaces.editor;
 
+import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.DateFormatter;
+import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.DialogElementBuilder;
@@ -26,12 +28,15 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
     private final DialogElementBuilder _this;
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder effectInput;
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder expireInput;
+    private final ToastContainer toastContainer;
     private Consumer<DateResult> callback;
+    private Type currentType;
 
     public record DateResult(double effect, double expire) {}
 
     @Inject
-    DateCorrectionDialog() {
+    DateCorrectionDialog(ToastContainer toastContainer) {
+        this.toastContainer = toastContainer;
         effectInput = TextFieldElementBuilder.textField().outlined()
                 .attr("id", "date-correction-start")
                 .label("Effect Date (YYYY-MM-DD)");
@@ -53,6 +58,14 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
         elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] show() - type: " + type.key());
         elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] Attached to DOM: " + (_this.element().parentNode != null));
         this.callback = callback;
+        this.currentType = type;
+        
+        // Reset errors
+        effectInput.element().removeAttribute("error");
+        effectInput.element().removeAttribute("error-text");
+        expireInput.element().removeAttribute("error");
+        expireInput.element().removeAttribute("error-text");
+        
         _this.show();
         
         // 브라우저 렌더링(레이아웃 계산) 후에 값을 채워야 MD3 라벨 애니메이션 NaN 에러를 방지할 수 있음
@@ -67,13 +80,28 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
         String expireVal = expireInput.value();
         elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] apply() - raw effect: " + effectVal + ", raw expire: " + expireVal);
         
-        double effect = DateFormatter.parse(effectVal);
-        double expire = DateFormatter.parse(expireVal);
+        effectInput.element().removeAttribute("error");
+        expireInput.element().removeAttribute("error");
         
-        elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] apply() - parsed effect: " + effect + ", parsed expire: " + expire);
-        
-        if (callback != null) callback.accept(new DateResult(effect, expire));
-        _this.close();
+        try {
+            double effect = DateFormatter.parse(effectVal);
+            double expire = DateFormatter.parse(expireVal);
+            
+            if (effect >= expire && expire != 253402214400000.0) {
+                effectInput.element().setAttribute("error", "");
+                effectInput.element().setAttribute("error-text", "Start date must be before end date");
+                return;
+            }
+            
+            elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] apply() - parsed effect: " + effect + ", parsed expire: " + expire);
+            
+            if (callback != null) callback.accept(new DateResult(effect, expire));
+            toastContainer.show(ToastLevel.SUCCESS, "Date corrected for " + currentType.id());
+            _this.close();
+        } catch (IllegalArgumentException e) {
+            effectInput.element().setAttribute("error", "");
+            effectInput.element().setAttribute("error-text", "Invalid date format");
+        }
     }
 
     @Override

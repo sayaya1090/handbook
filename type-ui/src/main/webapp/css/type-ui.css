@@ -264,7 +264,8 @@
 
 .type-speed-dial {
     position: fixed;
-    bottom: 24px;
+    /* Agent UI 입력창(하단 고정)과의 겹침을 방지하기 위해 기본 24px에서 안전 여백 확보 */
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     right: 24px;
     display: flex;
     flex-direction: column-reverse;

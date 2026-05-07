@@ -37,7 +37,7 @@ public class DateFormatter {
         
         try {
             // YYYY-MM-DD 직접 파싱 (GWT JsDate 호환성 고려)
-            String[] parts = value.split("-");
+            String[] parts = value.trim().split("-");
             if (parts.length == 3) {
                 int y = Integer.parseInt(parts[0]);
                 int m = Integer.parseInt(parts[1]) - 1;
@@ -45,16 +45,18 @@ public class DateFormatter {
                 JsDate manual = new JsDate(y, m, d);
                 manual.setHours(0, 0, 0, 0);
                 double time = manual.getTime();
+                if (Double.isNaN(time)) throw new IllegalArgumentException("Invalid date value");
                 elemental2.dom.DomGlobal.console.log("[DateFormatter] Parsed " + value + " to " + time);
                 return time;
             }
             // 폴백: 브라우저 기본 파싱
-            JsDate date = new JsDate(value);
+            JsDate date = new JsDate(value.trim());
             if (!Double.isNaN(date.getTime())) return date.getTime();
+            throw new IllegalArgumentException("Invalid date format");
         } catch (Exception e) {
             elemental2.dom.DomGlobal.console.error("[DateFormatter] Error parsing date: " + value, e);
+            throw new IllegalArgumentException("Invalid date format: " + value);
         }
-        return 0.0;
     }
 
     private static String pad(int n) { return n < 10 ? "0" + n : "" + n; }
