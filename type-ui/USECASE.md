@@ -264,6 +264,47 @@ sequenceDiagram
     AM->>PM: "위치 업데이트"
 ```
 
+## 타입 새 버전 생성 (Schema Evolution) 시퀀스
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant TBox as TypeElement
+    participant Menu as CanvasContextMenuElement
+    participant Dialog as VersionCreationDialog
+    participant AM as ActionManager
+    participant LP as LayoutProvider
+    participant TL as TypeList
+    participant API as TypeApi/LayoutApi
+
+    User->>TBox: "우클릭"
+    TBox->>Menu: "show(x, y, typeKey)"
+    User->>Menu: "'Create New Version' 클릭"
+    Menu->>Dialog: "show(currentType, currentPeriod)"
+    
+    User->>Dialog: "개시 일시(effectDateTime) 입력 및 필드 수정"
+    User->>Dialog: "Confirm 클릭"
+    
+    Dialog->>AM: "execute(SchemaEvolutionAction)"
+    
+    Note over AM: "1. 현재 기간 마감 처리"
+    AM->>LP: "closeCurrentPeriod(effectDateTime)"
+    LP->>TL: "updateExpireDateTime(effectDateTime)"
+    
+    Note over AM: "2. 신규 기간 생성 및 배치 복사"
+    AM->>LP: "createNewPeriod(effectDateTime, ∞)"
+    
+    Note over AM: "3. 새 버전 타입 등록"
+    AM->>TL: "cloneAndMutate(targetType, newFields)"
+    
+    AM->>API: "POST /evolution (Atomic Transaction)"
+    API-->>AM: "201 Created (newPeriodId)"
+    
+    AM->>LP: "switchTo(newPeriodId)"
+    LP-->>TL: "새 기간 데이터 로드 트리거"
+    TL-->>Canvas: "새로운 레이아웃 렌더링"
+```
+
 ## UC-T1: 타입 조회
 
 | 항목 | 내용 |
@@ -664,6 +705,15 @@ sequenceDiagram
 | **정상 흐름** | 1. 사용자가 쉘 드롭다운에서 다른 워크스페이스를 선택한다.<br>2. 쉘이 `WindowWorkspaceEventBridge`를 통해 새로운 워크스페이스 ID를 발행한다.<br>3. `type-ui`의 `Application`이 이를 감지하여 `TypeApi`와 `LayoutApi`의 워크스페이스 컨텍스트를 업데이트한다.<br>4. `LoadAction`이 즉시 재실행되어 새로운 워크스페이스의 데이터를 서버에서 다시 로드한다.<br>5. 캔버스가 새로운 데이터로 즉시 갱신된다. |
 | **결과** | 페이지 새로고침 없이 다른 워크스페이스의 타입 캔버스를 즉시 조회할 수 있다. |
 
+## UC-T27: 타입 새 버전 생성 (Schema Evolution)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 |
+| **선행조건** | 특정 타입(Box) 선택 |
+| **정상 흐름** | 1. 캔버스에서 타입을 선택하고 우클릭하여 '새 버전 생성'을 선택한다.<br>2. `VersionCreationDialog`에서 새로운 개시 날짜/시각(effectDateTime)을 입력하고 필드 변경(속성 추가/삭제/수정)을 수행한다.<br>3. **기존 기간 마감**: 현재 활성화된 `LayoutPeriod` 및 **선택된 타입의 현재 버전**에 대해서만 `expireDateTime`을 입력받은 '개시 일시'로 업데이트한다.<br>4. **신규 기간 생성**: '개시 일시'부터 무한대(∞)까지를 범위로 하는 새로운 `LayoutPeriod`를 생성하고 기존 배치를 복사한다.<br>5. **새 버전 타입 등록**: 선택된 타입은 변경된 필드 정보를 반영하여 새 레코드로 등록한다.<br>6. **타입 공유**: 변경되지 않은 다른 타입들은 신규 레코드를 생성하지 않고 기존 유효 기간을 유지하여 새 레이아웃 기간에서도 공유되도록 한다.<br>7. 모든 처리는 원자적(Atomic)으로 수행된다.<br>8. 처리가 완료되면 자동으로 새로 생성된 미래 기간의 레이아웃으로 화면을 이동시킨다. |
+| **결과** | 신규 레이아웃 기간이 생성되고 선택한 타입의 새로운 버전이 등록되며 화면이 해당 기간으로 전환된다. |
+
 ---
 
 ## 트레이서빌리티 매트릭스
@@ -696,6 +746,7 @@ sequenceDiagram
 | UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | ❌ 테스트 미작성 (기능 구현 완료) |
 | UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest: 워크스페이스 전환 확인) |
 | UC-T26 (ID 폴백) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | Application, WorkspaceEventListener | ✅ 구현 완료 (CollaborationTest: URL에서 ID 추출 검증) |
+| UC-T27 (새 버전 생성) | 타입 새 버전 생성 시퀀스 | Action 계층, 상태 관리, API 어댑터 | SchemaEvolutionAction, LayoutProvider, TypeApi | ❌ 미구현 |
 
 ---
 
