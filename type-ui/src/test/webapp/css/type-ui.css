@@ -10,8 +10,8 @@
     flex: 1;
     overflow: auto;
     background:
-            linear-gradient(var(--md-sys-color-outline-variant, #ccc) 1px, transparent 1px),
-            linear-gradient(90deg, var(--md-sys-color-outline-variant, #ccc) 1px, transparent 1px);
+        linear-gradient(var(--md-sys-color-outline-variant, #ccc) 1px, transparent 1px),
+        linear-gradient(90deg, var(--md-sys-color-outline-variant, #ccc) 1px, transparent 1px);
     background-size: 20px 20px;
     background-color: var(--md-sys-color-surface, #fafafa);
     outline: none;
@@ -289,54 +289,17 @@
     height: 32px;
 }
 .type-floating-pill .type-period-label {
-    .type-header-center {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        height: 40px;
-    }
-    .type-fade-item {
-        position: absolute;
-        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        align-items: center;
-    }
-    .type-fade-out {
-        opacity: 0;
-        transform: translateY(10px);
-        pointer-events: none;
-    }
-    .type-fade-in {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-    }
     min-width: auto;
     font-size: var(--md-sys-typescale-label-small-size);
     padding: 0 12px;
+    height: 32px;
 }
-
 .type-speed-dial {
     position: fixed;
     /* Agent UI 입력창(하단 고정)과의 겹침을 방지하기 위해 기본 24px에서 안전 여백 확보 */
     bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     right: 24px;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 12px;
-    z-index: 101;
-}
-.type-speed-dial.settings {
-    right: 96px;
-}
-.type-speed-dial {
-    position: fixed;
-    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-    right: 24px;
-    display: flex;
+    display: none;
     flex-direction: column-reverse;
     align-items: center;
     gap: 12px;
@@ -385,12 +348,14 @@
 }
 
 /* ── Type Controller (Left Rail) ── */
-align-items: center;
-gap: 8px;
-padding: 8px 16px;
-background: var(--md-sys-color-surface-container, white);
-border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
-flex-wrap: wrap;
+.type-controller {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--md-sys-color-surface-container, white);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+    flex-wrap: wrap;
 }
 .type-ctrl-group {
     display: flex;
@@ -413,8 +378,8 @@ flex-wrap: wrap;
 }
 
 /* ── Dialogs ── */
-.attr-editor-dialog,
-#date-correction-dialog,
+.attr-editor-dialog, 
+#date-correction-dialog, 
 #version-creation-dialog {
     display: none !important; /* Java show() 전까지 무조건 숨김 */
     position: fixed;

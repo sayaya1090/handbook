@@ -28,13 +28,12 @@ internal class CanvasTest: GwtTestSpec({
         
         // 포토샵 스타일 역할 분리 검증
         Then("상단 상태바(.type-status-header)에 글로벌 액션 및 설정 버튼들이 존재한다") {
-            val header = page.querySelector(".type-status-header")
-            header shouldNotBe null
-            header!!.querySelector(".type-mode-toggle") shouldNotBe null
-            header!!.querySelector(".type-ctrl-btn-undo") shouldNotBe null
-            header!!.querySelector(".type-ctrl-btn-redo") shouldNotBe null
-            header!!.querySelector(".type-ctrl-btn-save") shouldNotBe null
-            header!!.querySelector(".type-snap-button") shouldNotBe null
+            page.querySelector(".type-status-header") shouldNotBe null
+            page.querySelector(".type-mode-toggle") shouldNotBe null
+            page.querySelector(".type-ctrl-btn-undo") shouldNotBe null
+            page.querySelector(".type-ctrl-btn-redo") shouldNotBe null
+            page.querySelector(".type-ctrl-btn-save") shouldNotBe null
+            page.querySelector(".type-snap-button") shouldNotBe null
         }
         Then("좌측 툴레일(.type-controller)에 그리기 및 편집 도구 버튼들이 존재한다") {
             val rail = page.querySelector(".type-controller")

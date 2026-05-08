@@ -106,8 +106,10 @@ internal class EdgeCaseTest: GwtTestSpec({
 
         // 모바일 터치 드래그 안정성
         When("모바일 터치 드래그를 수행하면") {
+            page.setViewportSize(400, 800)
+            Thread.sleep(500)
             // 레이아웃 모드로 전환 보장 (첫 번째 버튼이 LAYOUT 모드)
-            page.click(".type-mode-toggle .type-ctrl-btn:first-child")
+            page.click(".type-ctrl-btn[title='Layout Mode']")
             Thread.sleep(300)
 
             val boxSelector = ".type-box[data-type-key='customer:1.0']"
@@ -164,6 +166,7 @@ internal class EdgeCaseTest: GwtTestSpec({
                 val isDragging = page.evaluate("document.querySelector(\"$boxSelector\").classList.contains('dragging')").toString()
                 isDragging shouldBe "false"
             }
+            page.setViewportSize(1280, 720)
         }
     }
 })
