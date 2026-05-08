@@ -9,6 +9,7 @@ import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static org.jboss.elemento.Elements.div;
@@ -24,6 +25,7 @@ import static org.jboss.elemento.Elements.div;
  *   <li>{@link IconButtonElementBuilder} — MD3 IconButton (sayaya-ui)</li>
  * </ul></p>
  */
+@Singleton
 public class SnapButton implements IsElement<HTMLElement> {
     private final HTMLElement root;
 

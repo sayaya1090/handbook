@@ -9,6 +9,7 @@ import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
@@ -23,6 +24,7 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
  * </ul></p>
  * <p><b>주의:</b> 키보드 단축키(Ctrl+Shift+Z)는 {@link dev.sayaya.handbook.client.interfaces.canvas.CanvasElement}에서 별도 처리한다.</p>
  */
+@Singleton
 public class RedoButton implements IsElement<HTMLElement> {
     @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 

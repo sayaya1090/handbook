@@ -18,6 +18,7 @@ import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
@@ -37,6 +38,7 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
  * </ul></p>
  * <p><b>주의:</b> SaveAction은 되돌릴 수 없다(rollback이 no-op).</p>
  */
+@Singleton
 public class SaveButton implements IsElement<HTMLElement> {
     @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
     private Labels currentLabels = Labels.empty();
