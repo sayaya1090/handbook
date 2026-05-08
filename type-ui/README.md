@@ -146,11 +146,13 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | 벌크 삭제 | `BulkDeleteButton` | 다중 선택 타입 일괄 삭제 | 툴레일 또는 상황별 노출 |
 | 스냅 | `SnapButton` | 격자 스냅 on/off 토글 | `settings-dial` 내부 |
 
-### 모바일 플로팅 컨트롤 (Speed Dial)
+### 모바일 플로팅 컨트롤 (Speed Dial) 및 동적 재배치
+
+`StatusHeaderElement`는 화면 너비에 따라 DOM을 재배치(Dynamic Reparenting)하는 코디네이터 역할을 수행한다. 데스크톱에서는 상단바에 일렬로 배치되던 버튼들이 모바일에서는 플로팅 다이얼 요소로 그룹화되어 이동한다.
 
 - **상단 캡슐 (`.type-floating-pill`)**: 기간 탐색 및 정보 표시.
-- **액션 다이얼 (`.action-dial`)**: 저장, 되돌리기 등 실행형 액션 그룹.
-- **설정 다이얼 (`.settings-dial`)**: 편집 모드, 스냅 등 환경 설정 그룹.
+- **액션 다이얼 (`ActionDialElement`)**: 저장, 되돌리기 등 실행형 액션 그룹.
+- **설정 다이얼 (`SettingsDialElement`)**: 편집 모드, 스냅 등 환경 설정 그룹.
 
 ---
 

@@ -426,7 +426,8 @@ classDiagram
     CanvasElement --> ToolRailElement
     StatusHeaderElement --> EditorContext
     TypePropertyBar --> EditorContext
-    StatusHeaderElement *-- SpeedDialElement : actionDial, settingsDial
+    StatusHeaderElement *-- ActionDialElement : coordinates (Dynamic Reparenting)
+    StatusHeaderElement *-- SettingsDialElement : coordinates (Dynamic Reparenting)
     ToolRailElement *-- Tool
     BoxElementFactory ..> TypeElement : creates
     TypeElement *-- ValueListElement

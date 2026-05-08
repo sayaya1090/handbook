@@ -317,6 +317,26 @@ Dagger 주입 시 생성자 인자가 5개 이상인 경우, 연관된 의존성
 
 ---
 
+## Dynamic Reparenting (동적 DOM 재배치)
+
+반응형 디자인에서 화면 크기(뷰포트)나 상태 변화에 따라, UI 요소(예: 컨트롤러, 액션 버튼)를 단순히 CSS `display`로 숨기고 복제하는 대신, 동일한 DOM 노드의 부모 컨테이너를 동적으로 변경하여 물리적으로 재배치하는 패턴이다.
+
+### 구조
+- **Viewport Observer**: GWT/RxJS 기반의 뷰포트 크기 변화 이벤트를 감지한다.
+- **Relocation Logic**: 브레이크포인트 경계를 넘을 때, 대상 DOM 요소를 기존 부모에서 `remove()` 하고 새로운 부모 컨테이너(예: 모바일용 Speed Dial 컨테이너)에 `append()` 한다.
+- 주로 `type-ui`의 컨트롤러 액션 버튼들을 데스크톱의 상단 상태바에서 모바일의 플로팅 Speed Dial 모드로 전환할 때 사용된다.
+
+### 장점
+- **상태 보존**: DOM 노드가 복제되지 않으므로, 해당 노드에 바인딩된 이벤트 리스너와 로컬 상태(RxJS 구독 등)가 중복 없이 그대로 유지된다.
+- **메모리 최적화**: 중복된 DOM 생성 및 이벤트 핸들러 관리 비용이 감소한다.
+
+### 적용 모듈
+| 모듈 | 사용 위치 |
+|------|----------|
+| **type-ui** | 데스크톱 컨트롤러 툴바 ↔ 모바일 플로팅 Speed Dial 전환 (`ControllerElement`, `SpeedDialElement` 등) |
+
+---
+
 ## CQRS with External Search Engine (PostgreSQL + ES)
 
 데이터의 원천 저장(Source of Truth)과 고성능 검색(Search)을 분리하는 CQRS 패턴을 구현한다.

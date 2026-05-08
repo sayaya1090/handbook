@@ -137,7 +137,7 @@ graph TB
 - **반응형 레이아웃**: 모든 UI 모듈은 최소 360px 뷰포트를 지원한다. MD3 CSS 변수와 flex/grid 레이아웃 사용.
 - **Shell**: Navigation Drawer가 모바일에서 오버레이 모드로 동작 (슬라이드 메뉴).
 - **Document-UI**: 스프레드시트에서 수평 스크롤 + 고정 컬럼(serial). 좁은 화면에서 카드 뷰 전환 고려.
-- **Type-UI**: 캔버스에 핀치 줌, 터치 드래그 지원.
+- **Type-UI**: 캔버스에 핀치 줌, 터치 드래그 지원. 좁은 화면에서 컨트롤러를 플로팅 Speed Dial로 전환하여 작업 공간 최대화.
 - **Agent-UI**: 입력창 하단 고정 배치, 모바일 키보드 호환.
 - **PWA**: 홈 화면 추가, 오프라인 캐싱(Service Worker) 지원.
 
@@ -687,7 +687,7 @@ client/
     ├── api/         TypeApi, LayoutApi (REST), Native 변환
     ├── canvas/      CanvasElement (드래그/드롭/키보드), CanvasContextMenuElement
     ├── box/         TypeElement (인라인 편집/리사이즈), BoxContextMenuElement, BoxReferenceElement (SVG 화살표)
-    ├── controller/  StatusHeaderElement, ModeToggle, SnapCheckbox (쉘 통합 시 숨김 처리)
+    ├── controller/  StatusHeaderElement, ModeToggle, SnapCheckbox, SpeedDialElement (모바일 플로팅 메뉴)
     ├── editor/      AttributeEditorDialog + ValidatorEditorFactory + ValidatorEditor 8종
     ├── selection/   SelectedBoxElement, DragShapeElement (드래그 고스트)
     ├── value/       ValueElement (편집/삭제), ValueListElement

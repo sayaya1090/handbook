@@ -355,6 +355,7 @@ stateDiagram-v2
 - 액션 버튼이 전체 너비로 확장
 - 에이전트 확인 다이얼로그가 하단 시트로 전환 (`border-radius: 16px 16px 0 0`)
 - 스프레드시트가 `CardViewElement`로 대체 가능
+- `type-ui` 컨트롤러(도구 모음)가 화면 우측 하단 플로팅 툴바(Speed Dial) 형태로 전환되어 작업 공간 확보
 
 ### Medium (480px ~ 768px)
 
@@ -521,6 +522,8 @@ Handsontable 6.2.4 (MIT) 기반의 문서 편집기. MD3 디자인 토큰으로 
 
 **화살표 커넥터**: SVG 기반, `pointer-events: none`, `z-index: 5`
 
+**모바일 컨트롤러 (Speed Dial)**: 모바일 뷰포트에서는 화면을 가리지 않도록 상단 컨트롤러 바가 우측 하단 플로팅 Speed Dial 모드로 전환된다. 다이얼 버튼 클릭 시 하위 액션 버튼들이 전개된다.
+
 ### 컨텍스트 메뉴
 
 타입 캔버스에서 우클릭 시 표시되는 메뉴.
@@ -543,8 +546,9 @@ Handsontable 6.2.4 (MIT) 기반의 문서 편집기. MD3 디자인 토큰으로 
 | 그림자 | `var(--md-sys-elevation-level3)` 또는 `0 8px 32px rgba(0,0,0,0.25)` |
 | 패딩 | 24px |
 | 배경 | `var(--md-sys-color-surface)` 또는 `surface-container-high` |
-| Scrim | `color-mix(in srgb, var(--md-sys-color-scrim) 30%, transparent)` |
 | 진입 애니메이션 | `opacity 0, translateY(-48%) -> translateY(-50%)` 200ms |
+
+> **주의**: `md-dialog` 웹 컴포넌트는 자체 내장 scrim을 제공하므로, 커스텀 `.scrim` CSS 룰을 추가로 적용하지 않는다.
 
 **워크스페이스 다이얼로그** (`.ws-dialog`): 420px 너비, CREATE/JOIN 라디오 섹션, 디바이더, 모바일에서 전체 화면
 
