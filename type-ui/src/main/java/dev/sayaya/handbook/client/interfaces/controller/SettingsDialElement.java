@@ -9,9 +9,8 @@ import javax.inject.Singleton;
 @Singleton
 public class SettingsDialElement extends SpeedDialElement {
     @Inject
-    SettingsDialElement(ModeToggleButton modeToggle, SnapButton snapButton) {
+    SettingsDialElement() {
         super("fa-gear", "settings-dial");
         css("settings");
-        addItem(modeToggle).addItem(snapButton);
     }
 }
