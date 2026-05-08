@@ -7,13 +7,14 @@ import io.kotest.matchers.shouldNotBe
 
 /**
  * 최근 수정된 UI/UX 및 로직에 대한 회귀 테스트.
- * - 버튼 원형 스타일
- * - 모바일 헤더 가로 스크롤
+ * UC-T8: 레이아웃 기간 이동
+ * UC-T13: 모바일 반응형 레이아웃 (플로팅 컨트롤)
  */
 @GwtHtml("canvastest.html")
 internal class TypeEditorRegressionTest: GwtTestSpec({
     Given("타입 편집기 초기화됨") {
-        
+
+        // UC-T8: 레이아웃 자동 선택
         Then("초기 진입 시 가장 최신(마지막) 날짜 구간의 레이아웃이 자동 선택된다") {
             // TestApplication에서 어제(past)와 오늘(now) 두 기간을 주입함.
             // 최신 기간(now)이 선택되었다면 'Next' 버튼은 비활성화되어야 함.
@@ -23,6 +24,7 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             isDisabled shouldBe "" // disabled 속성이 존재함
         }
 
+        // UC-T8: 기간 라벨 표시
         Then("레이아웃 기간 정보(.type-period-label)가 표시된다") {
             val label = page.querySelector(".type-period-label")
             label shouldNotBe null
@@ -37,6 +39,7 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             (radius.contains("50%") || radius.contains("px")) shouldBe true
         }
 
+        // UC-T13: 모바일 플로팅 컨트롤 전환
         When("모바일 뷰포트(400x800)로 전환하면") {
             page.setViewportSize(400, 800)
             page.waitForTimeout(500.0)

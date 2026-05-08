@@ -5,6 +5,12 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-T8: 레이아웃 기간 이동 (버튼)
+ * UC-T9: Undo/Redo
+ * UC-T10: 저장/다시 로드
+ * UC-T21: 에이전트 타입 생성 직후 사용자 Undo
+ */
 @GwtHtml("canvastest.html")
 internal class UndoRedoTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {

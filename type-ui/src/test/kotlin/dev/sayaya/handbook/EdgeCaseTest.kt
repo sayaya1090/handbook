@@ -5,10 +5,19 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * 캔버스 관련 엣지 케이스 테스트.
+ * UC-T2: 타입 생성 (빠른 생성)
+ * UC-T3: 타입 삭제 (전체 선택)
+ * UC-T4: 타입 이동 (모바일 터치)
+ * UC-T7: 속성 편집 (빈 이름)
+ * UC-T9: Undo (스택 비었을 때)
+ * UC-T15: 워크스페이스 이벤트 (에러 내성)
+ */
 @GwtHtml("canvastest.html")
 internal class EdgeCaseTest: GwtTestSpec({
     Given("캔버스 엣지 케이스") {
-        // 빈 속성 타입 — 속성이 0개인 타입 생성
+        // UC-T2: 빈 속성 타입
         When("속성 없는 타입을 추가하면") {
             val before = page.querySelectorAll(".type-box").count()
             page.click(".type-ctrl-btn-add")
@@ -23,7 +32,7 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // 연속 빠른 클릭 — Add 버튼 스팸
+        // UC-T2: 연속 빠른 클릭
         When("Add Type 버튼을 빠르게 3번 클릭하면") {
             val before = page.querySelectorAll(".type-box").count()
             repeat(3) { page.click(".type-ctrl-btn-add") }
@@ -34,7 +43,7 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // 타입 전체 선택 후 삭제
+        // UC-T3: 타입 전체 선택 후 삭제
         When("모든 타입을 Ctrl+A로 선택 후 Delete하면") {
             // 캔버스에 포커스를 보장한 뒤 Ctrl+A
             page.evaluate("document.querySelector('.type-canvas').focus()")
@@ -48,7 +57,7 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // 에디터에서 빈 이름으로 Apply
+        // UC-T7: 에디터에서 빈 이름으로 Apply
         When("속성 에디터에서 이름을 비우고 Apply하면") {
             page.click(".type-box[data-type-key='customer:1.0'] .type-attr-row:first-child")
             Thread.sleep(500)
@@ -75,7 +84,7 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // Undo 스택이 비었을 때 Ctrl+Z
+        // UC-T9: Undo 스택이 비었을 때 Ctrl+Z
         When("Undo 스택이 비었을 때 Ctrl+Z를 누르면") {
             val boxCount = page.querySelectorAll(".type-box").count()
             page.keyboard().press("Control+z")
@@ -85,7 +94,7 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // 잘못된 CustomEvent 데이터
+        // UC-T15: 잘못된 CustomEvent 데이터
         When("malformed 워크스페이스 이벤트를 수신하면") {
             page.evaluate("""
                 (function() {
@@ -104,7 +113,7 @@ internal class EdgeCaseTest: GwtTestSpec({
             }
         }
 
-        // 모바일 터치 드래그 안정성
+        // UC-T4: 모바일 터치 드래그 안정성
         When("모바일 터치 드래그를 수행하면") {
             page.setViewportSize(400, 800)
             Thread.sleep(500)

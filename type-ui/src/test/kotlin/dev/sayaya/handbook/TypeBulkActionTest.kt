@@ -14,6 +14,7 @@ internal class TypeBulkActionTest: GwtTestSpec({
         // 이전 테스트의 잔재가 남지 않도록 다이얼로그를 DOM에서 완전히 제거
         page.evaluate("document.querySelectorAll('.attr-editor-dialog').forEach(el => el.remove())")
 
+        // UC-T23: 벌크 삭제 (다중 선택 상태에서 삭제 버튼)
         When("여러 타입을 선택한 뒤") {
             // customer:1.0 과 order:1.0 두 개가 기본으로 있음
             page.click(".type-box[data-type-key='customer:1.0']", com.microsoft.playwright.Page.ClickOptions().setForce(true))

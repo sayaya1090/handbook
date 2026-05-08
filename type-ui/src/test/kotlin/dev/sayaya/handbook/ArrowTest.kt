@@ -5,6 +5,9 @@ import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+/**
+ * UC-T18: 참조 화살표 호버 하이라이트
+ */
 @GwtHtml("canvastest.html")
 internal class ArrowTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {
