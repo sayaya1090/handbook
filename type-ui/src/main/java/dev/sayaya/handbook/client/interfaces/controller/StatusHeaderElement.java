@@ -15,6 +15,12 @@ import javax.inject.Singleton;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
+/**
+ * 타입 편집기 상단바 및 모바일 플로팅 컨트롤.
+ * 
+ * <p><b>책임:</b> 데스크톱에서는 가로 바 형태를, 모바일에서는 Speed Dial 및 플로팅 캡슐 형태의
+ * UI를 렌더링하여 글로벌 액션과 설정을 제공한다.</p>
+ */
 @Singleton
 public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root = div().css("type-status-header").element();
@@ -26,6 +32,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final HTMLElement historyGroup = div().css("type-ctrl-group").element();
     private final HTMLElement persistenceGroup = div().css("type-ctrl-group").element();
     private final HTMLElement navGroup = div().css("type-ctrl-group").element();
+    private final HTMLElement centerArea = div().css("type-header-center").element();
 
     private final ModeToggleButton modeToggle;
     private final BeforeButton beforeBtn;
@@ -110,12 +117,14 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             root.style.display = "flex";
             root.appendChild(modeToggle.element());
             
+            while (centerArea.firstChild != null) centerArea.removeChild(centerArea.firstChild);
             navGroup.appendChild(beforeBtn.element());
             navGroup.appendChild(periodLabel);
             navGroup.appendChild(afterBtn.element());
-            root.appendChild(navGroup);
+            centerArea.appendChild(navGroup);
             
-            root.appendChild(propertyBar.element());
+            centerArea.appendChild(propertyBar.element());
+            root.appendChild(centerArea);
             
             historyGroup.appendChild(undoBtn.element());
             historyGroup.appendChild(redoBtn.element());

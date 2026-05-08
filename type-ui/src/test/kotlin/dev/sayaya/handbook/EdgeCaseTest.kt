@@ -108,6 +108,9 @@ internal class EdgeCaseTest: GwtTestSpec({
         When("모바일 터치 드래그를 수행하면") {
             page.setViewportSize(400, 800)
             Thread.sleep(500)
+            // 모바일 뷰에서는 설정 다이얼을 열어야 버튼이 나타남
+            page.click("md-fab.settings-dial")
+            Thread.sleep(300)
             // 레이아웃 모드로 전환 보장 (첫 번째 버튼이 LAYOUT 모드)
             page.click(".type-ctrl-btn[title='Layout Mode']")
             Thread.sleep(300)
