@@ -42,6 +42,8 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final SaveButton saveBtn;
     private final ReloadButton reloadBtn;
     private final SnapButton snapButton;
+    private final ActionDialElement actionDial;
+    private final SettingsDialElement settingsDial;
 
     @Inject
     StatusHeaderElement(ModeToggleButton modeToggle,
@@ -49,6 +51,8 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
                         UndoButton undoBtn, RedoButton redoBtn,
                         SaveButton saveBtn, ReloadButton reloadBtn,
                         SnapButton snapButton,
+                        ActionDialElement actionDial,
+                        SettingsDialElement settingsDial,
                         LayoutProvider layoutProvider,
                         ViewportObserver viewport,
                         TypePropertyBar propertyBar,
@@ -61,6 +65,8 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         this.saveBtn = saveBtn;
         this.reloadBtn = reloadBtn;
         this.snapButton = snapButton;
+        this.actionDial = actionDial;
+        this.settingsDial = settingsDial;
         this.propertyBar = propertyBar;
 
         propertyBar.element().classList.add("type-fade-item");

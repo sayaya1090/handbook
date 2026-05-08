@@ -11,8 +11,7 @@ import javax.inject.Singleton;
 @Singleton
 public class ActionDialElement extends SpeedDialElement {
     @Inject
-    ActionDialElement(ActionManager actionManager, UndoButton undoBtn, RedoButton redoBtn, 
-                      SaveButton saveBtn, ReloadButton reloadBtn) {
+    ActionDialElement(UndoButton undoBtn, RedoButton redoBtn, SaveButton saveBtn, ReloadButton reloadBtn) {
         super("fa-bolt", "action-dial");
         addItem(undoBtn).addItem(redoBtn).addItem(saveBtn).addItem(reloadBtn);
     }

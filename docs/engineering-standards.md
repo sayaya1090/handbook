@@ -101,6 +101,7 @@ WindowRenderBridge.next(render);
 
 ### 4.2 이벤트 및 DOM 규칙
 - **선언적 DOM (Elemento)**: HTML 문자열이나 네이티브 HTML 조작 대신 `div()`, `button()` 등 Elemento 빌더와 `sayaya-ui` MD3 컴포넌트 래퍼를 사용한다.
+- **모바일/데스크톱 뷰 분리 (다중 인스턴스 패턴)**: 반응형 레이아웃 구현 시 동일한 DOM 요소를 데스크톱 컨테이너와 모바일 컨테이너 사이에서 이동(Reparenting)시키는 것을 엄격히 금지한다. DOM Stealing 현상이 발생할 수 있으므로, **각 컨텍스트별로 별도의 인스턴스를 생성(`@Singleton` 제거)하고 RxJS/옵저버블을 통해 상태를 동기화**하는 방식을 사용한다.
 - **이벤트 1회 등록**: 이벤트 리스너는 동적으로 여러 번 달고 제거하지 않으며, 초기 생성 시 1회만 등록하고 핸들러 내부에서 조건문으로 동작을 제어한다.
 - **모듈 간 통신**: 모듈 간 통신은 SSE 메시지를 `WindowToolPublisherBridge` 등이 수신하여 `DomGlobal.window.dispatchEvent(CustomEvent)` 형태로 브로드캐스트하는 방식을 따른다.
 

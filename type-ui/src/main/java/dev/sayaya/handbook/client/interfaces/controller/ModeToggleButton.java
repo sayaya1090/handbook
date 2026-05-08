@@ -10,7 +10,6 @@ import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 import static org.jboss.elemento.Elements.div;
@@ -27,7 +26,6 @@ import static org.jboss.elemento.Elements.div;
  * <p><b>주의:</b> selected 속성으로 현재 활성 모드를 시각적으로 표시한다.
  * LAYOUT 아이콘: arrows-move, TYPE 아이콘: pen.</p>
  */
-@Singleton
 public class ModeToggleButton implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
     private final HTMLElement layoutBtn;

@@ -17,7 +17,6 @@ import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
@@ -36,7 +35,6 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
  * </ul></p>
  * <p><b>주의:</b> LoadAction은 되돌릴 수 없다(스택 초기화).</p>
  */
-@Singleton
 public class ReloadButton implements IsElement<HTMLElement> {
     @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
