@@ -1,4 +1,5 @@
 ## 요청 로그
+- 2026-05-24: type-ui 문서 갱신 → Speed Dial 분리 및 StatusHeaderElement 동적 재배치 코디네이터 역할 반영
 - 2026-05-24: UI 레이아웃 변경 반영 → USECASE.md 표 갱신 및 에이전트 연동 섹션 추가
 - 2026-05-24: 에이전트 연동 누락 보완 → README.md, USECASE.md 상단 내부 전용 명시
 - 2026-05-01: TypeApi 리팩토링 → TypeValue를 Type으로 변경 및 컴파일 오류 해결

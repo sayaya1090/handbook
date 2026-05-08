@@ -1,6 +1,7 @@
 # docs-keeper 에이전트 노트
 
 ## 요청 로그
+- 2026-05-24: type-ui 아키텍처 감사 → 동적 재배치, Speed Dial 등 문서 누락 플래그
 - 2026-05-24: 레이아웃 여백 및 애니메이션 변경안 크로스체크 → 정책 위반(16px 여백, CSS 문법, 명령형 DOM 조작) 🚨
 - 2026-05-24: type-ui 속성 바 및 다이얼로그 UI/UX 크로스체크 → USECASE 갱신 및 CSS/DOM 조작 패턴 위반 후보 플래그
 - 2026-05-24: 최근 적용된 Dagger DI TestComponent 및 SpeedDial UI/UX 테스트 개선 건 크로스체크 및 무결성 감사 완료.
