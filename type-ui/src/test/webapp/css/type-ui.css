@@ -1,4 +1,7 @@
 /* ── Type Canvas ── */
+* {
+    box-sizing: border-box;
+}
 .type-container {
     display: flex;
     flex-direction: column;
@@ -175,16 +178,12 @@
     padding: 8px 16px;
     background: var(--md-sys-color-surface-container-low, white);
     border-bottom: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
-    width: 100%;
 }
 .type-status-header-container {
-    width: 100%;
     z-index: 100;
 }
 .type-header-center {
-    flex: 1;
     display: flex;
-    justify-content: center;
     align-items: center;
     position: relative;
     height: 40px;

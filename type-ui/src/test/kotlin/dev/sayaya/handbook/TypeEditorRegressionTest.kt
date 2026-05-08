@@ -39,6 +39,27 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             (radius.contains("50%") || radius.contains("px")) shouldBe true
         }
 
+        Then("상단 상태바(.type-status-header)의 너비는 부모 컨테이너를 초과하지 않는다 (Box-sizing)") {
+            val containerWidth = page.evaluate("document.querySelector('.type-container').getBoundingClientRect().width").toString().toDouble()
+            val headerWidth = page.evaluate("document.querySelector('.type-status-header').getBoundingClientRect().width").toString().toDouble()
+            (headerWidth <= containerWidth) shouldBe true
+        }
+
+        Then("상단 툴바 요소들은 좌측으로 밀착 정렬된다") {
+            // 마지막 요소(스냅 버튼)의 우측 끝 좌표가 헤더 전체 너비의 80% 이내에 있는지 확인 (좌측 정렬 증거)
+            val headerWidth = page.evaluate("document.querySelector('.type-status-header').getBoundingClientRect().width").toString().toDouble()
+            val lastElementRight = page.evaluate("""
+                (function() {
+                    const el = document.querySelector('.type-snap-button');
+                    const rect = el.getBoundingClientRect();
+                    const headerRect = document.querySelector('.type-status-header').getBoundingClientRect();
+                    return rect.right - headerRect.left;
+                })()
+            """.trimIndent()).toString().toDouble()
+            
+            (lastElementRight < headerWidth * 0.8) shouldBe true
+        }
+
         // UC-T13: 모바일 플로팅 컨트롤 전환
         When("모바일 뷰포트(400x800)로 전환하면") {
             page.setViewportSize(400, 800)

@@ -522,6 +522,9 @@ Handsontable 6.2.4 (MIT) 기반의 문서 편집기. MD3 디자인 토큰으로 
 
 **화살표 커넥터**: SVG 기반, `pointer-events: none`, `z-index: 5`
 
+**상단 상태바**: `StatusHeaderElement`. **좌측 밀착 정렬(Left-aligned)** 방식을 사용하여 모든 글로벌 도구를 순차적으로 배치한다. 요소가 가용 너비를 초과하지 않도록 `box-sizing: border-box`를 준수한다.
+- 구성 순서: `[모드 전환] | [기간 탐색 및 정보] | [ID/버전 바] | [히스토리(Undo/Redo)] | [영속성(Save/Reload)] | [스냅]`
+
 **모바일 컨트롤러 (Speed Dial)**: 모바일 뷰포트에서는 화면을 가리지 않도록 상단 컨트롤러 바가 우측 하단 플로팅 Speed Dial 모드로 전환된다. 다이얼 버튼 클릭 시 하위 액션 버튼들이 전개된다.
 
 ### 컨텍스트 메뉴
