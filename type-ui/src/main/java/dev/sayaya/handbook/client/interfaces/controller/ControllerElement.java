@@ -29,10 +29,10 @@ public class ControllerElement implements IsElement<HTMLDivElement> {
     @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div();
 
     @Inject
-    ControllerElement(AddTypeButton addBtn, NewVersionButton newVersionBtn,
+    ControllerElement(AddTypeButton addBtn,
                       RemoveTypeButton removeBtn, BulkDeleteButton bulkDeleteBtn) {
         _this.css("type-controller")
                 .add(div().css("type-ctrl-group")
-                        .add(addBtn).add(newVersionBtn).add(removeBtn).add(bulkDeleteBtn));
+                        .add(addBtn).add(removeBtn).add(bulkDeleteBtn));
     }
 }

@@ -138,7 +138,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | 그룹 | 버튼 / 요소 | 동작 | 모바일 UI |
 |------|------|------|------|
 | 모드 전환 | `ModeToggleButton` | LAYOUT/TYPE 모드 전환 | `settings-dial` 내부 |
-| 속성 정보 | `TypePropertyBar` | ID, 버전, 유효기간 표시 및 편집 | 데스크톱 상단 / 모바일 플로팅 캡슐 |
+| 속성 정보 | `TypePropertyBar`, `NewVersionButton` | ID, 버전, 기간 표시 및 **새 버전 생성** | 데스크톱 상단 / 모바일 플로팅 캡슐 |
 | 기간 이동 | `BeforeButton`, `AfterButton`, **Period Label** | 레이아웃 기간 전환 및 현재 기간 표시 | `type-floating-pill` (상단 캡슐) |
 | 타입 CRUD | `AddTypeButton`, `RemoveTypeButton` | 타입 추가/삭제 | 좌측 툴레일 (모바일 동일) |
 | 히스토리 | `UndoButton`, `RedoButton` | Undo/Redo | `action-dial` 내부 |

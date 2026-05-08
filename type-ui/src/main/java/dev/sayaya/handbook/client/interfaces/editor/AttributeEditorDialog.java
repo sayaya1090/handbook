@@ -99,7 +99,6 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
                 .element();
         root.setAttribute("role", "dialog");
         root.setAttribute("aria-labelledby", "attr-editor-headline");
-        root.style.setProperty("display", "none");
 
         // Escape 키로 다이얼로그 닫기
         root.addEventListener("keydown", evt -> {
@@ -117,6 +116,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
                     "input, button, [role=button], [tabindex], select, textarea, md-outlined-text-field, md-filled-button, md-text-button"
             );
             if (focusable.length == 0) return;
+
             HTMLElement first = Js.cast(focusable.getAt(0));
             HTMLElement last = Js.cast(focusable.getAt(focusable.length - 1));
             elemental2.dom.Element active = DomGlobal.document.activeElement;
@@ -139,9 +139,9 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
             applyBtn.textContent = labels.getOrDefault("type.attr.apply", "Apply");
             closeBtn.textContent = labels.getOrDefault("type.attr.close", "Close");
         });
-    }
+        }
 
-    public void show(Attribute attribute, Consumer<Attribute> onApply) {
+        public void show(Attribute attribute, Consumer<Attribute> onApply) {
         this.current = attribute;
         this.onApply = onApply;
         nameField.value(attribute.name());
@@ -149,16 +149,16 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         selectedType = attribute.type() != null ? attribute.type().type() : "text";
         showValidatorEditor(selectedType, attribute.type());
         updateTypeButtons();
-        root.style.setProperty("display", "flex");
+        root.classList.add("visible");
         // 열린 후 이름 필드에 포커스
         DomGlobal.setTimeout(e -> nameField.element().focus(), 100);
-    }
+        }
 
-    public void hide() {
-        root.style.setProperty("display", "none");
+        public void hide() {
+        root.classList.remove("visible");
         current = null;
         onApply = null;
-    }
+        }
 
     private void selectType(String type) {
         selectedType = type;

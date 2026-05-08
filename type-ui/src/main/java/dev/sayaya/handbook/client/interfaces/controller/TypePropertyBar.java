@@ -35,19 +35,22 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
     private final HTMLElement datesLabel = span().css("type-property-dates").element();
 
     private final TypeList typeList;
+    private final NewVersionButton newVersionBtn;
     private Type currentType;
 
     @Inject
     TypePropertyBar(SelectedBoxElement selection, TypeList typeList, LabelProvider labelProvider,
-                    DateCorrectionDialog correctionDialog, ActionManager actionManager, ChangeTracker tracker) {
+                    DateCorrectionDialog correctionDialog, NewVersionButton newVersionBtn,
+                    ActionManager actionManager, ChangeTracker tracker) {
         this.typeList = typeList;
+        this.newVersionBtn = newVersionBtn;
         this.root = div().css("type-property-bar")
                 .add(idLabel)
                 .add(span().css("type-property-divider").text("|"))
                 .add(versionLabel)
                 .add(span().css("type-property-divider").text("|"))
                 .add(datesLabel)
-                .add(IconElementBuilder.icon().css("fa-sharp", "fa-solid", "fa-pen").style("font-size: 12px; margin-left: 4px; opacity: 0.7;"))
+                .add(newVersionBtn)
                 .element();
 
         selection.subscribe(selected -> this.refresh(selected, typeList.getValue()));

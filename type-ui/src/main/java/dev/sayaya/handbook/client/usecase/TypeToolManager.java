@@ -41,6 +41,7 @@ public class TypeToolManager {
     private final GridSnap gridSnap;
     private final SelectedBoxElement selection;
     private final ConfirmDialog confirmDialog;
+    private final dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -49,7 +50,8 @@ public class TypeToolManager {
                     PositionMap positionMap, LayoutProvider layoutProvider, LayoutList layoutList,
                     dev.sayaya.handbook.client.components.ToastContainer toastContainer,
                     LabelProvider labelProvider, CanvasMode canvasMode, GridSnap gridSnap,
-                    SelectedBoxElement selection, ConfirmDialog confirmDialog) {
+                    SelectedBoxElement selection, ConfirmDialog confirmDialog,
+                    dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog) {
         this.toolProvider = toolProvider;
         this.actionManager = actionManager;
         this.tracker = tracker;
@@ -65,6 +67,7 @@ public class TypeToolManager {
         this.gridSnap = gridSnap;
         this.selection = selection;
         this.confirmDialog = confirmDialog;
+        this.versionCreationDialog = versionCreationDialog;
     }
 
     public void init() {
@@ -88,6 +91,7 @@ public class TypeToolManager {
         toolProvider.onSelect(id -> {
             switch (id) {
                 case "add": executeAdd(); break;
+                case "new-version": executeNewVersion(); break;
                 case "remove": executeRemove(); break;
                 case "bulk-delete": executeBulkDelete(); break;
             }
@@ -100,17 +104,29 @@ public class TypeToolManager {
         // 생성 도구
         tools.add(Tool.builder().id("add").icon("fa-plus").title(currentLabels.getOrDefault("type.add", "Add")).order("020").build());
         
-        // 삭제 도구 (선택 상태에 따라 분기하거나 둘 다 노출)
+        // 타입 종속 도구
         Set<String> selected = selection.getValue();
-        if (selected.size() > 1) {
-            tools.add(Tool.builder().id("bulk-delete").icon("fa-trash-can-list")
-                    .title(currentLabels.getOrDefault("type.bulk_delete", "Bulk Delete")).order("030").build());
-        } else if (selected.size() == 1) {
+        if (selected.size() == 1) {
+            tools.add(Tool.builder().id("new-version").icon("fa-code-branch")
+                    .title(currentLabels.getOrDefault("type.new_version", "New Version")).order("025").build());
             tools.add(Tool.builder().id("remove").icon("fa-trash")
                     .title(currentLabels.getOrDefault("type.remove", "Remove")).order("030").build());
+        } else if (selected.size() > 1) {
+            tools.add(Tool.builder().id("bulk-delete").icon("fa-trash-can-list")
+                    .title(currentLabels.getOrDefault("type.bulk_delete", "Bulk Delete")).order("030").build());
         }
 
         toolProvider.publish(tools.toArray(new Tool[0]));
+    }
+
+    public void executeNewVersion() {
+        Set<String> selected = selection.getValue();
+        if (selected.size() != 1) return;
+        String key = selected.iterator().next();
+        Type type = typeList.getValue().stream().filter(t -> t.key().equals(key)).findFirst().orElse(null);
+        if (type != null) {
+            versionCreationDialog.show(type);
+        }
     }
 
     public void executeAdd() {

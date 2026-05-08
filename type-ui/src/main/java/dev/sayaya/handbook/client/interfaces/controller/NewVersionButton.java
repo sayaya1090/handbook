@@ -48,6 +48,7 @@ public class NewVersionButton implements IsElement<HTMLElement> {
                 _this.element().title = labels.getOrDefault("type.new_version", "Create New Version"));
         
         _this.onClick(e -> {
+            e.stopPropagation();
             if (currentType != null) creationDialog.show(currentType);
         });
     }

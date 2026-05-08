@@ -101,6 +101,8 @@ WindowRenderBridge.next(render);
 
 ### 4.2 이벤트 및 DOM 규칙
 - **선언적 DOM (Elemento)**: HTML 문자열이나 네이티브 HTML 조작 대신 `div()`, `button()` 등 Elemento 빌더와 `sayaya-ui` MD3 컴포넌트 래퍼를 사용한다.
+- **!important 사용 금지**: CSS에서 `!important` 사용을 엄격히 금지한다. 스타일 우선순위 문제는 셀렉터의Specificity(특이도) 조절이나 논리적인 CSS 구조 설계를 통해 해결한다.
+- **클래스 기반 상태 관리**: 자바 코드에서 `element.style.display`와 같은 인라인 스타일을 직접 조작하는 것을 지양한다. 대신 `visible`, `hidden`, `mobile` 등 의미 있는 상태 클래스를 `classList`에 추가/제거하고, CSS 파일에서 해당 클래스에 따른 스타일을 정의한다.
 - **Box Sizing 표준화**: 모든 UI 모듈의 CSS는 `* { box-sizing: border-box; }` 설정을 포함하거나 준수하여, 패딩과 테두리가 전체 너비/높이에 포함되도록 한다.
 - **너비(Width) 관리**: 블록 레벨 요소나 플렉스 자식 요소에 불필요한 `width: 100%` 사용을 지양한다. 특히 패딩이나 마진이 있는 요소에 `100%`를 지정할 경우 부모 영역을 초과할 수 있으므로 주의한다.
 - **동적 DOM 재배치 (Dynamic Reparenting) 패턴**: 버튼의 활성화 상태나 이벤트 리스너 등 복잡한 내부 상태를 유지해야 하는 컴포넌트는 다중 인스턴스로 분리할 경우 상태 동기화 비용이 크다. 이를 방지하기 위해, 반응형 레이아웃 전환 시 **단일 `@Singleton` 인스턴스를 유지하면서 뷰포트 상태에 따라 부모 컨테이너를 변경(`appendChild`)하는 동적 재배치 방식**을 사용한다. 단, DOM Stealing 방지를 위해 재배치는 반드시 하나의 코디네이터(예: `StatusHeaderElement`)에서 중앙 통제해야 한다.

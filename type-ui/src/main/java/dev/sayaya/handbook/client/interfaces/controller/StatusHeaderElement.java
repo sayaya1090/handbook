@@ -100,23 +100,23 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         if (hasOne) {
             mobileInfoCapsule.classList.remove("type-fade-out");
             mobileInfoCapsule.classList.add("type-fade-in");
-            mobileInfoCapsule.style.display = "flex";
+            mobileInfoCapsule.classList.add("visible");
         } else {
             mobileInfoCapsule.classList.remove("type-fade-in");
             mobileInfoCapsule.classList.add("type-fade-out");
             elemental2.dom.DomGlobal.setTimeout(e -> {
                 if (!mobileInfoCapsule.classList.contains("type-fade-in")) {
-                    mobileInfoCapsule.style.display = "none";
+                    mobileInfoCapsule.classList.remove("visible");
                 }
             }, 300);
         }
     }
 
     private void updateLayout(boolean isMobile) {
+        root.classList.toggle("mobile", isMobile);
         while (root.firstChild != null) root.removeChild(root.firstChild);
         
         if (isMobile) {
-            root.style.display = "block";
             root.appendChild(mobileInfoCapsule);
             mobileInfoCapsule.appendChild(propertyBar.element());
             
@@ -126,7 +126,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             settingsDial.clearItems();
             settingsDial.addItem(modeToggle).addItem(snapButton);
         } else {
-            root.style.display = "flex";
             root.appendChild(modeToggle.element());
             
             while (centerArea.firstChild != null) centerArea.removeChild(centerArea.firstChild);
