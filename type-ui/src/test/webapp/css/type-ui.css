@@ -381,9 +381,7 @@
 }
 
 /* ── Dialogs ── */
-.attr-editor-dialog, 
-#date-correction-dialog, 
-#version-creation-dialog {
+.attr-editor-dialog {
     display: none !important; /* Java show() 전까지 무조건 숨김 */
     position: fixed;
     top: 50%;
@@ -399,17 +397,8 @@
     gap: 8px;
 }
 .attr-editor-dialog[style*="display: flex"],
-.attr-editor-dialog[style*="display: block"],
-#date-correction-dialog[open],
-#version-creation-dialog[open] {
+.attr-editor-dialog[style*="display: block"] {
     display: flex !important;
-}
-#date-correction-dialog, #version-creation-dialog {
-    border: none;
-    outline: none;
-}
-#date-correction-dialog::backdrop, #version-creation-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.4);
 }
 @keyframes dialog-open {
     from { opacity: 0; transform: translate(-50%, -48%); }
@@ -743,6 +732,24 @@
     /* 컨텍스트 메뉴 — 모바일 */
     .ctx-item {
         padding: 12px 16px;
+        min-height: 44px;
+    }
+}
+
+/* ── 컴팩트 레이아웃 (< 480px) ── */
+@media (max-width: 480px) {
+    .type-controller {
+        padding: 4px;
+    }
+    .type-box {
+        min-width: 140px;
+    }
+    .attr-editor-dialog {
+        padding: 12px;
+        max-height: 90vh;
+    }
+}
+
         min-height: 44px;
     }
 }
