@@ -68,6 +68,15 @@ internal class VersioningTest: GwtTestSpec({
         
         // UC-T27: 새 버전 생성 테스트 (Schema Evolution)
         When("새 버전 생성 버튼(.type-ctrl-btn-new-version)을 클릭하면") {
+            // 레이아웃 상속 검증을 위해 기존 위치 기록
+            val boxSelector = ".type-box[data-type-key='customer:1.0']"
+            val beforePos = page.evaluate("""
+                (selector) => {
+                    const el = document.querySelector(selector);
+                    return { x: el.offsetLeft, y: el.offsetTop };
+                }
+            """.trimIndent(), boxSelector) as Map<String, Any>
+
             Thread.sleep(500)
             page.click(".type-ctrl-btn-new-version")
             
@@ -77,7 +86,16 @@ internal class VersioningTest: GwtTestSpec({
             
             And("개시 일시를 입력하고 'Create'를 누르면") {
                 page.waitForTimeout(500.0)
-                page.evaluate("document.querySelector('#version-creation-effect').value = '2026-07-01'")
+                
+                page.evaluate("""
+                    (function() {
+                        document.querySelector('#version-creation-effect').value = '2026-07-01';
+                        document.querySelector('#version-creation-version').value = '2.0';
+                        // input 이벤트를 발생시켜야 GWT에서 인지함
+                        document.querySelector('#version-creation-effect').dispatchEvent(new Event('input', {bubbles:true}));
+                        document.querySelector('#version-creation-version').dispatchEvent(new Event('input', {bubbles:true}));
+                    })()
+                """.trimIndent())
                 page.click("#version-creation-submit")
                 
                 Then("새로운 레이아웃 기간으로 자동 이동한다") {
@@ -87,6 +105,33 @@ internal class VersioningTest: GwtTestSpec({
                 Then("다이얼로그가 완전히 닫힌다") {
                     page.waitForSelector("#version-creation-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
                     Thread.sleep(500)
+                }
+
+                Then("새 버전의 타입이 기존 레이아웃 좌표를 상속받는다 (X, Y 동일)") {
+                    val newBoxSelector = ".type-box[data-type-key='customer:2.0']"
+                    page.waitForSelector(newBoxSelector)
+                    val afterPos = page.evaluate("""
+                        (selector) => {
+                            const el = document.querySelector(selector);
+                            return { x: el.offsetLeft, y: el.offsetTop };
+                        }
+                    """.trimIndent(), newBoxSelector) as Map<String, Any>
+                    
+                    afterPos["x"] shouldBe beforePos["x"]
+                    afterPos["y"] shouldBe beforePos["y"]
+                }
+
+                Then("이전 레이아웃 기간의 종료 일시가 새 버전의 시작 일시와 일치한다 (중첩 방지)") {
+                    // 속성 바(property bar)가 Before 버튼을 가로막지 않도록 선택 해제
+                    page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(0.0, 0.0))
+                    Thread.sleep(500)
+                    
+                    // 이전 기간(Before)으로 이동
+                    page.click(".type-ctrl-btn-before")
+                    Thread.sleep(500)
+                    
+                    val periodText = page.textContent(".type-period-label")!!
+                    periodText.endsWith("2026-07-01") shouldBe true
                 }
             }
         }

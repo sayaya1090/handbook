@@ -9,6 +9,7 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.DateFormatter;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.SchemaEvolutionAction;
 import dev.sayaya.handbook.domain.ToastLevel;
@@ -39,6 +40,7 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
     private final TypeRepository typeRepository;
     private final LayoutRepository layoutRepository;
     private final TypeList typeList;
+    private final PositionMap positionMap;
     private final ChangeTracker tracker;
     private final ActionManager actionManager;
     private final LayoutProvider layoutProvider;
@@ -49,12 +51,13 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
 
     @Inject
     VersionCreationDialog(TypeRepository typeRepository, LayoutRepository layoutRepository,
-                          TypeList typeList, ChangeTracker tracker, ActionManager actionManager,
-                          LayoutProvider layoutProvider, LayoutList layoutList, SelectedBoxElement selection,
-                          ToastContainer toastContainer) {
+                          TypeList typeList, PositionMap positionMap, ChangeTracker tracker, 
+                          ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList, 
+                          SelectedBoxElement selection, ToastContainer toastContainer) {
         this.typeRepository = typeRepository;
         this.layoutRepository = layoutRepository;
         this.typeList = typeList;
+        this.positionMap = positionMap;
         this.tracker = tracker;
         this.actionManager = actionManager;
         this.layoutProvider = layoutProvider;
@@ -128,7 +131,7 @@ public class VersionCreationDialog implements IsElement<HTMLElement> {
             updatedType.attributes(targetType.attributes());
 
             actionManager.execute(new SchemaEvolutionAction(
-                    typeRepository, layoutRepository, typeList, layoutProvider, layoutList,
+                    typeRepository, layoutRepository, typeList, layoutProvider, layoutList, positionMap,
                     tracker, actionManager, selection, layoutProvider.getValue(), targetType, newEffect, updatedType
             ));
             
