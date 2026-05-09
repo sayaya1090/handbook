@@ -65,7 +65,7 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
             reloadItem.textContent = labels.getOrDefault("type.reload", "Reload");
         });
 
-        root = div().css("ctx-menu")
+        root = div().css("ctx-menu", "ctx-canvas-menu")
                 .add(addItem)
                 .add(div().css("ctx-divider"))
                 .add(undoItem)
@@ -79,22 +79,27 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
     }
 
     public void show(int x, int y) {
+        elemental2.dom.DomGlobal.console.log("[CanvasContextMenu] show() at " + x + ", " + y);
         clickX = x;
         clickY = y;
         root.style.setProperty("display", "flex");
         root.style.setProperty("left", x + "px");
         root.style.setProperty("top", y + "px");
+        root.style.setProperty("z-index", "10005");
     }
 
     public void hide() {
+        elemental2.dom.DomGlobal.console.log("[CanvasContextMenu] hide()");
         root.style.setProperty("display", "none");
     }
 
     private void addTypeAt(int x, int y) {
         LayoutPeriod period = layoutProvider.getValue();
-        if (period == null) return;
+        if (period == null) {
+            throw new IllegalStateException("Cannot add type: No active layout period.");
+        }
         String id = uniqueTypeId(typeList);
-        Type newType = Type.create(id, "1.0", 0.0, 0.0); // period.effectDateTime(), period.expireDateTime() are skipped
+        Type newType = Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         Position pos = Position.of(x, y, 240, 160);
         actionManager.execute(new ComplexAction(
                 new CreateBoxAction(typeList, positionMap, tracker, newType, pos),

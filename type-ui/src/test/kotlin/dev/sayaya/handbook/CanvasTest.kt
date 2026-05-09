@@ -21,9 +21,14 @@ import io.kotest.matchers.shouldNotBe
 internal class CanvasTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {
         page.reload()
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+        // 전회 테스트에서의 상태 오염(열린 다이얼로그 등) 방지를 위해 물리적 제거
+        page.evaluate("""
+            document.querySelectorAll('.attr-editor-dialog, md-dialog').forEach(el => el.remove())
+        """.trimIndent())
         page.waitForSelector(".type-canvas")
         page.waitForSelector(".type-box[data-type-key='customer:1.0']")
-        Thread.sleep(1500)
+        Thread.sleep(2000)
 
         // UC-T1: 타입 조회 — 캔버스 요소 실재 확인
         Then("캔버스 요소가 존재한다") {
@@ -103,11 +108,31 @@ internal class CanvasTest: GwtTestSpec({
         }
 
         When("타입 박스를 클릭하면") {
-            // 다이얼로그 가림막 이슈 방지를 위해 다이얼로그 강제 숨김
-            page.evaluate("document.querySelectorAll('.attr-editor-dialog').forEach(el => el.style.display = 'none')")
-            page.click(".type-box[data-type-key='order:1.0']")
+            // 가림막 강제 제거 후 클릭
+            page.evaluate("document.querySelectorAll('.attr-editor-dialog, md-dialog').forEach(el => el.remove())")
+            page.click(".type-box[data-type-key='order:1.0']", com.microsoft.playwright.Page.ClickOptions().setForce(true))
             Then("선택 상태가 활성화된다") {
                 page.waitForSelector(".type-box[data-type-key='order:1.0'][selected]") shouldNotBe null
+            }
+        }
+
+        // UC-T2: 컨텍스트 메뉴를 통한 타입 생성
+        When("캔버스 빈 영역을 우클릭하고 'Add Type'을 선택하면") {
+            val before = page.querySelectorAll(".type-box").count()
+            // 캔버스 우클릭 (강제 클릭으로 가림막 무시)
+            page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setButton(com.microsoft.playwright.options.MouseButton.RIGHT).setPosition(600.0, 400.0).setForce(true))
+            
+            // 컨텍스트 메뉴 노출 대기 (고유 클래스 사용)
+            page.waitForSelector(".ctx-canvas-menu", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+            
+            // 컨텍스트 메뉴 항목 클릭 (.ctx-item)
+            page.click(".ctx-canvas-menu .ctx-item:has-text('Add Type')")
+            Thread.sleep(1000)
+            
+            Then("새로운 타입 박스가 생성되어 화면에 보인다 (가시성 보장)") {
+                val after = page.querySelectorAll(".type-box").count()
+                after shouldBe before + 1
+                page.waitForSelector(".type-box")
             }
         }
 

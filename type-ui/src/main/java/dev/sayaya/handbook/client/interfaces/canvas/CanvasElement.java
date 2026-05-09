@@ -158,23 +158,35 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
             for (Type type : types) {
                 // 현재 레이아웃 기간의 시작 시점에 유효한 타입만 렌더링
                 // 부동 소수점 오차 방지를 위해 1ms 미만의 차이는 무시
-                if (type.effectDateTime() > start + 0.1 || type.expireDateTime() <= start + 0.1) continue;
+                boolean isEffectValid = type.effectDateTime() <= start + 0.1;
+                boolean isExpireValid = type.expireDateTime() > start + 0.1;
                 
-                try {
-                    String key = type.key();
-                    newKeys.add(key);
-                    if (!elementMap.containsKey(key)) {
-                        Position pos = positionMap.get(key);
-                        if (pos == null) pos = Position.of(20, 20, 240, 160);
-                        TypeElement elem = boxFactory.create(type, pos);
-                        elementMap.put(key, elem);
-                        root.appendChild(elem.element());
-                        initBoxHandlers(elem);
-                    } else {
-                        elementMap.get(key).setType(type);
+                if (isEffectValid && isExpireValid) {
+                    try {
+                        String key = type.key();
+                        newKeys.add(key);
+                        if (!elementMap.containsKey(key)) {
+                            Position pos = positionMap.get(key);
+                            if (pos == null) pos = Position.of(20, 20, 240, 160);
+                            TypeElement elem = boxFactory.create(type, pos);
+                            elementMap.put(key, elem);
+                            root.appendChild(elem.element());
+                            initBoxHandlers(elem);
+                        } else {
+                            elementMap.get(key).setType(type);
+                        }
+                    } catch (Throwable t) {
+                        com.google.gwt.core.client.GWT.log("CanvasElement: error syncing box: " + t.getMessage(), t);
                     }
-                } catch (Throwable t) {
-                    com.google.gwt.core.client.GWT.log("CanvasElement: error syncing box: " + t.getMessage(), t);
+                } else {
+                    // 필터링 사유 로그 (UC-T27 정책)
+                    elemental2.dom.DomGlobal.console.groupCollapsed("[CanvasElement] Filtered out type: " + type.key());
+                    elemental2.dom.DomGlobal.console.log("Reason: Validity period mismatch");
+                    elemental2.dom.DomGlobal.console.log("Type period: " + type.effectDateTime() + " ~ " + type.expireDateTime());
+                    elemental2.dom.DomGlobal.console.log("Layout start: " + start);
+                    elemental2.dom.DomGlobal.console.log("Effect check (<=): " + isEffectValid);
+                    elemental2.dom.DomGlobal.console.log("Expire check (>): " + isExpireValid);
+                    elemental2.dom.DomGlobal.console.groupEnd();
                 }
             }
         }

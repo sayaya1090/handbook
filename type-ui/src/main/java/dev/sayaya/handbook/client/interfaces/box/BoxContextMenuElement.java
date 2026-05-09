@@ -78,7 +78,7 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
             deleteItem.textContent = labels.getOrDefault("type.remove", "Delete");
         });
 
-        root = div().css("ctx-menu")
+        root = div().css("ctx-menu", "ctx-box-menu")
                 .add(addAttrItem)
                 .add(versionHistoryItem)
                 .add(div().css("ctx-divider"))

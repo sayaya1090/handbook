@@ -101,6 +101,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
     }
 
     public void show(Attribute attribute, Consumer<Attribute> onApply) {
+        elemental2.dom.DomGlobal.console.log("[AttributeEditorDialog] show() - attr: " + attribute.name());
         this.current = attribute;
         this.onApply = onApply;
         nameField.value(attribute.name());
@@ -108,15 +109,17 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         selectedType = attribute.type() != null ? attribute.type().type() : "text";
         showValidatorEditor(selectedType, attribute.type());
         updateTypeButtons();
-        root.style.display = "flex";
-        root.style.pointerEvents = "all";
+        root.style.setProperty("display", "flex");
+        root.style.setProperty("pointer-events", "all");
         root.classList.add("visible");
+        // 열린 후 이름 필드에 포커스
         DomGlobal.setTimeout(e -> nameField.element().focus(), 100);
     }
 
     public void hide() {
-        root.style.display = "none";
-        root.style.pointerEvents = "none";
+        elemental2.dom.DomGlobal.console.log("[AttributeEditorDialog] hide()");
+        root.style.setProperty("display", "none");
+        root.style.setProperty("pointer-events", "none");
         root.classList.remove("visible");
         current = null;
         onApply = null;
