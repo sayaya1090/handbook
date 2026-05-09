@@ -31,7 +31,7 @@ public class TestApplication implements EntryPoint {
             Attribute.create(null, "email", 3, AttributeType.text())
         });
 
-        Type order = Type.create("order", "1.0", now, now + 86400000);
+        Type order = Type.create("order", "1.0", now, Double.MAX_VALUE);
         order.description("주문");
         order.attributes(new Attribute[] {
             Attribute.create(null, "customer", 1, AttributeType.document("customer")),

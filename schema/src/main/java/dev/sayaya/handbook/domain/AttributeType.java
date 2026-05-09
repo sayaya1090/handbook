@@ -120,6 +120,13 @@ public final class AttributeType {
         return atv;
     }
 
+    @JsOverlay @JsIgnore
+    public static AttributeType create(String type) {
+        AttributeType atv = new AttributeType();
+        atv.type(type);
+        return atv;
+    }
+
     @JsOverlay
     public final String simplify() {
         AttributeType current = this;

@@ -84,7 +84,7 @@ public class SchemaEvolutionAction implements Action {
         closedType.height(targetType.height());
         
         // 2. 신규 기간 생성
-        LayoutPeriod newPeriod = LayoutPeriod.of(splitTime, 253402214400000.0);
+        LayoutPeriod newPeriod = LayoutPeriod.of(splitTime, currentPeriod.expireDateTime());
         
         // 3. 새 버전 타입 생성
         Type nextVersion = Type.create(targetType.id(), updatedType.version(), splitTime, 253402214400000.0);

@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.CanvasMode;
 import dev.sayaya.handbook.client.usecase.GridSnap;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
@@ -66,6 +67,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private final BoxContextMenuElement boxMenu;
     private final CanvasMode canvasMode;
     private final GridSnap gridSnap;
+    private final LayoutProvider layoutProvider;
     private final TouchEventAdapter touchAdapter;
     private final PinchZoomHandler pinchZoom;
     private final Map<String, TypeElement> elementMap = new LinkedHashMap<>();
@@ -74,12 +76,13 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     CanvasElement(BoxElementFactory boxFactory, TypeList typeList, ActionManager actionManager,
                   PositionMap positionMap, SelectedBoxElement selection, DragShapeElement dragShape,
                   BoxReferenceElement referenceElement, ChangeTracker tracker,
-                  CanvasMode canvasMode, GridSnap gridSnap,
+                  CanvasMode canvasMode, GridSnap gridSnap, LayoutProvider layoutProvider,
                   CanvasContextMenuElement canvasMenu, BoxContextMenuElement boxMenu,
                   TouchEventAdapter touchAdapter, PinchZoomHandler pinchZoom,
                   VersionHistoryPanel versionHistoryPanel) {
         this.canvasMode = canvasMode;
         this.gridSnap = gridSnap;
+        this.layoutProvider = layoutProvider;
         this.boxFactory = boxFactory;
         this.actionManager = actionManager;
         this.positionMap = positionMap;
@@ -142,13 +145,21 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         root.addEventListener("mouseup", e -> handleMouseUp((MouseEvent) e));
 
         typeList.subscribe(this::syncElements);
+        layoutProvider.subscribe(p -> syncElements(typeList.getValue()));
     }
 
     private void syncElements(Set<Type> types) {
+        dev.sayaya.handbook.domain.LayoutPeriod period = layoutProvider.getValue();
         Set<String> currentKeys = new HashSet<>(elementMap.keySet());
         Set<String> newKeys = new HashSet<>();
-        if (types != null) {
+        
+        if (period != null && types != null) {
+            double start = period.effectDateTime();
             for (Type type : types) {
+                // 현재 레이아웃 기간의 시작 시점에 유효한 타입만 렌더링
+                // 부동 소수점 오차 방지를 위해 1ms 미만의 차이는 무시
+                if (type.effectDateTime() > start + 0.1 || type.expireDateTime() <= start + 0.1) continue;
+                
                 try {
                     String key = type.key();
                     newKeys.add(key);
@@ -167,6 +178,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                 }
             }
         }
+        
+        // 필터링되거나 제거된 요소 삭제
         for (String key : currentKeys) {
             if (!newKeys.contains(key)) {
                 TypeElement removed = elementMap.remove(key);

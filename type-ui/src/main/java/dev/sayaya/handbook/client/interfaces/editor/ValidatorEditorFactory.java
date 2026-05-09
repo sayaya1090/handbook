@@ -2,6 +2,10 @@ package dev.sayaya.handbook.client.interfaces.editor;
 
 import dev.sayaya.handbook.client.usecase.TypeList;
 
+import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 타입 이름으로 ValidatorEditor를 동적 생성하는 팩토리.
  *
@@ -18,6 +22,7 @@ public class ValidatorEditorFactory {
     private final TypeList typeList;
     private final int depth;
 
+    @Inject
     public ValidatorEditorFactory(TypeList typeList) {
         this(typeList, 0);
     }
@@ -25,6 +30,16 @@ public class ValidatorEditorFactory {
     private ValidatorEditorFactory(TypeList typeList, int depth) {
         this.typeList = typeList;
         this.depth = depth;
+    }
+
+    public Map<String, ValidatorEditor> createAll(int depth) {
+        Map<String, ValidatorEditor> editors = new HashMap<>();
+        String[] types = {"text", "number", "date", "enum", "file", "document", "array", "map", "bool"};
+        for (String type : types) {
+            ValidatorEditor editor = create(type);
+            if (editor != null) editors.put(type, editor);
+        }
+        return editors;
     }
 
     /**

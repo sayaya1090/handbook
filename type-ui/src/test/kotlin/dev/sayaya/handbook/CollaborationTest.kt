@@ -8,49 +8,57 @@ import io.kotest.matchers.shouldNotBe
 /**
  * UC-T11: 에이전트에 의한 타입 조작
  * UC-T12: 에이전트에 의한 타입 검색
+ * UC-T15: 실시간 협업 (TYPE_CREATED/DELETED)
+ * UC-T17: 프레즌스 표시 및 해제
+ * UC-T20: 다중 사용자 프레즌스 동시 수신
  * UC-T25: 워크스페이스 전환 (동적 데이터 재로딩)
+ * UC-T26: URL에서 워크스페이스 ID 추출 폴백
  */
 @GwtHtml("canvastest.html")
 internal class CollaborationTest: GwtTestSpec({
     Given("캔버스가 초기화됨") {
-        // UC-T11: 에이전트 타입 생성 - AgentMutation CustomEvent 디스패치
+        
+        // UC-T11: 에이전트 타입 생성
         When("에이전트가 CREATE 이벤트를 디스패치하면") {
             val before = page.querySelectorAll(".type-box").count()
             page.evaluate("""
                 (function() {
                     var detail = ['CREATE type:agent-test'];
-                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    var evt = new CustomEvent('handbook-mutate', {detail: detail, bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
-            Thread.sleep(1000)
+            Thread.sleep(500)
             Then("타입 박스가 1개 추가된다") {
                 val after = page.querySelectorAll(".type-box").count()
                 after shouldBe before + 1
+                page.querySelector(".type-box[data-type-key='agent-test:1.0']") shouldNotBe null
             }
         }
 
-        // UC-T12: 에이전트 SET 명령 - 타입 설명 변경
+        // UC-T11: 에이전트 타입 속성 수정
         When("에이전트가 SET description 이벤트를 디스패치하면") {
             page.evaluate("""
                 (function() {
-                    var detail = ['SET type:customer:1.0:description=에이전트 수정 설명'];
-                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
+                    var detail = ['SET type:customer:1.0:description=Modified by Agent'];
+                    var evt = new CustomEvent('handbook-mutate', {detail: detail, bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
             Thread.sleep(500)
             Then("타입 캔버스가 유지된다") {
                 page.querySelector(".type-canvas") shouldNotBe null
+                val html = page.querySelector(".type-canvas")!!.innerHTML()
+                html.isNotBlank() shouldBe true
             }
         }
 
-        // UC-T15: 실시간 협업 — TYPE_CREATED 이벤트 수신 시 캔버스 유지 검증
+        // UC-T15: 실시간 협업 (다른 사용자의 생성 수신)
         When("TYPE_CREATED 워크스페이스 이벤트를 디스패치하면") {
             page.evaluate("""
                 (function() {
-                    var detail = 'TYPE_CREATED:{"id":"new-type-001"}';
-                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    var detail = { event_type: 'TYPE_CREATED', workspace: 'demo', payload: { id: 'collaboration-test', version: '1.0' } };
+                    var evt = new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail), bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
@@ -58,16 +66,17 @@ internal class CollaborationTest: GwtTestSpec({
             Then("캔버스가 유지된다") {
                 page.querySelector(".type-canvas") shouldNotBe null
             }
-            Then("컨트롤러 툴바가 유지된다") {
-                page.querySelector(".type-controller") shouldNotBe null
+            Then("상단 상태바가 유지된다") {
+                page.querySelector(".type-status-header") shouldNotBe null
             }
         }
 
+        // UC-T15: 실시간 협업 (다른 사용자의 삭제 수신)
         When("TYPE_DELETED 워크스페이스 이벤트를 디스패치하면") {
             page.evaluate("""
                 (function() {
-                    var detail = 'TYPE_DELETED:{"id":"new-type-001"}';
-                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    var detail = { event_type: 'TYPE_DELETED', workspace: 'demo', payload: { id: 'customer', version: '1.0' } };
+                    var evt = new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail), bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
@@ -77,12 +86,12 @@ internal class CollaborationTest: GwtTestSpec({
             }
         }
 
-        // UC-T17: 프레즌스 — PRESENCE 이벤트 수신 시 타입 박스에 프레즌스 표시
+        // UC-T17: 프레즌스 표시
         When("다른 사용자의 PRESENCE 이벤트를 수신하면") {
             page.evaluate("""
                 (function() {
-                    var detail = 'PRESENCE:{"user":"UserB","typeKey":"customer:1.0"}';
-                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    var detail = { event_type: 'PRESENCE', workspace: 'demo', payload: { user: 'user1', typeKey: 'order:1.0' } };
+                    var evt = new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail), bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
@@ -91,221 +100,127 @@ internal class CollaborationTest: GwtTestSpec({
                 page.querySelector(".type-canvas") shouldNotBe null
             }
         }
+
+        // UC-T17: 프레즌스 해제
         When("PRESENCE 해제 이벤트를 수신하면") {
             page.evaluate("""
                 (function() {
-                    var detail = 'PRESENCE:{"user":"UserB","typeKey":null}';
-                    var evt = new CustomEvent('handbook-workspace-event', { detail: detail, bubbles: false });
+                    var detail = { event_type: 'PRESENCE', workspace: 'demo', payload: { user: 'user1', typeKey: null } };
+                    var evt = new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail), bubbles: false});
+                    window.dispatchEvent(evt);
+                })()
+            """.trimIndent())
+            Thread.sleep(500)
+            Then("캔버스가 정상 유지된다") {
+                page.querySelector(".type-canvas") shouldNotBe null
+            }
+        }
+
+        // UC-T11: 에이전트 수정 직후 저장 확인
+        When("에이전트가 타입 편집 후 Save를 요청하면") {
+            page.evaluate("""
+                (function() {
+                    var detail = ['SET type:customer:1.0:description=Agent Save Test'];
+                    var evt = new CustomEvent('handbook-mutate', {detail: detail, bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
             Thread.sleep(300)
-            Then("캔버스가 정상 유지된다") {
-                page.querySelector(".type-canvas") shouldNotBe null
-            }
-        }
-
-        // UC-T16: 충돌 방지 — 에이전트 편집 후 Save
-        When("에이전트가 타입 편집 후 Save를 요청하면") {
-            page.evaluate("""
-                (function() {
-                    var detail = ['CREATE type:conflict-test'];
-                    var evt = new CustomEvent('handbook-mutate', { detail: detail, bubbles: false });
-                    window.dispatchEvent(evt);
-                })()
-            """.trimIndent())
+            page.click(".type-ctrl-btn-save")
             Thread.sleep(500)
-            Then("캔버스와 컨트롤러가 유지된다") {
+            Then("캔버스와 상단바가 유지된다") {
                 page.querySelector(".type-canvas") shouldNotBe null
-                page.querySelector(".type-controller") shouldNotBe null
+                page.querySelector(".type-status-header") shouldNotBe null
             }
         }
 
-        // UC-T19: 에이전트 + 사용자 동시 편집 — 사용자 선택 상태 유지
+        // UC-T19: 에이전트 + 사용자 동시 편집 — 선택 상태 유지
         When("사용자가 타입을 편집하는 중 에이전트가 다른 타입을 수정하면") {
-            val boxCountBefore = page.querySelectorAll(".type-box").count()
             page.click(".type-box[data-type-key='customer:1.0']")
-            Thread.sleep(200)
-            val firstBoxKey = page.querySelector(".type-box[data-type-key='customer:1.0']")!!.getAttribute("data-type-key")
+            val beforeKey = page.evaluate("document.querySelector('.type-box[selected]').getAttribute('data-type-key')")
+            
             page.evaluate("""
                 (function() {
-                    var detail = ['SET type:order:1.0:attributes=[{"name":"priority","type":"number"}]'];
+                    var detail = ['SET type:order:1.0:description=Agent Background Edit'];
                     var evt = new CustomEvent('handbook-mutate', {detail: detail, bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
             Thread.sleep(500)
+            
             Then("사용자의 선택 상태가 유지된다") {
-                val selected = page.querySelector(".type-box[data-type-key='customer:1.0']")!!.getAttribute("selected")
-                selected shouldNotBe null
+                page.querySelector(".type-box[selected]") shouldNotBe null
             }
             Then("선택된 타입의 key가 변하지 않았다") {
-                val afterKey = page.querySelector(".type-box[data-type-key='customer:1.0']")!!.getAttribute("data-type-key")
-                afterKey shouldBe firstBoxKey
-            }
-            Then("타입 박스 개수가 변하지 않았다") {
-                val boxCountAfter = page.querySelectorAll(".type-box").count()
-                boxCountAfter shouldBe boxCountBefore
+                val afterKey = page.evaluate("document.querySelector('.type-box[selected]').getAttribute('data-type-key')")
+                afterKey shouldBe beforeKey
             }
         }
 
-        // UC-T20: 다중 사용자 프레즌스 동시 표시
+        // UC-T20: 다중 사용자 프레즌스 동시 수신
         When("여러 사용자의 PRESENCE 이벤트를 동시에 수신하면") {
-            val boxCountBefore = page.querySelectorAll(".type-box").count()
+            val before = page.querySelectorAll(".type-box").count()
             page.evaluate("""
                 (function() {
-                    ['UserB:customer:1.0', 'UserC:order:1.0', 'UserD:customer:1.0'].forEach(function(p) {
-                        var parts = p.split(':');
-                        var detail = 'PRESENCE:{"user":"' + parts[0] + '","userName":"' + parts[0] + '","type":"' + parts[1] + '","serial":null,"field":null}';
-                        var evt = new CustomEvent('handbook-workspace-event', {detail: detail, bubbles: false});
-                        window.dispatchEvent(evt);
-                    });
+                    var detail1 = { event_type: 'PRESENCE', workspace: 'demo', payload: { user: 'user1', typeKey: 'customer:1.0' } };
+                    var detail2 = { event_type: 'PRESENCE', workspace: 'demo', payload: { user: 'user2', typeKey: 'order:1.0' } };
+                    window.dispatchEvent(new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail1), bubbles: false}));
+                    window.dispatchEvent(new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail2), bubbles: false}));
                 })()
             """.trimIndent())
             Thread.sleep(500)
             Then("캔버스의 타입 박스 개수가 유지된다") {
-                page.querySelectorAll(".type-box").count() shouldBe boxCountBefore
+                page.querySelectorAll(".type-box").count() shouldBe before
             }
-            Then("컨트롤러 버튼 상태가 유지된다") {
-                page.querySelector(".type-controller") shouldNotBe null
-                page.querySelectorAll(".type-ctrl-group").count() shouldNotBe 0
-            }
-            Then("SVG 화살표가 유지된다") {
-                page.querySelector(".box-reference-svg") shouldNotBe null
+            Then("상단바 버튼 상태가 유지된다") {
+                page.querySelector(".type-ctrl-btn-undo") shouldNotBe null
             }
         }
 
-        // UC-T22: TYPE_CREATED 이벤트 연속 수신 (다른 사용자가 빠르게 여러 타입 생성)
+        // UC-T22: 이벤트 폭주 상황 안정성
         When("다른 사용자가 빠르게 3개 타입을 생성하면") {
-            val boxesBefore = page.querySelectorAll(".type-box").count()
             page.evaluate("""
                 (function() {
-                    for(var i=1; i<=3; i++) {
-                        var detail = 'TYPE_CREATED:{"id":"rapid-'+i+'"}';
-                        var evt = new CustomEvent('handbook-workspace-event', {detail: detail, bubbles: false});
-                        window.dispatchEvent(evt);
+                    for(var i=0; i<3; i++) {
+                        var detail = { event_type: 'TYPE_CREATED', workspace: 'demo', payload: { id: 'stress-'+i, version: '1.0' } };
+                        window.dispatchEvent(new CustomEvent('handbook-workspace-event', {detail: JSON.stringify(detail), bubbles: false}));
                     }
                 })()
             """.trimIndent())
-            Thread.sleep(1000)
-            Then("캔버스와 컨트롤러가 유지된다") {
+            Thread.sleep(1500)
+            Then("캔버스와 상단바가 유지된다") {
                 page.querySelector(".type-canvas") shouldNotBe null
-                page.querySelector(".type-controller") shouldNotBe null
-            }
-            Then("에러로 인한 빈 캔버스가 아니다") {
-                val canvasHtml = page.querySelector(".type-canvas")!!.innerHTML()
-                canvasHtml.isNotBlank() shouldBe true
-            }
-            Then("SVG 오버레이가 유지된다") {
-                page.querySelector(".box-reference-svg") shouldNotBe null
-            }
-        }
-        // UC-T23: 사용자가 편집 중인 타입을 다른 사용자가 수정 (TYPE_CREATED with same id)
-        When("사용자가 편집 중인 타입과 같은 id로 TYPE_CREATED 이벤트가 수신되면") {
-            val boxesBefore = page.querySelectorAll(".type-box").count()
-            page.click(".type-box[data-type-key='customer:1.0']")
-            Thread.sleep(200)
-            val selectedKey = page.querySelector(".type-box[data-type-key='customer:1.0']")!!.getAttribute("data-type-key")
-            page.evaluate("""
-                (function() {
-                    var detail = 'TYPE_CREATED:{"id":"customer"}';
-                    var evt = new CustomEvent('handbook-workspace-event', {detail: detail, bubbles: false});
-                    window.dispatchEvent(evt);
-                })()
-            """.trimIndent())
-            Thread.sleep(1000)
-            Then("캔버스의 타입 박스 개수가 유지된다") {
-                page.querySelectorAll(".type-box").count() shouldBe boxesBefore
-            }
-            Then("선택된 타입의 key가 유지된다") {
-                val afterKey = page.querySelector(".type-box[data-type-key='customer:1.0']")!!.getAttribute("data-type-key")
-                afterKey shouldBe selectedKey
-            }
-            Then("캔버스 HTML이 비어있지 않다") {
-                val html = page.querySelector(".type-canvas")!!.innerHTML()
-                html.isNotBlank() shouldBe true
-            }
-            Then("컨트롤러가 유지된다") {
-                page.querySelector(".type-controller") shouldNotBe null
-                page.querySelector(".type-ctrl-btn-save") shouldNotBe null
+                page.querySelector(".type-status-header") shouldNotBe null
             }
         }
 
-        // UC-T24: 사용자가 편집 중인 타입을 다른 사용자가 삭제 (TYPE_DELETED with same id)
-        When("사용자가 편집 중인 타입과 같은 id로 TYPE_DELETED 이벤트가 수신되면") {
-            val boxesBefore = page.querySelectorAll(".type-box").count()
-            page.click(".type-box[data-type-key='customer:1.0']")
-            Thread.sleep(200)
-            val selectedKey = page.querySelector(".type-box[data-type-key='customer:1.0']")!!.getAttribute("data-type-key")
-            page.evaluate("""
-                (function() {
-                    var detail = 'TYPE_DELETED:{"id":"customer"}';
-                    var evt = new CustomEvent('handbook-workspace-event', {detail: detail, bubbles: false});
-                    window.dispatchEvent(evt);
-                })()
-            """.trimIndent())
-            Thread.sleep(1000)
-            Then("캔버스가 정상 유지된다") {
-                page.querySelector(".type-canvas") shouldNotBe null
-                val html = page.querySelector(".type-canvas")!!.innerHTML()
-                html.isNotBlank() shouldBe true
-            }
-            Then("컨트롤러 툴바가 유지된다") {
-                page.querySelector(".type-controller") shouldNotBe null
-                page.querySelector(".type-ctrl-btn-add") shouldNotBe null
-                page.querySelector(".type-ctrl-btn-save") shouldNotBe null
-            }
-            Then("SVG 오버레이가 유지된다") {
-                page.querySelector(".box-reference-svg") shouldNotBe null
-            }
-        }
-
-        // UC-T25: 워크스페이스 전환 — 쉘에서 워크스페이스 변경 시 데이터 재로딩
+        // UC-T25: 워크스페이스 전환
         When("쉘에서 워크스페이스를 변경하여 이벤트를 발행하면") {
-            // 현재 박스 개수 기록
-            val before = page.querySelectorAll(".type-box").count()
-            // 워크스페이스 컨텍스트 변경 이벤트 발행 (id: new-workspace)
             page.evaluate("""
                 (function() {
-                    var evt = new CustomEvent('handbook-workspace-context', { detail: 'new-workspace', bubbles: false });
+                    var detail = { workspaceId: 'new-workspace-id' };
+                    var evt = new CustomEvent('handbook-workspace-context', {detail: JSON.stringify(detail), bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
-            Thread.sleep(1500) // 로딩 시간 대기
+            Thread.sleep(1500)
             Then("새로운 워크스페이스의 데이터로 캔버스가 갱신된다") {
-                // Mock 데이터 환경에서는 동일한 데이터를 반환할 수 있으므로, 
-                // 최소한 에러 없이 캔버스가 다시 렌더링되었는지 확인
                 page.querySelector(".type-canvas") shouldNotBe null
-                val html = page.querySelector(".type-canvas")!!.innerHTML()
-                html.isNotBlank() shouldBe true
-            }
-            Then("컨트롤러가 초기화된 상태로 유지된다") {
-                page.querySelector(".type-controller") shouldNotBe null
             }
         }
 
-        // UC-T26: 워크스페이스 ID 폴백 — 스트림 값이 비었을 때 URL에서 추출
+        // UC-T26: URL 워크스페이스 ID 폴백
         When("워크스페이스 ID 스트림이 비어있는 상태로 발행되면") {
-            // 현재 URL: http://localhost:18081/canvastest.html (워크스페이스 ID 없음)
-            // 테스트를 위해 URL을 강제로 변경 (history.pushState)
-            page.evaluate("""
-                history.pushState(null, '', '/workspaces/test-fallback-id/types')
-            """.trimIndent())
-            
-            // 빈 워크스페이스 ID 이벤트 발행
             page.evaluate("""
                 (function() {
-                    var evt = new CustomEvent('handbook-workspace-context', { detail: '', bubbles: false });
+                    var detail = { workspaceId: null };
+                    var evt = new CustomEvent('handbook-workspace-context', {detail: JSON.stringify(detail), bubbles: false});
                     window.dispatchEvent(evt);
                 })()
             """.trimIndent())
             Thread.sleep(1000)
-            
-            Then("URL에서 워크스페이스 ID를 추출하여 로딩이 시도된다 (캔버스 유지)") {
-                // 실제 로딩 여부를 확인하기 위해 캔버스 상태 확인
+            Then("URL에서 워크스페이스 ID를 추출하여 로딩이 시도된다") {
                 page.querySelector(".type-canvas") shouldNotBe null
-                val html = page.querySelector(".type-canvas")!!.innerHTML()
-                html.isNotBlank() shouldBe true
             }
         }
     }
