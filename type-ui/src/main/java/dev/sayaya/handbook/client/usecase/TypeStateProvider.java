@@ -10,20 +10,20 @@ import java.util.Set;
 
 /**
  * 캔버스의 현재 타입 상태를 JSON 문자열로 제공한다.
- * 에이전트가 현재 편집 중인 타입/속성 정보를 파악할 수 있도록 한다.
+ * 에이전트가 현재 가시적인 타입/속성 정보를 파악할 수 있도록 한다.
  */
 @Singleton
 public class TypeStateProvider implements StateProvider {
-    private final TypeList typeList;
+    private final TypeSearchProvider typeSearchProvider;
 
     @Inject
-    TypeStateProvider(TypeList typeList) {
-        this.typeList = typeList;
+    TypeStateProvider(TypeSearchProvider typeSearchProvider) {
+        this.typeSearchProvider = typeSearchProvider;
     }
 
     @Override
     public String snapshot() {
-        Set<Type> types = typeList.getValue();
+        Set<Type> types = typeSearchProvider.getVisibleTypes();
         StringBuilder sb = new StringBuilder();
         sb.append("{\"types\":[");
         boolean first = true;

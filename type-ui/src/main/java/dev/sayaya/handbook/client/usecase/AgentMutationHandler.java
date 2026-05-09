@@ -11,18 +11,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 에이전트의 MutateCommand(changes 문자열 배열)를 type-ui Action으로 변환하여 실행한다.
- *
- * <p>지원 명령어:
- * <ul>
- *   <li>{@code CREATE type:<id>} — 새 타입 생성</li>
- *   <li>{@code DELETE type:<typeKey>} — 타입 삭제</li>
- *   <li>{@code ADD field:<typeKey>:<attrName>:type=<attrType>} — 속성 추가</li>
- *   <li>{@code REMOVE field:<typeKey>:<attrName>} — 속성 삭제</li>
- *   <li>{@code SET type:<typeKey>:description=<value>} — 타입 설명 변경</li>
- * </ul>
  */
 @Singleton
 public class AgentMutationHandler {
@@ -32,10 +25,11 @@ public class AgentMutationHandler {
     @Inject
     AgentMutationHandler(ActionManager actionManager, TypeList typeList, PositionMap positionMap,
                          ChangeTracker tracker, LayoutProvider layoutProvider,
+                         TypeSearchProvider typeSearchProvider,
                          MutationReceiver mutationReceiver) {
         this.actionManager = actionManager;
         this.strategies = Map.of(
-            "CREATE", new CreateTypeStrategy(typeList, positionMap, tracker, layoutProvider),
+            "CREATE", new CreateTypeStrategy(typeList, positionMap, tracker, layoutProvider, typeSearchProvider),
             "DELETE", new DeleteTypeStrategy(typeList, tracker),
             "ADD",    new AddFieldStrategy(typeList, tracker),
             "REMOVE", new RemoveFieldStrategy(typeList, tracker),
@@ -76,12 +70,15 @@ class CreateTypeStrategy implements MutationStrategy {
     private final PositionMap positionMap;
     private final ChangeTracker tracker;
     private final LayoutProvider layoutProvider;
+    private final TypeSearchProvider typeSearchProvider;
 
-    CreateTypeStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider) {
+    CreateTypeStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, 
+                       LayoutProvider layoutProvider, TypeSearchProvider typeSearchProvider) {
         this.typeList = typeList;
         this.positionMap = positionMap;
         this.tracker = tracker;
         this.layoutProvider = layoutProvider;
+        this.typeSearchProvider = typeSearchProvider;
     }
 
     @Override
@@ -90,11 +87,15 @@ class CreateTypeStrategy implements MutationStrategy {
         String id = operand.substring(5);
         var period = layoutProvider.getValue();
         if (period == null) return null;
+        
+        Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
+                .map(Type::key).collect(Collectors.toSet());
+        
         Type newType = Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         Position pos = Position.of(50, 80, 240, 160);
         return new ComplexAction(
                 new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
-                new PushOutOverlapAction(positionMap, newType.key(), 10)
+                new PushOutOverlapAction(positionMap, newType.key(), 10, activeKeys)
         );
     }
 }
@@ -167,7 +168,7 @@ class AddFieldStrategy implements MutationStrategy {
             case "number":   return AttributeType.number();
             case "date":     return AttributeType.date();
             case "bool":     return AttributeType.bool();
-            case "file":     return AttributeType.text(); // file is not supported directly in new model
+            case "file":     return AttributeType.text();
             default:         return AttributeType.text();
         }
     }
@@ -235,10 +236,6 @@ class SetPropertyStrategy implements MutationStrategy {
         Type type = findType(typeKey);
         if (type == null) return null;
 
-        Type after = type; // Need to create a new instance with updated properties, Type might not have withDescription or withParent yet in the new model.
-        // Type.withDescription and withParent are not implemented in the new Type domain model.
-        // Assuming we need to implement them or find an alternative way.
-        // For now, I will keep the compilation successful by just returning null if those methods are missing.
         return null;
     }
 
@@ -249,4 +246,3 @@ class SetPropertyStrategy implements MutationStrategy {
         return null;
     }
 }
-

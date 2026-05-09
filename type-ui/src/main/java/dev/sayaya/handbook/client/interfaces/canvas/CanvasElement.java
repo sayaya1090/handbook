@@ -5,11 +5,7 @@ import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.interfaces.box.*;
 import dev.sayaya.handbook.client.interfaces.selection.DragShapeElement;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
-import dev.sayaya.handbook.client.usecase.CanvasMode;
-import dev.sayaya.handbook.client.usecase.GridSnap;
-import dev.sayaya.handbook.client.usecase.LayoutProvider;
-import dev.sayaya.handbook.client.usecase.PositionMap;
-import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.*;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
@@ -28,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.jboss.elemento.Elements.div;
 
@@ -37,21 +34,7 @@ import static org.jboss.elemento.Elements.div;
  * <p><b>책임:</b> 타입 박스({@link TypeElement})들을 배치/렌더링하고,
  * 드래그 이동, 키보드 단축키(Ctrl+Z Undo, Ctrl+A 전체 선택, Delete 삭제, Arrow 이동),
  * 컨텍스트 메뉴, 선택 상태를 관리한다.
- * TypeList를 구독하여 타입 추가/제거 시 DOM 요소를 동기화한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link BoxElementFactory} — TypeElement 생성 팩토리</li>
- *   <li>{@link TypeList} — 타입 목록 상태 구독</li>
- *   <li>{@link PositionMap} — 타입 위치 조회</li>
- *   <li>{@link ActionManager} — Move/Delete/ComplexAction 실행</li>
- *   <li>{@link SelectedBoxElement} — 선택 상태</li>
- *   <li>{@link DragShapeElement} — 드래그 시각 피드백</li>
- *   <li>{@link CanvasMode}, {@link GridSnap} — 모드/스냅 설정</li>
- *   <li>{@link CanvasContextMenuElement}, {@link BoxContextMenuElement} — 컨텍스트 메뉴</li>
- * </ul></p>
- * <p><b>주의:</b> elementMap으로 typeKey → TypeElement 매핑을 유지한다.
- * 드래그 종료 시 스냅이 활성화되면 첫 번째 선택 박스 기준으로 스냅 델타를 계산한다.
- * 모바일에서는 {@link TouchEventAdapter}가 터치 이벤트를 마우스 이벤트로 변환하고,
- * {@link PinchZoomHandler}가 두 손가락 핀치 줌을 처리한다.</p>
+ * TypeSearchProvider를 구독하여 현재 레이아웃 기간에 유효한 타입만 DOM에 동기화한다.</p>
  */
 @Singleton
 public class CanvasElement implements IsElement<HTMLDivElement> {
@@ -67,7 +50,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private final BoxContextMenuElement boxMenu;
     private final CanvasMode canvasMode;
     private final GridSnap gridSnap;
-    private final LayoutProvider layoutProvider;
+    private final TypeSearchProvider typeSearchProvider;
     private final TouchEventAdapter touchAdapter;
     private final PinchZoomHandler pinchZoom;
     private final Map<String, TypeElement> elementMap = new LinkedHashMap<>();
@@ -76,13 +59,13 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     CanvasElement(BoxElementFactory boxFactory, TypeList typeList, ActionManager actionManager,
                   PositionMap positionMap, SelectedBoxElement selection, DragShapeElement dragShape,
                   BoxReferenceElement referenceElement, ChangeTracker tracker,
-                  CanvasMode canvasMode, GridSnap gridSnap, LayoutProvider layoutProvider,
+                  CanvasMode canvasMode, GridSnap gridSnap, TypeSearchProvider typeSearchProvider,
                   CanvasContextMenuElement canvasMenu, BoxContextMenuElement boxMenu,
                   TouchEventAdapter touchAdapter, PinchZoomHandler pinchZoom,
                   VersionHistoryPanel versionHistoryPanel) {
         this.canvasMode = canvasMode;
         this.gridSnap = gridSnap;
-        this.layoutProvider = layoutProvider;
+        this.typeSearchProvider = typeSearchProvider;
         this.boxFactory = boxFactory;
         this.actionManager = actionManager;
         this.positionMap = positionMap;
@@ -109,9 +92,13 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                     }
                 }
                 if (dx == 0 && dy == 0) return;
+                
+                Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
+                        .map(Type::key).collect(Collectors.toSet());
+                
                 MoveBoxAction move = new MoveBoxAction(positionMap, selected, dx, dy);
                 Action[] pushOuts = selected.stream()
-                        .map(key -> new PushOutOverlapAction(positionMap, key, 10))
+                        .map(key -> new PushOutOverlapAction(positionMap, key, 10, activeKeys))
                         .toArray(Action[]::new);
                 Action[] all = new Action[1 + pushOuts.length];
                 all[0] = move;
@@ -144,49 +131,31 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         root.addEventListener("mousemove", e -> handleMouseMove((MouseEvent) e));
         root.addEventListener("mouseup", e -> handleMouseUp((MouseEvent) e));
 
-        typeList.subscribe(this::syncElements);
-        layoutProvider.subscribe(p -> syncElements(typeList.getValue()));
+        // 가시적인 타입 목록만 구독하여 DOM 동기화 (UC-T27 단일 가시성 소스)
+        typeSearchProvider.visibleTypes().subscribe(this::syncElements);
     }
 
-    private void syncElements(Set<Type> types) {
-        dev.sayaya.handbook.domain.LayoutPeriod period = layoutProvider.getValue();
+    private void syncElements(Set<Type> visibleTypes) {
         Set<String> currentKeys = new HashSet<>(elementMap.keySet());
         Set<String> newKeys = new HashSet<>();
         
-        if (period != null && types != null) {
-            double start = period.effectDateTime();
-            for (Type type : types) {
-                // 현재 레이아웃 기간의 시작 시점에 유효한 타입만 렌더링
-                // 부동 소수점 오차 방지를 위해 1ms 미만의 차이는 무시
-                boolean isEffectValid = type.effectDateTime() <= start + 0.1;
-                boolean isExpireValid = type.expireDateTime() > start + 0.1;
-                
-                if (isEffectValid && isExpireValid) {
-                    try {
-                        String key = type.key();
-                        newKeys.add(key);
-                        if (!elementMap.containsKey(key)) {
-                            Position pos = positionMap.get(key);
-                            if (pos == null) pos = Position.of(20, 20, 240, 160);
-                            TypeElement elem = boxFactory.create(type, pos);
-                            elementMap.put(key, elem);
-                            root.appendChild(elem.element());
-                            initBoxHandlers(elem);
-                        } else {
-                            elementMap.get(key).setType(type);
-                        }
-                    } catch (Throwable t) {
-                        com.google.gwt.core.client.GWT.log("CanvasElement: error syncing box: " + t.getMessage(), t);
+        if (visibleTypes != null) {
+            for (Type type : visibleTypes) {
+                try {
+                    String key = type.key();
+                    newKeys.add(key);
+                    if (!elementMap.containsKey(key)) {
+                        Position pos = positionMap.get(key);
+                        if (pos == null) pos = Position.of(20, 20, 240, 160);
+                        TypeElement elem = boxFactory.create(type, pos);
+                        elementMap.put(key, elem);
+                        root.appendChild(elem.element());
+                        initBoxHandlers(elem);
+                    } else {
+                        elementMap.get(key).setType(type);
                     }
-                } else {
-                    // 필터링 사유 로그 (UC-T27 정책)
-                    elemental2.dom.DomGlobal.console.groupCollapsed("[CanvasElement] Filtered out type: " + type.key());
-                    elemental2.dom.DomGlobal.console.log("Reason: Validity period mismatch");
-                    elemental2.dom.DomGlobal.console.log("Type period: " + type.effectDateTime() + " ~ " + type.expireDateTime());
-                    elemental2.dom.DomGlobal.console.log("Layout start: " + start);
-                    elemental2.dom.DomGlobal.console.log("Effect check (<=): " + isEffectValid);
-                    elemental2.dom.DomGlobal.console.log("Expire check (>): " + isExpireValid);
-                    elemental2.dom.DomGlobal.console.groupEnd();
+                } catch (Throwable t) {
+                    com.google.gwt.core.client.GWT.log("CanvasElement: error syncing box: " + t.getMessage(), t);
                 }
             }
         }
@@ -235,14 +204,14 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
             } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
                 e.preventDefault();
                 Set<String> allKeys = new HashSet<>();
-                for (Type type : typeList.getValue()) {
+                for (Type type : typeSearchProvider.getVisibleTypes()) {
                     allKeys.add(type.key());
                 }
                 selection.selectAll(allKeys);
             } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
                 e.preventDefault();
                 Set<String> selected = new HashSet<>(selection.getValue());
-                for (Type type : typeList.getValue()) {
+                for (Type type : typeSearchProvider.getVisibleTypes()) {
                     if (selected.contains(type.key())) {
                         actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
                     }
@@ -261,10 +230,13 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                     case "ArrowRight": dx = step;  break;
                 }
                 if (dx != 0 || dy != 0) {
+                    Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
+                            .map(Type::key).collect(Collectors.toSet());
+                    
                     Set<String> keys = new HashSet<>(selected);
                     MoveBoxAction move = new MoveBoxAction(positionMap, keys, dx, dy);
                     Action[] pushOuts = keys.stream()
-                            .map(key -> new PushOutOverlapAction(positionMap, key, 10))
+                            .map(key -> new PushOutOverlapAction(positionMap, key, 10, activeKeys))
                             .toArray(Action[]::new);
                     Action[] all = new Action[1 + pushOuts.length];
                     all[0] = move;

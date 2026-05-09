@@ -11,23 +11,29 @@ import java.util.*;
  *
  * <p><b>책임:</b> BFS 큐 기반으로 sourceKey 박스와 겹치는 다른 박스들을 감지하고,
  * 최소 이동 방향(상하좌우)을 선택하여 밀어낸다. 연쇄 충돌(A→B→C)도 재귀적으로 해소한다.
- * rollback 시 원래 위치맵을 복원한다.</p>
+ * 현재 가시적인(activeKeys) 박스들만 충돌 감지 대상으로 고려한다.</p>
  * <p><b>의존관계:</b> <ul>
  *   <li>{@link PositionMap} — 위치 조회/갱신/복원</li>
  * </ul></p>
- * <p><b>주의:</b> padding 값만큼 추가 간격을 확보한다.
- * 보통 {@link ComplexAction}을 통해 Move/Create 액션과 함께 묶여 실행된다.</p>
+ * <p><b>주의:</b> activeKeys에 포함되지 않은 타입 버전은 물리적으로 존재하더라도
+ * 충돌 감지 엔진이 무시하여 "유령 충돌"을 방지한다.</p>
  */
 public class PushOutOverlapAction implements Action {
     private final PositionMap positionMap;
     private final String sourceKey;
     private final int padding;
+    private final Set<String> activeKeys;
     private Map<String, Position> originalPositions;
 
     public PushOutOverlapAction(PositionMap positionMap, String sourceKey, int padding) {
+        this(positionMap, sourceKey, padding, null);
+    }
+
+    public PushOutOverlapAction(PositionMap positionMap, String sourceKey, int padding, Set<String> activeKeys) {
         this.positionMap = positionMap;
         this.sourceKey = sourceKey;
         this.padding = padding;
+        this.activeKeys = activeKeys;
     }
 
     @Override
@@ -50,6 +56,9 @@ public class PushOutOverlapAction implements Action {
             for (Map.Entry<String, Position> entry : new HashMap<>(positionMap.getValue()).entrySet()) {
                 String otherKey = entry.getKey();
                 if (otherKey.equals(currentKey)) continue;
+                // 가시성 필터: activeKeys가 제공된 경우 해당 키만 충돌 감지 참여
+                if (activeKeys != null && !activeKeys.contains(otherKey)) continue;
+                
                 Position other = entry.getValue();
                 int[] delta = calculateOverlap(current, other);
                 if (delta == null) continue;

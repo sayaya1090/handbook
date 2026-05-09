@@ -6,6 +6,7 @@ import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.TypeSearchProvider;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.CreateBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
@@ -20,6 +21,8 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static dev.sayaya.handbook.client.interfaces.ContextMenuHelper.menuItem;
 import static dev.sayaya.handbook.client.interfaces.ContextMenuHelper.uniqueTypeId;
@@ -34,16 +37,19 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
     private final PositionMap positionMap;
     private final ChangeTracker tracker;
     private final LayoutProvider layoutProvider;
+    private final TypeSearchProvider typeSearchProvider;
     private int clickX, clickY;
 
     @Inject
     CanvasContextMenuElement(ActionManager actionManager, TypeList typeList, PositionMap positionMap,
-                             ChangeTracker tracker, LayoutProvider layoutProvider, LabelProvider labelProvider) {
+                             ChangeTracker tracker, LayoutProvider layoutProvider, 
+                             TypeSearchProvider typeSearchProvider, LabelProvider labelProvider) {
         this.actionManager = actionManager;
         this.typeList = typeList;
         this.positionMap = positionMap;
         this.tracker = tracker;
         this.layoutProvider = layoutProvider;
+        this.typeSearchProvider = typeSearchProvider;
 
         HTMLElement addItem = menuItem("Add Type");
         HTMLElement undoItem = menuItem("Undo");
@@ -98,12 +104,16 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
         if (period == null) {
             throw new IllegalStateException("Cannot add type: No active layout period.");
         }
+        
+        Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
+                .map(Type::key).collect(Collectors.toSet());
+        
         String id = uniqueTypeId(typeList);
         Type newType = Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         Position pos = Position.of(x, y, 240, 160);
         actionManager.execute(new ComplexAction(
                 new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
-                new PushOutOverlapAction(positionMap, newType.key(), 10)
+                new PushOutOverlapAction(positionMap, newType.key(), 10, activeKeys)
         ));
     }
 

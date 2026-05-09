@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.box;
 
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.TypeSearchProvider;
 import dev.sayaya.handbook.client.usecase.arrow.Arrow;
 import dev.sayaya.handbook.client.usecase.arrow.ArrowFactory;
 import dev.sayaya.handbook.client.usecase.arrow.Rectangle;
@@ -22,15 +23,9 @@ import static org.jboss.elemento.Elements.div;
 /**
  * Document 참조 타입 간 SVG 화살표를 렌더링하는 오버레이 요소.
  *
- * <p><b>책임:</b> TypeList와 PositionMap을 구독하여 document 타입 속성의 referencedType을
- * 기반으로 타입 박스 간 방향 화살표를 SVG로 그린다. 참조 관계 변경 시 자동 갱신한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link TypeList} — 타입 목록 구독 (속성의 document 참조 탐색)</li>
- *   <li>{@link PositionMap} — 타입 위치 구독 (화살표 좌표 계산)</li>
- *   <li>{@link ArrowFactory} — 사각형 간 최적 화살표 경로 계산</li>
- * </ul></p>
- * <p><b>주의:</b> SVG는 pointer-events:none으로 설정되어 마우스 이벤트를 투과한다.
- * 화살표 색상은 --md-sys-color-primary CSS 변수를 사용한다.</p>
+ * <p><b>책임:</b> TypeSearchProvider와 PositionMap을 구독하여 
+ * 현재 가시적인 타입들 간의 참조 관계를 SVG로 그린다.
+ * 구버전 등 가려진 타입에서 유래한 엣지는 렌더링 대상에서 제외한다.</p>
  */
 @Singleton
 public class BoxReferenceElement implements IsElement<HTMLDivElement> {
@@ -38,12 +33,12 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
     private final Element svg;
     private final ArrowFactory arrowFactory = new ArrowFactory();
-    private final TypeList typeList;
+    private final TypeSearchProvider typeSearchProvider;
     private final PositionMap positionMap;
 
     @Inject
-    BoxReferenceElement(TypeList typeList, PositionMap positionMap) {
-        this.typeList = typeList;
+    BoxReferenceElement(TypeSearchProvider typeSearchProvider, PositionMap positionMap) {
+        this.typeSearchProvider = typeSearchProvider;
         this.positionMap = positionMap;
 
         svg = DomGlobal.document.createElementNS(SVG_NS, "svg");
@@ -53,11 +48,11 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
         root = div().css("box-reference-container").element();
         root.appendChild(svg);
 
-        // 이벤트 위임: SVG 전체에 한 번만 등록, data 속성으로 대상 판별
+        // 이벤트 위임
         svg.addEventListener("mouseenter", e -> handleHover((MouseEvent) e, true), true);
         svg.addEventListener("mouseleave", e -> handleHover((MouseEvent) e, false), true);
 
-        typeList.subscribe(types -> redraw());
+        typeSearchProvider.visibleTypes().subscribe(types -> redraw());
         positionMap.subscribe(positions -> redraw());
     }
 
@@ -90,7 +85,7 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
             svg.removeChild(svg.firstChild);
         }
 
-        Set<Type> types = typeList.getValue();
+        Set<Type> types = typeSearchProvider.getVisibleTypes();
         Map<String, Position> positions = positionMap.getValue();
         if (types.isEmpty() || positions.isEmpty()) return;
 
@@ -184,13 +179,6 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
         return polygon;
     }
 
-    /**
-     * 화살표 호버 시 관련 요소를 하이라이트한다.
-     * @param fromKey 참조하는 타입의 key
-     * @param toKey 참조받는 타입의 key
-     * @param attrName 참조 속성 이름
-     * @param highlight true=하이라이트, false=해제
-     */
     private void highlightRelation(String fromKey, String toKey, String attrName, boolean highlight) {
         // 화살표 자체 하이라이트
         elemental2.dom.NodeList arrows = svg.querySelectorAll(
@@ -200,7 +188,7 @@ public class BoxReferenceElement implements IsElement<HTMLDivElement> {
             g.classList.toggle("box-ref-hover", highlight);
         }
 
-        // 참조받는 타입 박스 하이라이트 — data-type-key 속성으로 직접 선택
+        // 참조받는 타입 박스 하이라이트
         HTMLElement toBox = (HTMLElement) DomGlobal.document.querySelector(
             ".type-box[data-type-key='" + toKey + "']");
         if (toBox != null) toBox.classList.toggle("ref-highlight-target", highlight);
