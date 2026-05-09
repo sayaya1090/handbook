@@ -99,16 +99,11 @@ public class SchemaEvolutionAction implements Action {
 
         // 4. 레이아웃 상속 (X, Y 좌표 복사)
         Map<String, Position> currentPositions = positionMap.getValue();
-        Map<String, Position> inheritedPositions = new LinkedHashMap<>();
-        for (Map.Entry<String, Position> entry : currentPositions.entrySet()) {
-            String key = entry.getKey();
-            if (key.equals(targetType.key())) {
-                // 진화 대상 타입은 새 버전의 키로 위치 계승
-                inheritedPositions.put(nextVersion.key(), entry.getValue());
-            } else {
-                // 나머지 타입들은 그대로 유지
-                inheritedPositions.put(key, entry.getValue());
-            }
+        Map<String, Position> inheritedPositions = new LinkedHashMap<>(currentPositions);
+        Position pos = currentPositions.get(targetType.key());
+        if (pos != null) {
+            // 기존 버전의 위치는 유지하고, 새 버전의 위치를 추가 (상속)
+            inheritedPositions.put(nextVersion.key(), pos);
         }
 
         // 5. 상태 갱신
@@ -127,7 +122,7 @@ public class SchemaEvolutionAction implements Action {
         typeList.update(targetType, closedType); // 기존 타입 마감 반영
         typeList.add(nextVersion);               // 신규 버전 추가
         
-        // 위치 정보 갱신 (새 기간으로 가기 전에 미리 채워넣음)
+        // 위치 정보 갱신 (기존 정보를 포함한 전체 맵으로 교체)
         positionMap.replace(inheritedPositions);
         
         elemental2.dom.DomGlobal.console.log("[SchemaEvolutionAction] Navigating to new period...");

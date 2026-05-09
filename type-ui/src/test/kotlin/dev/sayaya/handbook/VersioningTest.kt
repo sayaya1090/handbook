@@ -2,8 +2,10 @@ package dev.sayaya.handbook
 
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
+import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlin.math.abs
 
 /**
  * UC-T27: 타입 새 버전 생성 (Schema Evolution)
@@ -122,10 +124,32 @@ internal class VersioningTest: GwtTestSpec({
                     page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(0.0, 0.0))
                     Thread.sleep(500)
                     page.click(".type-ctrl-btn-before")
-                    Thread.sleep(500)
+                    Thread.sleep(1000)
                     
                     val periodText = page.textContent(".type-period-label")!!
                     periodText.endsWith("2026-07-01") shouldBe true
+                }
+
+                Then("이전 기간으로 돌아갔을 때 구버전(1.0)이 원래 위치에 존재하며 드래그 가능하다") {
+                    val oldBoxSelector = ".type-box[data-type-key='customer:1.0']"
+                    val oldBox = page.locator(oldBoxSelector)
+                    oldBox.waitFor()
+                    
+                    val currentPos = oldBox.boundingBox()!!
+                    // 부동 소수점 오차 및 렌더링 미세 차이 허용 (5px tolerance)
+                    abs(currentPos.x - beforePos!!.x) shouldBeLessThan 5.0
+                    abs(currentPos.y - beforePos!!.y) shouldBeLessThan 5.0
+                    
+                    // 드래그 조작 가능 여부 검증
+                    page.mouse().move(currentPos.x + 50, currentPos.y + 10)
+                    page.mouse().down()
+                    page.mouse().move(currentPos.x + 150, currentPos.y + 60)
+                    page.mouse().up()
+                    Thread.sleep(500)
+                    
+                    val movedPos = oldBox.boundingBox()!!
+                    movedPos.x shouldNotBe currentPos.x
+                    movedPos.y shouldNotBe currentPos.y
                 }
             }
         }
