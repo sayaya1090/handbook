@@ -11,19 +11,20 @@ public class TestApplication implements EntryPoint {
     public void onModuleLoad() {
         TestComponent component = DaggerTestComponent.create();
 
-        // 2026-05-06: 레이아웃 자동 선택 로직 검증을 위해 두 개의 기간을 주입
-        double now = 1714953600000.0; // 2024-05-06
-        double past = now - 86400000.0; // 어제
-        LayoutPeriod currentPeriod = LayoutPeriod.of(now, Double.MAX_VALUE);
-        LayoutPeriod pastPeriod = LayoutPeriod.of(past, now);
+        // 2026-05-06: 레이아웃 자동 선택 로직 검증을 위해 두 개의 레이아웃 주입
+        double now = 1778025600000.0; 
+        double past = now - 86400000.0; 
+        double infinity = 253402214400000.0;
         
-        // LayoutList 에 두 기간 등록
-        component.layoutList().replace(java.util.List.of(pastPeriod, currentPeriod));
+        TypeLayout currentLayout = TypeLayout.create("l1", "demo", now, infinity, null);
+        TypeLayout pastLayout = TypeLayout.create("l0", "demo", past, now, null);
         
+        // LayoutList 에 두 레이아웃 등록
+        component.layoutList().replace(java.util.List.of(pastLayout, currentLayout));
         // LayoutProvider 에 선택 요청 (자동 선택 로직 발화)
         component.layoutProvider().selectBestMatch(component.layoutList().getValue());
 
-        Type customer = Type.create("customer", "1.0", now, Double.MAX_VALUE);
+        Type customer = Type.create("customer", "1.0", past, infinity);
         customer.description("고객");
         customer.attributes(new Attribute[] {
             Attribute.create(null, "name", 1, AttributeType.text()),
@@ -31,7 +32,7 @@ public class TestApplication implements EntryPoint {
             Attribute.create(null, "email", 3, AttributeType.text())
         });
 
-        Type order = Type.create("order", "1.0", now, Double.MAX_VALUE);
+        Type order = Type.create("order", "1.0", past, infinity);
         order.description("주문");
         order.attributes(new Attribute[] {
             Attribute.create(null, "customer", 1, AttributeType.document("customer")),
@@ -45,6 +46,7 @@ public class TestApplication implements EntryPoint {
 
         // UC-T11/T12: 에이전트 mutation 핸들러 초기화 (생성자에서 구독 등록)
         component.agentMutationHandler();
+        component.periodRecalculationService();
 
         body()
             .add(div().css("type-container")

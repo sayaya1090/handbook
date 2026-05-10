@@ -5,6 +5,7 @@ import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.interfaces.api.LayoutRepository;
 import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
+import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
@@ -41,19 +42,19 @@ import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 @Singleton
 public class SaveButton implements IsElement<HTMLElement> {
     @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
-    private Labels currentLabels = Labels.empty();
+    private Labels currentLabels;
 
     @Inject
     SaveButton(TypeRepository typeRepository, LayoutRepository layoutRepository,
                TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
-               ActionManager actionManager, LayoutProvider layoutProvider,
+               ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList,
                ToastContainer toastContainer, LabelProvider labelProvider) {
         _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-floppy-disk"))
                 .css("type-ctrl-btn", "type-ctrl-btn-save");
 
         _this.onClick(e ->
                 new SaveAction(typeRepository, layoutRepository, typeList, positionMap,
-                        tracker, actionManager, layoutProvider, toastContainer, currentLabels).execute()
+                        tracker, actionManager, layoutProvider, layoutList, toastContainer, currentLabels).execute()
         );
 
         labelProvider.subscribe(labels -> {

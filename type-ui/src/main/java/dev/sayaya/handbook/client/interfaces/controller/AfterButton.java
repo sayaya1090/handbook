@@ -3,12 +3,10 @@ package dev.sayaya.handbook.client.interfaces.controller;
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
-import dev.sayaya.handbook.client.usecase.action.ChangeLayoutAction;
-import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLElement;
-import lombok.experimental.Delegate;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -17,21 +15,12 @@ import java.util.List;
 
 import static dev.sayaya.ui.elements.ButtonElementBuilder.button;
 
-/**
- * 다음 레이아웃 기간으로 이동하는 탐색 버튼.
- *
- * <p><b>책임:</b> 클릭 시 현재 기간의 다음 기간으로 {@link ChangeLayoutAction}을 실행한다.
- * 마지막 기간이면 비활성화(disabled)된다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link LayoutProvider} — 현재 선택된 기간</li>
- *   <li>{@link LayoutList} — 전체 기간 목록</li>
- *   <li>{@link ActionManager} — ChangeLayoutAction 실행</li>
- * </ul></p>
- * <p><b>주의:</b> 기간 목록이나 현재 선택이 변경되면 disabled 상태를 자동 갱신한다.</p>
+/** 
+ * 다음 레이아웃 기간으로 이동하는 버튼.
  */
 @Singleton
 public class AfterButton implements IsElement<HTMLElement> {
-    @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
+    private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
     @Inject
     AfterButton(LayoutProvider layoutProvider, LayoutList layoutList, ActionManager actionManager) {
@@ -39,29 +28,35 @@ public class AfterButton implements IsElement<HTMLElement> {
                 .css("type-ctrl-btn", "type-ctrl-btn-after");
 
         _this.onClick(e -> navigate(layoutProvider, layoutList, actionManager, 1));
-
-        layoutList.subscribe(periods -> updateEnabled(layoutProvider, periods));
+        
         layoutProvider.subscribe(period -> updateEnabled(layoutProvider, layoutList.getValue()));
+        layoutList.subscribe(periods -> updateEnabled(layoutProvider, periods));
+    }
+
+    private void updateEnabled(LayoutProvider provider, List<TypeLayout> layouts) {
+        TypeLayout current = provider.getValue();
+        if (current == null || layouts == null || layouts.isEmpty()) {
+            _this.element().setAttribute("disabled", "true");
+            return;
+        }
+        int index = layouts.indexOf(current);
+        if (index >= 0 && index < layouts.size() - 1) {
+            _this.element().removeAttribute("disabled");
+        } else {
+            _this.element().setAttribute("disabled", "true");
+        }
     }
 
     private void navigate(LayoutProvider provider, LayoutList layoutList, ActionManager actionManager, int direction) {
-        List<LayoutPeriod> periods = layoutList.getValue();
-        LayoutPeriod current = provider.getValue();
-        if (current == null || periods.isEmpty()) return;
-        int idx = periods.indexOf(current);
-        int target = idx + direction;
-        if (target >= 0 && target < periods.size()) {
-            actionManager.execute(new ChangeLayoutAction(provider, current, periods.get(target)));
+        List<TypeLayout> layouts = layoutList.getValue();
+        TypeLayout current = provider.getValue();
+        int index = layouts.indexOf(current);
+        int nextIndex = index + direction;
+        if (nextIndex >= 0 && nextIndex < layouts.size()) {
+            provider.replace(layouts.get(nextIndex));
         }
     }
 
-    private void updateEnabled(LayoutProvider provider, List<LayoutPeriod> periods) {
-        LayoutPeriod current = provider.getValue();
-        if (current == null || periods.isEmpty()) {
-            _this.disabled(true);
-            return;
-        }
-        int idx = periods.indexOf(current);
-        _this.disabled(idx >= periods.size() - 1);
-    }
+    @Override
+    public HTMLElement element() { return _this.element(); }
 }

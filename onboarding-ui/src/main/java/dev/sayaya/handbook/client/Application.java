@@ -17,6 +17,10 @@ public class Application implements EntryPoint {
     @Override
     public void onModuleLoad() {
         Component component = DaggerComponent.create();
+        
+        // UC-W3/W4: 에이전트 워크스페이스 핸들러 초기화 (생성자에서 구독 등록)
+        component.agentWorkspaceHandler();
+        
         Render render = frame -> {
             frame.append(component.contentElement().element());
             return true;

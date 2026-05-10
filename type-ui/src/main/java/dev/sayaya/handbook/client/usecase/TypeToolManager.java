@@ -184,7 +184,7 @@ public class TypeToolManager {
     }
 
     public void executeSave() {
-        new SaveAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, toastContainer, currentLabels).execute();
+        new SaveAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, layoutList, toastContainer, currentLabels).execute();
     }
 
     public void executeReload() {

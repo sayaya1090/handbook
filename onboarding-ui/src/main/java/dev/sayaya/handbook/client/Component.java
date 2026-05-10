@@ -8,5 +8,6 @@ import javax.inject.Singleton;
 @Singleton
 @dagger.Component(modules = { OnboardingModule.class, ApiModule.class })
 public interface Component {
-    ContentElement contentElement();
+    dev.sayaya.handbook.client.onboarding.ContentElement contentElement();
+    dev.sayaya.handbook.client.usecase.AgentWorkspaceHandler agentWorkspaceHandler();
 }

@@ -68,6 +68,7 @@ Gateway 를 통해 노출되는 공개 REST 엔드포인트 카탈로그.
 | DELETE | `/workspaces/{ws}/types` | 타입 일괄 삭제 |
 | GET | `/workspaces/{ws}/types/{type}/diff?v1=&v2=` | 버전 간 diff |
 | GET | `/workspaces/{ws}/layouts` | 레이아웃 목록 |
+| PATCH | `/workspaces/{ws}/schema` | 타입 및 레이아웃 원자적 일괄 패치 (UPSERT/DELETE) |
 
 ## 문서
 

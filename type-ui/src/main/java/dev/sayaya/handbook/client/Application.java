@@ -51,6 +51,7 @@ public class Application implements EntryPoint {
 
         // 워크스페이스 이벤트 핸들러 초기화 (실시간 협업)
         component.typeEventHandler().init();
+        component.periodRecalculationService(); // Eager instantiation for reactive subscriptions
         org.jboss.elemento.Elements.body().add(component.toastContainer());
 
         // 에이전트 브릿지 등록: StateProvider, SearchProvider

@@ -20,7 +20,8 @@ public class ContentElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
 
     @Inject
-    ContentElement(DialogElement dialog, WorkspaceStylesheet stylesheet) {
+    ContentElement(DialogElement dialog, WorkspaceStylesheet stylesheet,
+                   @SuppressWarnings("unused") DialogElementPresenter presenter) {
         root = div().css("ws-content")
                 .add(dialog)
                 .element();

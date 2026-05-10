@@ -31,17 +31,15 @@ public class LayoutApi implements LayoutRepository {
     }
 
     @Override
-    public Observable<List<LayoutPeriod>> layouts() {
-        Promise<List<LayoutPeriod>> promise = fetchApi.request("workspaces/" + workspace + "/layouts")
+    public Observable<List<TypeLayout>> layouts() {
+        Promise<List<TypeLayout>> promise = fetchApi.request("workspaces/" + workspace + "/layouts")
                 .then(this::handleResponse)
                 .then(Response::json)
                 .then(json -> {
                     TypeLayout[] arr = Js.cast(json);
-                    List<LayoutPeriod> result = new ArrayList<>();
+                    List<TypeLayout> result = new ArrayList<>();
                     if (arr != null) {
-                        for (TypeLayout layout : arr) {
-                            result.add(layout.toPeriod());
-                        }
+                        Collections.addAll(result, arr);
                     }
                     return Promise.resolve(result);
                 })

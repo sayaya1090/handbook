@@ -21,4 +21,4 @@ dependencies {
     testImplementation(platform(libs.testcontainers.bom))
     testImplementation(libs.testcontainers.postgresql)
 }
-tasks.jar { enabled = false }
+

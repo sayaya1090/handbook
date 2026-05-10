@@ -2,7 +2,7 @@ package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
-import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.handbook.usecase.ViewportObserver;
 import elemental2.core.JsDate;
 import elemental2.dom.HTMLDivElement;
@@ -16,10 +16,11 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 
 /**
- * 타입 편집기 상단바 및 모바일 플로팅 컨트롤.
- * 
- * <p><b>책임:</b> 데스크톱에서는 가로 바 형태를, 모바일에서는 Speed Dial 및 플로팅 캡슐 형태의
- * UI를 렌더링하여 글로벌 액션과 설정을 제공한다.</p>
+ * 편집기의 상단 상태바 컴포넌트.
+ *
+ * <p><b>책임:</b> 데스크톱에서는 가로 바 형태를, 모바일에서는 Speed Dial 및 플로팅 캡슐 형태의 UI를 렌더링하여 
+ * 현재 선택된 레이아웃의 기간 표시, Undo/Redo/Save/Reload 등의 글로벌 액션 버튼 배치,
+ * 그리고 뷰포트에 따른 동적 버튼 재배치(Reparenting)를 총괄한다.</p>
  */
 @Singleton
 public class StatusHeaderElement implements IsElement<HTMLDivElement> {
@@ -29,11 +30,12 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final TypePropertyBar propertyBar;
     private final HTMLElement mobileInfoCapsule = div().css("type-floating-pill", "type-info").element();
 
-    private final HTMLElement historyGroup = div().css("type-ctrl-group").element();
-    private final HTMLElement persistenceGroup = div().css("type-ctrl-group").element();
-    private final HTMLElement navGroup = div().css("type-ctrl-group").element();
+    private final HTMLDivElement historyGroup = div().css("type-ctrl-group").element();
+    private final HTMLDivElement persistenceGroup = div().css("type-ctrl-group").element();
+    private final HTMLDivElement navGroup = div().css("type-ctrl-group").element();
     private final HTMLElement centerArea = div().css("type-header-center").element();
 
+    // Reparenting 대상 버튼들 (Singleton 인스턴스 주입)
     private final ModeToggleButton modeToggle;
     private final BeforeButton beforeBtn;
     private final AfterButton afterBtn;
@@ -53,10 +55,10 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
                         SnapButton snapButton,
                         ActionDialElement actionDial,
                         SettingsDialElement settingsDial,
-                        LayoutProvider layoutProvider,
-                        ViewportObserver viewport,
                         TypePropertyBar propertyBar,
-                        SelectedBoxElement selection) {
+                        LayoutProvider layoutProvider,
+                        SelectedBoxElement selection,
+                        ViewportObserver viewportObserver) {
         this.modeToggle = modeToggle;
         this.beforeBtn = beforeBtn;
         this.afterBtn = afterBtn;
@@ -69,99 +71,82 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         this.settingsDial = settingsDial;
         this.propertyBar = propertyBar;
 
-        propertyBar.element().classList.add("type-fade-item");
-        navGroup.classList.add("type-fade-item");
-        mobileInfoCapsule.classList.add("type-fade-item");
+        initDesktopLayout();
+        initMobileLayout();
+
+        viewportObserver.isMobile().subscribe(this::updateLayout);
+        selection.subscribe(keys -> {
+            boolean hasSelection = keys != null && !keys.isEmpty();
+            navGroup.classList.toggle("type-fade-out", hasSelection);
+            navGroup.classList.toggle("type-fade-in", !hasSelection);
+            propertyBar.element().classList.toggle("type-fade-out", !hasSelection);
+            propertyBar.element().classList.toggle("type-fade-in", hasSelection);
+            mobileInfoCapsule.classList.toggle("visible", hasSelection);
+        });
 
         layoutProvider.subscribe(this::updatePeriod);
-        viewport.isMobile().subscribe(isMobile -> {
-            this.updateLayout(isMobile);
-            updateMobileInfoVisibility(selection.getValue().size() == 1);
-        });
-        
-        selection.subscribe(selected -> {
-            boolean hasOne = selected.size() == 1;
-            if (hasOne) {
-                navGroup.classList.remove("type-fade-in");
-                navGroup.classList.add("type-fade-out");
-                propertyBar.element().classList.remove("type-fade-out");
-                propertyBar.element().classList.add("type-fade-in");
-            } else {
-                navGroup.classList.remove("type-fade-out");
-                navGroup.classList.add("type-fade-in");
-                propertyBar.element().classList.remove("type-fade-in");
-                propertyBar.element().classList.add("type-fade-out");
-            }
-            updateMobileInfoVisibility(hasOne);
-        });
     }
 
-    private void updateMobileInfoVisibility(boolean hasOne) {
-        if (hasOne) {
-            mobileInfoCapsule.classList.remove("type-fade-out");
-            mobileInfoCapsule.classList.add("type-fade-in");
-            mobileInfoCapsule.classList.add("visible");
-        } else {
-            mobileInfoCapsule.classList.remove("type-fade-in");
-            mobileInfoCapsule.classList.add("type-fade-out");
-            elemental2.dom.DomGlobal.setTimeout(e -> {
-                if (!mobileInfoCapsule.classList.contains("type-fade-in")) {
-                    mobileInfoCapsule.classList.remove("visible");
-                }
-            }, 300);
-        }
+    private void initDesktopLayout() {
+        navGroup.appendChild(beforeBtn.element());
+        navGroup.appendChild(periodLabel);
+        navGroup.appendChild(afterBtn.element());
+        navGroup.classList.add("type-fade-item", "type-nav-group", "type-fade-in");
+
+        propertyBar.element().classList.add("type-fade-item");
+
+        centerArea.appendChild(navGroup);
+        centerArea.appendChild(propertyBar.element());
+
+        root.appendChild(persistenceGroup);
+        root.appendChild(historyGroup);
+        root.appendChild(centerArea);
+        root.appendChild(div().css("type-ctrl-group").add(modeToggle).add(snapButton).element());
+        
+        updateLayout(false);
+    }
+
+    private void initMobileLayout() {
+        // updateLayout에서 처리되므로 여기선 생략
     }
 
     private void updateLayout(boolean isMobile) {
         root.classList.toggle("mobile", isMobile);
-        while (root.firstChild != null) root.removeChild(root.firstChild);
-        
         if (isMobile) {
-            root.appendChild(mobileInfoCapsule);
+            actionDial.addItem(saveBtn);
+            actionDial.addItem(reloadBtn);
+            actionDial.addItem(undoBtn);
+            actionDial.addItem(redoBtn);
+            actionDial.addItem(beforeBtn);
+            actionDial.addItem(afterBtn);
+            
+            settingsDial.addItem(modeToggle);
+            settingsDial.addItem(snapButton);
+            
             mobileInfoCapsule.appendChild(propertyBar.element());
-            
-            actionDial.clearItems();
-            actionDial.addItem(undoBtn).addItem(redoBtn).addItem(saveBtn).addItem(reloadBtn);
-            
-            settingsDial.clearItems();
-            settingsDial.addItem(modeToggle).addItem(snapButton);
         } else {
-            root.appendChild(modeToggle.element());
-            
-            while (centerArea.firstChild != null) centerArea.removeChild(centerArea.firstChild);
-            navGroup.appendChild(beforeBtn.element());
-            navGroup.appendChild(periodLabel);
-            navGroup.appendChild(afterBtn.element());
-            centerArea.appendChild(navGroup);
-            
-            centerArea.appendChild(propertyBar.element());
-            root.appendChild(centerArea);
-            
-            historyGroup.appendChild(undoBtn.element());
-            historyGroup.appendChild(redoBtn.element());
-            root.appendChild(historyGroup);
-            
             persistenceGroup.appendChild(saveBtn.element());
             persistenceGroup.appendChild(reloadBtn.element());
-            root.appendChild(persistenceGroup);
+            historyGroup.appendChild(undoBtn.element());
+            historyGroup.appendChild(redoBtn.element());
+            navGroup.insertBefore(beforeBtn.element(), periodLabel);
+            navGroup.appendChild(afterBtn.element());
             
-            root.appendChild(snapButton.element());
+            centerArea.appendChild(navGroup);
+            centerArea.appendChild(propertyBar.element());
         }
     }
 
-    private void updatePeriod(LayoutPeriod period) {
-        if (period == null) {
-            periodLabel.textContent = "";
+    private void updatePeriod(TypeLayout layout) {
+        if (layout == null) {
+            periodLabel.textContent = "-";
             return;
         }
-        String start = format(period.effectDateTime());
-        String end = format(period.expireDateTime());
-        periodLabel.textContent = start + " ~ " + end;
+        periodLabel.textContent = format(layout.effectDateTime()) + " ~ " + format(layout.expireDateTime());
     }
 
     private String format(double timestamp) {
         if (timestamp >= 253402214400000.0) return "∞";
-        if (timestamp <= 0) return "-∞";
         JsDate date = new JsDate(timestamp);
         return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
     }

@@ -23,7 +23,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Onboarding")
+        modules = listOf("dev.sayaya.handbook.Onboarding", "dev.sayaya.handbook.OnboardingTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

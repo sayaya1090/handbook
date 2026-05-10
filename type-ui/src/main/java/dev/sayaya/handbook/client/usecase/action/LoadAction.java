@@ -11,23 +11,14 @@ import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.Position;
+import dev.sayaya.handbook.domain.TypeLayout;
 
-/**
- * 서버에서 타입과 레이아웃을 로드하는 액션.
- *
- * <p><b>책임:</b> 레이아웃 기간 목록을 로드하고, 현재 선택과 가장 겹치는 기간을 자동 선택한 뒤,
- * 해당 기간의 타입 목록과 위치 데이터를 로드한다.
- * 로드 후 ChangeTracker와 ActionManager를 초기화한다.</p>
- * <p><b>의존관계:</b> <ul>
- *   <li>{@link LayoutRepository} — 기간 목록/위치 조회 API</li>
- *   <li>{@link TypeRepository} — 타입 목록 조회 API</li>
- *   <li>{@link LayoutList} — 기간 목록 상태 갱신</li>
- *   <li>{@link LayoutProvider} — 기간 자동 선택</li>
- *   <li>{@link TypeList} — 타입 목록 교체</li>
- *   <li>{@link PositionMap} — 위치 교체</li>
- *   <li>{@link ChangeTracker}, {@link ActionManager} — 초기화</li>
- * </ul></p>
- * <p><b>주의:</b> rollback()은 no-op이다. 로드 시 Undo/Redo 스택이 초기화되므로 undo 대상이 아니다.</p>
+import java.util.HashMap;
+import java.util.Map;
+
+/** 
+ * 서버에서 전체 레이아웃 목록과 현재 레이아웃의 데이터를 로드한다.
  */
 public class LoadAction implements Action {
     private final TypeRepository typeRepository;
@@ -54,26 +45,25 @@ public class LoadAction implements Action {
 
     @Override
     public void execute() {
-        // 레이아웃 목록 로드 → 기간 선택 → 타입 + 위치 로드
         layoutRepository.layouts().subscribe(periods -> {
             if (periods == null || periods.isEmpty()) {
-                // 2026-05-05: 빈 워크스페이스 대응 - 기본 기간 생성 및 주입
-                dev.sayaya.handbook.domain.LayoutPeriod defaultPeriod = dev.sayaya.handbook.domain.LayoutPeriod.of(0, Double.MAX_VALUE);
+                TypeLayout defaultPeriod = TypeLayout.create(null, null, 0, 253402214400000.0, null);
                 layoutList.replace(java.util.List.of(defaultPeriod));
                 layoutProvider.replace(defaultPeriod);
             } else {
                 layoutList.replace(periods);
                 layoutProvider.selectBestMatch(periods);
             }
-            
-            LayoutPeriod current = layoutProvider.getValue();
-            if (current == null) return;
-            typeRepository.list(current).subscribe(types -> {
-                typeList.replace(types);
-                tracker.reset();
-                actionManager.clear();
+
+            TypeLayout current = layoutProvider.getValue();
+            typeRepository.list(current.toPeriod()).subscribe(types -> {
+                if (types != null) {
+                    typeList.replace(types);
+                    tracker.reset();
+                    actionManager.clear();
+                }
             });
-            layoutRepository.positions(current).subscribe(positions -> {
+            layoutRepository.positions(current.toPeriod()).subscribe(positions -> {
                 positionMap.replace(positions);
             });
         });
@@ -81,6 +71,6 @@ public class LoadAction implements Action {
 
     @Override
     public void rollback() {
-        // 로드는 되돌릴 수 없음 — 스택이 초기화되므로 undo 대상 아님
+        // 로드는 되돌릴 수 없음
     }
 }

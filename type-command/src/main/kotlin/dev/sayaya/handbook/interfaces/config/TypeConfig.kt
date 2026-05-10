@@ -71,6 +71,14 @@ class TypeConfig {
         TypeService(typeRepository, eventPublisher)
 
     @Bean
+    fun schemaService(
+        typeRepository: R2dbcTypeRepositoryAdapter,
+        layoutRepository: R2dbcLayoutRepositoryAdapter,
+        eventPublisher: TypeEventPublisher,
+        tx: TransactionalOperator,
+    ) = dev.sayaya.handbook.usecase.SchemaService(typeRepository, layoutRepository, eventPublisher, tx)
+
+    @Bean
     fun layoutService(layoutRepository: R2dbcLayoutRepositoryAdapter) =
         LayoutService(layoutRepository)
 }

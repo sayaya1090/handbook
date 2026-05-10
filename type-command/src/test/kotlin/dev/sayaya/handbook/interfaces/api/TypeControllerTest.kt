@@ -70,4 +70,20 @@ class TypeControllerTest : BehaviorSpec({
             }
         }
     }
+
+    // UC-PT1: 타입 패치 API
+    Given("타입 패치 API") {
+        every { service.patch(workspace, any()) } returns Flux.just(type)
+
+        When("PATCH /workspaces/{id}/types를 호출하면") {
+            Then("200 OK가 반환된다") {
+                client.patch()
+                    .uri("/workspaces/$workspace/types")
+                    .header("Content-Type", "application/vnd.sayaya.handbook.v1+json")
+                    .bodyValue(emptyList<dev.sayaya.handbook.domain.TypePatch>())
+                    .exchange()
+                    .expectStatus().isOk
+            }
+        }
+    }
 })

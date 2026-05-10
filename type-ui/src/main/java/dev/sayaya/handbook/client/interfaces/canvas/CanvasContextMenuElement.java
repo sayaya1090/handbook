@@ -13,6 +13,7 @@ import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -100,8 +101,8 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
     }
 
     private void addTypeAt(int x, int y) {
-        LayoutPeriod period = layoutProvider.getValue();
-        if (period == null) {
+        TypeLayout layout = layoutProvider.getValue();
+        if (layout == null) {
             throw new IllegalStateException("Cannot add type: No active layout period.");
         }
         
@@ -109,7 +110,7 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
                 .map(Type::key).collect(Collectors.toSet());
         
         String id = uniqueTypeId(typeList);
-        Type newType = Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
+        Type newType = Type.create(id, "1.0", layout.effectDateTime(), layout.expireDateTime());
         Position pos = Position.of(x, y, 240, 160);
         actionManager.execute(new ComplexAction(
                 new CreateBoxAction(typeList, positionMap, tracker, newType, pos),

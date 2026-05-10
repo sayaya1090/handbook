@@ -58,6 +58,8 @@ public class DialogElement implements IsElement<HTMLDivElement> {
     }
 
     public void initSections(SectionElement create, SectionElement join) {
+        if (this.createSection != null) this.createSection.element().remove();
+        if (this.joinSection != null) this.joinSection.element().remove();
         this.createSection = create;
         this.joinSection = join;
         root.insertBefore(create.element(), root.childNodes.item(1));

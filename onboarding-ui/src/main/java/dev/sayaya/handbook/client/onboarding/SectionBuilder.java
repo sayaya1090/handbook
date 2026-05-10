@@ -18,14 +18,16 @@ import javax.inject.Inject;
  */
 public class SectionBuilder {
     private final SectionElement.Factory factory;
+    private final SectionElementPresenter.Factory presenterFactory;
     private String label;
     private String supportingText;
     private String placeholder;
     private String cssClass;
 
     @Inject
-    public SectionBuilder(SectionElement.Factory factory) {
+    public SectionBuilder(SectionElement.Factory factory, SectionElementPresenter.Factory presenterFactory) {
         this.factory = factory;
+        this.presenterFactory = presenterFactory;
     }
 
     /** 섹션의 타이틀 라벨을 설정한다. */
@@ -38,7 +40,7 @@ public class SectionBuilder {
     public SectionBuilder cssClass(String cssClass) { this.cssClass = cssClass; return this; }
 
     /**
-     * 최종 SectionElement를 생성한다.
+     * 최종 SectionElement를 생성하고 대응하는 Presenter를 초기화한다.
      * @param modeName 섹션이 다루는 상태 모드 (CreateWorkspaceMode.Mode.name())
      */
     public SectionElement build(String modeName) {
@@ -47,6 +49,10 @@ public class SectionBuilder {
         if (supportingText != null) element.supportingText(supportingText);
         if (placeholder != null) element.placeholder(placeholder);
         if (cssClass != null) element.element().classList.add(cssClass);
+        
+        // Presenter를 생성하여 상태 구독 및 이벤트 바인딩 활성화 (인스턴스는 내부적으로 유지됨)
+        presenterFactory.create(element, modeName);
+        
         return element;
     }
 }

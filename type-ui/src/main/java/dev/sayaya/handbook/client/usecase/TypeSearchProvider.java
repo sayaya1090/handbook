@@ -1,7 +1,7 @@
 package dev.sayaya.handbook.client.usecase;
 
 import dev.sayaya.handbook.domain.Attribute;
-import dev.sayaya.handbook.domain.LayoutPeriod;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.SearchProvider;
 import dev.sayaya.rx.Observable;
@@ -35,7 +35,7 @@ public class TypeSearchProvider implements SearchProvider {
         
         // 데이터 소스 변경 시 가시성 필터링 수행
         typeList.subscribe(types -> filterVisible());
-        layoutProvider.subscribe(period -> filterVisible());
+        layoutProvider.subscribe(layout -> filterVisible());
     }
 
     public Observable<Set<Type>> visibleTypes() {
@@ -48,13 +48,13 @@ public class TypeSearchProvider implements SearchProvider {
 
     private void filterVisible() {
         Set<Type> all = typeList.getValue();
-        LayoutPeriod period = layoutProvider.getValue();
-        if (all == null || period == null) {
+        TypeLayout layout = layoutProvider.getValue();
+        if (all == null || layout == null) {
             visibleTypes.next(Collections.emptySet());
             return;
         }
 
-        double start = period.effectDateTime();
+        double start = layout.effectDateTime();
         Set<Type> filtered = new HashSet<>();
         for (Type t : all) {
             // UC-T27 필터링 규칙: Type.effect <= Layout.start < Type.expire
@@ -91,11 +91,6 @@ public class TypeSearchProvider implements SearchProvider {
     private boolean matches(Type t, String q) {
         if (t.id().toLowerCase().contains(q)) return true;
         if (t.description() != null && t.description().toLowerCase().contains(q)) return true;
-        if (t.attributes() != null) {
-            for (Attribute a : t.attributes()) {
-                if (a.name().toLowerCase().contains(q)) return true;
-            }
-        }
         return false;
     }
 

@@ -54,4 +54,5 @@ public interface Component {
     ChangeTracker changeTracker();
     LayoutProvider layoutProvider();
     LayoutList layoutList();
+    dev.sayaya.handbook.client.usecase.PeriodRecalculationService periodRecalculationService();
 }

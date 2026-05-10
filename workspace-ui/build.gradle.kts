@@ -23,7 +23,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.WorkspaceManagementTest")
+        modules = listOf("dev.sayaya.handbook.Workspace", "dev.sayaya.handbook.WorkspaceManagementTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

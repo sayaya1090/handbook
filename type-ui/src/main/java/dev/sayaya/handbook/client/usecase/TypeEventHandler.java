@@ -10,6 +10,7 @@ import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.ToastLevel;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.WorkspaceEventReceiver;
 import elemental2.core.Global;
@@ -111,10 +112,10 @@ public class TypeEventHandler {
     }
 
     private void refreshTypes() {
-        LayoutPeriod period = layoutProvider.getValue();
-        if (period == null) return;
+        TypeLayout layout = layoutProvider.getValue();
+        if (layout == null) return;
         GWT.log("TypeEventHandler: refreshing types for current layout period");
-        typeRepository.list(period).subscribe(types -> {
+        typeRepository.list(layout.toPeriod()).subscribe(types -> {
             if (types != null) {
                 typeList.replace(types);
                 tracker.reset();

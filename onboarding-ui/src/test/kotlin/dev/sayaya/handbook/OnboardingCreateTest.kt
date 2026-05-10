@@ -64,12 +64,15 @@ internal class WorkspaceCreateTest: GwtTestSpec({
                 val value = page.evaluate("document.querySelectorAll('.ws-section')[0].querySelector('md-outlined-text-field.ws-section-input').value") as String
                 value shouldBe "TestWorkspace"
             }
-            Then("Submit 버튼을 클릭하면 성공 응답(id)을 받고 0를 통해 /workspace/{id}/dashboard로 네비게이션(navigate)을 호출한다") {
+            Then("Submit 버튼을 클릭하면 성공 응답(id)을 받고 UriSharing를 통해 /workspaces/{id}/dashboard로 네비게이션(navigate)을 호출한다") {
                 page.evaluate("window.__handbook_uri_called = null; window.__handbook_uri = function(uri) { window.__handbook_uri_called = uri; }")
-                page.evaluate("document.querySelector('.ws-submit').click()")
-                Thread.sleep(500)
+                page.querySelector(".ws-submit")?.click()
+                
+                // Wait for navigation call
+                page.waitForFunction("window.__handbook_uri_called != null", null, com.microsoft.playwright.Page.WaitForFunctionOptions().setTimeout(2000.0))
+                
                 val uriCalled = page.evaluate("window.__handbook_uri_called")?.toString() ?: ""
-                (uriCalled.contains("/workspace/") && uriCalled.contains("/dashboard")) shouldBe true
+                (uriCalled.contains("/workspaces/") && uriCalled.contains("/dashboard")) shouldBe true
             }
         }
 

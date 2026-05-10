@@ -13,6 +13,7 @@ import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.domain.TypeLayout;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.KeyboardEvent;
 import elemental2.dom.MouseEvent;
@@ -35,6 +36,18 @@ import static org.jboss.elemento.Elements.div;
  * 드래그 이동, 키보드 단축키(Ctrl+Z Undo, Ctrl+A 전체 선택, Delete 삭제, Arrow 이동),
  * 컨텍스트 메뉴, 선택 상태를 관리한다.
  * TypeSearchProvider를 구독하여 현재 레이아웃 기간에 유효한 타입만 DOM에 동기화한다.</p>
+ * <p><b>의존관계:</b> <ul>
+ *   <li>{@link BoxElementFactory} — TypeElement 생성 팩토리</li>
+ *   <li>{@link TypeSearchProvider} — 현재 가시적인 타입 목록 구독</li>
+ *   <li>{@link PositionMap} — 타입 위치 조회</li>
+ *   <li>{@link ActionManager} — Move/Delete/ComplexAction 실행</li>
+ *   <li>{@link SelectedBoxElement} — 선택 상태</li>
+ *   <li>{@link DragShapeElement} — 드래그 시각 피드백</li>
+ *   <li>{@link CanvasMode}, {@link GridSnap} — 모드/스냅 설정</li>
+ *   <li>{@link CanvasContextMenuElement}, {@link BoxContextMenuElement} — 컨텍스트 메뉴</li>
+ * </ul></p>
+ * <p><b>주의:</b> elementMap으로 typeKey → TypeElement 매핑을 유지한다.
+ * 가시성 필터링은 {@link TypeSearchProvider}에 위임하여 일관성을 확보한다.</p>
  */
 @Singleton
 public class CanvasElement implements IsElement<HTMLDivElement> {

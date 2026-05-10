@@ -21,7 +21,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.AgentTest")
+        modules = listOf("dev.sayaya.handbook.Agent", "dev.sayaya.handbook.AgentTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

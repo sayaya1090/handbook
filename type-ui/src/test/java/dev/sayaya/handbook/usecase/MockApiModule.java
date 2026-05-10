@@ -9,45 +9,50 @@ import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.LayoutPeriod;
 import dev.sayaya.handbook.domain.Position;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.rx.Observable;
+import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import elemental2.dom.RequestInit;
+import elemental2.dom.Response;
+import elemental2.promise.Promise;
 import jsinterop.base.JsPropertyMap;
 
-import javax.inject.Singleton;
 import java.util.*;
-
-import static dev.sayaya.rx.subject.BehaviorSubject.behavior;
 
 @Module
 public class MockApiModule {
-    @Provides @Singleton static FetchApi fetchApi() { 
+    @Provides
+    public FetchApi fetchApi() {
         return new FetchApi() {
-            @Override public elemental2.promise.Promise<elemental2.dom.Response> request(String url) { 
-                return elemental2.promise.Promise.resolve(new elemental2.dom.Response()); 
-            }
-            @Override public elemental2.promise.Promise<elemental2.dom.Response> request(String url, elemental2.dom.RequestInit init) { 
-                return elemental2.promise.Promise.resolve(new elemental2.dom.Response()); 
-            }
+            @Override public Promise<Response> request(String url) { return Promise.resolve(new Response()); }
+            @Override public Promise<Response> request(String url, RequestInit init) { return Promise.resolve(new Response()); }
         };
     }
-    @Provides @Singleton static LanguagePackRepository languagePackRepository() {
-        return lang -> behavior(Labels.empty());
-    }
 
-    @Provides @Singleton static TypeRepository typeRepository() {
+    @Provides
+    public TypeRepository typeRepository() {
         return new TypeRepository() {
             @Override public Observable<Set<Type>> list(LayoutPeriod period) { return BehaviorSubject.<Set<Type>>behavior(new HashSet<>()).asObservable(); }
-            @Override public Observable<Set<Type>> save(Set<Type> types) { return behavior(types).asObservable(); }
-            @Override public Observable<Void> delete(Set<Type> types) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
+            @Override public Observable<Set<Type>> save(Set<Type> types) { return BehaviorSubject.behavior(types).asObservable(); }
             @Override public Observable<Set<Type>> patch(List<JsPropertyMap<?>> patches) { return BehaviorSubject.<Set<Type>>behavior(new HashSet<>()).asObservable(); }
+            @Override public Observable<Void> delete(Set<Type> types) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
+            @Override public Observable<Void> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
             @Override public Observable<Set<Type>> versions(String typeId) { return BehaviorSubject.<Set<Type>>behavior(new HashSet<>()).asObservable(); }
         };
     }
-    @Provides @Singleton static LayoutRepository layoutRepository() {
+
+    @Provides
+    public LayoutRepository layoutRepository() {
         return new LayoutRepository() {
-            @Override public Observable<List<LayoutPeriod>> layouts() { return BehaviorSubject.<List<LayoutPeriod>>behavior(new ArrayList<>()).asObservable(); }
+            @Override public Observable<List<TypeLayout>> layouts() { return BehaviorSubject.<List<TypeLayout>>behavior(new ArrayList<>()).asObservable(); }
             @Override public Observable<Map<String, Position>> positions(LayoutPeriod period) { return BehaviorSubject.<Map<String, Position>>behavior(new HashMap<>()).asObservable(); }
             @Override public Observable<Void> savePositions(LayoutPeriod period, Map<String, Position> positions) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
         };
+    }
+
+    @Provides
+    public dev.sayaya.handbook.usecase.LanguagePackRepository languagePackRepository() {
+        return locale -> BehaviorSubject.<Labels>behavior(Labels.empty()).asObservable();
     }
 }

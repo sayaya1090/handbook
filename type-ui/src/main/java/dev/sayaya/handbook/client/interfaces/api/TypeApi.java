@@ -10,6 +10,7 @@ import dev.sayaya.rx.Observer;
 import dev.sayaya.rx.subject.AsyncSubject;
 import elemental2.core.Global;
 import elemental2.core.JsArray;
+import elemental2.dom.Headers;
 import elemental2.dom.RequestInit;
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
@@ -81,9 +82,7 @@ public class TypeApi implements TypeRepository {
         RequestInit init = RequestInit.create();
         init.setMethod("PUT");
         init.setBody(Global.JSON.stringify(natives));
-        init.setHeaders(new String[][]{
-                {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
-        });
+        init.setHeaders(jsonHeaders());
 
         Promise<Set<Type>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(this::handleResponse)
@@ -112,9 +111,7 @@ public class TypeApi implements TypeRepository {
         RequestInit init = RequestInit.create();
         init.setMethod("PATCH");
         init.setBody(Global.JSON.stringify(patches.toArray()));
-        init.setHeaders(new String[][]{
-                {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
-        });
+        init.setHeaders(jsonHeaders());
 
         Promise<Set<Type>> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(this::handleResponse)
@@ -145,9 +142,7 @@ public class TypeApi implements TypeRepository {
         RequestInit init = RequestInit.create();
         init.setMethod("DELETE");
         init.setBody(Global.JSON.stringify(natives));
-        init.setHeaders(new String[][]{
-                {"Content-Type", "application/vnd.sayaya.handbook.v1+json"}
-        });
+        init.setHeaders(jsonHeaders());
 
         Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
                 .then(resp -> {
@@ -157,6 +152,28 @@ public class TypeApi implements TypeRepository {
                 .catch_(err -> {
                     GWT.log("TypeApi.delete failed: " + err);
                     ErrorNotifier.notify("TypeApi.delete failed: " + err);
+                    progress.next(Progress.hide());
+                    return Promise.resolve((Void) null);
+                });
+        return AsyncSubject.await(promise);
+    }
+
+    @Override
+    public Observable<Void> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch) {
+        progress.next(Progress.indeterminate());
+        RequestInit init = RequestInit.create();
+        init.setMethod("PATCH");
+        init.setBody(Global.JSON.stringify(patch));
+        init.setHeaders(jsonHeaders());
+
+        Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/schema", init)
+                .then(resp -> {
+                    progress.next(Progress.hide());
+                    return Promise.resolve((Void) null);
+                })
+                .catch_(err -> {
+                    GWT.log("TypeApi.patchSchema failed: " + err);
+                    ErrorNotifier.notify("TypeApi.patchSchema failed: " + err);
                     progress.next(Progress.hide());
                     return Promise.resolve((Void) null);
                 });
@@ -191,5 +208,11 @@ public class TypeApi implements TypeRepository {
     private Promise<Response> handleResponse(Response response) {
         if (response.ok) return Promise.resolve(response);
         return Promise.reject("HTTP " + response.status);
+    }
+
+    private static Headers jsonHeaders() {
+        Headers h = new Headers();
+        h.append("Content-Type", "application/vnd.sayaya.handbook.v1+json");
+        return h;
     }
 }

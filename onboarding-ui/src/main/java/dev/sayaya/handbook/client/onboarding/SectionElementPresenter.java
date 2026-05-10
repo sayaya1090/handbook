@@ -41,7 +41,7 @@ public class SectionElementPresenter {
             view.setActive(active);
             if (!active) {
                 view.clearInput();
-                param.next(null);
+                if (param.getValue() != null) param.next(null);
             }
         });
     }

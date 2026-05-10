@@ -100,6 +100,47 @@ sequenceDiagram
     Ctrl-->>Client: "200 OK + 저장된 레이아웃"
 ```
 
+## 스키마 일괄 패치 시퀀스 (Atomic Patch)
+
+```mermaid
+sequenceDiagram
+    actor Client as "클라이언트 (type-ui)"
+    participant Ctrl as SchemaController
+    participant Svc as SchemaService
+    participant TRepo as TypeRepository
+    participant LRepo as LayoutRepository
+    participant DB as PostgreSQL
+    participant Pub as TypeEventPublisher
+
+    Client->>Ctrl: "PATCH /workspaces/{ws}/schema"
+    Note over Client,Ctrl: "Payload: SchemaPatch (TypeOps, LayoutOps)"
+    Ctrl->>Svc: "patch(workspace, patch)"
+    Note over Svc: "TransactionalOperator 시작"
+    
+    loop "각 TypeOperation"
+        alt "op == UPSERT"
+            Svc->>TRepo: "save(workspace, [type])"
+            TRepo->>DB: "UPSERT types & type_attributes"
+            Svc->>Pub: "publishCreated(workspace, type)"
+        else "op == DELETE"
+            Svc->>TRepo: "delete(workspace, [type])"
+            TRepo->>DB: "DELETE from types & type_attributes"
+            Svc->>Pub: "publishDeleted(workspace, type)"
+        end
+    end
+
+    loop "각 LayoutOperation"
+        alt "op == UPSERT"
+            Svc->>LRepo: "save(workspace, layout)"
+            LRepo->>DB: "UPSERT type_layouts"
+        end
+    end
+
+    Note over Svc: "트랜잭션 커밋 (에러 시 전체 롤백)"
+    Svc-->>Ctrl: "Mono<Void>"
+    Ctrl-->>Client: "204 No Content"
+```
+
 ---
 
 ## UC-PT1: 타입 생성 및 업데이트
@@ -125,6 +166,14 @@ sequenceDiagram
 | **액터** | 사용자 (type-ui) |
 | **정상 흐름** | 1. 클라이언트가 `PUT /workspaces/{id}/layouts`로 레이아웃 정보를 전송한다.<br>2. `LayoutService`가 `type_layouts` 테이블에 위치 정보를 JSON으로 저장한다.<br>3. 저장된 레이아웃 정보를 반환한다. |
 
+## UC-PT5: 스키마 일괄 패치 (Atomic Patch)
+
+| 항목 | 내용 |
+|------|------|
+| **액터** | 사용자 (type-ui) |
+| **정상 흐름** | 1. 클라이언트가 `PATCH /workspaces/{ws}/schema`로 타입 및 레이아웃 변경 내역을 전송한다.<br>2. `SchemaService`가 **단일 DB 트랜잭션**을 시작한다.<br>3. 포함된 모든 타입 조작(생성/수정/삭제)을 수행하고 Kafka 이벤트를 발행한다.<br>4. 포함된 모든 레이아웃 조작(UPSERT)을 수행한다.<br>5. 모든 작업 성공 시 트랜잭션을 커밋한다. |
+| **결과** | 스키마 진화(버전 생성)와 레이아웃 변경이 원자적으로 저장되어 데이터 정합성이 보장된다. |
+
 ---
 
 ## 트레이서빌리티 매트릭스
@@ -135,6 +184,7 @@ sequenceDiagram
 | UC-PT2 | 타입 삭제 | `TypeController.delete()` | `TypeControllerTest`, `TypeServiceTest` | 구현 |
 | UC-PT3 | 레이아웃 저장 | `LayoutController.save()` | `LayoutControllerTest`, `LayoutServiceTest` | 구현 |
 | UC-PT4 | 이벤트 발행 | `KafkaTypeEventPublisher` | `KafkaTypeEventPublisherTest` | 구현 |
+| UC-PT5 | 스키마 일괄 패치 | `SchemaController.patch()` | `SchemaServiceTest` | 미구현 |
 | UC-82 | 에이전트 mutate | `TypeController` (PUT/DELETE) | `CollaborationTest` (type-ui) | 구현 |
 
 ---
@@ -166,7 +216,7 @@ sequenceDiagram
 | # | 항목 | 값 | 비고 |
 |---|------|---|------|
 | 1 | 내부 assistant 연동 | `AGENT_COMMAND` mutate 타겟 | 타입 구조 변경 및 레이아웃 조정 |
-| 2 | 외부 AI Tool Use | `save_types`, `delete_types` | OpenAPI operationId |
-| 3 | OpenAPI 어노테이션 | `@Operation` 적용 완료 | `TypeController`, `LayoutController` |
+| 2 | 외부 AI Tool Use | `save_types`, `delete_types`, `patch_schema` | OpenAPI operationId |
+| 3 | OpenAPI 어노테이션 | `@Operation` 적용 완료 | `TypeController`, `LayoutController`, `SchemaController` |
 | 4 | 감사 경로 | `AuditEntry` 발행 | 데이터 변경 추적 |
 | 5 | Agent Command 타겟 | selector: `[data-type-key]`, `.type-editor` | `type-ui` 요소 강조 및 수정 |

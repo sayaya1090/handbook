@@ -38,4 +38,5 @@ public interface TestComponent {
     LayoutProvider layoutProvider();
     dev.sayaya.handbook.client.usecase.LayoutList layoutList();
     AgentMutationHandler agentMutationHandler();
+    dev.sayaya.handbook.client.usecase.PeriodRecalculationService periodRecalculationService();
 }
