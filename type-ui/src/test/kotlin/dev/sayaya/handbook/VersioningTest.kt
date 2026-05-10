@@ -176,5 +176,58 @@ internal class VersioningTest: GwtTestSpec({
                 page.querySelector(".type-box[data-type-key='$newTypeKey']") shouldBe null
             }
         }
+
+        // UC-T28: 인접 버전 경계 동기화 (Cascading Boundary Synchronization)
+        When("이전 버전(1.0)의 종료일을 2026-06-01로 앞당기면") {
+            // 현재 레이아웃은 2024-05-06 ~ 2026-05-08 구간에 있음
+            // customer:1.0을 선택
+            val oldCustomerSelector = ".type-box[data-type-key='customer:1.0']"
+            page.click(oldCustomerSelector)
+            page.waitForSelector(".type-property-dates")
+            page.click(".type-property-dates")
+            page.waitForSelector("#date-correction-dialog")
+            page.waitForTimeout(200.0) // requestAnimationFrame 대기
+            
+            // 종료일을 2026-06-01로 설정 (원래는 2026-07-01에서 다음 버전이 시작됨)
+            page.evaluate("""
+                (function() {
+                    const el = document.querySelector('#date-correction-expire');
+                    el.value = '2026-06-01';
+                    el.dispatchEvent(new Event('input', {bubbles:true}));
+                })()
+            """.trimIndent())
+            page.click("#date-correction-apply")
+            
+            Then("인접 버전을 감지하고 컨펌 다이얼로그가 노출된다") {
+                page.waitForSelector(".ui-confirm-dialog:has-text('Do you want to adjust the adjacent version')", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+            }
+            
+            And("컨펌 다이얼로그에서 'Yes'를 클릭하면") {
+                page.click(".ui-confirm-dialog .ui-confirm-option:has-text('Yes')")
+                page.waitForSelector(".ui-confirm-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
+                page.waitForSelector("#date-correction-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
+                
+                Then("다음 버전(2.0)의 시작일이 2026-06-01로 동기화된다") {
+                    // 현재 레이아웃이 변경됨
+                    page.waitForTimeout(1000.0)
+                    
+                    // 다음 레이아웃 구간들(2026-05-08~, 2026-06-01~)을 순회하여 이동
+                    page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(10.0, 10.0).setForce(true))
+                    Thread.sleep(500)
+                    page.click(".type-ctrl-btn-after", com.microsoft.playwright.Page.ClickOptions().setForce(true))
+                    Thread.sleep(500)
+                    page.click(".type-ctrl-btn-after", com.microsoft.playwright.Page.ClickOptions().setForce(true))
+                    Thread.sleep(1000)
+                    
+                    val period = page.textContent(".type-period-label")!!
+                    println("[Test Debug] Navigated to Period: $period")
+                    period.startsWith("2026-06-01") shouldBe true
+                    
+                    // 2.0 버전이 화면에 보여야 함
+                    val newCustomerSelector = ".type-box[data-type-key='customer:2.0']"
+                    page.waitForSelector(newCustomerSelector, com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+                }
+            }
+        }
     }
 })

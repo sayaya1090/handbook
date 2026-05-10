@@ -2,11 +2,14 @@ package dev.sayaya.handbook.client.interfaces.controller;
 
 import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.components.ConfirmDialog;
 import dev.sayaya.handbook.client.interfaces.editor.DateCorrectionDialog;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.DateFormatter;
 import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.EditTBoxDateAction;
+import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconElementBuilder;
@@ -16,6 +19,8 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.jboss.elemento.Elements.div;
@@ -36,14 +41,21 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
 
     private final TypeList typeList;
     private final NewVersionButton newVersionBtn;
+    private final ConfirmDialog confirmDialog;
+    private final ActionManager actionManager;
+    private final ChangeTracker tracker;
     private Type currentType;
 
     @Inject
     TypePropertyBar(SelectedBoxElement selection, TypeList typeList, LabelProvider labelProvider,
                     DateCorrectionDialog correctionDialog, NewVersionButton newVersionBtn,
-                    ActionManager actionManager, ChangeTracker tracker) {
+                    ActionManager actionManager, ChangeTracker tracker, ConfirmDialog confirmDialog) {
         this.typeList = typeList;
         this.newVersionBtn = newVersionBtn;
+        this.confirmDialog = confirmDialog;
+        this.actionManager = actionManager;
+        this.tracker = tracker;
+        
         this.root = div().css("type-property-bar")
                 .add(idLabel)
                 .add(span().css("type-property-divider").text("|"))
@@ -59,11 +71,54 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
         // 전체 영역을 클릭할 수 있도록 root에 이벤트 바인딩 (UX 개선)
         root.addEventListener("click", e -> {
             if (currentType != null) {
-                correctionDialog.show(currentType, result -> {
-                    actionManager.execute(new EditTBoxDateAction(typeList, tracker, currentType, result.effect(), result.expire()));
-                });
+                correctionDialog.show(currentType, this::handleDateCorrection);
             }
         });
+    }
+
+    private void handleDateCorrection(DateCorrectionDialog.DateResult result) {
+        Type target = currentType;
+        boolean effectChanged = Math.abs(target.effectDateTime() - result.effect()) > 0.1;
+        boolean expireChanged = Math.abs(target.expireDateTime() - result.expire()) > 0.1;
+
+        if (!effectChanged && !expireChanged) return;
+
+        Type adjacentPrev = null;
+        Type adjacentNext = null;
+
+        if (effectChanged) {
+            adjacentPrev = typeList.getValue().stream()
+                    .filter(t -> t.id().equals(target.id()) && Math.abs(t.expireDateTime() - target.effectDateTime()) < 0.1)
+                    .findFirst().orElse(null);
+        }
+        if (expireChanged) {
+            adjacentNext = typeList.getValue().stream()
+                    .filter(t -> t.id().equals(target.id()) && Math.abs(t.effectDateTime() - target.expireDateTime()) < 0.1)
+                    .findFirst().orElse(null);
+        }
+
+        if (adjacentPrev != null || adjacentNext != null) {
+            String message = "Synchronize Adjacent Versions - Do you want to adjust the adjacent version(s) to match the new date and prevent gaps in the timeline?";
+            
+            final Type prev = adjacentPrev;
+            final Type next = adjacentNext;
+            
+            confirmDialog.show(message, new String[]{"Yes", "No"}, option -> {
+                if ("Yes".equals(option)) {
+                    // Yes: 복합 액션 생성
+                    List<Action> actions = new ArrayList<>();
+                    actions.add(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
+                    if (prev != null) actions.add(new EditTBoxDateAction(typeList, tracker, prev, prev.effectDateTime(), result.effect()));
+                    if (next != null) actions.add(new EditTBoxDateAction(typeList, tracker, next, result.expire(), next.expireDateTime()));
+                    actionManager.execute(new ComplexAction(actions.toArray(new Action[0])));
+                } else {
+                    // No: 단일 액션
+                    actionManager.execute(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
+                }
+            });
+        } else {
+            actionManager.execute(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
+        }
     }
 
     private void refresh(Set<String> selectedKeys, Set<Type> types) {
@@ -76,10 +131,6 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
         } else {
             currentType = null;
         }
-    }
-
-    private void onSelectionChanged(Set<String> selectedKeys) {
-        // refresh()로 통합됨
     }
 
     private void update(Type type) {
