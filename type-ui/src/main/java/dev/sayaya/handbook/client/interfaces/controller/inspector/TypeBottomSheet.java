@@ -12,8 +12,10 @@ import dev.sayaya.handbook.client.usecase.action.EditTBoxDateAction;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.usecase.ViewportObserver;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import org.jboss.elemento.EventType;
@@ -40,17 +42,20 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
     private final ConfirmDialog confirmDialog;
     private final ActionManager actionManager;
     private final ChangeTracker tracker;
+    private final ViewportObserver viewportObserver;
     private Type currentType;
 
     @Inject
     TypeBottomSheet(SelectedBoxElement selection, TypeList typeList, DateCorrectionDialog correctionDialog, 
-                    ConfirmDialog confirmDialog, ActionManager actionManager, ChangeTracker tracker) {
+                    ConfirmDialog confirmDialog, ActionManager actionManager, ChangeTracker tracker,
+                    ViewportObserver viewportObserver) {
         this.selection = selection;
         this.typeList = typeList;
         this.correctionDialog = correctionDialog;
         this.confirmDialog = confirmDialog;
         this.actionManager = actionManager;
         this.tracker = tracker;
+        this.viewportObserver = viewportObserver;
 
         HTMLElement closeBtn = ButtonElementBuilder.button()
                 .icon(IconElementBuilder.icon().css("fa-solid", "fa-xmark"))
@@ -92,7 +97,20 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
             list.stream()
                     .filter(t -> t.key().equals(key))
                     .findFirst()
-                    .ifPresent(type -> this.update(type, new ArrayList<>(list)));
+                    .ifPresent(type -> {
+                        this.update(type, new ArrayList<>(list));
+                        if (viewportObserver.isMobileNow()) {
+                            DomGlobal.setTimeout(ignore -> {
+                                HTMLElement el = (HTMLElement) DomGlobal.document.querySelector(".type-box[data-type-key='" + key + "']");
+                                if (el != null) {
+                                    elemental2.dom.ScrollIntoViewOptions options = elemental2.dom.ScrollIntoViewOptions.create();
+                                    options.setBehavior("smooth");
+                                    options.setBlock("start");
+                                    el.scrollIntoView(options);
+                                }
+                            }, 350); // Wait for Bottom Sheet slide animation (300ms) to settle
+                        }
+                    });
         } else {
             root.classList.remove("visible");
             currentType = null;
