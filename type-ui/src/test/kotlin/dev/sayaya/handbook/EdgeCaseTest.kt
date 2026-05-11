@@ -115,6 +115,10 @@ internal class EdgeCaseTest: GwtTestSpec({
 
         // UC-T4: 모바일 터치 드래그 안정성
         When("모바일 터치 드래그를 수행하면") {
+            // 선택 해제하여 바텀 시트가 나타나지 않도록 방지
+            page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(10.0, 10.0).setForce(true))
+            Thread.sleep(200)
+
             page.setViewportSize(400, 800)
             Thread.sleep(500)
             // 모바일 뷰에서는 설정 다이얼을 열어야 버튼이 나타남

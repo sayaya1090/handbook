@@ -2,15 +2,24 @@
 * {
     box-sizing: border-box;
 }
+html, body {
+    height: 100%;
+    margin: 0;
+}
 .type-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
 }
-.type-canvas {
+.type-canvas-wrapper {
     position: relative;
     flex: 1;
+    overflow: hidden;
+}
+.type-canvas {
+    position: absolute;
+    inset: 0;
     overflow: auto;
     background:
         linear-gradient(var(--md-sys-color-outline-variant, #ccc) 1px, transparent 1px),
@@ -544,10 +553,74 @@
     border-left: 3px solid var(--md-sys-color-tertiary, #7c4dff);
 }
 
-/* ── 모바일 레이아웃 (< 768px) ── */
+/* ── Inspector Panel & Floating Toolbar (New) ── */
+.type-inspector-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    background: var(--md-sys-color-surface-container-low, white);
+    border-left: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+    padding: 16px;
+    box-shadow: var(--md-sys-elevation-level3);
+    z-index: 50;
+    transition: transform 0.3s ease;
+    display: none;
+}
+.type-inspector-panel.visible {
+    display: block;
+}
+.type-floating-toolbar {
+    position: absolute;
+    bottom: 16px;
+    right: 336px;
+    background: var(--md-sys-color-surface-container-high, white);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    padding: 8px;
+    display: none;
+    gap: 8px;
+    box-shadow: var(--md-sys-elevation-level2);
+    z-index: 95;
+}
+.type-floating-toolbar.visible {
+    display: flex;
+}
+.type-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--md-sys-color-surface-container-high, white);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px) var(--md-sys-shape-corner-extra-large, 28px) 0 0;
+    padding: 24px;
+    padding-bottom: calc(24px + 80px + env(safe-area-inset-bottom, 0px)); /* Agent UI Input 영역 확보 */
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    display: none; /* Hide on desktop */
+    flex-direction: column;
+    gap: 12px;
+}
+.type-bottom-sheet.visible {
+    transform: translateY(0);
+}
+
 @media (max-width: 768px) {
-    .type-status-header {
-        display: none;
+    .type-inspector-panel {
+        display: none !important;
+    }
+    .type-floating-toolbar {
+        display: none !important;
+    }
+    .type-bottom-sheet {
+        display: flex; /* Show only on mobile */
+    }
+    .type-info-fab {
+        position: fixed;
+        bottom: 80px;
+        right: 24px;
+        z-index: 100;
     }
     .type-status-header.mobile {
         display: block;

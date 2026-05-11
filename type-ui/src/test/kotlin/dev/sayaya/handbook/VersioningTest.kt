@@ -20,10 +20,15 @@ internal class VersioningTest: GwtTestSpec({
         Thread.sleep(1500)
 
         When("타입 박스(customer:1.0)를 클릭하면") {
-            page.click(".type-box[data-type-key='customer:1.0']")
-            page.waitForSelector(".type-property-bar", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+            page.click(".type-box[data-type-key='customer:1.0'] .type-header")
             
-            Then("속성 바에 해당 타입의 ID, 버전, 유효기간이 올바르게 표시된다") {
+            Then("상세 정보(TypeInspectorPanel)가 우측 패널에 노출되고, 툴바(TypeFloatingToolbar)가 표시된다") {
+                // Playwright의 strict visibility 체크 우회: 클래스 적용 여부 확인
+                page.waitForFunction("() => document.querySelector('.type-inspector-panel').classList.contains('visible')")
+                page.waitForFunction("() => document.querySelector('.type-floating-toolbar').classList.contains('visible')")
+            }
+            
+            Then("인스펙터에 해당 타입의 ID, 버전, 유효기간이 올바르게 표시된다") {
                 page.textContent(".type-property-id") shouldBe "customer"
                 page.textContent(".type-property-version") shouldBe "1.0"
             }
@@ -119,7 +124,7 @@ internal class VersioningTest: GwtTestSpec({
             val newTypeKey = page.getAttribute(newTypeSelector, "data-type-key")!!
 
             // 2. 날짜 변경
-            page.click(newTypeSelector)
+            page.click("$newTypeSelector .type-header")
             page.waitForSelector(".type-property-dates")
             page.click(".type-property-dates")
             page.waitForSelector("#date-correction-dialog")
@@ -182,7 +187,7 @@ internal class VersioningTest: GwtTestSpec({
             // 현재 레이아웃은 2024-05-06 ~ 2026-05-08 구간에 있음
             // customer:1.0을 선택
             val oldCustomerSelector = ".type-box[data-type-key='customer:1.0']"
-            page.click(oldCustomerSelector)
+            page.click("$oldCustomerSelector .type-header")
             page.waitForSelector(".type-property-dates")
             page.click(".type-property-dates")
             page.waitForSelector("#date-correction-dialog")
@@ -197,9 +202,10 @@ internal class VersioningTest: GwtTestSpec({
                 })()
             """.trimIndent())
             page.click("#date-correction-apply")
-            
+            page.waitForSelector("#date-correction-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
+
             Then("인접 버전을 감지하고 컨펌 다이얼로그가 노출된다") {
-                page.waitForSelector(".ui-confirm-dialog:has-text('Do you want to adjust the adjacent version')", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
+                page.waitForSelector(".ui-confirm-dialog:has-text('Do you want to adjust')", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
             }
             
             And("컨펌 다이얼로그에서 'Yes'를 클릭하면") {
@@ -227,6 +233,21 @@ internal class VersioningTest: GwtTestSpec({
                     val newCustomerSelector = ".type-box[data-type-key='customer:2.0']"
                     page.waitForSelector(newCustomerSelector, com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
                 }
+            }
+        }
+        
+        When("모바일 해상도(375x812)로 변경하고 타입을 선택하면") {
+            page.setViewportSize(375, 812)
+            page.click(".type-canvas", com.microsoft.playwright.Page.ClickOptions().setPosition(10.0, 10.0).setForce(true))
+            Thread.sleep(500)
+            
+            page.click(".type-box[data-type-key='customer:2.0'] .type-header")
+            
+            Then("우측 패널과 툴바는 숨겨지고 바텀 시트(TypeBottomSheet)가 표시된다") {
+                page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-inspector-panel')).display === 'none'")
+                page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-floating-toolbar')).display === 'none'")
+                page.waitForFunction("() => document.querySelector('.type-bottom-sheet').classList.contains('visible')")
+                page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-bottom-sheet')).display === 'flex'")
             }
         }
     }

@@ -21,7 +21,8 @@ graph TD
 | 구분 | 컴포넌트 | 포함 기능 (버튼) | 역할 설명 |
 |:---|:---|:---|:---|
 | **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, ModeToggle, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 모드 전환. **원형 아이콘 버튼(Plain)** 표준 적용. |
-| **속성 바** | `TypePropertyBar` | ID, 버전, 유효기간 표시 및 편집 | 단일 타입 선택 시 노출 (데스크톱: 상단 / 모바일: 플로팅 캡슐). 버전 관리 및 기간 편집 진입점. |
+| **인스펙터 (Inspector)** | `TypeInspectorPanel` (PC) / `TypeBottomSheet` (Mobile) | ID, 버전, 유효기간, 속성 등 상세 정보 표시 및 편집 | 단일 타입 선택 시 노출. 데스크톱은 우측 슬라이드 패널, 모바일은 하단 바텀 시트로 노출되어 에이전트 UI와의 간섭을 피함. 기간 편집 진입점. |
+| **플로팅 툴바** | `TypeFloatingToolbar` | 삭제, 새 버전 등 빠른 액션 | 데스크톱 환경에서 타입 선택 시 박스 근처에 노출되어 시선 이동을 최소화함. |
 | **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 편집 도구. **원형 아이콘 버튼(Plain)** 표준 적용. |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
@@ -756,9 +757,9 @@ sequenceDiagram
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 |
-| **선행조건** | 특정 타입(Box) 선택, `TypePropertyBar` 노출됨 |
-| **트리거** | 속성 바 전체 영역 중 하나 클릭 (UX 개선) |
-| **정상 흐름** | 1. 속성 바(ID, 버전, 유효기간 등) 영역을 클릭한다.<br>2. 날짜/시간 편집 팝업이 열린다.<br>3. 현재 레코드의 `effectDateTime` 또는 `expireDateTime`을 직접 수정한다.<br>4. 수정된 날짜와 맞닿아 있던 이전/다음 버전이 존재하는지 확인한다.<br>5. 인접 버전이 있다면 컨펌 다이얼로그("인접한 버전의 날짜도 함께 변경하시겠습니까?")를 노출한다.<br>6. "Yes" 클릭 시 현재 버전과 인접 버전을 하나의 액션으로 묶어 함께 수정한다.<br>7. Save 클릭 시 새로운 버전 레코드를 생성하지 않고, 현재 데이터(및 동기화된 인접 데이터)의 기간 경계값만 변경(PATCH)한다. |
+| **선행조건** | 특정 타입(Box) 선택, 인스펙터 패널(`TypeInspectorPanel` 또는 `TypeBottomSheet`) 노출됨 |
+| **트리거** | 인스펙터 내 유효기간 영역 클릭 |
+| **정상 흐름** | 1. 인스펙터의 유효기간 영역을 클릭한다.<br>2. 날짜/시간 편집 팝업이 열린다.<br>3. 현재 레코드의 `effectDateTime` 또는 `expireDateTime`을 직접 수정한다.<br>4. 수정된 날짜와 맞닿아 있던 이전/다음 버전이 존재하는지 확인한다.<br>5. 인접 버전이 있다면 컨펌 다이얼로그("인접한 버전의 날짜도 함께 변경하시겠습니까?")를 노출한다.<br>6. "Yes" 클릭 시 현재 버전과 인접 버전을 하나의 액션으로 묶어 함께 수정한다.<br>7. Save 클릭 시 새로운 버전 레코드를 생성하지 않고, 현재 데이터(및 동기화된 인접 데이터)의 기간 경계값만 변경(PATCH)한다. |
 | **대안 흐름** | 5a. "No" 클릭 시 현재 타입 1개만 변경하며, 버전 간 공백(Gap)이나 충돌(Overlap)을 허용한다. |
 | **결과** | 현재 타입 버전의 유효 기간이 수정되며, 필요 시 인접 버전의 경계가 함께 동기화된다 (실수 교정용). |
 
@@ -795,7 +796,7 @@ sequenceDiagram
 | UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest: 워크스페이스 전환 확인) |
 | UC-T26 (ID 폴백) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | Application, WorkspaceEventListener | ✅ 구현 완료 (CollaborationTest: URL에서 ID 추출 검증) |
 | UC-T27 (새 버전 생성) | 타입 새 버전 생성 시퀀스 | Action 계층, 상태 관리, API 어댑터 | SchemaEvolutionAction, LayoutProvider, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
-| UC-T28 (기간 편집) | 타입 유효기간 편집 시퀀스 | Action 계층, 상태 관리, API 어댑터 | EditTBoxDateAction, TypePropertyBar, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
+| UC-T28 (기간 편집) | 타입 유효기간 편집 시퀀스 | Action 계층, 상태 관리, API 어댑터 | EditTBoxDateAction, TypeInspectorPanel, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
 
 ---
 

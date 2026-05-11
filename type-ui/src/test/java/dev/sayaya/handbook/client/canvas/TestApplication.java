@@ -52,11 +52,15 @@ public class TestApplication implements EntryPoint {
             .add(div().css("type-container")
                 .add(component.statusHeader())
                 .add(component.controller())
-                .add(component.canvas())
+                .add(div().css("type-canvas-wrapper")
+                        .add(component.typeInspectorPanel())
+                        .add(component.typeFloatingToolbar())
+                        .add(component.typeBottomSheet())
+                        .add(component.canvas()))
                 .add(component.attributeEditor())
                 .add(component.dateCorrectionDialog())
-                .add(component.versionCreationDialog()))
+                .add(component.versionCreationDialog())
                 .add(component.actionDial())
-                .add(component.settingsDial());
+                .add(component.settingsDial()));
     }
 }

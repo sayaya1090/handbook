@@ -39,4 +39,7 @@ public interface TestComponent {
     dev.sayaya.handbook.client.usecase.LayoutList layoutList();
     AgentMutationHandler agentMutationHandler();
     dev.sayaya.handbook.client.usecase.PeriodRecalculationService periodRecalculationService();
+    dev.sayaya.handbook.client.interfaces.controller.inspector.TypeInspectorPanel typeInspectorPanel();
+    dev.sayaya.handbook.client.interfaces.controller.inspector.TypeBottomSheet typeBottomSheet();
+    dev.sayaya.handbook.client.interfaces.controller.toolbar.TypeFloatingToolbar typeFloatingToolbar();
 }
