@@ -46,7 +46,7 @@ spring:
         - id: type-command
           uri: ${gateway.routes.type-command:http://localhost:8083}
           predicates:
-            - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
+            - Path=/workspaces/*/types/**,/workspaces/*/layouts/**,/workspaces/*/schema
             - Method=PUT,PATCH,DELETE
           order: 4
         # 문서 조회 + 대시보드 통계

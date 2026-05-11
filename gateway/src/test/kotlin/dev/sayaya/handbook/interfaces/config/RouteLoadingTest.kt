@@ -53,6 +53,13 @@ class RouteLoadingTest(
             pathArgs.contains("/auth/**") shouldBe true
         }
 
+        it("type-command 라우트가 /workspaces/*/schema 경로를 포함한다") {
+            val typeCommandRoute = gatewayProperties.routes.first { it.id == "type-command" }
+            val pathPredicate = typeCommandRoute.predicates.first { it.name == "Path" }
+            val pathArgs = pathPredicate.args.values.joinToString(",")
+            pathArgs.contains("/workspaces/*/schema") shouldBe true
+        }
+
         it("CircuitBreaker 필터가 assistant와 event-broadcaster에 적용된다") {
             val assistantRoute = gatewayProperties.routes.first { it.id == "assistant" }
             assistantRoute.filters.any { it.name == "CircuitBreaker" } shouldBe true
