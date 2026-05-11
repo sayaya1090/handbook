@@ -27,9 +27,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root = div().css("type-status-header").element();
     private final HTMLElement periodLabel = span().css("type-period-label").element();
     
-    private final TypePropertyBar propertyBar;
-    private final HTMLElement mobileInfoCapsule = div().css("type-floating-pill", "type-info").element();
-
     private final HTMLDivElement historyGroup = div().css("type-ctrl-group").element();
     private final HTMLDivElement persistenceGroup = div().css("type-ctrl-group").element();
     private final HTMLDivElement navGroup = div().css("type-ctrl-group").element();
@@ -55,7 +52,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
                         SnapButton snapButton,
                         ActionDialElement actionDial,
                         SettingsDialElement settingsDial,
-                        TypePropertyBar propertyBar,
                         LayoutProvider layoutProvider,
                         SelectedBoxElement selection,
                         ViewportObserver viewportObserver) {
@@ -69,7 +65,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         this.snapButton = snapButton;
         this.actionDial = actionDial;
         this.settingsDial = settingsDial;
-        this.propertyBar = propertyBar;
 
         initDesktopLayout();
         initMobileLayout();
@@ -79,9 +74,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             boolean hasSelection = keys != null && !keys.isEmpty();
             navGroup.classList.toggle("type-fade-out", hasSelection);
             navGroup.classList.toggle("type-fade-in", !hasSelection);
-            propertyBar.element().classList.toggle("type-fade-out", !hasSelection);
-            propertyBar.element().classList.toggle("type-fade-in", hasSelection);
-            mobileInfoCapsule.classList.toggle("visible", hasSelection);
         });
 
         layoutProvider.subscribe(this::updatePeriod);
@@ -91,12 +83,9 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         navGroup.appendChild(beforeBtn.element());
         navGroup.appendChild(periodLabel);
         navGroup.appendChild(afterBtn.element());
-        navGroup.classList.add("type-fade-item", "type-nav-group", "type-fade-in");
-
-        propertyBar.element().classList.add("type-fade-item");
+        navGroup.classList.add("type-nav-group", "type-fade-in");
 
         centerArea.appendChild(navGroup);
-        centerArea.appendChild(propertyBar.element());
 
         root.appendChild(persistenceGroup);
         root.appendChild(historyGroup);
@@ -112,6 +101,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
 
     private void updateLayout(boolean isMobile) {
         root.classList.toggle("mobile", isMobile);
+        root.style.display = isMobile ? "none" : "flex";
         if (isMobile) {
             actionDial.addItem(saveBtn);
             actionDial.addItem(reloadBtn);
@@ -122,8 +112,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             
             settingsDial.addItem(modeToggle);
             settingsDial.addItem(snapButton);
-            
-            mobileInfoCapsule.appendChild(propertyBar.element());
         } else {
             persistenceGroup.appendChild(saveBtn.element());
             persistenceGroup.appendChild(reloadBtn.element());
@@ -133,7 +121,6 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             navGroup.appendChild(afterBtn.element());
             
             centerArea.appendChild(navGroup);
-            centerArea.appendChild(propertyBar.element());
         }
     }
 

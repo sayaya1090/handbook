@@ -120,9 +120,11 @@ internal class EdgeCaseTest: GwtTestSpec({
             Thread.sleep(200)
 
             page.setViewportSize(400, 800)
+            page.evaluate("window.dispatchEvent(new Event('resize'))")
+            page.waitForSelector("md-fab.settings-dial", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE))
             Thread.sleep(500)
             // 모바일 뷰에서는 설정 다이얼을 열어야 버튼이 나타남
-            page.click("md-fab.settings-dial")
+            page.click("md-fab.settings-dial", com.microsoft.playwright.Page.ClickOptions().setForce(true))
             Thread.sleep(300)
             // 레이아웃 모드로 전환 보장 (첫 번째 버튼이 LAYOUT 모드)
             page.click(".type-ctrl-btn[title='Layout Mode']")

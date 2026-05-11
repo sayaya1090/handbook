@@ -10,9 +10,13 @@ import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.ComplexAction;
 import dev.sayaya.handbook.client.usecase.action.EditTBoxDateAction;
 import dev.sayaya.handbook.domain.Action;
+import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
+import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
+import org.jboss.elemento.EventType;
 import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
@@ -20,14 +24,15 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.*;
 
 @Singleton
 public class TypeBottomSheet implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root = div().css("type-bottom-sheet").element();
-    private final HTMLElement idLabel = div().css("type-property-id").element();
-    private final HTMLElement versionLabel = div().css("type-property-version").element();
-    private final HTMLElement datesLabel = div().css("type-property-dates").element();
+    private final HTMLElement idLabel = span().css("inspector-value", "type-property-id").element();
+    private final HTMLElement versionLabel = span().css("inspector-value", "type-property-version").element();
+    private final HTMLElement datesLabel = span().css("inspector-value", "type-property-dates").element();
+    private final HTMLDivElement attrList = div().css("inspector-attr-list").element();
 
     private final SelectedBoxElement selection;
     private final TypeList typeList;
@@ -47,25 +52,31 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
         this.actionManager = actionManager;
         this.tracker = tracker;
 
-        root.appendChild(idLabel);
-        root.appendChild(versionLabel);
-        root.appendChild(datesLabel);
+        HTMLElement closeBtn = ButtonElementBuilder.button()
+                .icon(IconElementBuilder.icon().css("fa-solid", "fa-xmark"))
+                .element();
+        closeBtn.addEventListener("click", e -> selection.clear());
+        closeBtn.style.position = "absolute";
+        closeBtn.style.top = "12px";
+        closeBtn.style.right = "12px";
 
-        selection.subscribe(selected -> {
-            boolean hasSelection = selected != null && !selected.isEmpty();
-            if (hasSelection) {
-                root.classList.add("visible");
-                String key = selected.iterator().next();
-                typeList.getValue().stream()
-                        .filter(t -> t.key().equals(key))
-                        .findFirst()
-                        .ifPresent(type -> this.update(type, new ArrayList<>(typeList.getValue())));
-            } else {
-                root.classList.remove("visible");
-                currentType = null;
-            }
-        });
+        root.appendChild(closeBtn);
+        root.appendChild(div().css("inspector-header")
+                .add(span().css("inspector-label").text("Inspector"))
+                .add(span().css("inspector-value").style("font-weight: 600; font-size: 18px;").text("Type Details"))
+                .element());
+        root.appendChild(div().css("inspector-divider").element());
+        root.appendChild(section("Type ID", idLabel));
+        root.appendChild(section("Version", versionLabel));
+        root.appendChild(section("Validity Period", datesLabel));
+        root.appendChild(div().css("inspector-divider").element());
+        root.appendChild(section("Attributes", attrList));
 
+        // selection이나 typeList가 변경될 때마다 현재 선택된 타입을 찾아 업데이트
+        selection.subscribe(selected -> updateFromList(selected, typeList.getValue()));
+        typeList.subscribe(list -> updateFromList(selection.getValue(), list));
+
+        datesLabel.style.cursor = "pointer";
         datesLabel.addEventListener("click", e -> {
             if (currentType != null) {
                 correctionDialog.show(currentType, this::handleDateCorrection);
@@ -73,11 +84,63 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
         });
     }
 
+    private void updateFromList(java.util.Set<String> selected, java.util.Set<Type> list) {
+        boolean hasSelection = selected != null && !selected.isEmpty();
+        if (hasSelection) {
+            root.classList.add("visible");
+            String key = selected.iterator().next();
+            list.stream()
+                    .filter(t -> t.key().equals(key))
+                    .findFirst()
+                    .ifPresent(type -> this.update(type, new ArrayList<>(list)));
+        } else {
+            root.classList.remove("visible");
+            currentType = null;
+        }
+    }
+
+    private HTMLElement section(String label, HTMLElement valueElement) {
+        return div().css("inspector-section")
+                .add(span().css("inspector-label").text(label))
+                .add(valueElement)
+                .element();
+    }
+
     public void update(Type type, List<Type> allTypes) {
         this.currentType = type;
-        idLabel.textContent = "ID: " + type.id();
-        versionLabel.textContent = "Version: " + type.version();
+        idLabel.textContent = type.id();
+        versionLabel.textContent = type.version();
         datesLabel.textContent = DateFormatter.formatRange(type);
+        
+        attrList.innerHTML = "";
+        if (type.attributes() != null) {
+            for (Attribute attr : type.attributes()) {
+                String typeName = attr.type() != null ? attr.type().type() : "text";
+                HTMLElement item = div().css("inspector-attr-item")
+                        .add(div().css("inspector-attr-info")
+                                .add(div().css("inspector-attr-main")
+                                        .add(span().css("inspector-attr-icon", "fa-solid", getIcon(typeName)))
+                                        .add(span().css("inspector-attr-name").text(attr.name())))
+                                .add(span().css("inspector-attr-desc").text(attr.description() != null ? attr.description() : "")))
+                        .add(span().css("inspector-attr-type").text(typeName))
+                        .element();
+                attrList.appendChild(item);
+            }
+        }
+    }
+
+    private String getIcon(String type) {
+        switch (type) {
+            case "number": return "fa-hashtag";
+            case "date": return "fa-calendar-days";
+            case "enum": return "fa-list-ul";
+            case "bool": return "fa-toggle-on";
+            case "array": return "fa-layer-group";
+            case "map": return "fa-diagram-project";
+            case "file": return "fa-file";
+            case "document": return "fa-file-invoice";
+            default: return "fa-font";
+        }
     }
 
     private void handleDateCorrection(DateCorrectionDialog.DateResult result) {

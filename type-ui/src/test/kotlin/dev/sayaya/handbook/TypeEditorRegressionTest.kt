@@ -66,18 +66,8 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             page.waitForTimeout(500.0)
             page.evaluate("window.dispatchEvent(new Event('resize'))")
             
-            Then("상단 상태바(.type-status-header)는 가로 스크롤이 가능하다") {
-                val overflowX = page.evaluate("""
-                    getComputedStyle(document.querySelector('.type-status-header')).overflowX
-                """.trimIndent()).toString()
-                overflowX shouldBe "auto"
-            }
-            
-            Then("상단바의 자식 요소들은 찌그러지지 않는다 (flex-shrink: 0)") {
-                val shrink = page.evaluate("""
-                    getComputedStyle(document.querySelector('.type-status-header > *')).flexShrink
-                """.trimIndent()).toString()
-                shrink shouldBe "0"
+            Then("상단 상태바(.type-status-header)는 숨겨진다 (사용자 요청)") {
+                page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-status-header')).display === 'none'")
             }
 
             Then("모바일 플로팅 조작 버튼(Speed Dial)이 존재한다") {
