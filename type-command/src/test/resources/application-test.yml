@@ -2,12 +2,7 @@ spring:
   security:
     authentication:
       header: "Authorization"
-      jwt-secret: |
-      -----BEGIN PUBLIC KEY-----
-      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+B7ySshjKqS9S1F/f+A9p6v8h/Xn
-      /Zz/2wP7l8ZlG/Z/5B5k7k8X2wY7l8ZlG/Z/5B5k7k8X2wY7l8ZlG/Z/5B5k7k8X
-      2w==
-      -----END PUBLIC KEY-----
+      jwt-secret: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+B7ySshjKqS9S1F/f+A9p6v8h/Xn/Zz/2wP7l8ZlG/Z/5B5k7k8X2wY7l8ZlG/Z/5B5k7k8X2wY7l8ZlG/Z/5B5k7k8X2w==\n-----END PUBLIC KEY-----"
 ---
 spring:
   config:

@@ -17,22 +17,15 @@ import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.cfg.DateTimeFeature
+import org.springframework.web.reactive.config.WebFluxConfigurer
+import org.springframework.http.codec.ServerCodecConfigurer
+import org.springframework.http.codec.json.JacksonJsonDecoder
+import org.springframework.http.codec.json.JacksonJsonEncoder
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.KotlinModule
 
-/**
- * document-command 모듈의 Spring Bean 설정.
- *
- * **책임:** usecase 계층의 서비스/포트 구현체를 Spring Bean으로 등록하고,
- * Jackson ObjectMapper를 snake_case + JavaTime 지원으로 구성한다.
- *
- * **의존관계:**
- * - [R2dbcDocumentRepositoryAdapter] — 문서 영속화 어댑터
- * - [KafkaDocumentEventPublisher] — Kafka 이벤트 발행 어댑터
- * - [DocumentService] — 문서 비즈니스 로직
- */
 @Configuration
-class DocumentConfig {
+class DocumentConfig : WebFluxConfigurer {
     @Bean
     fun objectMapper(): ObjectMapper = JsonMapper.builder()
         .disable(DateTimeFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
@@ -43,6 +36,12 @@ class DocumentConfig {
         .addModule(dev.sayaya.handbook.interfaces.jackson.JsPropertyMapModule())
         .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         .build()
+
+    override fun configureHttpMessageCodecs(configurer: ServerCodecConfigurer) {
+        val mapper = objectMapper() as JsonMapper
+        configurer.defaultCodecs().jacksonJsonDecoder(JacksonJsonDecoder(mapper))
+        configurer.defaultCodecs().jacksonJsonEncoder(JacksonJsonEncoder(mapper))
+    }
 
     @Bean
     fun documentRepositoryAdapter(
