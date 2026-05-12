@@ -46,7 +46,7 @@ public class LayoutApi implements LayoutRepository {
                 .catch_(err -> {
                     GWT.log("LayoutApi.layouts failed: " + err);
                     ErrorNotifier.notify("LayoutApi.layouts failed: " + err);
-                    return Promise.resolve(Collections.emptyList());
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }
@@ -64,7 +64,10 @@ public class LayoutApi implements LayoutRepository {
                             if (lp.effectDateTime() == period.effectDateTime() && lp.expireDateTime() == period.expireDateTime()) {
                                 Map<String, Position> map = new HashMap<>();
                                 if (layout.positions() != null) {
-                                    layout.positions().forEach(key -> map.put(key, layout.positions().get(key)));
+                                    Js.asPropertyMap(layout.positions()).forEach(key -> {
+                                        Position pos = Js.cast(Js.asPropertyMap(layout.positions()).get(key));
+                                        map.put(key, pos);
+                                    });
                                 }
                                 return Promise.resolve(map);
                             }
@@ -75,7 +78,7 @@ public class LayoutApi implements LayoutRepository {
                 .catch_(err -> {
                     GWT.log("LayoutApi.positions failed: " + err);
                     ErrorNotifier.notify("LayoutApi.positions failed: " + err);
-                    return Promise.resolve(Collections.emptyMap());
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }
@@ -97,11 +100,12 @@ public class LayoutApi implements LayoutRepository {
         });
 
         Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/layouts", init)
+                .then(this::handleResponse)
                 .then(resp -> Promise.resolve((Void) null))
                 .catch_(err -> {
                     GWT.log("LayoutApi.savePositions failed: " + err);
                     ErrorNotifier.notify("LayoutApi.savePositions failed: " + err);
-                    return Promise.resolve((Void) null);
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }
