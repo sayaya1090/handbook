@@ -633,6 +633,7 @@ html, body {
     }
     .type-speed-dial {
         display: flex !important;
+        z-index: 1001; /* 바텀 시트(1000) 위로 올림 */
     }
     .type-bottom-sheet.visible {
         transform: translateY(0);
@@ -640,18 +641,7 @@ html, body {
         pointer-events: auto;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 0s;
     }
-    /* 바텀 시트 배경 딤 처리 */
-    .type-bottom-sheet.visible::before {
-        content: '';
-        position: fixed;
-        top: -100vh;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.32);
-        pointer-events: auto;
-        z-index: -1;
-    }
+    /* 바텀 시트 배경 딤 처리는 모달처럼 동작하여 버튼 클릭을 방해하므로 제거함 */
     .type-info-fab {
         position: fixed;
         bottom: 80px;
