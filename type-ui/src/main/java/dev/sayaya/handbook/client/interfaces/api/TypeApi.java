@@ -145,6 +145,7 @@ public class TypeApi implements TypeRepository {
         init.setHeaders(jsonHeaders());
 
         Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/types", init)
+                .then(this::handleResponse)
                 .then(resp -> {
                     progress.next(Progress.hide());
                     return Promise.resolve((Void) null);
@@ -153,7 +154,7 @@ public class TypeApi implements TypeRepository {
                     GWT.log("TypeApi.delete failed: " + err);
                     ErrorNotifier.notify("TypeApi.delete failed: " + err);
                     progress.next(Progress.hide());
-                    return Promise.resolve((Void) null);
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }
@@ -167,6 +168,7 @@ public class TypeApi implements TypeRepository {
         init.setHeaders(jsonHeaders());
 
         Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/schema", init)
+                .then(this::handleResponse)
                 .then(resp -> {
                     progress.next(Progress.hide());
                     return Promise.resolve((Void) null);
@@ -175,7 +177,7 @@ public class TypeApi implements TypeRepository {
                     GWT.log("TypeApi.patchSchema failed: " + err);
                     ErrorNotifier.notify("TypeApi.patchSchema failed: " + err);
                     progress.next(Progress.hide());
-                    return Promise.resolve((Void) null);
+                    return Promise.reject(err);
                 });
         return AsyncSubject.await(promise);
     }
