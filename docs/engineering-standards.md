@@ -119,6 +119,7 @@ WindowRenderBridge.next(render);
 - **Jackson 호환성 (직렬화)**: Jackson 3(JsonMapper)는 Proxy 객체의 내부 속성을 자동으로 읽지 못하므로, **직렬화 전 반드시 일반 `Map` 객체로 명시적 변환**을 거쳐야 한다.
 - **Jackson 호환성 (역직렬화)**: `JsPropertyMapModule`을 통해 `JsPropertyMap` 인터페이스에 대한 Deserializer를 제공하고, 중첩된 객체의 제레릭 타입을 보존하기 위해 `createContextual`을 활용한다.
 - **WebFlux 코덱 강제**: Spring WebFlux는 커텀 `ObjectMapper` 빈이 존재해도 기본 코덱을 사용하는 경우가 있으므로, `WebFluxConfigurer.configureHttpMessageCodecs`를 통해 명시적으로 커스텀 매퍼를 등록해야 한다.
+- **CUD API 상태 동기화**: 리소스 생성/수정/삭제 요청(POST, PUT, PATCH, DELETE)에 대한 응답은 가급적 **영향을 받은 최신 상태의 도메인 객체 목록**을 포함해야 한다. 이는 프론트엔드가 별도의 조회 없이도 서버의 최신 리비전(rev)이나 자동 생성된 ID를 즉시 동기화하여 409 Conflict를 방지하기 위함이다.
 - **구현 예시**:
 ```kotlin
 // 직렬화 전 변환 예시
