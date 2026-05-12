@@ -82,7 +82,23 @@ public class SaveAction implements Action {
 
         SchemaPatch patch = SchemaPatch.create(typeOps.toArray(new SchemaPatch.TypeOperation[0]), layoutOps.toArray(new SchemaPatch.LayoutOperation[0]));
         
-        typeRepository.patchSchema(patch).subscribe(v -> {
+        typeRepository.patchSchema(patch).subscribe(result -> {
+            // 서버에서 반환된 최신 데이터로 UI 상태 동기화 (리비전 갱신)
+            if (result.types() != null) {
+                for (SchemaPatch.TypeOperation op : result.types()) {
+                    if ("UPSERT".equals(op.op())) {
+                        typeList.update(op.data(), op.data()); // ID/Version 동일하므로 리비전만 갱신된 객체로 교체
+                    }
+                }
+            }
+            if (result.layouts() != null) {
+                for (SchemaPatch.LayoutOperation op : result.layouts()) {
+                    if ("UPSERT".equals(op.op())) {
+                        layoutList.update(op.data(), op.data());
+                    }
+                }
+            }
+            
             tracker.reset();
             actionManager.clear();
             if (toastContainer != null) {

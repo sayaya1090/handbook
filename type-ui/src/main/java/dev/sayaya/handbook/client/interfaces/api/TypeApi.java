@@ -160,18 +160,19 @@ public class TypeApi implements TypeRepository {
     }
 
     @Override
-    public Observable<Void> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch) {
+    public Observable<dev.sayaya.handbook.domain.SchemaPatch> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch) {
         progress.next(Progress.indeterminate());
         RequestInit init = RequestInit.create();
         init.setMethod("PATCH");
         init.setBody(Global.JSON.stringify(patch));
         init.setHeaders(jsonHeaders());
 
-        Promise<Void> promise = fetchApi.request("workspaces/" + workspace + "/schema", init)
+        Promise<dev.sayaya.handbook.domain.SchemaPatch> promise = fetchApi.request("workspaces/" + workspace + "/schema", init)
                 .then(this::handleResponse)
-                .then(resp -> {
+                .then(Response::json)
+                .then(json -> {
                     progress.next(Progress.hide());
-                    return Promise.resolve((Void) null);
+                    return Promise.resolve(Js.<dev.sayaya.handbook.domain.SchemaPatch>cast(json));
                 })
                 .catch_(err -> {
                     GWT.log("TypeApi.patchSchema failed: " + err);

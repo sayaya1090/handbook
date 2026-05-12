@@ -4,6 +4,7 @@ import dev.sayaya.handbook.domain.SchemaPatch
 import dev.sayaya.handbook.domain.Type
 import dev.sayaya.handbook.domain.TypeLayout
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.*
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
@@ -52,6 +53,11 @@ class SchemaServiceTest : BehaviorSpec({
 
             Then("모든 작업이 성공하고 이벤트가 발행된다") {
                 StepVerifier.create(result)
+                    .assertNext { r ->
+                        r.types().size shouldBe 2
+                        r.layouts().size shouldBe 1
+                        r.types()[0].data().id() shouldBe "customer"
+                    }
                     .verifyComplete()
                 
                 verifyOrder {
@@ -105,6 +111,10 @@ class SchemaServiceTest : BehaviorSpec({
 
             Then("에러 없이 완료되며 알려진 연산만 처리된다") {
                 StepVerifier.create(result)
+                    .assertNext { r ->
+                        r.types().size shouldBe 0
+                        r.layouts().size shouldBe 0
+                    }
                     .verifyComplete()
                 
                 verify(exactly = 0) { typeRepo.save(any(), any()) }
@@ -123,6 +133,10 @@ class SchemaServiceTest : BehaviorSpec({
 
             Then("정상적으로 즉시 완료된다") {
                 StepVerifier.create(result)
+                    .assertNext { r ->
+                        r.types().size shouldBe 0
+                        r.layouts().size shouldBe 0
+                    }
                     .verifyComplete()
             }
         }

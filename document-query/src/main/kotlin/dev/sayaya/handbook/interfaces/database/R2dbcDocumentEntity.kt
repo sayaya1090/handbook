@@ -16,6 +16,7 @@ class R2dbcDocumentEntity(
     @Column("create_date_time") val createDateTime: Instant,
     val creator: String,
     val data: String,
+    val rev: Long? = null,
     override val count: Long = -1,
 ) : EntityPageable
 

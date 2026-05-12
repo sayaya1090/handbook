@@ -17,7 +17,7 @@ class ExtraEntityTest : DescribeSpec({
             val later = now.plusSeconds(3600)
             val entity = R2dbcDocumentEntity(
                 UUID.randomUUID(), UUID.randomUUID(), "type", "serial", 
-                now, later, now, "user", """{"key":"value"}"""
+                now, later, now, "user", """{"key":"value"}""", 0L
             )
             val domain = repo.toDomain(entity)
             domain.serial() shouldBe "serial"

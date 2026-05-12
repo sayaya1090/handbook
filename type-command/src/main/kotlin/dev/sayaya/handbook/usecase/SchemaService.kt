@@ -17,28 +17,33 @@ class SchemaService(
     private val eventPublisher: TypeEventPublisher,
     private val tx: TransactionalOperator,
 ) {
-    fun patch(workspace: UUID, patch: SchemaPatch): Mono<Void> {
+    fun patch(workspace: UUID, patch: SchemaPatch): Mono<SchemaPatch> {
         val typeOps = Flux.fromArray(patch.types() ?: emptyArray())
             .concatMap { op ->
                 when (op.op()) {
                     "UPSERT" -> typeRepository.save(workspace, listOf(op.data()))
                         .doOnNext { eventPublisher.publishCreated(workspace, it) }
+                        .map { SchemaPatch.TypeOperation.upsert(it) }
                     "DELETE" -> typeRepository.delete(workspace, listOf(op.data()))
                         .doOnSuccess { eventPublisher.publishDeleted(workspace, op.data()) }
+                        .thenReturn(SchemaPatch.TypeOperation.delete(op.data()))
                     else -> Mono.empty()
                 }
             }
-            .then()
+            .collectList()
             
         val layoutOps = Flux.fromArray(patch.layouts() ?: emptyArray())
             .concatMap { op ->
                 when (op.op()) {
                     "UPSERT" -> layoutRepository.save(workspace, op.data())
+                        .map { SchemaPatch.LayoutOperation.upsert(it) }
                     else -> Mono.empty()
                 }
             }
-            .then()
+            .collectList()
             
-        return typeOps.then(layoutOps).`as`(tx::transactional)
+        return Mono.zip(typeOps, layoutOps)
+            .map { SchemaPatch.create(it.t1.toTypedArray(), it.t2.toTypedArray()) }
+            .`as`(tx::transactional)
     }
 }

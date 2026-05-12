@@ -36,6 +36,16 @@ public class LayoutList {
         subject.next(layouts);
     }
 
+    public void update(TypeLayout before, TypeLayout after) {
+        java.util.List<TypeLayout> next = new java.util.ArrayList<>();
+        for (TypeLayout l : subject.getValue()) {
+            if (l.id() != null && l.id().equals(before.id())) next.add(after);
+            else if (l == before) next.add(after); // Fallback for identity
+            else next.add(l);
+        }
+        subject.next(next);
+    }
+
     public void subscribe(Consumer<List<TypeLayout>> consumer) {
         subject.subscribe(consumer::accept);
     }

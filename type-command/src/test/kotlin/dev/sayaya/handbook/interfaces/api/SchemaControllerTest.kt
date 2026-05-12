@@ -17,7 +17,7 @@ class SchemaControllerTest : BehaviorSpec({
 
     Given("스키마 일괄 패치 API") {
         val patch = SchemaPatch.create(emptyArray(), emptyArray())
-        every { schemaService.patch(workspace, any()) } returns Mono.empty()
+        every { schemaService.patch(workspace, any()) } returns Mono.just(patch)
 
         When("PATCH /workspaces/{ws}/schema를 호출하면") {
             val response = webClient.patch()
@@ -26,8 +26,8 @@ class SchemaControllerTest : BehaviorSpec({
                 .bodyValue(patch)
                 .exchange()
 
-            Then("204 No Content가 반환된다") {
-                response.expectStatus().isNoContent
+            Then("200 OK가 반환된다") {
+                response.expectStatus().isOk
                 verify { schemaService.patch(workspace, any()) }
             }
         }

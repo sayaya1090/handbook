@@ -20,9 +20,8 @@ class SchemaController(private val schemaService: SchemaService) {
         consumes = ["application/vnd.sayaya.handbook.v1+json"],
         produces = ["application/vnd.sayaya.handbook.v1+json"],
     )
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun patch(
         @PathVariable workspace: UUID,
         @RequestBody patch: SchemaPatch,
-    ): Mono<Void> = schemaService.patch(workspace, patch)
+    ): Mono<SchemaPatch> = schemaService.patch(workspace, patch)
 }

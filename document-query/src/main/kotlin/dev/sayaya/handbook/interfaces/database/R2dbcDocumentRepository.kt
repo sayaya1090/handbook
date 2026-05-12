@@ -85,6 +85,7 @@ class R2dbcDocumentSearchRepository(
                     createDateTime = row.get("create_date_time", java.time.Instant::class.java)!!,
                     creator = row.get("creator", String::class.java)!!,
                     data = row.get("data", String::class.java)!!,
+                    rev = row.get("rev", Long::class.javaObjectType) ?: 0L,
                     count = (row.get("count", Long::class.javaObjectType) ?: 0L),
                 )
             }
@@ -163,7 +164,7 @@ class R2dbcDocumentSearchRepository(
                 else -> null
             }
         } as jsinterop.base.JsPropertyMap<String>
-        return Document.create(
+        val doc = Document.create(
             entity.id.toString(),
             entity.type,
             entity.serial,
@@ -173,6 +174,7 @@ class R2dbcDocumentSearchRepository(
             entity.creator,
             map
         ).status("PUBLISHED")
+        doc.rev(entity.rev ?: 0L)
+        return doc
     }
 }
-

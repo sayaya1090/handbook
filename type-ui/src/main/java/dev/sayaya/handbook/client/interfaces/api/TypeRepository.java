@@ -13,6 +13,6 @@ public interface TypeRepository {
     Observable<Set<Type>> save(Set<Type> types);
     Observable<Set<Type>> patch(List<JsPropertyMap<?>> patches);
     Observable<Void> delete(Set<Type> types);
-    Observable<Void> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch);
+    Observable<dev.sayaya.handbook.domain.SchemaPatch> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch);
     Observable<Set<Type>> versions(String typeId);
 }

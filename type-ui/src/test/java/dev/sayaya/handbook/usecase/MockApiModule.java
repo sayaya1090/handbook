@@ -37,7 +37,7 @@ public class MockApiModule {
             @Override public Observable<Set<Type>> save(Set<Type> types) { return BehaviorSubject.behavior(types).asObservable(); }
             @Override public Observable<Set<Type>> patch(List<JsPropertyMap<?>> patches) { return BehaviorSubject.<Set<Type>>behavior(new HashSet<>()).asObservable(); }
             @Override public Observable<Void> delete(Set<Type> types) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
-            @Override public Observable<Void> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch) { return BehaviorSubject.<Void>behavior(null).asObservable(); }
+            @Override public Observable<dev.sayaya.handbook.domain.SchemaPatch> patchSchema(dev.sayaya.handbook.domain.SchemaPatch patch) { return BehaviorSubject.behavior(patch).asObservable(); }
             @Override public Observable<Set<Type>> versions(String typeId) { return BehaviorSubject.<Set<Type>>behavior(new HashSet<>()).asObservable(); }
         };
     }

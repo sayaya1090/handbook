@@ -11,7 +11,7 @@ class R2dbcDocumentEntityTest : DescribeSpec({
             val id = UUID.randomUUID()
             val ws = UUID.randomUUID()
             val now = Instant.now()
-            val entity = R2dbcDocumentEntity(ws, id, "type", "serial", now, now, now, "user", "{}")
+            val entity = R2dbcDocumentEntity(ws, id, "type", "serial", now, now, now, "user", "{}", 0L)
             entity.id shouldBe id
             entity.workspace shouldBe ws
             entity.data shouldBe "{}"
