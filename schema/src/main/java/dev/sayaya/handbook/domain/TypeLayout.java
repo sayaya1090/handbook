@@ -20,6 +20,7 @@ public final class TypeLayout {
     @JsonProperty("effect_date_time") @JsProperty(name = "effect_date_time") private double effectDateTime;
     @JsonProperty("expire_date_time") @JsProperty(name = "expire_date_time") private double expireDateTime;
     @JsonProperty("positions") @JsProperty(name = "positions") private JsPropertyMap<Position> positions;
+    @JsonProperty("rev") @JsProperty(name = "rev") private long rev;
 
     @JsOverlay @JsIgnore
     public static TypeLayout create(String id, String workspace, double effectDateTime, double expireDateTime, JsPropertyMap<Position> positions) {
@@ -29,6 +30,7 @@ public final class TypeLayout {
         layout.effectDateTime(effectDateTime);
         layout.expireDateTime(expireDateTime);
         layout.positions(positions);
+        layout.rev(-1);
         return layout;
     }
 

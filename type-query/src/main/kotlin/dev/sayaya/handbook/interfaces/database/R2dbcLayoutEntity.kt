@@ -4,6 +4,7 @@ import dev.sayaya.handbook.domain.Position
 import dev.sayaya.handbook.domain.TypeLayout
 import jsinterop.base.JsPropertyMap
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
@@ -20,6 +21,7 @@ data class R2dbcLayoutEntity(
     @Column("effect_date_time") val effectDateTime: Instant,
     @Column("expire_date_time") val expireDateTime: Instant,
     val positions: String?,
+    @Version val rev: Long? = null,
 ) {
     fun toDomain(positionsMap: Map<String, Position>): TypeLayout {
         val map = java.lang.reflect.Proxy.newProxyInstance(
@@ -33,12 +35,17 @@ data class R2dbcLayoutEntity(
                 else -> null
             }
         } as JsPropertyMap<Position>
-        return TypeLayout.create(
+        val layout = TypeLayout.create(
             id.toString(),
             workspace.toString(),
             effectDateTime.toEpochMilli().toDouble(),
             expireDateTime.toEpochMilli().toDouble(),
             map
         )
+        val r = this@R2dbcLayoutEntity.rev
+        if (r != null) {
+            layout.rev(r)
+        }
+        return layout
     }
 }

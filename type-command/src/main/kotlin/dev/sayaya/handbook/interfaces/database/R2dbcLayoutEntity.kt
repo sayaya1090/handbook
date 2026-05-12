@@ -7,6 +7,10 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.util.*
 
+import org.springframework.data.annotation.Transient
+import org.springframework.data.domain.Persistable
+import org.springframework.data.annotation.Version
+
 /**
  * type_layouts 테이블에 매핑되는 R2DBC 엔티티.
  *
@@ -17,13 +21,20 @@ import java.util.*
  */
 @Table("type_layouts")
 data class R2dbcLayoutEntity(
-    @Id val id: UUID,
+    @Id private val id: UUID,
     val workspace: UUID,
     @Column("effect_date_time") val effectDateTime: Instant,
     @Column("expire_date_time") val expireDateTime: Instant,
     /** positions는 JSONB 컬럼으로 저장 */
     val positions: io.r2dbc.postgresql.codec.Json?,
-) {
+    @Version val rev: Long? = null,
+) : Persistable<UUID> {
+    @Transient
+    private var isNewRecord: Boolean = false
+
+    override fun getId(): UUID = id
+    override fun isNew(): Boolean = isNewRecord || rev == null
+
     fun toDomain(positionsMap: Map<String, dev.sayaya.handbook.domain.Position>): TypeLayout {
         val map = java.lang.reflect.Proxy.newProxyInstance(
             jsinterop.base.JsPropertyMap::class.java.classLoader,
@@ -46,12 +57,15 @@ data class R2dbcLayoutEntity(
     }
 
     companion object {
-        fun fromDomain(workspace: UUID, layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity = R2dbcLayoutEntity(
-            id = layout.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
-            workspace = workspace,
-            effectDateTime = Instant.ofEpochMilli(layout.effectDateTime().toLong()),
-            expireDateTime = Instant.ofEpochMilli(layout.expireDateTime().toLong()),
-            positions = positionsJson?.let { io.r2dbc.postgresql.codec.Json.of(it) },
-        )
+        fun fromDomain(workspace: UUID, layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity {
+            val isNew = layout.id() == null
+            return R2dbcLayoutEntity(
+                id = layout.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
+                workspace = workspace,
+                effectDateTime = Instant.ofEpochMilli(layout.effectDateTime().toLong()),
+                expireDateTime = Instant.ofEpochMilli(layout.expireDateTime().toLong()),
+                positions = positionsJson?.let { io.r2dbc.postgresql.codec.Json.of(it) },
+            ).apply { this.isNewRecord = isNew }
+        }
     }
 }

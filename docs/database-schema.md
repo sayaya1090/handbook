@@ -73,6 +73,7 @@ erDiagram
         instant effect_date_time
         instant expire_date_time
         jsonb positions "Map<typeKey, Position> JSON"
+        long rev "낙관적 잠금"
     }
 
     users {
