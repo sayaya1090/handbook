@@ -40,6 +40,7 @@ class DocumentConfig {
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .changeDefaultVisibility { it.withVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY) }
         .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .addModule(dev.sayaya.handbook.interfaces.jackson.JsPropertyMapModule())
         .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         .build()
 

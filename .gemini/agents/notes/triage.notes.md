@@ -1,6 +1,5 @@
 ## 요청 로그
-
-(아직 기록 없음)
+- 2025-05-13: 저장 기능 작동 불가 → cluster-ops, schema, document, events
 
 ---
 

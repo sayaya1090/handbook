@@ -1,6 +1,5 @@
 package dev.sayaya.handbook.interfaces.event
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import dev.sayaya.handbook.domain.event.DocumentEvent
 import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.interfaces.database.ElasticsearchDocumentEntity
@@ -9,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import tools.jackson.databind.ObjectMapper
 import java.util.UUID
 
 /**
@@ -28,10 +28,13 @@ class DocumentEventListener(
         try {
             val event = objectMapper.readValue(message, Event::class.java)
             if (event is DocumentEvent) {
-                sync(event).subscribe()
+                sync(event).subscribe(
+                    { logger.debug("Successfully synced document event: {}", event.id) },
+                    { e -> logger.error("Failed to sync document event to Elasticsearch: {}", e.message, e) }
+                )
             }
         } catch (e: Exception) {
-            logger.error("Failed to sync document event to Elasticsearch: {}", e.message, e)
+            logger.error("Failed to parse document event: {}", e.message, e)
         }
     }
 

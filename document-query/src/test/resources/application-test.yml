@@ -1,0 +1,32 @@
+spring:
+  security:
+    authentication:
+      header: "Authorization"
+      jwt-secret: |
+      -----BEGIN PUBLIC KEY-----
+      MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+B7ySshjKqS9S1F/f+A9p6v8h/Xn
+      /Zz/2wP7l8ZlG/Z/5B5k7k8X2wY7l8ZlG/Z/5B5k7k8X2wY7l8ZlG/Z/5B5k7k8X
+      2w==
+      -----END PUBLIC KEY-----
+  elasticsearch:
+    uris: http://localhost:9200
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false # Smoke test에서 ES 연동 제외
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/handbook
+    username: handbook
+    password:
+  kafka:
+    bootstrap-servers: localhost:9092
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092

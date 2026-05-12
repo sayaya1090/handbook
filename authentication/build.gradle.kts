@@ -7,6 +7,8 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
 }
 dependencies {
+    implementation(project(":schema"))
+    implementation("com.google.jsinterop:base:1.0.0")
     implementation(libs.spring.webflux)
     implementation(libs.spring.security)
     implementation(libs.kotlin.jackson)

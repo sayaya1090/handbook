@@ -39,6 +39,7 @@ data class R2dbcTypeEntity(
             expireDateTime.toEpochMilli().toDouble()
         ).description(description).primitive(primitive).attributes(attributes.toTypedArray())
         parent?.let { type.parent(it) }
+        rev?.let { type.rev(it) }
         return type
     }
 
@@ -52,6 +53,7 @@ data class R2dbcTypeEntity(
             description = type.description(),
             primitive = type.primitive(),
             parent = type.parent(),
+            rev = if (type.rev() == -1L) null else type.rev(),
         )
     }
 }

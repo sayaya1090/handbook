@@ -25,6 +25,7 @@ public class EditTBoxDateAction implements Action {
         this.after.primitive(before.primitive());
         this.after.parent(before.parent());
         this.after.attributes(before.attributes());
+        this.after.rev(before.rev());
     }
 
     @Override

@@ -1,5 +1,6 @@
 ## 요청 로그
 
+- 2026-05-24: 문서 저장 실패 분석 -> Jackson 3 패키지 통일 및 Kafka 장애 격리 조치
 - 2026-05-24: document 모듈 에이전트 연동 명세 갱신 -> README.md 최상단 추가
 - 2026-05-04: 도메인 모델 전환 대응 (Java Fluent API) 및 테스트 복구 -> 완료
 - 2026-05-24: document-ui 컴파일 에러 해결 (도메인 모델 이름 변경 및 Fluent Accessor 적용) -> 완료
@@ -14,10 +15,13 @@
 
 ## 탐색 패턴
 
+- **저장 실패 시 이벤트 발행부 확인 (2026-05-24)**: DB 저장은 성공하는데 API가 실패한다면 `doOnNext`나 `flatMap`에서 후속 처리(이벤트, 알림 등) 중 발생하는 부수 효과를 의심하라.
 - **GWT Shared Domain JVM 호환성 (2026-05-04)**: `JsPropertyMap`을 포함한 도메인을 백엔드(JVM)에서 사용할 때 `java.lang.reflect.Proxy`를 사용하여 `UnsatisfiedLinkError`를 방지한다. Jackson 호환을 위해 Proxy가 `Map` 인터페이스도 구현해야 한다.
 
 ## 반복 함정
 
+- **Jackson 패키지 혼용 (2026-05-24)**: Spring Boot 4 마이그레이션 후 `com.fasterxml.jackson`과 `tools.jackson`이 혼용되면 런타임 역직렬화 에러 또는 클래스패스 충돌 발생. 반드시 `tools.jackson`으로 통일할 것.
+- **이벤트 발행 블로킹 (2026-05-24)**: Reactor `doOnNext` 내에서 외부 시스템(Kafka 등) 호출 시, 구현체가 블로킹되면 전체 파이프라인이 멈춤. 예외 격리(try-catch) 또는 스케줄러 분리 필수.
 - **낙관적 잠금 초기값 (rev = -1) (2026-05-04)**: GWT의 primitive `long` 제약으로 인해 `null` 대신 `-1L`을 미초기화(INSERT) 상태로 사용한다. 백엔드 매핑 시 `-1L`을 `null`로 변환하여 전송해야 한다.
 - **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 (공용, GEMINI.md)
 - **`switchIfEmpty` eager**: `Mono.defer { }` 로 감쌀 것

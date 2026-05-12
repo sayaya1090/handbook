@@ -4,6 +4,7 @@ import dev.sayaya.handbook.domain.Document
 import dev.sayaya.handbook.domain.event.DocumentEvent
 import dev.sayaya.handbook.domain.event.Event
 import dev.sayaya.handbook.usecase.DocumentEventPublisher
+import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import tools.jackson.databind.ObjectMapper
 import java.util.*
@@ -25,24 +26,33 @@ class KafkaDocumentEventPublisher(
     private val objectMapper: ObjectMapper,
     private val topic: String = "handbook-events",
 ) : DocumentEventPublisher {
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override fun publishCreated(workspace: UUID, document: Document) {
-        val event = DocumentEvent(
-            id = UUID.randomUUID(),
-            workspace = workspace,
-            eventType = Event.EventType.DOCUMENT_CREATED,
-            payload = document,
-        )
-        kafkaTemplate.send(topic, workspace.toString(), objectMapper.writeValueAsString(event))
+        try {
+            val event = DocumentEvent(
+                id = UUID.randomUUID(),
+                workspace = workspace,
+                eventType = Event.EventType.DOCUMENT_CREATED,
+                payload = document,
+            )
+            kafkaTemplate.send(topic, workspace.toString(), objectMapper.writeValueAsString(event))
+        } catch (e: Exception) {
+            logger.error("Failed to publish DOCUMENT_CREATED event for document: {}", document.id(), e)
+        }
     }
 
     override fun publishDeleted(workspace: UUID, document: Document) {
-        val event = DocumentEvent(
-            id = UUID.randomUUID(),
-            workspace = workspace,
-            eventType = Event.EventType.DOCUMENT_DELETED,
-            payload = document,
-        )
-        kafkaTemplate.send(topic, workspace.toString(), objectMapper.writeValueAsString(event))
+        try {
+            val event = DocumentEvent(
+                id = UUID.randomUUID(),
+                workspace = workspace,
+                eventType = Event.EventType.DOCUMENT_DELETED,
+                payload = document,
+            )
+            kafkaTemplate.send(topic, workspace.toString(), objectMapper.writeValueAsString(event))
+        } catch (e: Exception) {
+            logger.error("Failed to publish DOCUMENT_DELETED event for document: {}", document.id(), e)
+        }
     }
 }

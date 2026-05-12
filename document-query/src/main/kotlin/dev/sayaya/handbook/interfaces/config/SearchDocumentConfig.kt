@@ -28,12 +28,9 @@ class SearchDocumentConfig : WebFluxConfigurer {
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .changeDefaultVisibility { it.withVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY) }
         .addModule(KotlinModule.Builder().withReflectionCacheSize(512).build())
+        .addModule(dev.sayaya.handbook.interfaces.jackson.JsPropertyMapModule())
         .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         .build()
-
-    @Bean
-    fun documentSearchRepository(operations: org.springframework.data.elasticsearch.core.ReactiveElasticsearchOperations) =
-        dev.sayaya.handbook.interfaces.database.ElasticsearchDocumentSearchRepository(operations)
 
     @Bean
     fun documentSearchService(repo: dev.sayaya.handbook.usecase.DocumentSearchRepository) = DocumentSearchService(repo)
