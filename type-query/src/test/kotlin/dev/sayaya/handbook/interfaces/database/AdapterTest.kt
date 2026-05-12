@@ -20,7 +20,7 @@ class AdapterTest : DescribeSpec({
             val ws = UUID.randomUUID()
             val now = Instant.now()
             val later = now.plusSeconds(3600)
-            val entity = R2dbcLayoutEntity(id, ws, now, later, """{"t1":{"x":10,"y":20,"width":100,"height":50}}""")
+            val entity = R2dbcLayoutEntity(id, ws, now, later, io.r2dbc.postgresql.codec.Json.of("""{"t1":{"x":10,"y":20,"width":100,"height":50}}"""))
             
             val domain = adapter.toDomain(entity)
             domain.id() shouldBe id.toString()

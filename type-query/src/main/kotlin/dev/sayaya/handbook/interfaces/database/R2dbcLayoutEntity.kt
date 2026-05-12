@@ -20,7 +20,7 @@ data class R2dbcLayoutEntity(
     val workspace: UUID,
     @Column("effect_date_time") val effectDateTime: Instant,
     @Column("expire_date_time") val expireDateTime: Instant,
-    val positions: String?,
+    val positions: io.r2dbc.postgresql.codec.Json?,
     @Version val rev: Long? = null,
 ) {
     fun toDomain(positionsMap: Map<String, Position>): TypeLayout {

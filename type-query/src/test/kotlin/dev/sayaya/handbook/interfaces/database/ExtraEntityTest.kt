@@ -15,7 +15,7 @@ class ExtraEntityTest : DescribeSpec({
             val ws = UUID.randomUUID()
             val now = Instant.now()
             val later = now.plusSeconds(3600)
-            val entity = R2dbcLayoutEntity(id, ws, now, later, "{}")
+            val entity = R2dbcLayoutEntity(id, ws, now, later, Json.of("{}"))
             val domain = entity.toDomain(emptyMap())
             domain.id() shouldBe id.toString()
             domain.workspace() shouldBe ws.toString()

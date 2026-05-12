@@ -34,7 +34,7 @@ class R2dbcLayoutSearchRepositoryAdapter(
         repository.findByWorkspace(workspace).map(::toDomain)
 
     internal fun toDomain(entity: R2dbcLayoutEntity): TypeLayout {
-        val positions: Map<String, Position> = entity.positions?.let {
+        val positions: Map<String, Position> = entity.positions?.asString()?.let {
             objectMapper.readValue(it)
         } ?: emptyMap()
         return entity.toDomain(positions)
