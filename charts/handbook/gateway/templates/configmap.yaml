@@ -45,7 +45,7 @@ data:
             - id: event-broadcaster
               uri: ${gateway.routes.event-broadcaster}
               predicates:
-                - Path=/workspace/*/messages
+                - Path=/workspaces/*/messages
                 - Method=GET
               filters:
                 - name: CircuitBreaker
@@ -56,26 +56,26 @@ data:
             - id: type-query
               uri: ${gateway.routes.type-query}
               predicates:
-                - Path=/workspace/*/types/**,/workspace/*/layouts/**
+                - Path=/workspaces/*/types/**,/workspaces/*/layouts/**
                 - Method=GET
             # 타입 저장
             - id: type-command
               uri: ${gateway.routes.type-command}
               predicates:
-                - Path=/workspace/*/types/**,/workspace/*/layouts/**
-                - Method=PUT,DELETE
+                - Path=/workspaces/*/types/**,/workspaces/*/layouts/**,/workspaces/*/schema
+                - Method=PUT,PATCH,DELETE
             # 문서 조회 + 대시보드 통계
             - id: document-query
               uri: ${gateway.routes.document-query}
               predicates:
-                - Path=/workspace/*/documents/**,/workspace/*/*/*,/workspace/*/stats,/workspace/*/stats/**,/workspace/*/quality-issues,/workspace/*/agent-activity
+                - Path=/workspaces/*/documents/**,/workspaces/*/*/*,/workspaces/*/stats,/workspaces/*/stats/**,/workspaces/*/quality-issues,/workspaces/*/agent-activity
                 - Method=GET
             # 문서 저장
             - id: document-command
               uri: ${gateway.routes.document-command}
               predicates:
-                - Path=/workspace/*/documents/**
-                - Method=PUT,DELETE
+                - Path=/workspaces/*/documents/**
+                - Method=PUT,PATCH,DELETE
             # 워크스페이스 조회 (read-only, AI 에이전트 디스커버리 타겟)
             - id: workspace-query
               uri: ${gateway.routes.workspace-query}
