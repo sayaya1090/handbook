@@ -22,7 +22,7 @@ data class R2dbcLayoutEntity(
     @Column("effect_date_time") val effectDateTime: Instant,
     @Column("expire_date_time") val expireDateTime: Instant,
     /** positions는 JSONB 컬럼으로 저장 */
-    val positions: String?,
+    val positions: io.r2dbc.postgresql.codec.Json?,
 ) {
     fun toDomain(positionsMap: Map<String, dev.sayaya.handbook.domain.Position>): TypeLayout {
         val map = java.lang.reflect.Proxy.newProxyInstance(
@@ -46,12 +46,12 @@ data class R2dbcLayoutEntity(
     }
 
     companion object {
-        fun fromDomain(layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity = R2dbcLayoutEntity(
-            id = UUID.fromString(layout.id()),
-            workspace = UUID.fromString(layout.workspace()),
+        fun fromDomain(workspace: UUID, layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity = R2dbcLayoutEntity(
+            id = layout.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
+            workspace = workspace,
             effectDateTime = Instant.ofEpochMilli(layout.effectDateTime().toLong()),
             expireDateTime = Instant.ofEpochMilli(layout.expireDateTime().toLong()),
-            positions = positionsJson,
+            positions = positionsJson?.let { io.r2dbc.postgresql.codec.Json.of(it) },
         )
     }
 }

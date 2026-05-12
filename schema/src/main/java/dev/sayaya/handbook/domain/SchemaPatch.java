@@ -71,9 +71,9 @@ public final class SchemaPatch {
     @NoArgsConstructor
     public static final class LayoutOperation {
         /** 작업 종류: "UPSERT" 또는 "DELETE" */
-        @JsonProperty("op") @JsProperty private String op;
+        @JsonProperty("op") @JsProperty(name = "op") private String op;
         /** 레이아웃 데이터 */
-        @JsonProperty("data") @JsProperty private TypeLayout data;
+        @JsonProperty("data") @JsProperty(name = "data") private TypeLayout data;
 
         @JsOverlay @JsIgnore
         public static LayoutOperation upsert(TypeLayout data) {

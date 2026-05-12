@@ -15,11 +15,11 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @NoArgsConstructor
 public final class TypeLayout {
-    @JsonProperty("id") @JsProperty private String id;
-    @JsonProperty("workspace") @JsProperty private String workspace;
-    @JsonProperty("effect_date_time") @JsProperty private double effectDateTime;
-    @JsonProperty("expire_date_time") @JsProperty private double expireDateTime;
-    @JsonProperty("positions") @JsProperty private JsPropertyMap<Position> positions;
+    @JsonProperty("id") @JsProperty(name = "id") private String id;
+    @JsonProperty("workspace") @JsProperty(name = "workspace") private String workspace;
+    @JsonProperty("effect_date_time") @JsProperty(name = "effect_date_time") private double effectDateTime;
+    @JsonProperty("expire_date_time") @JsProperty(name = "expire_date_time") private double expireDateTime;
+    @JsonProperty("positions") @JsProperty(name = "positions") private JsPropertyMap<Position> positions;
 
     @JsOverlay @JsIgnore
     public static TypeLayout create(String id, String workspace, double effectDateTime, double expireDateTime, JsPropertyMap<Position> positions) {
