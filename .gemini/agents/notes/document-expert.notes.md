@@ -20,7 +20,8 @@
 
 ## 반복 함정
 
-- **Jackson 패키지 혼용 (2026-05-24)**: Spring Boot 4 마이그레이션 후 `com.fasterxml.jackson`과 `tools.jackson`이 혼용되면 런타임 역직렬화 에러 또는 클래스패스 충돌 발생. 반드시 `tools.jackson`으로 통일할 것.
+- **WebFlux 커스텀 매퍼 무시 (2026-05-12)**: `@Bean ObjectMapper`만으로는 부족하며, `WebFluxConfigurer`를 통해 코덱에 직접 등록해야 함.
+- **Jackson 패키지 혼용 (2026-05-12)**: Spring Boot 4 마이그레이션 후 `com.fasterxml.jackson`과 `tools.jackson`이 혼용되면 런타임 역직렬화 에러 또는 클래스패스 충돌 발생. 반드시 `tools.jackson`으로 통일할 것.
 - **이벤트 발행 블로킹 (2026-05-24)**: Reactor `doOnNext` 내에서 외부 시스템(Kafka 등) 호출 시, 구현체가 블로킹되면 전체 파이프라인이 멈춤. 예외 격리(try-catch) 또는 스케줄러 분리 필수.
 - **낙관적 잠금 초기값 (rev = -1) (2026-05-04)**: GWT의 primitive `long` 제약으로 인해 `null` 대신 `-1L`을 미초기화(INSERT) 상태로 사용한다. 백엔드 매핑 시 `-1L`을 `null`로 변환하여 전송해야 한다.
 - **R2DBC JSONB**: `io.r2dbc.postgresql.codec.Json` 타입 (공용, GEMINI.md)

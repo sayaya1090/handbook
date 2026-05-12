@@ -116,20 +116,17 @@ WindowRenderBridge.next(render);
 공용 도메인이 GWT 전용 네이티브 인터페이스(`JsPropertyMap` 등)를 포함할 경우, 백엔드(JVM) 환경에서 `UnsatisfiedLinkError`가 발생한다. 이를 방지하기 위해 **Java Reflection Proxy**를 사용하여 JVM용 가짜 객체를 주입한다.
 
 - **Proxy 패턴**: `java.lang.reflect.Proxy`를 사용하여 인터페이스의 가짜 구현체를 생성하고, 내부적으로는 Java/Kotlin의 `Map`에 위임한다.
-- **Jackson 호환성**: Proxy가 `Map` 인터페이스도 함께 구현하도록 하여 Jackson이 JSON 직렬화 시 값을 정상적으로 추출할 수 있게 한다.
+- **Jackson 호환성 (직렬화)**: Jackson 3(JsonMapper)는 Proxy 객체의 내부 속성을 자동으로 읽지 못하므로, **직렬화 전 반드시 일반 `Map` 객체로 명시적 변환**을 거쳐야 한다.
+- **Jackson 호환성 (역직렬화)**: `JsPropertyMapModule`을 통해 `JsPropertyMap` 인터페이스에 대한 Deserializer를 제공하고, 중첩된 객체의 제레릭 타입을 보존하기 위해 `createContextual`을 활용한다.
+- **WebFlux 코덱 강제**: Spring WebFlux는 커텀 `ObjectMapper` 빈이 존재해도 기본 코덱을 사용하는 경우가 있으므로, `WebFluxConfigurer.configureHttpMessageCodecs`를 통해 명시적으로 커스텀 매퍼를 등록해야 한다.
 - **구현 예시**:
 ```kotlin
-val map = java.lang.reflect.Proxy.newProxyInstance(
-    JsPropertyMap::class.java.classLoader,
-    arrayOf(JsPropertyMap::class.java, Map::class.java)
-) { _, method, args ->
-    if (method.declaringClass == Map::class.java) {
-        method.invoke(dataMap, *(args ?: emptyArray()))
-    } else when (method.name) {
-        "get" -> dataMap[args[0] as String]
-        else -> null
-    }
-} as JsPropertyMap<String>
+// 직렬화 전 변환 예시
+val posMap = mutableMapOf<String, Position>()
+Js.asPropertyMap(layout.positions()).forEach { key ->
+    posMap[key] = Js.cast(Js.asPropertyMap(layout.positions()).get(key))
+}
+val json = objectMapper.writeValueAsString(posMap)
 ```
 ---
 
