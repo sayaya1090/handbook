@@ -6,6 +6,8 @@ import elemental2.dom.DomGlobal;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import static elemental2.dom.DomGlobal.window;
@@ -18,6 +20,7 @@ import static elemental2.dom.DomGlobal.window;
  *   <li>URI 스트림 변화를 {@code history.pushState} 로 주소창에 반영</li>
  *   <li>사용자가 선택한 {@link Menu}의 대표 URL을 URI 스트림에 반영 (양방향 동기화)</li>
  *   <li>브라우저 뒤로 가기/앞으로 가기({@code popstate}) 감지 및 스트림 업데이트</li>
+ *   <li>{@link SessionContext}의 워크스페이스 ID 변경을 감지하여 URL 업데이트</li>
  * </ul></p>
  */
 @Singleton
@@ -26,12 +29,15 @@ public class HistoryManager {
     private final BehaviorSubject<String> uri;
     private final MenuSelected menuSelected;
     private final PlaceholderResolver placeholderResolver;
+    private final SessionContext sessionContext;
+    private String currentWorkspaceId;
 
     @Inject
-    public HistoryManager(UriStore uri, MenuSelected menuSelected, PlaceholderResolver placeholderResolver) {
+    public HistoryManager(UriStore uri, MenuSelected menuSelected, PlaceholderResolver placeholderResolver, SessionContext sessionContext) {
         this.uri = uri;
         this.menuSelected = menuSelected;
         this.placeholderResolver = placeholderResolver;
+        this.sessionContext = sessionContext;
     }
 
 
@@ -47,10 +53,32 @@ public class HistoryManager {
             uri.next(window.location.pathname);
             return null;
         };
+        
+        // 4. 세션 컨텍스트(워크스페이스) 변경 감지 -> URL 조합
+        sessionContext.subscribe(this::onContextChanged);
 
         // 초기 상태 로드
         if (uri.getValue() == null || uri.getValue().isEmpty()) {
             uri.next(window.location.pathname);
+        }
+    }
+
+    private void onContextChanged(Map<String, String> values) {
+        String wsId = values.get("workspaceId");
+        if (wsId == null || Objects.equals(currentWorkspaceId, wsId)) return;
+        
+        currentWorkspaceId = wsId;
+        String currentUri = uri.getValue();
+        
+        if (currentUri != null) {
+            String oldWsId = WorkspaceEventListener.extractWorkspaceId(currentUri);
+            if (oldWsId != null && !oldWsId.equals(wsId)) {
+                String newUri = currentUri.replace("/workspaces/" + oldWsId, "/workspaces/" + wsId);
+                if (!newUri.equals(currentUri)) uri.next(newUri);
+            } else if (oldWsId == null) {
+                // 워크스페이스 컨텍스트가 없는 URL에서 선택한 경우 대시보드로 이동
+                uri.next("/workspaces/" + wsId + "/dashboard");
+            }
         }
     }
 

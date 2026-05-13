@@ -47,18 +47,6 @@ public class WorkspaceSelectElement implements IsElement<HTMLElement> {
         });
         _this.on(EventType.change, evt -> {
             String wsId = _this.element().value;
-            String currentUri = uriStream.getValue();
-            if (currentUri != null) {
-                // WorkspaceEventListener 의 정적 메서드를 활용해 현재 ID 추출
-                String oldWsId = WorkspaceEventListener.extractWorkspaceId(currentUri);
-                if (oldWsId != null && !oldWsId.equals(wsId)) {
-                    String newUri = currentUri.replace("/workspaces/" + oldWsId, "/workspaces/" + wsId);
-                    uriObserver.next(newUri);
-                } else if (oldWsId == null) {
-                    // 워크스페이스 컨텍스트가 없는 URL에서 선택한 경우 대시보드로 이동
-                    uriObserver.next("/workspaces/" + wsId + "/dashboard");
-                }
-            }
             sessionContext.set("workspaceId", wsId);
         });
     }
