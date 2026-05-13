@@ -32,7 +32,7 @@ public class DeleteBoxAction implements Action {
     @Override
     public void execute() {
         previousState = tracker.getState(type.key());
-        tracker.markDeleted(type.key());
+        tracker.markDeleted(type.key(), type);
         typeList.remove(type);
     }
 

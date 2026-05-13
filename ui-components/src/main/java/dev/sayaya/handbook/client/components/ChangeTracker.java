@@ -25,6 +25,7 @@ public class ChangeTracker {
     public enum ChangeState { NOT_CHANGED, CHANGED, DELETED }
 
     private final Map<String, ChangeState> states = new HashMap<>();
+    private final Map<String, Object> payloads = new HashMap<>();
     private final dev.sayaya.rx.subject.BehaviorSubject<Boolean> hasChanges = dev.sayaya.rx.subject.BehaviorSubject.behavior(false);
 
     @Inject public ChangeTracker() {}
@@ -43,13 +44,21 @@ public class ChangeTracker {
         hasChanges.next(true);
     }
 
+    public void markDeleted(String key, Object payload) {
+        states.put(key, ChangeState.DELETED);
+        payloads.put(key, payload);
+        hasChanges.next(true);
+    }
+
     public void unmark(String key) {
         states.remove(key);
+        payloads.remove(key);
         hasChanges.next(!states.isEmpty());
     }
 
     public void reset() {
         states.clear();
+        payloads.clear();
         hasChanges.next(false);
     }
 
@@ -73,5 +82,10 @@ public class ChangeTracker {
                 .filter(e -> e.getValue() == ChangeState.DELETED)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getDeletedPayload(String key) {
+        return (T) payloads.get(key);
     }
 }

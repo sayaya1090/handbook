@@ -23,6 +23,7 @@ public class TestApplication implements EntryPoint {
         this.menuSelected = components.menuSelected();
 
         historyManager.initialize();
+        components.navigationManager().initialize();
         publishToWindow();
     }
 

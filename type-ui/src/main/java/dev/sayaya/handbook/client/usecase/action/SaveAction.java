@@ -56,10 +56,15 @@ public class SaveAction implements Action {
         
         // 1. 삭제된 타입 처리
         for (String key : deletedKeys) {
-            String[] parts = key.split(":");
-            if (parts.length == 2) {
-                Type dummy = Type.create(parts[0], parts[1], 0.0, 0.0);
-                typeOps.add(SchemaPatch.TypeOperation.delete(dummy));
+            Type deletedType = tracker.getDeletedPayload(key);
+            if (deletedType != null) {
+                typeOps.add(SchemaPatch.TypeOperation.delete(deletedType));
+            } else {
+                String[] parts = key.split(":");
+                if (parts.length == 2) {
+                    Type dummy = Type.create(parts[0], parts[1], 0.0, 0.0);
+                    typeOps.add(SchemaPatch.TypeOperation.delete(dummy));
+                }
             }
         }
         

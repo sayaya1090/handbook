@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 @Singleton
 public class RoutingInitializer {
     private final HistoryManager historyManager;
+    private final NavigationManager navigationManager;
     private final UrlBasedMenuResolver urlBasedMenuResolver;
     private final ToolBasedMenuResolver toolBasedMenuResolver;
     private final FrameUpdater frameUpdater;
@@ -18,6 +19,7 @@ public class RoutingInitializer {
     @Inject
     public RoutingInitializer(
             HistoryManager historyManager,
+            NavigationManager navigationManager,
             UrlBasedMenuResolver urlBasedMenuResolver,
             ToolBasedMenuResolver toolBasedMenuResolver,
             FrameUpdater frameUpdater,
@@ -25,6 +27,7 @@ public class RoutingInitializer {
             HomeRedirector homeRedirector
     ) {
         this.historyManager = historyManager;
+        this.navigationManager = navigationManager;
         this.urlBasedMenuResolver = urlBasedMenuResolver;
         this.toolBasedMenuResolver = toolBasedMenuResolver;
         this.frameUpdater = frameUpdater;
@@ -34,6 +37,7 @@ public class RoutingInitializer {
 
     public void initialize() {
         historyManager.initialize();
+        navigationManager.initialize();
         urlBasedMenuResolver.initialize();
         toolBasedMenuResolver.initialize();
         frameUpdater.initialize();
