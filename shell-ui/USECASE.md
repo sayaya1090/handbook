@@ -386,6 +386,38 @@ sequenceDiagram
 
 ---
 
+## UC-S22: GWT 모듈 중복 로딩 및 무한 루프 방지 (2026-05-14)
+
+동일한 스크립트가 이미 로드된 경우 재주입을 차단하여 GWT 애플리케이션의 다중 인스턴스 실행을 방지한다.
+
+```mermaid
+sequenceDiagram
+    participant UR as UrlBasedMenuResolver
+    participant MSM as ModuleScriptManager
+    participant NI as NativeScriptInjector
+    participant DOM as Document Object Model
+    participant GWT as GWT Application (Runtime)
+
+    UR->>MSM: "메뉴 변경 감지 (예: /types)"
+    MSM->>NI: "inject('type.nocache.js')"
+    
+    NI->>DOM: "getElementById('module-script') 조회"
+    alt 스크립트 없음
+        DOM-->>NI: "null"
+        NI->>DOM: "새 <script src='type.nocache.js'> 삽입"
+        DOM->>GWT: "스크립트 실행 (인스턴스 #1)"
+    else 동일한 src 이미 존재
+        DOM-->>NI: "<script src='type.nocache.js'> 반환"
+        NI->>NI: "src 비교 (동일함)"
+        Note over NI: "재주입 중단 (무한 루프 방지)"
+    else 다른 src 존재
+        DOM-->>NI: "<script src='old.js'> 반환"
+        NI->>DOM: "기존 노드 제거"
+        NI->>DOM: "새 <script src='type.nocache.js'> 삽입"
+        DOM->>GWT: "스크립트 실행 (인스턴스 #2)"
+    end
+```
+
 ## 트레이서빌리티 매트릭스
 
 | UC | 시퀀스 다이어그램 | 클래스 다이어그램 섹션 | 주요 클래스 | 테스트 |
@@ -411,6 +443,7 @@ sequenceDiagram
 | UC-S19 (성공 피드백) | — | Frame+API | ToastContainer | ❌ 미구현 (계획) |
 | UC-S20 (브릿지게시) | — | 조합 (DI) | ShellInitializer, ProgressSharing, 0, LabelSharing | ❌ 테스트 미작성 |
 | UC-S21 (홈 리다이렉트) | 홈 자동 리다이렉트 | 조합 (DI) | HomeRedirector, UriStore, WorkspaceList | ✅ 구현 완료 (OnboardingTest) |
+| UC-S22 (무한루프방지) | GWT 모듈 중복 로딩 및 무한 루프 방지 | Frame+API | NativeScriptInjector, ModuleScriptManager, UrlBasedMenuResolver | ✅ 구현 완료 (DrawerTest: 스크립트 유지 검증) |
 
 ---
 

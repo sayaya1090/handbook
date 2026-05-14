@@ -52,6 +52,31 @@ sequenceDiagram
     B-->>U: "검색 결과 전파"
 ```
 
+## UC-B3: 실시간 데이터 동기화 (SSOT)
+
+GWT 모듈 간의 메모리 단절을 극복하고 워크스페이스 컨텍스트를 동기화한다.
+
+```mermaid
+sequenceDiagram
+    participant S as Shell Module
+    participant W as window (Global)
+    participant B as WorkspaceEvent (Bridge)
+    participant M as Editor Module (Lazy Loaded)
+
+    S->>W: "__handbook_workspace_id__ = 'ws-123' 세팅"
+    S->>B: "publishId('ws-123')"
+    B-->>B: "BehaviorSubject 갱신 (Shell 메모리)"
+    
+    Note over M: "지연 로딩 시작 및 실행"
+    M->>B: "receiver().currentWorkspaceId() 호출"
+    B->>W: "전역 속성 확인"
+    W-->>B: "'ws-123' 반환"
+    B-->>M: "'ws-123' 즉시 획득 (로딩 시작)"
+    
+    M->>B: "receiver().workspaceId().subscribe()"
+    Note over B: "이후 발생하는 변경 이벤트 수신 대기"
+```
+
 ## 트레이서빌리티 매트릭스
 
 | 유스케이스 | 목적 | 관련 클래스 | 테스트 케이스 |
