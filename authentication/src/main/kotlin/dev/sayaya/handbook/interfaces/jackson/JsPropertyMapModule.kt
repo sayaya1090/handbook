@@ -1,24 +1,41 @@
 package dev.sayaya.handbook.interfaces.jackson
 
 import jsinterop.base.JsPropertyMap
+import tools.jackson.core.JsonGenerator
 import tools.jackson.core.JsonParser
 import tools.jackson.core.JsonToken
-import tools.jackson.databind.BeanProperty
-import tools.jackson.databind.DeserializationContext
-import tools.jackson.databind.ValueDeserializer
-import tools.jackson.databind.JavaType
+import tools.jackson.databind.*
 import tools.jackson.databind.module.SimpleModule
 import java.util.*
 
 /**
  * GWT JsPropertyMap 인터페이스를 JVM에서 지원하기 위한 Jackson 모듈.
  * 
- * **책임:** JsPropertyMap 타입의 필드를 역직렬화할 때, Map 기반의 Proxy 객체를 생성하여 주입한다.
- * 이를 통해 GWT 공유 도메인 모델을 백엔드(JVM)에서도 그대로 사용할 수 있다.
+ * **책임:** 
+ * 1. 역직렬화: JsPropertyMap 타입의 필드를 역직렬화할 때, Map 기반의 Proxy 객체를 생성하여 주입한다.
+ * 2. 직렬화: Proxy 객체를 직렬화할 때 이를 Map으로 간주하여 처리함으로써, Proxy 내부 필드(h 등)에 대한 리플렉션 접근 오류를 방지한다.
  */
 class JsPropertyMapModule : SimpleModule() {
     init {
         addDeserializer(JsPropertyMap::class.java, JsPropertyMapDeserializer())
+        addSerializer(JsPropertyMap::class.java, JsPropertyMapSerializer())
+    }
+
+    private class JsPropertyMapSerializer : ValueSerializer<JsPropertyMap<*>>() {
+        override fun serialize(value: JsPropertyMap<*>, gen: JsonGenerator, ctxt: SerializationContext) {
+            if (value is Map<*, *>) {
+                gen.writeStartObject()
+                for ((k, v) in value) {
+                    gen.writeName(k.toString())
+                    if (v == null) gen.writeNull()
+                    else ctxt.writeValue(gen, v)
+                }
+                gen.writeEndObject()
+            } else {
+                gen.writeStartObject()
+                gen.writeEndObject()
+            }
+        }
     }
 
     private class JsPropertyMapDeserializer(
