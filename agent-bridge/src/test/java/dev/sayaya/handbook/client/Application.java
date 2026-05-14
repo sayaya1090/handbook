@@ -35,6 +35,7 @@ public class Application implements EntryPoint {
 
         // 2. WorkspaceEvent 테스트
         WorkspaceEvent.publishId("ws-123");
+        console.log("LOG_CURRENT_WS_ID:" + WorkspaceEvent.receiver().currentWorkspaceId());
 
         // 3. Search 테스트
         AgentSearch.register(query -> Observable.of("RESULT:" + query));

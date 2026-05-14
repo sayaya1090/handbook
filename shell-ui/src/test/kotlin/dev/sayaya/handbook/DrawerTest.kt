@@ -261,6 +261,24 @@ internal class DrawerTest: GwtTestSpec({
                 outlineDisplay shouldBe "none"
                 filledDisplay shouldNotBe "none"
             }
+            
+            Then("NativeScriptInjector가 DOM에 모듈 스크립트를 주입한다") {
+                val scriptSrc = page.evaluate("document.getElementById('module-script') ? document.getElementById('module-script').src : ''") as? String ?: ""
+                (scriptSrc.isNotBlank()) shouldBe true
+                
+                // 추적을 위해 DOM 요소에 고유 플래그 부착
+                page.evaluate("document.getElementById('module-script').dataset.keep = 'true'")
+            }
+
+            When("동일한 스크립트를 로드하는 동일 메뉴를 다시 클릭하면") {
+                page.click("#url1")
+                Thread.sleep(500)
+                
+                Then("기존 스크립트 요소가 지워지지 않고 유지된다 (무한 루프 및 다중 인스턴스 방지)") {
+                    val keepFlag = page.evaluate("document.getElementById('module-script') ? document.getElementById('module-script').dataset.keep : 'false'") as? String ?: "false"
+                    keepFlag shouldBe "true"
+                }
+            }
         }
 
         When("드로어를 EXPAND 모드로 전환하고 세번째 메뉴 첫번째 Tool 을 클릭하면") {

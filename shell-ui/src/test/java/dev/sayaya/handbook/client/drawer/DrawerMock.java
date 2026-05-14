@@ -124,7 +124,7 @@ public class DrawerMock {
         return p.asObservable();
     }
     
-    @Provides @Singleton ScriptInjector provideScriptInjector() { return src -> {}; }
+    @Provides @Singleton ScriptInjector provideScriptInjector() { return new dev.sayaya.handbook.client.interfaces.api.NativeScriptInjector(); }
     @Provides @Singleton SessionEnvironment provideSessionEnvironment() {
         return new SessionEnvironment() {
             @Override public String getCookies() { return ""; }
