@@ -21,6 +21,7 @@ public final class WorkspaceEvent {
 
     /** shell-ui 측: 현재 워크스페이스 ID를 공유한다. */
     public static void publishId(String workspaceId) {
+        jsinterop.base.Js.asPropertyMap(DomGlobal.window).set("__handbook_workspace_id__", workspaceId);
         @SuppressWarnings("unchecked")
         CustomEventInit<String> init = Js.cast(CustomEventInit.create());
         init.setDetail(workspaceId);
@@ -45,7 +46,11 @@ public final class WorkspaceEvent {
         return new WorkspaceEventReceiver() {
             @Override public Observable<String> events() { return eventSubject.asObservable(); }
             @Override public Observable<String> workspaceId() { return workspaceIdSubject.asObservable(); }
-            @Override public String currentWorkspaceId() { return workspaceIdSubject.getValue(); }
+            @Override public String currentWorkspaceId() { 
+                Object globalVal = jsinterop.base.Js.asPropertyMap(DomGlobal.window).get("__handbook_workspace_id__");
+                if (globalVal != null && globalVal instanceof String) return (String) globalVal;
+                return workspaceIdSubject.getValue(); 
+            }
         };
     }
 
