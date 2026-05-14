@@ -45,6 +45,7 @@ public final class WorkspaceEvent {
         return new WorkspaceEventReceiver() {
             @Override public Observable<String> events() { return eventSubject.asObservable(); }
             @Override public Observable<String> workspaceId() { return workspaceIdSubject.asObservable(); }
+            @Override public String currentWorkspaceId() { return workspaceIdSubject.getValue(); }
         };
     }
 

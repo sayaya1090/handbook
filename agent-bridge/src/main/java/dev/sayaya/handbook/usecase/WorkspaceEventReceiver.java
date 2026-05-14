@@ -12,4 +12,5 @@ import dev.sayaya.rx.Observable;
 public interface WorkspaceEventReceiver {
     Observable<String> events();
     Observable<String> workspaceId();
+    String currentWorkspaceId();
 }
