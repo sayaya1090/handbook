@@ -68,6 +68,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private final PinchZoomHandler pinchZoom;
     private final Map<String, TypeElement> elementMap = new LinkedHashMap<>();
 
+    private final CanvasShortcutHandler shortcutHandler;
+
     @Inject
     CanvasElement(BoxElementFactory boxFactory, TypeList typeList, ActionManager actionManager,
                   PositionMap positionMap, SelectedBoxElement selection, DragShapeElement dragShape,
@@ -75,7 +77,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                   CanvasMode canvasMode, GridSnap gridSnap, TypeSearchProvider typeSearchProvider,
                   CanvasContextMenuElement canvasMenu, BoxContextMenuElement boxMenu,
                   TouchEventAdapter touchAdapter, PinchZoomHandler pinchZoom,
-                  VersionHistoryPanel versionHistoryPanel) {
+                  VersionHistoryPanel versionHistoryPanel, CanvasShortcutHandler shortcutHandler) {
+        this.shortcutHandler = shortcutHandler;
         this.canvasMode = canvasMode;
         this.gridSnap = gridSnap;
         this.typeSearchProvider = typeSearchProvider;
@@ -209,55 +212,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     }
 
     private void handleKeyDown(KeyboardEvent e) {
-        canvasMode.getCurrentState().onCanvasKeyDown(e, () -> {
-            if (e.ctrlKey && "z".equals(e.key)) {
-                e.preventDefault();
-                if (e.shiftKey) actionManager.redo();
-                else actionManager.undo();
-            } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
-                e.preventDefault();
-                Set<String> allKeys = new HashSet<>();
-                for (Type type : typeSearchProvider.getVisibleTypes()) {
-                    allKeys.add(type.key());
-                }
-                selection.selectAll(allKeys);
-            } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
-                e.preventDefault();
-                Set<String> selected = new HashSet<>(selection.getValue());
-                for (Type type : typeSearchProvider.getVisibleTypes()) {
-                    if (selected.contains(type.key())) {
-                        actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
-                    }
-                }
-                selection.clear();
-            } else if (e.key != null && e.key.startsWith("Arrow")) {
-                e.preventDefault();
-                Set<String> selected = selection.getValue();
-                if (selected.isEmpty()) return;
-                int step = gridSnap.isEnabled() ? 20 : (e.shiftKey ? 20 : 5);
-                int dx = 0, dy = 0;
-                switch (e.key) {
-                    case "ArrowUp":    dy = -step; break;
-                    case "ArrowDown":  dy = step;  break;
-                    case "ArrowLeft":  dx = -step; break;
-                    case "ArrowRight": dx = step;  break;
-                }
-                if (dx != 0 || dy != 0) {
-                    Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
-                            .map(Type::key).collect(Collectors.toSet());
-                    
-                    Set<String> keys = new HashSet<>(selected);
-                    MoveBoxAction move = new MoveBoxAction(positionMap, keys, dx, dy);
-                    Action[] pushOuts = keys.stream()
-                            .map(key -> new PushOutOverlapAction(positionMap, key, 10, activeKeys))
-                            .toArray(Action[]::new);
-                    Action[] all = new Action[1 + pushOuts.length];
-                    all[0] = move;
-                    System.arraycopy(pushOuts, 0, all, 1, pushOuts.length);
-                    actionManager.execute(new ComplexAction(all));
-                }
-            }
-        });
+        canvasMode.getCurrentState().onCanvasKeyDown(e, () -> shortcutHandler.handle(e));
     }
 
     public TypeElement getElement(String typeKey) {

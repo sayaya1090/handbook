@@ -312,9 +312,19 @@ classDiagram
         -BoxReferenceElement boxReference
         -CanvasContextMenuElement canvasMenu
         -BoxContextMenuElement boxMenu
+        -CanvasShortcutHandler shortcutHandler
         +syncElements(types: Set~TypeValue~)
         -initBoxHandlers(elem: TypeElement)
-        -handleKeyDown(e: KeyboardEvent)
+    }
+    class CanvasShortcutHandler {
+        -ActionManager actionManager
+        -TypeList typeList
+        -TypeSearchProvider typeSearchProvider
+        -SelectedBoxElement selection
+        -PositionMap positionMap
+        -ChangeTracker tracker
+        -GridSnap gridSnap
+        +handle(e: KeyboardEvent)
     }
     class EditorContext {
         <<@Singleton>>
@@ -417,6 +427,7 @@ classDiagram
 
     CanvasElement *-- TypeElement : elementMap
     CanvasElement --> BoxElementFactory : creates
+    CanvasElement --> CanvasShortcutHandler : 키보드 이벤트 위임
     CanvasElement --> DragShapeElement : 드래그 고스트
     CanvasElement --> BoxReferenceElement : SVG 화살표
     CanvasElement --> CanvasContextMenuElement
@@ -459,14 +470,25 @@ classDiagram
         +collect(): AttributeTypeValue
         +element(): HTMLElement
     }
+    class ValidatorEditorProvider {
+        <<interface>>
+        +getType(): String
+        +create(factory: ValidatorEditorFactory): ValidatorEditor
+    }
     class ValidatorEditorFactory {
+        -Map~String, ValidatorEditorProvider~ providers
         -TypeList typeList
         -int depth
         -int MAX_DEPTH = 3$
-        +ValidatorEditorFactory(typeList: TypeList)
+        +ValidatorEditorFactory(providers, typeList)
+        +createAll(): Map~String, ValidatorEditor~
         +create(type: String): ValidatorEditor
         +isMaxDepth(): boolean
-        -nested(): ValidatorEditorFactory
+        +nested(): ValidatorEditorFactory
+    }
+    class ValidatorEditorModule {
+        <<@Module>>
+        +provideProviders(): Map~String, ValidatorEditorProvider~
     }
     class TextValidatorEditor {
         -TextFieldElementBuilder regexField
