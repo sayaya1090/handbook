@@ -31,7 +31,7 @@ import javax.inject.Singleton;
  * <p><b>주의:</b> Application.onModuleLoad()에서 DaggerComponent를 통해 생성된다. 싱글턴 스코프.</p>
  */
 @Singleton
-@dagger.Component(modules = { TypeModule.class, ApiModule.class, BoxElementModule.class })
+@dagger.Component(modules = { TypeModule.class, ApiModule.class, BoxElementModule.class, dev.sayaya.handbook.client.interfaces.editor.ValidatorEditorModule.class })
 public interface Component {
     CanvasElement canvas();
     ControllerElement controller();

@@ -48,6 +48,9 @@ public class TestApplication implements EntryPoint {
         component.agentMutationHandler();
         component.periodRecalculationService();
 
+        // 테스트를 위해 ValidatorEditorFactory 를 전역 노출
+        exportTestApi(component);
+
         body()
             .add(div().css("type-container")
                 .add(component.statusHeader())
@@ -62,5 +65,16 @@ public class TestApplication implements EntryPoint {
                 .add(component.versionCreationDialog())
                 .add(component.actionDial())
                 .add(component.settingsDial()));
+    }
+
+    private void exportTestApi(TestComponent component) {
+        TestApi api = type -> component.validatorEditorFactory().create(type) != null;
+        jsinterop.base.Js.asPropertyMap(elemental2.dom.DomGlobal.window).set("testValidatorFactory", api);
+    }
+
+    @FunctionalInterface
+    @jsinterop.annotations.JsType
+    public interface TestApi {
+        boolean exists(String type);
     }
 }

@@ -36,7 +36,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
 
     @Inject
     AttributeEditorDialog(LabelProvider labelProvider, ValidatorEditorFactory validatorFactory) {
-        this.validatorEditors = validatorFactory.createAll(3);
+        this.validatorEditors = validatorFactory.createAll();
 
         nameField = TextFieldElementBuilder.textField().outlined().css("attr-edit-field");
         descField = TextFieldElementBuilder.textField().outlined().css("attr-edit-field");

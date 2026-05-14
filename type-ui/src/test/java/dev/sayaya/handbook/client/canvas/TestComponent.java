@@ -21,7 +21,8 @@ import javax.inject.Singleton;
 @dagger.Component(modules = { 
     dev.sayaya.handbook.client.TypeModule.class, 
     dev.sayaya.handbook.usecase.MockApiModule.class, 
-    BoxElementModule.class 
+    BoxElementModule.class,
+    dev.sayaya.handbook.client.interfaces.editor.ValidatorEditorModule.class
 })
 public interface TestComponent {
     CanvasElement canvas();
@@ -39,6 +40,7 @@ public interface TestComponent {
     dev.sayaya.handbook.client.usecase.LayoutList layoutList();
     AgentMutationHandler agentMutationHandler();
     dev.sayaya.handbook.client.usecase.PeriodRecalculationService periodRecalculationService();
+    dev.sayaya.handbook.client.interfaces.editor.ValidatorEditorFactory validatorEditorFactory();
     dev.sayaya.handbook.client.interfaces.controller.inspector.TypeInspectorPanel typeInspectorPanel();
     dev.sayaya.handbook.client.interfaces.controller.inspector.TypeBottomSheet typeBottomSheet();
     dev.sayaya.handbook.client.interfaces.controller.toolbar.TypeFloatingToolbar typeFloatingToolbar();
