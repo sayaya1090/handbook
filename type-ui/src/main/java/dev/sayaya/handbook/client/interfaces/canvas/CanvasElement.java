@@ -212,7 +212,12 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     }
 
     private void handleKeyDown(KeyboardEvent e) {
-        canvasMode.getCurrentState().onCanvasKeyDown(e, () -> shortcutHandler.handle(e));
+        canvasMode.getCurrentState().onCanvasKeyDown(e, () -> shortcutHandler.handle(new CanvasShortcutHandler.KeyboardInput() {
+            @Override public String getKey() { return e.key; }
+            @Override public boolean isCtrl() { return e.ctrlKey; }
+            @Override public boolean isShift() { return e.shiftKey; }
+            @Override public void preventDefault() { e.preventDefault(); }
+        }));
     }
 
     public TypeElement getElement(String typeKey) {

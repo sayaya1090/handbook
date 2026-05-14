@@ -13,7 +13,6 @@ import dev.sayaya.handbook.client.usecase.action.MoveBoxAction;
 import dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Type;
-import elemental2.dom.KeyboardEvent;
 
 import javax.inject.Inject;
 import java.util.HashSet;
@@ -32,6 +31,14 @@ import java.util.stream.Collectors;
  * </ul></p>
  */
 public class CanvasShortcutHandler {
+    
+    public interface KeyboardInput {
+        String getKey();
+        boolean isCtrl();
+        boolean isShift();
+        void preventDefault();
+    }
+
     private final ActionManager actionManager;
     private final TypeList typeList;
     private final TypeSearchProvider typeSearchProvider;
@@ -54,19 +61,19 @@ public class CanvasShortcutHandler {
     }
 
     /** 키보드 이벤트를 처리한다. */
-    public void handle(KeyboardEvent e) {
-        if (e.ctrlKey && "z".equals(e.key)) {
+    public void handle(KeyboardInput e) {
+        if (e.isCtrl() && "z".equals(e.getKey())) {
             e.preventDefault();
-            if (e.shiftKey) actionManager.redo();
+            if (e.isShift()) actionManager.redo();
             else actionManager.undo();
-        } else if (e.ctrlKey && ("a".equals(e.key) || "A".equals(e.key))) {
+        } else if (e.isCtrl() && ("a".equals(e.getKey()) || "A".equals(e.getKey()))) {
             e.preventDefault();
             Set<String> allKeys = new HashSet<>();
             for (Type type : typeSearchProvider.getVisibleTypes()) {
                 allKeys.add(type.key());
             }
             selection.selectAll(allKeys);
-        } else if ("Delete".equals(e.key) || "Backspace".equals(e.key)) {
+        } else if ("Delete".equals(e.getKey()) || "Backspace".equals(e.getKey())) {
             e.preventDefault();
             Set<String> selected = new HashSet<>(selection.getValue());
             for (Type type : typeSearchProvider.getVisibleTypes()) {
@@ -75,13 +82,13 @@ public class CanvasShortcutHandler {
                 }
             }
             selection.clear();
-        } else if (e.key != null && e.key.startsWith("Arrow")) {
+        } else if (e.getKey() != null && e.getKey().startsWith("Arrow")) {
             e.preventDefault();
             Set<String> selected = selection.getValue();
             if (selected.isEmpty()) return;
-            int step = gridSnap.isEnabled() ? 20 : (e.shiftKey ? 20 : 5);
+            int step = gridSnap.isEnabled() ? 20 : (e.isShift() ? 20 : 5);
             int dx = 0, dy = 0;
-            switch (e.key) {
+            switch (e.getKey()) {
                 case "ArrowUp":    dy = -step; break;
                 case "ArrowDown":  dy = step;  break;
                 case "ArrowLeft":  dx = -step; break;
