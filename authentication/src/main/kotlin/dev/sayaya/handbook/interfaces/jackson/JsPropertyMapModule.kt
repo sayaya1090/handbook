@@ -21,6 +21,44 @@ class JsPropertyMapModule : SimpleModule() {
         addSerializer(JsPropertyMap::class.java, JsPropertyMapSerializer())
     }
 
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun <T> createProxy(map: MutableMap<String, T>): JsPropertyMap<T> {
+            return java.lang.reflect.Proxy.newProxyInstance(
+                JsPropertyMap::class.java.classLoader,
+                arrayOf(JsPropertyMap::class.java, Map::class.java)
+            ) { _, method, args ->
+                when (method.name) {
+                    "get" -> map[args[0] as String]
+                    "set" -> {
+                        val key = args[0] as String
+                        map[key] = args[1] as T
+                        null
+                    }
+                    "forEach" -> {
+                        val callback = args[0]
+                        val callbackMethod = callback.javaClass.methods.firstOrNull { it.declaringClass != Any::class.java }
+                        map.keys.forEach { key ->
+                            callbackMethod?.invoke(callback, key)
+                        }
+                        null
+                    }
+                    "entrySet" -> map.entries
+                    "keySet" -> map.keys
+                    "values" -> map.values
+                    "size" -> map.size
+                    "isEmpty" -> map.isEmpty()
+                    "containsKey" -> map.containsKey(args[0])
+                    "containsValue" -> map.containsValue(args[0])
+                    "hashCode" -> map.hashCode()
+                    "equals" -> map == args[0]
+                    "toString" -> map.toString()
+                    else -> null
+                }
+            } as JsPropertyMap<T>
+        }
+    }
+
     private class JsPropertyMapSerializer : ValueSerializer<JsPropertyMap<*>>() {
         override fun serialize(value: JsPropertyMap<*>, gen: JsonGenerator, ctxt: SerializationContext) {
             if (value is Map<*, *>) {
@@ -82,7 +120,11 @@ class JsPropertyMapModule : SimpleModule() {
                         null
                     }
                     "forEach" -> {
-                        // GWT JsPropertyMap.forEach implementation if needed
+                        val callback = args[0]
+                        val callbackMethod = callback.javaClass.methods.firstOrNull { it.declaringClass != Any::class.java }
+                        map.keys.forEach { key ->
+                            callbackMethod?.invoke(callback, key)
+                        }
                         null
                     }
                     // Map 인터페이스 구현 (Jackson 직렬화 호환성 및 Kotlin 편의성)

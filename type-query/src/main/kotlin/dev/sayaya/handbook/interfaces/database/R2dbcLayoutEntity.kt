@@ -24,17 +24,7 @@ data class R2dbcLayoutEntity(
     @Version val rev: Long? = null,
 ) {
     fun toDomain(positionsMap: Map<String, Position>): TypeLayout {
-        val map = java.lang.reflect.Proxy.newProxyInstance(
-            JsPropertyMap::class.java.classLoader,
-            arrayOf(JsPropertyMap::class.java)
-        ) { _, method, args ->
-            when (method.name) {
-                "get" -> positionsMap[args[0] as String]
-                "set" -> null
-                "forEach" -> null
-                else -> null
-            }
-        } as JsPropertyMap<Position>
+        val map = dev.sayaya.handbook.interfaces.jackson.JsPropertyMapModule.createProxy(positionsMap.toMutableMap())
         val layout = TypeLayout.create(
             id.toString(),
             workspace.toString(),

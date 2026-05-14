@@ -37,15 +37,7 @@ class R2dbcLayoutRepositoryAdapter(
         }
 
     override fun save(workspace: UUID, layout: TypeLayout): Mono<TypeLayout> {
-        val rawPositions = layout.positions()
-        val posMap = mutableMapOf<String, dev.sayaya.handbook.domain.Position>()
-        if (rawPositions != null) {
-            // JsPropertyMap(Proxy)를 일반 Map으로 변환하여 Jackson이 직렬화할 수 있게 함
-            jsinterop.base.Js.asPropertyMap(rawPositions).forEach { key ->
-                posMap[key] = jsinterop.base.Js.cast(jsinterop.base.Js.asPropertyMap(rawPositions).get(key))
-            }
-        }
-        val positionsJson = objectMapper.writeValueAsString(posMap)
+        val positionsJson = layout.positions()?.let { objectMapper.writeValueAsString(it) }
         val entity = R2dbcLayoutEntity.fromDomain(workspace, layout, positionsJson)
         return repository.save(entity).map { saved ->
             val positions: Map<String, dev.sayaya.handbook.domain.Position> = saved.positions?.asString()?.let {

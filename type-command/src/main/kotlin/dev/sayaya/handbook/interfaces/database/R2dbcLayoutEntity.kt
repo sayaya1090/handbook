@@ -36,17 +36,7 @@ data class R2dbcLayoutEntity(
     override fun isNew(): Boolean = isNewRecord || rev == null
 
     fun toDomain(positionsMap: Map<String, dev.sayaya.handbook.domain.Position>): TypeLayout {
-        val map = java.lang.reflect.Proxy.newProxyInstance(
-            jsinterop.base.JsPropertyMap::class.java.classLoader,
-            arrayOf(jsinterop.base.JsPropertyMap::class.java)
-        ) { _, method, args ->
-            when (method.name) {
-                "get" -> positionsMap[args[0] as String]
-                "set" -> null
-                "forEach" -> null
-                else -> null
-            }
-        } as jsinterop.base.JsPropertyMap<dev.sayaya.handbook.domain.Position>
+        val map = dev.sayaya.handbook.interfaces.jackson.JsPropertyMapModule.createProxy(positionsMap.toMutableMap())
         return TypeLayout.create(
             id.toString(),
             workspace.toString(),
