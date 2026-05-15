@@ -30,16 +30,16 @@ public class EditTBoxDateAction implements Action {
 
     @Override
     public void execute() {
-        typeList.update(before, after);
         tracker.trackChange(after.key(), before, after, this::isSameType);
         tracker.trackChange(after.key() + ":dates", before, after, this::isSameDates);
+        typeList.update(before, after);
     }
 
     @Override
     public void rollback() {
-        typeList.update(after, before);
         tracker.trackChange(before.key(), before, before, this::isSameType);
         tracker.trackChange(before.key() + ":dates", before, before, this::isSameDates);
+        typeList.update(after, before);
     }
 
     private boolean isSameDates(Type b, Type a) {

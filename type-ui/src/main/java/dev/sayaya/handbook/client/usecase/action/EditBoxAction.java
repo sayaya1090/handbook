@@ -45,9 +45,11 @@ public class EditBoxAction implements Action {
                 tracker.markChanged("LAYOUT:" + layoutProvider.getValue().id());
             }
         }
-        typeList.update(before, after);
+        // UI 렌더링 전 트래커 상태 갱신 필수
         tracker.trackChange(after.key(), before, after, this::isSameType);
         markGranularChanges(before, after);
+        // 상태 갱신 완료 후 데이터 업데이트 (DOM 렌더 트리거)
+        typeList.update(before, after);
     }
 
     @Override
@@ -58,10 +60,11 @@ public class EditBoxAction implements Action {
                 tracker.markChanged("LAYOUT:" + layoutProvider.getValue().id());
             }
         }
-        typeList.update(after, before);
         // Undo 시에도 역순 비교를 통해 상태 복원 (tracker가 원래 값을 기억하고 있음)
         tracker.trackChange(before.key(), before, before, this::isSameType);
         markGranularChanges(after, before); // 역순으로 비교하여 원상 복귀 체크
+        // 상태 갱신 완료 후 데이터 업데이트 (DOM 렌더 트리거)
+        typeList.update(after, before);
     }
 
     private void markGranularChanges(Type b, Type a) {
