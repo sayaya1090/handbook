@@ -27,6 +27,7 @@ public class DocumentValidatorEditor implements ValidatorEditor {
     private final HTMLDivElement root;
     private SelectElementBuilder.OutlinedSelectElementBuilder select;
     private final TypeList typeList;
+    private String currentRef;
 
     public DocumentValidatorEditor(TypeList typeList) {
         this.typeList = typeList;
@@ -37,7 +38,6 @@ public class DocumentValidatorEditor implements ValidatorEditor {
 
     @Override
     public void load(AttributeType value) {
-        // 드롭다운 재생성 (옵션 갱신)
         root.innerHTML = "";
         select = SelectElementBuilder.select().outlined().label("Referenced type");
         select.option().value("").text("-- select --").done();
@@ -48,17 +48,26 @@ public class DocumentValidatorEditor implements ValidatorEditor {
                 select.option().value(type.id()).text(type.id() + " (" + type.version() + ")").done();
             }
         }
+        
+        select.onChange(e -> currentRef = select.value());
         root.appendChild(select.element());
 
         if (value != null && value.referencedType() != null) {
+            currentRef = value.referencedType();
             select.selectByValue(value.referencedType());
+        } else {
+            currentRef = null;
         }
     }
 
     @Override
     public AttributeType collect() {
         String ref = select.value();
-        return AttributeType.document(ref != null && !ref.isEmpty() ? ref : null);
+        // MD3 컴포넌트 특성상, 사용자 상호작용 없이 다이얼로그가 닫히면 select.value()가 빈 값일 수 있으므로 백업 필드를 참조한다.
+        if (ref == null || ref.isEmpty()) {
+            return AttributeType.document(currentRef);
+        }
+        return AttributeType.document(ref);
     }
 
     @Override
