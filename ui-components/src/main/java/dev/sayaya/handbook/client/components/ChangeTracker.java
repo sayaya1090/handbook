@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import java.util.Objects;
+import java.util.function.BiPredicate;
+
 /**
  * 키 기반 변경 상태(더티) 추적기. 도메인 객체에서 분리하여 순수성을 유지한다.
  *
@@ -26,6 +29,7 @@ public class ChangeTracker {
 
     private final Map<String, ChangeState> states = new HashMap<>();
     private final Map<String, Object> payloads = new HashMap<>();
+    private final Map<String, Object> originalValues = new HashMap<>();
     private final dev.sayaya.rx.subject.BehaviorSubject<Boolean> hasChanges = dev.sayaya.rx.subject.BehaviorSubject.behavior(false);
 
     @Inject public ChangeTracker() {}
@@ -37,6 +41,32 @@ public class ChangeTracker {
     public void markChanged(String key) {
         states.put(key, ChangeState.CHANGED);
         hasChanges.next(true);
+    }
+
+    /**
+     * 값 비교를 통해 정밀하게 변경 여부를 추적한다.
+     * 최초 변경 시 원본(original) 값을 저장해두고, 이후 현재 값(current)이 원본과 동일해지면
+     * 'changed' 상태를 자동으로 해제(unmark)한다.
+     */
+    public <T> void trackChange(String key, T original, T current, BiPredicate<T, T> equalsFn) {
+        // 최초 상태 기록
+        if (!originalValues.containsKey(key) && !states.containsKey(key)) {
+            originalValues.put(key, original);
+        }
+        
+        @SuppressWarnings("unchecked")
+        T savedOriginal = (T) originalValues.get(key);
+        
+        if (equalsFn.test(savedOriginal, current)) {
+            unmark(key);
+            originalValues.remove(key);
+        } else {
+            markChanged(key);
+        }
+    }
+    
+    public <T> void trackChange(String key, T original, T current) {
+        trackChange(key, original, current, Objects::equals);
     }
 
     public void markDeleted(String key) {
@@ -59,6 +89,7 @@ public class ChangeTracker {
     public void reset() {
         states.clear();
         payloads.clear();
+        originalValues.clear();
         hasChanges.next(false);
     }
 

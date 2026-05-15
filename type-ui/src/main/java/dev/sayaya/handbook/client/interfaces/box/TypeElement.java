@@ -121,12 +121,15 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         root.appendChild(resizeHandle);
 
         applyPosition(position);
-        updateAttributes();
+        setType(type);
         initEventHandlers();
 
         positionMap.subscribe(map -> {
             Position p = map.get(type.key());
-            if (p != null) applyPosition(p);
+            if (p != null) {
+                applyPosition(p);
+                updateChangedStyle();
+            }
         });
 
         selection.subscribe(selected -> {
@@ -143,7 +146,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     }
 
     private void updateAttributes() {
-        valueList.update(type.attributes());
+        valueList.update(type.key(), type.attributes(), tracker);
     }
 
     private void initEventHandlers() {
@@ -310,9 +313,18 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
     public void setType(Type type) {
         this.type = type;
+        updateChangedStyle();
         nameLabel.textContent = type.id();
+        nameLabel.classList.toggle("changed", tracker.getState(type.key() + ":id") == ChangeTracker.ChangeState.CHANGED);
         versionLabel.textContent = type.version();
+        versionLabel.classList.toggle("changed", tracker.getState(type.key() + ":version") == ChangeTracker.ChangeState.CHANGED);
         updateAttributes();
+    }
+
+    private void updateChangedStyle() {
+        boolean boxChanged = tracker.getState(type.key()) == ChangeTracker.ChangeState.CHANGED
+                          || tracker.getState(type.key() + ":position") == ChangeTracker.ChangeState.CHANGED;
+        root.classList.toggle("changed", boxChanged);
     }
 
     public DisplayMode getDisplayMode() { return displayMode; }

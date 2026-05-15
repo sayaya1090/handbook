@@ -40,13 +40,21 @@ public class ResizeBoxAction implements Action {
     @Override
     public void execute() {
         positionMap.put(typeKey, after);
+        tracker.trackChange(typeKey + ":position", before, after, this::isSamePosition);
         markLayoutChanged();
     }
 
     @Override
     public void rollback() {
         positionMap.put(typeKey, before);
+        tracker.trackChange(typeKey + ":position", before, before, this::isSamePosition);
         markLayoutChanged();
+    }
+
+    private boolean isSamePosition(Position b, Position a) {
+        if (b == a) return true;
+        if (b == null || a == null) return false;
+        return b.x() == a.x() && b.y() == a.y() && b.width() == a.width() && b.height() == a.height();
     }
 
     private void markLayoutChanged() {

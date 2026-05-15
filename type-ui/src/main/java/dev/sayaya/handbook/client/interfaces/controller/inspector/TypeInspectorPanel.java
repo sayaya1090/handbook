@@ -108,14 +108,19 @@ public class TypeInspectorPanel implements IsElement<HTMLDivElement> {
 
     public void update(Type type, List<Type> allTypes) {
         this.currentType = type;
+        String key = type.key();
         idLabel.textContent = type.id();
+        idLabel.classList.toggle("changed", tracker.getState(key + ":id") == ChangeTracker.ChangeState.CHANGED);
         versionLabel.textContent = type.version();
+        versionLabel.classList.toggle("changed", tracker.getState(key + ":version") == ChangeTracker.ChangeState.CHANGED);
         datesLabel.textContent = DateFormatter.formatRange(type);
+        datesLabel.classList.toggle("changed", tracker.getState(key + ":dates") == ChangeTracker.ChangeState.CHANGED);
         
         attrList.innerHTML = "";
         if (type.attributes() != null) {
             for (Attribute attr : type.attributes()) {
                 String typeName = attr.type() != null ? attr.type().type() : "text";
+                boolean isChanged = tracker.getState(key + ":attr:" + attr.name()) == ChangeTracker.ChangeState.CHANGED;
                 HTMLElement item = div().css("inspector-attr-item")
                         .add(div().css("inspector-attr-info")
                                 .add(div().css("inspector-attr-main")
@@ -124,6 +129,7 @@ public class TypeInspectorPanel implements IsElement<HTMLDivElement> {
                                 .add(span().css("inspector-attr-desc").text(attr.description() != null ? attr.description() : "")))
                         .add(span().css("inspector-attr-type").text(typeName))
                         .element();
+                if (isChanged) item.classList.add("changed");
                 attrList.appendChild(item);
             }
         }

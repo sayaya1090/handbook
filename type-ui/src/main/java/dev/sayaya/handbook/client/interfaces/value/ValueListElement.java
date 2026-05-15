@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.domain.Attribute;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -25,16 +26,15 @@ public class ValueListElement implements IsElement<HTMLDivElement> {
     public void setOnEdit(Consumer<Attribute> onEdit) { this.onEdit = onEdit; }
     public void setOnDelete(Consumer<Attribute> onDelete) { this.onDelete = onDelete; }
 
-    public void update(Attribute[] attributes) {
+    public void update(String typeKey, Attribute[] attributes, ChangeTracker tracker) {
         root.innerHTML = "";
         elements.clear();
         if (attributes == null) return;
         for (Attribute attr : attributes) {
-            ValueElement elem = new ValueElement(attr, onEdit, onDelete);
+            ValueElement elem = new ValueElement(typeKey, attr, onEdit, onDelete, tracker);
             elements.add(elem);
             root.appendChild(elem.element());
         }
-        DomGlobal.console.log("3");
     }
 
     @Override

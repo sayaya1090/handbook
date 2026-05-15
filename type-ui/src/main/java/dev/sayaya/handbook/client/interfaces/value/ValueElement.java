@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.value;
 
+import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.domain.Attribute;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
@@ -15,7 +16,7 @@ public class ValueElement implements IsElement<HTMLDivElement> {
     private final HTMLDivElement root;
     private final Attribute attribute;
 
-    public ValueElement(Attribute attribute, Consumer<Attribute> onEdit, Consumer<Attribute> onDelete) {
+    public ValueElement(String typeKey, Attribute attribute, Consumer<Attribute> onEdit, Consumer<Attribute> onDelete, ChangeTracker tracker) {
         this.attribute = attribute;
         HTMLDivElement nameDiv = div().css("type-attr-name").element();
         nameDiv.textContent = attribute.name();
@@ -30,6 +31,9 @@ public class ValueElement implements IsElement<HTMLDivElement> {
             if (onDelete != null) onDelete.accept(attribute);
         });
         root = div().css("type-attr-row").element();
+        if (tracker != null && tracker.getState(typeKey + ":attr:" + attribute.name()) == ChangeTracker.ChangeState.CHANGED) {
+            root.classList.add("changed");
+        }
         root.appendChild(nameDiv);
         root.appendChild(typeDiv);
         root.appendChild(deleteBtn);

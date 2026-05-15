@@ -31,12 +31,30 @@ public class EditTBoxDateAction implements Action {
     @Override
     public void execute() {
         typeList.update(before, after);
-        tracker.markChanged(after.key());
+        tracker.trackChange(after.key(), before, after, this::isSameType);
+        tracker.trackChange(after.key() + ":dates", before, after, this::isSameDates);
     }
 
     @Override
     public void rollback() {
         typeList.update(after, before);
-        tracker.markChanged(before.key());
+        tracker.trackChange(before.key(), before, before, this::isSameType);
+        tracker.trackChange(before.key() + ":dates", before, before, this::isSameDates);
+    }
+
+    private boolean isSameDates(Type b, Type a) {
+        if (b == a) return true;
+        if (b == null || a == null) return false;
+        return Math.abs(b.effectDateTime() - a.effectDateTime()) < 0.1 && 
+               Math.abs(b.expireDateTime() - a.expireDateTime()) < 0.1;
+    }
+
+    private boolean isSameType(Type b, Type a) {
+        if (b == a) return true;
+        if (b == null || a == null) return false;
+        return isSameDates(b, a) &&
+               java.util.Objects.equals(b.id(), a.id()) &&
+               java.util.Objects.equals(b.version(), a.version()) &&
+               java.util.Objects.equals(b.description(), a.description());
     }
 }

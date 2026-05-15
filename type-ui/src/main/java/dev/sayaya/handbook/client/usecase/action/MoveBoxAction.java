@@ -40,14 +40,30 @@ public class MoveBoxAction implements Action {
 
     @Override
     public void execute() {
-        typeKeys.forEach(key -> positionMap.move(key, dx, dy));
+        typeKeys.forEach(key -> {
+            dev.sayaya.handbook.domain.Position before = positionMap.get(key);
+            positionMap.move(key, dx, dy);
+            dev.sayaya.handbook.domain.Position after = positionMap.get(key);
+            tracker.trackChange(key + ":position", before, after, this::isSamePosition);
+        });
         markLayoutChanged();
     }
 
     @Override
     public void rollback() {
-        typeKeys.forEach(key -> positionMap.move(key, -dx, -dy));
+        typeKeys.forEach(key -> {
+            dev.sayaya.handbook.domain.Position before = positionMap.get(key);
+            positionMap.move(key, -dx, -dy);
+            dev.sayaya.handbook.domain.Position after = positionMap.get(key);
+            tracker.trackChange(key + ":position", after, after, this::isSamePosition); // 원상 복구
+        });
         markLayoutChanged();
+    }
+
+    private boolean isSamePosition(dev.sayaya.handbook.domain.Position b, dev.sayaya.handbook.domain.Position a) {
+        if (b == a) return true;
+        if (b == null || a == null) return false;
+        return b.x() == a.x() && b.y() == a.y() && b.width() == a.width() && b.height() == a.height();
     }
 
     private void markLayoutChanged() {
