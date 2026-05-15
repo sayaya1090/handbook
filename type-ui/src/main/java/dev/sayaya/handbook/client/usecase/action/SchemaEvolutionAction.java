@@ -100,18 +100,24 @@ public class SchemaEvolutionAction implements Action {
             inheritedPositions.put(nextVersion.key(), pos);
         }
 
-        // 5. 상태 갱신 - 순서가 매우 중요함 (PeriodRecalculationService의 자동 발화 및 선택 유도)
+        // 5. 변경 상태 마킹 (UI 하이라이트 및 저장 대상 지정) - UI 렌더링 전 먼저 마킹
+        tracker.markChanged(closedType.key());
+        tracker.markChanged(nextVersion.key());
+        tracker.markChanged(nextVersion.key() + ":id");
+        tracker.markChanged(nextVersion.key() + ":version");
+        tracker.markChanged("LAYOUT:" + currentLayout.id());
+        tracker.markChanged("LAYOUT:" + newLayout.id());
+
+        // 6. 상태 갱신 - 순서가 매우 중요함 (PeriodRecalculationService의 자동 발화 및 선택 유도)
         
-        // 5.1. 위치 맵 상속 적용 (가장 먼저 적용해야 자동 선택 후 화면 렌더링 시 좌표를 찾음)
+        // 6.1. 위치 맵 상속 적용 (가장 먼저 적용해야 자동 선택 후 화면 렌더링 시 좌표를 찾음)
         positionMap.replace(inheritedPositions);
         
-        // 5.2. 선택 상태를 새 버전으로 변경
-        // (PeriodRecalculationService가 typeList 갱신을 감지하고 새 레이아웃을 계산할 때, 이 선택 상태를 기반으로 올바른 레이아웃을 자동 선택함)
+        // 6.2. 선택 상태를 새 버전으로 변경
         selection.clear();
         selection.select(nextVersion.key());
         
-        // 5.3. 레이아웃 목록 초기화
-        // TypeList를 갱신하면 PeriodRecalculationService가 이 리스트를 바탕으로 레이아웃 인스턴스를 재계산함
+        // 6.3. 레이아웃 목록 초기화
         java.util.List<TypeLayout> layouts = new ArrayList<>(layoutList.getValue());
         int currentIndex = layouts.indexOf(currentLayout);
         if (currentIndex >= 0) {
@@ -122,17 +128,12 @@ public class SchemaEvolutionAction implements Action {
         }
         layoutList.replace(layouts); 
 
-        // 5.4. 타입 리스트 갱신 (PeriodRecalculationService 자동 발화 -> LayoutProvider에 새 인스턴스로 자동 갱신됨)
-        typeList.update(targetType, closedType); 
-        typeList.add(nextVersion);
-
-        // 6. 변경 상태 마킹 (UI 하이라이트 및 저장 대상 지정)
-        tracker.markChanged(closedType.key());
-        tracker.markChanged(nextVersion.key());
-        tracker.markChanged(nextVersion.key() + ":id");
-        tracker.markChanged(nextVersion.key() + ":version");
-        tracker.markChanged("LAYOUT:" + currentLayout.id());
-        tracker.markChanged("LAYOUT:" + newLayout.id());
+        // 6.4. 타입 리스트 갱신 (원자적 처리: PeriodRecalculationService가 중간 상태로 인해 레이아웃을 유실하지 않도록 1회만 발화)
+        java.util.Set<Type> nextTypes = new java.util.LinkedHashSet<>(typeList.getValue());
+        nextTypes.removeIf(t -> t.key().equals(targetType.key()));
+        nextTypes.add(closedType);
+        nextTypes.add(nextVersion);
+        typeList.replace(nextTypes);
     }
 
     @Override
