@@ -59,6 +59,15 @@ public class PositionMap {
         put(typeKey, current.move(dx, dy));
     }
 
+    public void changeKey(String oldKey, String newKey) {
+        Map<String, Position> next = new LinkedHashMap<>(subject.getValue());
+        Position pos = next.remove(oldKey);
+        if (pos != null) {
+            next.put(newKey, pos);
+            subject.next(next);
+        }
+    }
+
     public void subscribe(Consumer<Map<String, Position>> consumer) {
         subject.subscribe(consumer::accept);
     }

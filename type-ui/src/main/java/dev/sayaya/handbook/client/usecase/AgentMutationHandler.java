@@ -31,8 +31,8 @@ public class AgentMutationHandler {
         this.strategies = Map.of(
             "CREATE", new CreateTypeStrategy(typeList, positionMap, tracker, layoutProvider, typeSearchProvider),
             "DELETE", new DeleteTypeStrategy(typeList, tracker),
-            "ADD",    new AddFieldStrategy(typeList, tracker),
-            "REMOVE", new RemoveFieldStrategy(typeList, tracker),
+            "ADD",    new AddFieldStrategy(typeList, positionMap, tracker, layoutProvider),
+            "REMOVE", new RemoveFieldStrategy(typeList, positionMap, tracker, layoutProvider),
             "SET",    new SetPropertyStrategy(typeList, tracker)
         );
 
@@ -124,11 +124,15 @@ class DeleteTypeStrategy implements MutationStrategy {
 
 class AddFieldStrategy implements MutationStrategy {
     private final TypeList typeList;
+    private final PositionMap positionMap;
     private final ChangeTracker tracker;
+    private final LayoutProvider layoutProvider;
 
-    AddFieldStrategy(TypeList typeList, ChangeTracker tracker) {
+    AddFieldStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider) {
         this.typeList = typeList;
+        this.positionMap = positionMap;
         this.tracker = tracker;
+        this.layoutProvider = layoutProvider;
     }
 
     @Override
@@ -152,7 +156,7 @@ class AddFieldStrategy implements MutationStrategy {
         Attribute[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
         newAttrs[oldAttrs.length] = newAttr;
         Type after = type.withAttributes(newAttrs);
-        return new EditBoxAction(typeList, tracker, type, after);
+        return new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after);
     }
 
     private Type findType(String typeKey) {
@@ -176,11 +180,15 @@ class AddFieldStrategy implements MutationStrategy {
 
 class RemoveFieldStrategy implements MutationStrategy {
     private final TypeList typeList;
+    private final PositionMap positionMap;
     private final ChangeTracker tracker;
+    private final LayoutProvider layoutProvider;
 
-    RemoveFieldStrategy(TypeList typeList, ChangeTracker tracker) {
+    RemoveFieldStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider) {
         this.typeList = typeList;
+        this.positionMap = positionMap;
         this.tracker = tracker;
+        this.layoutProvider = layoutProvider;
     }
 
     @Override
@@ -199,7 +207,7 @@ class RemoveFieldStrategy implements MutationStrategy {
                 .filter(a -> !a.name().equals(attrName))
                 .toArray(Attribute[]::new);
         Type after = type.withAttributes(newAttrs);
-        return new EditBoxAction(typeList, tracker, type, after);
+        return new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after);
     }
 
     private Type findType(String typeKey) {

@@ -182,7 +182,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 after.primitive(type.primitive());
                 after.parent(type.parent());
                 after.attributes(type.attributes());
-                actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
+                actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after));
             }
             nameLabel.textContent = type.id();
         };
@@ -213,7 +213,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 after.primitive(type.primitive());
                 after.parent(type.parent());
                 after.attributes(type.attributes());
-                actionManager.execute(new EditBoxAction(typeList, tracker, type, after));
+                actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after));
             }
             versionLabel.textContent = type.version();
         };
@@ -241,7 +241,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 }
             }
             Type after = before.withAttributes(newAttrs);
-            actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
+            actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, before, after));
         });
     }
 
@@ -257,7 +257,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         }
         Attribute[] newAttrs = list.toArray(new Attribute[0]);
         Type after = before.withAttributes(newAttrs);
-        actionManager.execute(new EditBoxAction(typeList, tracker, before, after));
+        actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, before, after));
     }
 
     // ── 리사이즈 핸들 ──

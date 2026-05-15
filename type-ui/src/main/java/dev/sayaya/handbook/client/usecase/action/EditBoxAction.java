@@ -1,6 +1,8 @@
 package dev.sayaya.handbook.client.usecase.action;
 
 import dev.sayaya.handbook.client.components.ChangeTracker;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
+import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Attribute;
@@ -15,23 +17,34 @@ import java.util.Set;
  *
  * <p><b>책임:</b> execute 시 TypeList에서 before를 after로 교체하고 ChangeTracker에 변경을 마킹한다.
  * 각 필드별 변경 사항을 상세히 추적하여 UI 하이라이트를 지원한다.
+ * 이름/버전 변경으로 고유 키가 바뀔 경우 PositionMap의 키도 이관한다.
  * rollback 시 after를 before로 복원하고 마킹을 해제한다.</p>
  */
 public class EditBoxAction implements Action {
     private final TypeList typeList;
     private final ChangeTracker tracker;
+    private final PositionMap positionMap;
+    private final LayoutProvider layoutProvider;
     private final Type before;
     private final Type after;
 
-    public EditBoxAction(TypeList typeList, ChangeTracker tracker, Type before, Type after) {
+    public EditBoxAction(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider, Type before, Type after) {
         this.typeList = typeList;
+        this.positionMap = positionMap;
         this.tracker = tracker;
+        this.layoutProvider = layoutProvider;
         this.before = before;
         this.after = after;
     }
 
     @Override
     public void execute() {
+        if (!Objects.equals(before.key(), after.key()) && positionMap != null) {
+            positionMap.changeKey(before.key(), after.key());
+            if (layoutProvider != null && layoutProvider.getValue() != null) {
+                tracker.markChanged("LAYOUT:" + layoutProvider.getValue().id());
+            }
+        }
         typeList.update(before, after);
         tracker.trackChange(after.key(), before, after, this::isSameType);
         markGranularChanges(before, after);
@@ -39,6 +52,12 @@ public class EditBoxAction implements Action {
 
     @Override
     public void rollback() {
+        if (!Objects.equals(before.key(), after.key()) && positionMap != null) {
+            positionMap.changeKey(after.key(), before.key());
+            if (layoutProvider != null && layoutProvider.getValue() != null) {
+                tracker.markChanged("LAYOUT:" + layoutProvider.getValue().id());
+            }
+        }
         typeList.update(after, before);
         // Undo 시에도 역순 비교를 통해 상태 복원 (tracker가 원래 값을 기억하고 있음)
         tracker.trackChange(before.key(), before, before, this::isSameType);
