@@ -12,6 +12,7 @@ import dev.sayaya.handbook.client.usecase.action.SaveAction;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Tool;
 import dev.sayaya.handbook.domain.Type;
+import dev.sayaya.handbook.domain.TypeLayout;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.handbook.usecase.ToolProvider;
 
@@ -42,6 +43,7 @@ public class TypeToolManager {
     private final SelectedBoxElement selection;
     private final ConfirmDialog confirmDialog;
     private final dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog;
+    private final TypeSearchProvider typeSearchProvider;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -51,7 +53,8 @@ public class TypeToolManager {
                     dev.sayaya.handbook.client.components.ToastContainer toastContainer,
                     LabelProvider labelProvider, CanvasMode canvasMode, GridSnap gridSnap,
                     SelectedBoxElement selection, ConfirmDialog confirmDialog,
-                    dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog) {
+                    dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog,
+                    TypeSearchProvider typeSearchProvider) {
         this.toolProvider = toolProvider;
         this.actionManager = actionManager;
         this.tracker = tracker;
@@ -68,6 +71,7 @@ public class TypeToolManager {
         this.selection = selection;
         this.confirmDialog = confirmDialog;
         this.versionCreationDialog = versionCreationDialog;
+        this.typeSearchProvider = typeSearchProvider;
     }
 
     public void init() {
@@ -130,17 +134,21 @@ public class TypeToolManager {
     }
 
     public void executeAdd() {
-        var period = layoutProvider.getValue();
+        TypeLayout period = layoutProvider.getValue();
         if (period == null) {
             elemental2.dom.DomGlobal.console.warn("[handbook-error] Cannot add type: No active layout period.");
             return;
         }
+
+        Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
+                .map(dev.sayaya.handbook.domain.Type::key).collect(java.util.stream.Collectors.toSet());
+
         String id = dev.sayaya.handbook.client.interfaces.ContextMenuHelper.uniqueTypeId(typeList);
         dev.sayaya.handbook.domain.Type newType = dev.sayaya.handbook.domain.Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         dev.sayaya.handbook.domain.Position pos = dev.sayaya.handbook.domain.Position.of(50, 80, 240, 160);
         actionManager.execute(new dev.sayaya.handbook.client.usecase.action.ComplexAction(
-                new dev.sayaya.handbook.client.usecase.action.CreateBoxAction(typeList, positionMap, tracker, newType, pos),
-                new dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction(positionMap, newType.key(), 10)
+                new dev.sayaya.handbook.client.usecase.action.CreateBoxAction(typeList, positionMap, tracker, layoutProvider, newType, pos),
+                new dev.sayaya.handbook.client.usecase.action.PushOutOverlapAction(positionMap, newType.key(), 10, activeKeys)
         ));
     }
 

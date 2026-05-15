@@ -94,7 +94,7 @@ class CreateTypeStrategy implements MutationStrategy {
         Type newType = Type.create(id, "1.0", period.effectDateTime(), period.expireDateTime());
         Position pos = Position.of(50, 80, 240, 160);
         return new ComplexAction(
-                new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
+                new CreateBoxAction(typeList, positionMap, tracker, layoutProvider, newType, pos),
                 new PushOutOverlapAction(positionMap, newType.key(), 10, activeKeys)
         );
     }

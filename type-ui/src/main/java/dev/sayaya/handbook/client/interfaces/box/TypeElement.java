@@ -9,6 +9,7 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.interfaces.value.ValueListElement;
 import dev.sayaya.handbook.client.usecase.CanvasMode;
 import dev.sayaya.handbook.client.usecase.GridSnap;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
@@ -62,6 +63,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private Type type;
     private final PositionMap positionMap;
     private final SelectedBoxElement selection;
+    private final LayoutProvider layoutProvider;
     private DisplayMode displayMode = DisplayMode.DETAIL;
 
     private boolean dragging = false;
@@ -71,10 +73,12 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     TypeElement(@Assisted Type type, @Assisted Position position,
                 PositionMap positionMap, SelectedBoxElement selection,
                 ActionManager actionManager, TypeList typeList, ChangeTracker tracker,
-                AttributeEditorDialog editorDialog, GridSnap gridSnap, CanvasMode canvasMode) {
+                AttributeEditorDialog editorDialog, GridSnap gridSnap, CanvasMode canvasMode,
+                LayoutProvider layoutProvider) {
         this.type = type;
         this.positionMap = positionMap;
         this.selection = selection;
+        this.layoutProvider = layoutProvider;
         this.actionManager = actionManager;
         this.typeList = typeList;
         this.tracker = tracker;
@@ -289,8 +293,8 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                             // 이미 적용됨. undo용 액션만 기록.
                             Position before = startPos[0];
                             Position after = endPos;
-                            actionManager.execute(new ResizeBoxAction(positionMap, type.key(), before, after) {
-                                @Override public void execute() { /* 이미 적용됨 */ }
+                            actionManager.execute(new ResizeBoxAction(positionMap, layoutProvider, tracker, type.key(), before, after) {
+                                @Override public void execute() {} // 이미 리사이즈 처리됨
                             });
                         }
                     }

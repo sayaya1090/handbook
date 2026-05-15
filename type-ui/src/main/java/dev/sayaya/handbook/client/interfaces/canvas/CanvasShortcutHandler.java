@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.components.ActionManager;
 import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.GridSnap;
+import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.TypeSearchProvider;
@@ -46,11 +47,13 @@ public class CanvasShortcutHandler {
     private final PositionMap positionMap;
     private final ChangeTracker tracker;
     private final GridSnap gridSnap;
+    private final LayoutProvider layoutProvider;
 
     @Inject
     public CanvasShortcutHandler(ActionManager actionManager, TypeList typeList,
                                  TypeSearchProvider typeSearchProvider, SelectedBoxElement selection,
-                                 PositionMap positionMap, ChangeTracker tracker, GridSnap gridSnap) {
+                                 PositionMap positionMap, ChangeTracker tracker, GridSnap gridSnap,
+                                 LayoutProvider layoutProvider) {
         this.actionManager = actionManager;
         this.typeList = typeList;
         this.typeSearchProvider = typeSearchProvider;
@@ -58,6 +61,7 @@ public class CanvasShortcutHandler {
         this.positionMap = positionMap;
         this.tracker = tracker;
         this.gridSnap = gridSnap;
+        this.layoutProvider = layoutProvider;
     }
 
     /** 키보드 이벤트를 처리한다. */
@@ -99,7 +103,7 @@ public class CanvasShortcutHandler {
                         .map(Type::key).collect(Collectors.toSet());
                 
                 Set<String> keys = new HashSet<>(selected);
-                MoveBoxAction move = new MoveBoxAction(positionMap, keys, dx, dy);
+                MoveBoxAction move = new MoveBoxAction(positionMap, layoutProvider, tracker, keys, dx, dy);
                 Action[] pushOuts = keys.stream()
                         .map(key -> new PushOutOverlapAction(positionMap, key, 10, activeKeys))
                         .toArray(Action[]::new);

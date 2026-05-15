@@ -4,6 +4,7 @@ import dev.sayaya.handbook.client.components.ActionManager
 import dev.sayaya.handbook.client.components.ChangeTracker
 import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement
 import dev.sayaya.handbook.client.usecase.GridSnap
+import dev.sayaya.handbook.client.usecase.LayoutProvider
 import dev.sayaya.handbook.client.usecase.PositionMap
 import dev.sayaya.handbook.client.usecase.TypeList
 import dev.sayaya.handbook.client.usecase.TypeSearchProvider
@@ -21,9 +22,10 @@ class CanvasShortcutHandlerTest : BehaviorSpec({
     val positionMap = mockk<PositionMap>(relaxed = true)
     val tracker = mockk<ChangeTracker>(relaxed = true)
     val gridSnap = mockk<GridSnap>(relaxed = true)
+    val layoutProvider = mockk<LayoutProvider>(relaxed = true)
 
     val handler = CanvasShortcutHandler(
-        actionManager, typeList, typeSearchProvider, selection, positionMap, tracker, gridSnap
+        actionManager, typeList, typeSearchProvider, selection, positionMap, tracker, gridSnap, layoutProvider
     )
 
     Given("CanvasShortcutHandler가 초기화됨") {

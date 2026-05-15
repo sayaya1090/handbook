@@ -113,7 +113,7 @@ public class CanvasContextMenuElement implements IsElement<HTMLDivElement> {
         Type newType = Type.create(id, "1.0", layout.effectDateTime(), layout.expireDateTime());
         Position pos = Position.of(x, y, 240, 160);
         actionManager.execute(new ComplexAction(
-                new CreateBoxAction(typeList, positionMap, tracker, newType, pos),
+                new CreateBoxAction(typeList, positionMap, tracker, layoutProvider, newType, pos),
                 new PushOutOverlapAction(positionMap, newType.key(), 10, activeKeys)
         ));
     }

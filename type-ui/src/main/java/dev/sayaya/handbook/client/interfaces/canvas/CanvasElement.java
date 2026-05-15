@@ -66,6 +66,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
     private final TypeSearchProvider typeSearchProvider;
     private final TouchEventAdapter touchAdapter;
     private final PinchZoomHandler pinchZoom;
+    private final VersionHistoryPanel versionHistoryPanel;
+    private final LayoutProvider layoutProvider;
     private final Map<String, TypeElement> elementMap = new LinkedHashMap<>();
 
     private final CanvasShortcutHandler shortcutHandler;
@@ -77,7 +79,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                   CanvasMode canvasMode, GridSnap gridSnap, TypeSearchProvider typeSearchProvider,
                   CanvasContextMenuElement canvasMenu, BoxContextMenuElement boxMenu,
                   TouchEventAdapter touchAdapter, PinchZoomHandler pinchZoom,
-                  VersionHistoryPanel versionHistoryPanel, CanvasShortcutHandler shortcutHandler) {
+                  VersionHistoryPanel versionHistoryPanel, CanvasShortcutHandler shortcutHandler,
+                  LayoutProvider layoutProvider) {
         this.shortcutHandler = shortcutHandler;
         this.canvasMode = canvasMode;
         this.gridSnap = gridSnap;
@@ -93,6 +96,8 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
         this.boxMenu = boxMenu;
         this.touchAdapter = touchAdapter;
         this.pinchZoom = pinchZoom;
+        this.versionHistoryPanel = versionHistoryPanel;
+        this.layoutProvider = layoutProvider;
 
         dragShape.onDrop(delta -> {
             Set<String> selected = new HashSet<>(selection.getValue());
@@ -112,7 +117,7 @@ public class CanvasElement implements IsElement<HTMLDivElement> {
                 Set<String> activeKeys = typeSearchProvider.getVisibleTypes().stream()
                         .map(Type::key).collect(Collectors.toSet());
                 
-                MoveBoxAction move = new MoveBoxAction(positionMap, selected, dx, dy);
+                MoveBoxAction move = new MoveBoxAction(positionMap, layoutProvider, tracker, selected, dx, dy);
                 Action[] pushOuts = selected.stream()
                         .map(key -> new PushOutOverlapAction(positionMap, key, 10, activeKeys))
                         .toArray(Action[]::new);

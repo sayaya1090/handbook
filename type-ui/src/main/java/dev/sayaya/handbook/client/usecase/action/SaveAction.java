@@ -56,6 +56,7 @@ public class SaveAction implements Action {
         
         // 1. 삭제된 타입 처리
         for (String key : deletedKeys) {
+            if (key.startsWith("LAYOUT:")) continue; // 레이아웃 삭제는 별도 로직 (현재 미지원)
             Type deletedType = tracker.getDeletedPayload(key);
             if (deletedType != null) {
                 typeOps.add(SchemaPatch.TypeOperation.delete(deletedType));
@@ -75,14 +76,26 @@ public class SaveAction implements Action {
             }
         }
         
-        // 3. 레이아웃 처리
+        // 3. 레이아웃 처리 (변경된 것만 선택적으로 포함)
         List<SchemaPatch.LayoutOperation> layoutOps = new ArrayList<>();
         for (TypeLayout layout : layoutList.getValue()) {
-            JsPropertyMap<Position> posMap = JsPropertyMap.of();
-            positionMap.getValue().forEach(posMap::set);
-            
-            TypeLayout toSave = TypeLayout.create(layout.id(), layout.workspace(), layout.effectDateTime(), layout.expireDateTime(), posMap);
-            layoutOps.add(SchemaPatch.LayoutOperation.upsert(toSave));
+            if (changedKeys.contains("LAYOUT:" + layout.id())) {
+                JsPropertyMap<Position> posMap = JsPropertyMap.of();
+                positionMap.getValue().forEach(posMap::set);
+                
+                // 기존 rev 유지 필수 (낙관적 잠금)
+                TypeLayout toSave = TypeLayout.create(layout.id(), layout.workspace(), layout.effectDateTime(), layout.expireDateTime(), posMap);
+                toSave.rev(layout.rev());
+                layoutOps.add(SchemaPatch.LayoutOperation.upsert(toSave));
+            }
+        }
+
+        // 아무 변경 사항이 없으면 무시
+        if (typeOps.isEmpty() && layoutOps.isEmpty()) {
+            if (toastContainer != null) {
+                toastContainer.show(ToastLevel.INFO, labels.getOrDefault("toast.save.no_changes", "No changes to save"));
+            }
+            return;
         }
 
         SchemaPatch patch = SchemaPatch.create(typeOps.toArray(new SchemaPatch.TypeOperation[0]), layoutOps.toArray(new SchemaPatch.LayoutOperation[0]));
@@ -92,14 +105,20 @@ public class SaveAction implements Action {
             if (result.types() != null) {
                 for (SchemaPatch.TypeOperation op : result.types()) {
                     if ("UPSERT".equals(op.op())) {
-                        typeList.update(op.data(), op.data()); // ID/Version 동일하므로 리비전만 갱신된 객체로 교체
+                        typeList.update(op.data(), op.data()); // 리비전 갱신
                     }
                 }
             }
             if (result.layouts() != null) {
                 for (SchemaPatch.LayoutOperation op : result.layouts()) {
                     if ("UPSERT".equals(op.op())) {
-                        layoutList.update(op.data(), op.data());
+                        layoutList.update(op.data(), op.data()); // 리비전 갱신
+                        
+                        // 현재 사용 중인 레이아웃이라면 LayoutProvider에도 즉시 동기화 (연속 저장 성공을 위해 필수)
+                        TypeLayout current = layoutProvider.getValue();
+                        if (current != null && current.id().equals(op.data().id())) {
+                            layoutProvider.replace(op.data());
+                        }
                     }
                 }
             }
