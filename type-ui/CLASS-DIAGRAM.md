@@ -250,9 +250,10 @@ classDiagram
         -ActionManager, LayoutProvider, LayoutList
     }
     class SaveAction {
-        -TypeRepository, LayoutRepository
+        -TypeRepository
         -TypeList, PositionMap, ChangeTracker
-        -ActionManager, LayoutProvider
+        -ActionManager, LayoutProvider, LayoutList
+        +execute(): void 선별적 PATCH 실행
     }
 
     Action <|.. CreateTBoxAction
@@ -267,6 +268,10 @@ classDiagram
     Action <|.. SaveAction
     ComplexAction *-- Action : actions[]
     ActionManager --> Action : execute/undo/redo
+    SaveAction --> LayoutProvider : rev 동기화
+    MoveBoxAction --> LayoutProvider : LAYOUT 더티 마킹
+    ResizeBoxAction --> LayoutProvider : LAYOUT 더티 마킹
+    CreateTBoxAction --> LayoutProvider : LAYOUT 더티 마킹
 ```
 
 ## 화살표 (Arrow)

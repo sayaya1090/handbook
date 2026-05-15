@@ -409,45 +409,45 @@ sequenceDiagram
 | **정상 흐름** | 1. Ctrl+Z 또는 툴레일 Undo 버튼 → `ActionManager.undo()`. 최근 액션의 `rollback()` 실행.<br>2. Ctrl+Shift+Z 또는 툴레일 Redo 버튼 → `ActionManager.redo()`. 되돌린 액션의 `execute()` 재실행.<br>3. 스택은 최대 100개. 새 액션 실행 시 redo 스택 초기화.<br>4. Undo로 원본 상태가 복원되면 `ChangeTracker`에서 해당 타입의 더티 플래그가 자동 해제된다.<br>5. Save 성공 시 Undo/Redo 스택이 초기화된다. |
 | **특이사항** | 에이전트가 실행한 액션도 동일한 Undo 스택에 쌓이므로 사용자가 Ctrl+Z로 되돌릴 수 있다. |
 
-## UC-T10: 저장/다시 로드 (원자적 스키마 패치)
+## UC-T10: 저장/다시 로드 (변경분 선택적 저장)
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자, AI 에이전트 |
 | **선행조건** | `ChangeTracker.hasChanges() == true` (상태바 저장 버튼 활성화 상태) |
-| **정상 흐름 (저장)** | 1. 사용자가 상단 바의 **[Save]** 버튼을 클릭한다.<br>2. 시스템은 `ChangeTracker`를 조회하여 세션 중 발생한 모든 변경 내역을 수집한다.<br>3. 수집된 내역(타입 생성/수정/삭제 및 레이아웃 변경)을 하나의 **`SchemaPatch`** 객체로 캡슐화한다.<br>4. `PATCH /workspaces/{ws}/schema` API를 단일 호출로 실행한다.<br>5. 서버 응답이 성공(204 No Content)이면 `ChangeTracker`와 `ActionManager`(Undo 스택)를 초기화한다.<br>6. 성공 토스트 메시지를 표시한다. |
+| **정상 흐름 (저장)** | 1. 사용자가 상단 바의 **[Save]** 버튼을 클릭한다.<br>2. `SaveAction`은 `ChangeTracker`를 조회하여 **실제로 변경된 타입과 레이아웃(LAYOUT:{id})만** 수집한다.<br>3. 각 객체의 **기존 리비전(`rev`)을 요청 페이로드에 포함**하여 낙관적 잠금(Optimistic Locking)을 지원한다.<br>4. `PATCH /workspaces/{ws}/schema` API를 단일 호출로 실행한다.<br>5. 서버가 성공 응답과 함께 **최신 리비전이 포함된 객체 목록**을 반환하면, 이를 `TypeList` 및 `LayoutProvider`에 즉시 동기화한다.<br>6. 성공 시 `ChangeTracker`와 `ActionManager`를 초기화한다. |
 | **정상 흐름 (로드)** | 상태바 Reload 버튼 → `LoadAction` 실행. 서버에서 최신 데이터(타입 및 레이아웃)를 다시 로드한다. 미저장 변경 사항은 소실된다. |
-| **결과 정합성** | 모든 변경 사항은 단일 트랜잭션 내에서 서버에 반영되며, 실패 시 클라이언트 상태를 보존하여 재시도가 가능하도록 한다. |
+| **결과 정합성** | 변경된 개체만 효율적으로 전송하며, 리비전 동기화를 통해 페이지 새로고침 없이 연속적인 저장이 가능하다. |
 
 ```mermaid
 sequenceDiagram
     actor User as 사용자
-    participant UI as type-ui
+    participant UI as SaveAction
     participant CT as ChangeTracker
-    participant GW as Gateway
+    participant LP as LayoutProvider
+    participant API as TypeRepository
     participant DB as Database
 
     User->>UI: "Save 버튼 클릭"
-    UI->>CT: "getChangedKeys(), getDeletedKeys()"
+    UI->>CT: "getChangedKeys() 조회"
+    Note over UI: "변경된 타입 및 레이아웃(LAYOUT:*) 선별"
 
-    alt "변경 타입 (CHANGED)"
-        UI->>GW: "PATCH /types [{id, version, rev, changedAttrs}]"
-        GW->>DB: "개별 속성 upsert, rev 체크"
-        alt "rev 일치"
-            DB-->>GW: "OK (rev+1)"
-        else "rev 불일치"
-            DB-->>GW: "OptimisticLockingFailure"
-            GW-->>UI: "409 Conflict"
-        end
+    UI->>LP: "현재 레이아웃의 rev 획득"
+    UI->>API: "PATCH /schema {types: [...], layouts: [...]}"
+    Note over UI,API: "각 객체에 rev 정보 포함 필수"
+    
+    API->>DB: "Atomic Transaction 실행 (rev 체크)"
+    alt "저장 성공"
+        DB-->>API: "200 OK (updated objects with new rev)"
+        API-->>UI: "SchemaPatch (result)"
+        UI->>LP: "LayoutProvider.replace(newLayout) (rev 동기화)"
+        UI->>CT: "reset()"
+        Note over UI: "연속 저장 가능 상태"
+    else "버전 충돌 (rev 불일치)"
+        DB-->>API: "409 Conflict"
+        API-->>UI: "Error Reporting"
+        Note over UI: "토스트 메시지 표시 및 상태 유지"
     end
-    alt "삭제 타입 (DELETED)"
-        UI->>GW: "DELETE /types [{id, version}]"
-        GW->>DB: "DELETE"
-    end
-
-    UI->>GW: "PUT /layouts (위치 데이터)"
-    GW-->>UI: "200 OK"
-    UI->>CT: "reset()"
 ```
 
 ## UC-T11: 에이전트에 의한 타입 조작
