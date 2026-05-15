@@ -53,6 +53,9 @@ public class NavigationManager {
         if (menu == null) return;
         String targetUrl = placeholderResolver.resolve(menu.url());
         if (targetUrl == null || targetUrl.isEmpty()) return;
+        
+        // 치환되지 않은 플레이스홀더({workspaceId} 등)가 남아있다면 발행하지 않음 (레이스 컨디션 방지)
+        if (targetUrl.contains("{") && targetUrl.contains("}")) return;
 
         // 현재 URI와 다를 때만 업데이트하여 무한 루프 방지
         if (!targetUrl.equals(uriStore.getValue())) {
