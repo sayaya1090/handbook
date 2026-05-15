@@ -101,6 +101,10 @@ public class SaveAction implements Action {
         SchemaPatch patch = SchemaPatch.create(typeOps.toArray(new SchemaPatch.TypeOperation[0]), layoutOps.toArray(new SchemaPatch.LayoutOperation[0]));
         
         typeRepository.patchSchema(patch).subscribe(result -> {
+            // 트래커와 액션 매니저를 먼저 초기화하여 재렌더링 시 하이라이트가 제거되도록 함
+            tracker.reset();
+            actionManager.clear();
+
             // 서버에서 반환된 최신 데이터로 UI 상태 동기화 (리비전 갱신)
             if (result.types() != null) {
                 for (SchemaPatch.TypeOperation op : result.types()) {
@@ -123,8 +127,6 @@ public class SaveAction implements Action {
                 }
             }
             
-            tracker.reset();
-            actionManager.clear();
             if (toastContainer != null) {
                 toastContainer.show(ToastLevel.SUCCESS, labels.getOrDefault("toast.save.success", "Save completed"));
             }

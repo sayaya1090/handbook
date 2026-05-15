@@ -22,8 +22,8 @@ class ExtraEntityTest : DescribeSpec({
         }
     }
     describe("AttributeEntityMapper") {
-        val mapper = AttributeEntityMapper()
-        it("toDomain 매핑 검증") {
+        val mapper = AttributeEntityMapper(jacksonObjectMapper())
+        it("toDomain 매핑 검증 (Text)") {
             val entity = R2dbcAttributeEntity(
                 UUID.randomUUID(), "t1", "v1", UUID.randomUUID(), "a1", 1, "desc",
                 Json.of("""{"type":"text"}"""), false, false, Json.of("[]"), Json.of("[]")
@@ -31,7 +31,17 @@ class ExtraEntityTest : DescribeSpec({
             val domain = mapper.toDomain(entity)
             domain.name() shouldBe "a1"
             domain.description() shouldBe "desc"
-            domain.type().type() shouldBe AttributeType.text().type()
+            domain.type().type() shouldBe "text"
+        }
+        it("toDomain 매핑 검증 (Document 참조)") {
+            val entity = R2dbcAttributeEntity(
+                UUID.randomUUID(), "t1", "v1", UUID.randomUUID(), "a2", 2, "desc2",
+                Json.of("""{"type":"document","referenced_type":"other-type"}"""), false, false, Json.of("[]"), Json.of("[]")
+            )
+            val domain = mapper.toDomain(entity)
+            domain.name() shouldBe "a2"
+            domain.type().type() shouldBe "document"
+            domain.type().referencedType() shouldBe "other-type"
         }
     }
 })

@@ -32,7 +32,7 @@ class AdapterTest : DescribeSpec({
     describe("R2dbcTypeSearchRepositoryAdapter") {
         val typeRepo = mockk<R2dbcTypeEntityRepository>()
         val attrRepo = mockk<R2dbcAttributeEntityRepository>()
-        val attrMapper = AttributeEntityMapper()
+        val attrMapper = AttributeEntityMapper(objectMapper)
         val adapter = R2dbcTypeSearchRepositoryAdapter(typeRepo, attrRepo, attrMapper)
 
         it("hydrate: 빈 엔티티 목록 처리") {
