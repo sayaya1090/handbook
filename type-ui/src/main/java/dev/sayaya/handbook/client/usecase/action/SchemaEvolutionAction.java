@@ -125,6 +125,14 @@ public class SchemaEvolutionAction implements Action {
         // 5.4. 타입 리스트 갱신 (PeriodRecalculationService 자동 발화 -> LayoutProvider에 새 인스턴스로 자동 갱신됨)
         typeList.update(targetType, closedType); 
         typeList.add(nextVersion);
+
+        // 6. 변경 상태 마킹 (UI 하이라이트 및 저장 대상 지정)
+        tracker.markChanged(closedType.key());
+        tracker.markChanged(nextVersion.key());
+        tracker.markChanged(nextVersion.key() + ":id");
+        tracker.markChanged(nextVersion.key() + ":version");
+        tracker.markChanged("LAYOUT:" + currentLayout.id());
+        tracker.markChanged("LAYOUT:" + newLayout.id());
     }
 
     @Override
