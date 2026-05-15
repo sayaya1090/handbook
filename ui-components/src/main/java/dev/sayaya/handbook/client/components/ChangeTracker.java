@@ -80,6 +80,22 @@ public class ChangeTracker {
         hasChanges.next(true);
     }
 
+    /**
+     * 기존 키(oldKey)의 변경 상태와 원본 값을 새 키(newKey)로 복사(상속)한다.
+     * 스키마 진화 등에서 새로운 버전을 생성할 때 기존 변경 이력을 유지하기 위해 사용된다.
+     */
+    public void inherit(String oldKey, String newKey) {
+        if (states.containsKey(oldKey)) {
+            states.put(newKey, states.get(oldKey));
+        }
+        if (originalValues.containsKey(oldKey)) {
+            originalValues.put(newKey, originalValues.get(oldKey));
+        }
+        if (payloads.containsKey(oldKey)) {
+            payloads.put(newKey, payloads.get(oldKey));
+        }
+    }
+
     public void unmark(String key) {
         states.remove(key);
         payloads.remove(key);

@@ -93,19 +93,8 @@ public class EditBoxAction implements Action {
         if (b == a) return true;
         if (b == null || a == null) return false;
         
-        if (!Objects.equals(b.id(), a.id())) return false;
-        if (!Objects.equals(b.version(), a.version())) return false;
-        if (!Objects.equals(b.description(), a.description())) return false;
-        
-        Attribute[] bAttrs = b.attributes();
-        Attribute[] aAttrs = a.attributes();
-        if (bAttrs == null && aAttrs == null) return true;
-        if (bAttrs == null || aAttrs == null || bAttrs.length != aAttrs.length) return false;
-        
-        for (int i = 0; i < bAttrs.length; i++) {
-            if (!isSameAttribute(bAttrs[i], aAttrs[i])) return false;
-        }
-        return true;
+        // GWT 네이티브 객체(JsType)의 경우 equals가 오버라이드되지 않으므로 JSON 직렬화하여 Deep Compare 수행
+        return elemental2.core.Global.JSON.stringify(b).equals(elemental2.core.Global.JSON.stringify(a));
     }
 
     private Attribute findAttribute(Type t, String name) {
@@ -119,10 +108,8 @@ public class EditBoxAction implements Action {
     private boolean isSameAttribute(Attribute b, Attribute a) {
         if (b == a) return true;
         if (b == null || a == null) return false;
-        return Objects.equals(b.name(), a.name()) &&
-               Objects.equals(b.description(), a.description()) &&
-               Objects.equals(b.type(), a.type()) &&
-               b.order() == a.order() &&
-               b.nullable() == a.nullable();
+        
+        // GWT 네이티브 객체(JsType)의 경우 equals가 오버라이드되지 않으므로 JSON 직렬화하여 Deep Compare 수행
+        return elemental2.core.Global.JSON.stringify(b).equals(elemental2.core.Global.JSON.stringify(a));
     }
 }

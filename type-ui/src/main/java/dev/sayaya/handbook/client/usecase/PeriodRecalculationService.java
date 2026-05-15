@@ -48,7 +48,9 @@ public class PeriodRecalculationService {
             if (prev != null && !prev.equals(point)) {
                 TypeLayout match = findMatch(oldLayouts, prev, point);
                 if (match != null) {
-                    newLayouts.add(TypeLayout.create(match.id(), match.workspace(), prev, point, match.positions()));
+                    TypeLayout newLayout = TypeLayout.create(match.id(), match.workspace(), prev, point, match.positions());
+                    newLayout.rev(match.rev()); // 중요: 낙관적 잠금을 위해 기존 리비전 유지
+                    newLayouts.add(newLayout);
                 } else {
                     newLayouts.add(TypeLayout.create(null, null, prev, point, null));
                 }

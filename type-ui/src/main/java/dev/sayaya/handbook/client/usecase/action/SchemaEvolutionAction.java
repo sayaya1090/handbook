@@ -71,6 +71,7 @@ public class SchemaEvolutionAction implements Action {
         
         // 1. 기존 기간 마감 (expireDateTime 설정)
         TypeLayout closedLayout = TypeLayout.create(currentLayout.id(), currentLayout.workspace(), currentLayout.effectDateTime(), splitTime, currentLayout.positions());
+        closedLayout.rev(currentLayout.rev()); // 낙관적 잠금 보존
         
         Type closedType = Type.create(targetType.id(), targetType.version(), targetType.effectDateTime(), splitTime);
         closedType.description(targetType.description());
@@ -79,6 +80,7 @@ public class SchemaEvolutionAction implements Action {
         closedType.attributes(targetType.attributes());
         closedType.width(targetType.width());
         closedType.height(targetType.height());
+        closedType.rev(targetType.rev()); // 낙관적 잠금 보존
         
         // 2. 신규 기간 생성
         TypeLayout newLayout = TypeLayout.create(null, currentLayout.workspace(), splitTime, currentLayout.expireDateTime(), currentLayout.positions());
@@ -103,8 +105,16 @@ public class SchemaEvolutionAction implements Action {
         // 5. 변경 상태 마킹 (UI 하이라이트 및 저장 대상 지정) - UI 렌더링 전 먼저 마킹
         tracker.markChanged(closedType.key());
         tracker.markChanged(nextVersion.key());
-        tracker.markChanged(nextVersion.key() + ":id");
         tracker.markChanged(nextVersion.key() + ":version");
+        
+        // 기존 버전에서 변경되었던 필드들의 하이라이트 상태와 원본 값을 새 버전으로 상속
+        tracker.inherit(targetType.key() + ":description", nextVersion.key() + ":description");
+        if (targetType.attributes() != null) {
+            for (dev.sayaya.handbook.domain.Attribute attr : targetType.attributes()) {
+                tracker.inherit(targetType.key() + ":attr:" + attr.name(), nextVersion.key() + ":attr:" + attr.name());
+            }
+        }
+
         tracker.markChanged("LAYOUT:" + currentLayout.id());
         tracker.markChanged("LAYOUT:" + newLayout.id());
 
