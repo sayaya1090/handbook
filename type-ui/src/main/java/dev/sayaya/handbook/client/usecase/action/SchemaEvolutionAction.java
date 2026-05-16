@@ -138,7 +138,18 @@ public class SchemaEvolutionAction implements Action {
         
         // 6.3. 레이아웃 목록 초기화
         java.util.List<TypeLayout> layouts = new ArrayList<>(layoutList.getValue());
-        int currentIndex = layouts.indexOf(currentLayout);
+        int currentIndex = -1;
+        for (int i = 0; i < layouts.size(); i++) {
+            TypeLayout l = layouts.get(i);
+            if (l.id() != null && l.id().equals(currentLayout.id())) {
+                currentIndex = i;
+                break;
+            } else if (l == currentLayout) {
+                currentIndex = i;
+                break;
+            }
+        }
+        
         if (currentIndex >= 0) {
             layouts.set(currentIndex, closedLayout);
             layouts.add(currentIndex + 1, newLayout);

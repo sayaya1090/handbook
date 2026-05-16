@@ -15,6 +15,7 @@ import jsinterop.base.JsPropertyMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -81,7 +82,18 @@ public class SaveAction implements Action {
         for (TypeLayout layout : layoutList.getValue()) {
             if (changedKeys.contains("LAYOUT:" + layout.id())) {
                 JsPropertyMap<Position> posMap = JsPropertyMap.of();
-                positionMap.getValue().forEach(posMap::set);
+                Map<String, Position> allPositions = positionMap.getValue();
+                
+                // 해당 레이아웃 기간에 활성 상태인 타입들만 선별하여 위치 정보 저장
+                Set<Type> allTypes = typeList.getValue();
+                for (Type type : allTypes) {
+                    if (type.effectDateTime() < layout.expireDateTime() && type.expireDateTime() > layout.effectDateTime()) {
+                        Position pos = allPositions.get(type.key());
+                        if (pos != null) {
+                            posMap.set(type.key(), pos);
+                        }
+                    }
+                }
                 
                 // 기존 rev 유지 필수 (낙관적 잠금)
                 TypeLayout toSave = TypeLayout.create(layout.id(), layout.workspace(), layout.effectDateTime(), layout.expireDateTime(), posMap);

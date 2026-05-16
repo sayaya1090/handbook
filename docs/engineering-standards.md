@@ -46,8 +46,24 @@
 | **생성자** | 본문이 없는 기본 생성자만 허용 | 자바 인스턴스화가 아닌 JS 객체 캐스팅이 주 목적 |
 | **로직 보호** | 모든 자바 메서드는 **`@JsOverlay`** 필수 | 네이티브 타입의 자바 메서드 바디 제한 우회 |
 
----
+### 예시 코드 (Encapsulated Standard Pattern)
+```java
+@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
+@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
+@Accessors(fluent = true)
+public final class MyDomain {
+    @JsonProperty("id") @JsProperty private String id;
 
+    @JsOverlay @JsIgnore
+    public static MyDomain create(String id) {
+        MyDomain instance = new MyDomain();
+        instance.id = id;
+        return instance;
+    }
+}
+```
+
+---
 ## 3. 상태 관리 및 더티 체킹 표준
 
 ### 3.1 값 기반 정밀 더티 체킹 (Value-based Dirty Checking)
@@ -106,10 +122,22 @@ WindowRenderBridge.next(render);
 공용 도메인이 GWT 전용 네이티브 인터페이스(`JsPropertyMap` 등)를 포함할 경우, 백엔드(JVM) 환경에서 `UnsatisfiedLinkError`가 발생한다. 이를 방지하기 위해 **Java Reflection Proxy**를 사용하여 JVM용 가짜 객체를 주입한다.
 
 - **Proxy 패턴**: `java.lang.reflect.Proxy`를 사용하여 인터페이스의 가짜 구현체를 생성하고, 내부적으로는 Java/Kotlin의 `Map`에 위임한다.
+- **Jackson 호환성 (직렬화)**: Jackson 3(JsonMapper)는 Proxy 객체의 내부 속성을 자동으로 읽지 못하므로, **직렬화 전 반드시 일반 `Map` 객체로 명시적 변환**을 거쳐야 한다.
+- **Jackson 호환성 (역직렬화)**: `JsPropertyMapModule`을 통해 `JsPropertyMap` 인터페이스에 대한 Deserializer를 제공하고, 중첩된 객체의 제레릭 타입을 보존하기 위해 `createContextual`을 활용한다.
 - **Jackson 3 직렬화 자동화**: `JsPropertyMapSerializer`를 통해 Proxy 객체를 수동 변환 없이 직접 JSON으로 변환한다. 이때 Proxy의 내부 필드(h 등) 리플렉션 접근을 차단하고 맵 엔트리를 순회하며 기록한다.
 - **구현 일관성**: `type-command` 및 `type-query` 등 개별 서비스에서 프록시를 생성하지 않고, `authentication` 모듈의 **`JsPropertyMapModule.createProxy()`** 공용 메서드를 사용하여 기능(forEach 지원 등)을 통일한다.
 - **Long-Double 어댑팅**: 도메인 규격인 `double`과 데이터베이스 규격인 `Long` 간의 변환은 엔티티 레이어(`fromDomain`, `toDomain`)에서 명시적 캐스팅을 통해 처리한다.
-
+- **WebFlux 코덱 강제**: Spring WebFlux는 커텀 `ObjectMapper` 빈이 존재해도 기본 코덱을 사용하는 경우가 있으므로, `WebFluxConfigurer.configureHttpMessageCodecs`를 통해 명시적으로 커스텀 매퍼를 등록해야 한다.
+- **CUD API 상태 동기화**: 리소스 생성/수정/삭제 요청(POST, PUT, PATCH, DELETE)에 대한 응답은 가급적 **영향을 받은 최신 상태의 도메인 객체 목록**을 포함해야 한다. 이는 프론트엔드가 별도의 조회 없이도 서버의 최신 리비전(rev)이나 자동 생성된 ID를 즉시 동기화하여 409 Conflict를 방지하기 위함이다.
+- **구현 예시**:
+```kotlin
+// 직렬화 전 변환 예시
+val posMap = mutableMapOf<String, Position>()
+Js.asPropertyMap(layout.positions()).forEach { key ->
+    posMap[key] = Js.cast(Js.asPropertyMap(layout.positions()).get(key))
+}
+val json = objectMapper.writeValueAsString(posMap)
+```
 ---
 
 ## 6. 에이전트 컨텍스트 관리 표준 (Agent Context Management)
@@ -119,3 +147,4 @@ WindowRenderBridge.next(render);
 - **자동 로딩 (SessionStart Hook)**: 세션 시작 시 `.gemini/hooks/context-loader.sh`가 실행되어 핵심 설계 문서(`architecture.md`, `system-overview.md`, `engineering-standards.md`) 및 요구사항/유스케이스 요약을 컨텍스트에 주입한다.
 - **최신성 유지**: 모든 아키텍처 결정이나 규칙 변경은 반드시 관련 문서에 즉시 반영되어야 한다. 에이전트는 주입된 컨텍스트를 기반으로 동작하므로, 문서의 최신성이 에이전트의 품질을 결정한다.
 - **문서 구조**: 대규모 문서는 요약(Index)과 상세(Details)로 분리하여 에이전트가 필요한 시점에 상세 내용을 선택적으로 읽을 수 있도록 구성한다.
+
