@@ -69,4 +69,15 @@ public final class Attribute {
         attr.writeRoles(writeRoles());
         return attr;
     }
+
+    @JsOverlay @JsIgnore
+    public Attribute cloneWithoutId() {
+        Attribute attr = create(null, name(), order(), type());
+        attr.description(description());
+        attr.nullable(nullable());
+        attr.inherited(inherited());
+        attr.readRoles(readRoles());
+        attr.writeRoles(writeRoles());
+        return attr;
+    }
 }

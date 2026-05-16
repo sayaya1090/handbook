@@ -90,7 +90,16 @@ public class SchemaEvolutionAction implements Action {
         nextVersion.description(updatedType.description());
         nextVersion.primitive(updatedType.primitive());
         nextVersion.parent(updatedType.parent());
-        nextVersion.attributes(updatedType.attributes());
+        
+        // 중요: 새 버전의 속성들은 기존 버전의 ID를 들고 있으면 안 됨 (DB PK 충돌 방지)
+        if (updatedType.attributes() != null) {
+            dev.sayaya.handbook.domain.Attribute[] clonedAttrs = new dev.sayaya.handbook.domain.Attribute[updatedType.attributes().length];
+            for (int i = 0; i < updatedType.attributes().length; i++) {
+                clonedAttrs[i] = updatedType.attributes()[i].cloneWithoutId();
+            }
+            nextVersion.attributes(clonedAttrs);
+        }
+        
         nextVersion.width(updatedType.width());
         nextVersion.height(updatedType.height());
 
