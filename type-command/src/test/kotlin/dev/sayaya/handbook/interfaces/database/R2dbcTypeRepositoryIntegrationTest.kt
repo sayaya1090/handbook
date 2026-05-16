@@ -122,19 +122,21 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                         saved.version() shouldBe "1.0"
                         saved.description() shouldBe "고객 타입"
                         saved.primitive() shouldBe false
-                        saved.rev() shouldBe 0L
+                        saved.rev() shouldBe 0.0
                     }
                     .verifyComplete()
             }
             Then("이미 존재하는 타입을 다시 save하면 UPDATE가 수행된다") {
-                val saved = adapter.findByWorkspaceAndPeriod(workspace, Instant.MIN, Instant.MAX).blockFirst()!!
+                val start = Instant.EPOCH
+                val end = Instant.ofEpochMilli(253402214400000L)
+                val saved = adapter.findByWorkspaceAndPeriod(workspace, start, end).blockFirst()!!
                 val updatedType = saved.withAttributes(saved.attributes()).description("수정된 설명")
                 
                 StepVerifier.create(adapter.save(workspace, listOf(updatedType)))
                     .assertNext { updated ->
                         updated.id() shouldBe "customer"
                         updated.description() shouldBe "수정된 설명"
-                        updated.rev() shouldBe 1L // 0 -> 1 증가 확인
+                        updated.rev() shouldBe 1.0 // 0 -> 1 증가 확인
                     }
                     .verifyComplete()
             }

@@ -49,7 +49,7 @@ data class R2dbcLayoutEntity(
     companion object {
         fun fromDomain(workspace: UUID, layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity {
             val isNew = layout.id() == null
-            val rev = if (layout.rev() == -1L) null else layout.rev()
+            val rev = if (layout.rev() == -1.0) null else layout.rev().toLong()
             return R2dbcLayoutEntity(
                 id = layout.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
                 workspace = workspace,

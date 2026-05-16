@@ -25,7 +25,7 @@ public final class Type {
     @JsonProperty("width") @JsProperty(name = "width") private double width;
     @JsonProperty("height") @JsProperty(name = "height") private double height;
     @JsonProperty("attributes") @JsProperty(name = "attributes") private Attribute[] attributes;
-    @JsonProperty("rev") @JsProperty(name = "rev") private long rev;
+    @JsonProperty("rev") @JsProperty(name = "rev") private double rev;
 
     @JsOverlay @JsIgnore
     public static Type create(String id, String version, double effectDateTime, double expireDateTime) {
@@ -34,7 +34,7 @@ public final class Type {
         type.version(version);
         type.effectDateTime(effectDateTime);
         type.expireDateTime(expireDateTime);
-        type.rev(-1);
+        type.rev(-1.0);
         return type;
     }
 
@@ -45,7 +45,7 @@ public final class Type {
         type.version(version);
         type.width(width);
         type.height(height);
-        type.rev(-1);
+        type.rev(-1.0);
         return type;
     }
 

@@ -34,7 +34,7 @@ data class R2dbcLayoutEntity(
         )
         val r = this@R2dbcLayoutEntity.rev
         if (r != null) {
-            layout.rev(r)
+            layout.rev(r.toDouble())
         }
         return layout
     }

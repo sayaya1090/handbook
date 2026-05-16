@@ -29,7 +29,7 @@ data class R2dbcTypeEntity(
         type.primitive(primitive)
         type.parent(parent)
         type.attributes(attributes.toTypedArray())
-        rev?.let { type.rev(it) }
+        rev?.let { type.rev(it.toDouble()) }
         return type
     }
 }
