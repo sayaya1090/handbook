@@ -79,8 +79,8 @@
 
 - **에이전트 연동 섹션**: 모든 모듈의 `README.md`에 포함되었으나, `USECASE.md`의 시퀀스 다이어그램 정합성은 추가 검수가 필요함.
 - **테스트 파일 확인**: `docs-keeper`가 보고한 "완료" 항목 중 일부는 실제 파일 경로와 클래스명이 미세하게 다를 수 있음 (예: `Application.java` vs `*Test.kt`).
-- **GWT 도메인 JVM 호환성 (해결)**: `JsPropertyMap`을 포함한 도메인의 JVM 역직렬화 이슈가 `JsPropertyMapModule` 도입으로 해결됨 (2026-05-24).
-- **타입 저장 낙관적 잠금 (해결)**: `Type` 모델의 `rev` 필드 누락으로 인한 저장 실패가 수정됨 (2026-05-12).
-- **레이아웃 데이터 소실 (해결)**: GWT Proxy 객체가 백엔드에서 빈 JSON으로 직렬화되던 문제와 Spring Data R2DBC의 isNew 판정 오류(INSERT 대신 UPDATE 시도)가 해결됨 (2026-05-12).
-- **UI 에러 처리 누락 (해결)**: 서버 에러 발생 시 UI에서 'Save completed'로 오인하던 버그가 API 클라이언트의 Promise 체인 보완으로 해결됨 (2026-05-12).
-- **저장 후 리비전 동기화 (해결)**: `PATCH /schema` API가 저장된 최신 데이터를 반환하도록 수정하고 UI가 이를 즉시 반영하도록 하여, 저장 직후 작업 시 발생하던 409 Conflict 문제를 해결함 (2026-05-12).
+- **GWT 도메인 JVM 호환성 (해결)**: `JsPropertyMap`을 포함한 도메인의 JVM 역직렬화 및 직렬화 이슈가 `JsPropertyMapModule` 도입과 `JsPropertyMapSerializer` 고도화로 완벽히 해결됨 (2026-05-16).
+- **타입 저장 낙관적 잠금 (해결)**: `Type` 및 `TypeLayout` 모델의 `rev` 필드 타입을 `double`로 변경하여 GWT `ClassCastException`을 해결하고, 백엔드 엔티티 변환 로직 보완을 통해 낙관적 잠금 메커니즘 정상화 완료 (2026-05-16).
+- **레이아웃 데이터 소실 (해결)**: GWT Proxy 객체의 `forEach` 구현 누락 문제와 `R2dbcLayoutEntity`의 리비전 누락 결함이 모두 해결되어, 저장 시 위치 정보 유실 및 409 Conflict 발생 현상 수정 완료 (2026-05-16).
+- **UI 에러 처리 누락 (해결)**: 서버 에러 발생 시 UI 피드백 누락 버그가 Promise 체인 및 Toast 알림 강화로 해결됨 (2026-05-12).
+- **저장 후 리비전 동기화 (해결)**: `PATCH /schema` API의 응답 데이터로 클라이언트 상태를 즉시 갱신하는 'Selective Patch' 전략 도입을 통해 연속 저장 정합성 확보 (2026-05-15).

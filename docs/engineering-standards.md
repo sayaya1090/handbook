@@ -1,4 +1,4 @@
-# HandBook 엔지니어링 표준 및 설계 교훈 (2026-04-28)
+# HandBook 엔지니어링 표준 및 설계 교훈 (2026-05-16 업데이트)
 
 이 문서는 프로젝트의 대규모 도메인 통합 및 공통 모듈 정리 과정을 통해 확립된 핵심 설계 원칙을 기록합니다.
 
@@ -34,46 +34,33 @@
 - **애너테이션 병기**: Jackson(`@JsonProperty`)과 JsInterop(`@JsType`) 애너테이션을 한 클래스에 공존시킨다.
 - **제로 카피(Zero-copy)**: 서버 응답 JSON을 프론트엔드에서 데이터 변환 없이 직접 도메인 객체로 캐스팅하여 사용한다.
 
----
-
-## 2. Native JsInterop (isNative = true) 적용 원칙
-
+### 2.1 Native JsInterop (isNative = true) 적용 원칙
 공용 도메인 모델에 `isNative = true` 설정을 적용하는 이유는 경계를 넘나드는 데이터 교환의 정합성을 확보하기 위함이다.
 
-### 구현 지침 (캡슐화된 네이티브 모델)
+#### 구현 지침 (캡슐화된 네이티브 모델)
 | 항목 | 표준 지침 | 이유 |
 |------|----------|------|
 | **필드 접근** | **`private`** 필드 + **`@JsProperty`** | 자바의 캡슐화를 유지하면서 JS 객체 속성에 매핑 |
+| **숫자 타입** | **`double`** 사용 권장 (**`long` 금지**) | JS `number`는 64비트 부동소수점으로, Java `long` 에뮬레이션 객체와 캐스팅 시 `ClassCastException` 유발 (2026-05-16 발견) |
 | **Lombok 활용** | **`@Getter(onMethod_ = {@JsOverlay, @JsIgnore})`** | 자바 코드에서 플루언트 게터(`id()`) 사용 가능 |
 | **생성자** | 본문이 없는 기본 생성자만 허용 | 자바 인스턴스화가 아닌 JS 객체 캐스팅이 주 목적 |
 | **로직 보호** | 모든 자바 메서드는 **`@JsOverlay`** 필수 | 네이티브 타입의 자바 메서드 바디 제한 우회 |
 
-### 예시 코드 (Encapsulated Standard Pattern)
-```java
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
-@Getter(onMethod_ = {@JsOverlay, @JsIgnore})
-@Accessors(fluent = true)
-public final class MyDomain {
-    @JsonProperty("id") @JsProperty private String id;
-
-    @JsOverlay @JsIgnore
-    public static MyDomain create(String id) {
-        MyDomain instance = new MyDomain();
-        instance.id = id;
-        return instance;
-    }
-}
-```
-
 ---
 
-## 3. Dagger DI 및 상태 관리 표준
+## 3. 상태 관리 및 더티 체킹 표준
 
-### 3.1 컴파일 타임 검증 원칙
+### 3.1 값 기반 정밀 더티 체킹 (Value-based Dirty Checking)
+단순한 행위 기반 마킹은 데이터 정합성을 해칠 수 있다. `ChangeTracker`는 다음 원칙을 따른다.
+- **원본 값 보존**: 최초 변경 발생 시 원본 데이터를 `originalValues`에 스냅샷으로 저장한다.
+- **자동 해제 (Unmark)**: 사용자가 수동으로 값을 입력하여 원래 상태로 되돌렸을 때, 원본과 현재 값을 대조(`Objects.equals` 또는 `JSON.stringify` 기반 Deep Compare)하여 자동으로 `changed` 상태를 해제한다.
+- **필드 레벨 추적**: 객체 전체뿐만 아니라 `:id`, `:version`, `:attr:name` 등 세부 필드 단위로 마킹하여 UI 하이라이트의 정밀도를 높인다.
+
+### 3.2 Dagger DI 및 상태 관리
 - **제로 런타임 리플렉션**: 런타임에 리플렉션 비용을 없애기 위해 Dagger의 컴파일 타임 DI를 활용한다.
 - **Composition Root**: 모든 컨테이너(`DaggerComponent`) 생성은 오직 `EntryPoint`(`Application.java` 등)에서만 1회 수행되어야 한다. 컴포넌트 내부에서 컨테이너를 직접 생성해서는 안 된다.
 
-### 3.2 5가지 Reactive 규율 (sayaya-rx)
+### 3.3 5가지 Reactive 규율 (sayaya-rx)
 상태 전파의 복잡성을 줄이기 위해 다음 규율을 준수한다.
 1. **단일 Store 방출**: 상태는 오직 `Store` 클래스의 `BehaviorSubject`에서만 발생해야 한다.
 2. **Two-Door 패턴**: Store는 읽기(`Observable.subscribe()`)와 쓰기(커맨드 메서드) 인터페이스만 노출하며, `@Delegate`를 통해 내부 Subject 구현을 은닉한다.
@@ -81,7 +68,7 @@ public final class MyDomain {
 4. **경계에서만 subscribe**: 화면 마운트 시 등 명확한 라이프사이클 경계에서만 구독한다.
 5. **반드시 구독 해제**: `Subscription.unsubscribe()`를 통해 메모리 누수를 방지한다.
 
-### 3.3 GWT UI 테스트 표준 (Playwright)
+### 3.4 GWT UI 테스트 표준 (Playwright)
 - **비동기 렌더링 대응**: GWT 모듈의 로딩 및 초기화 지연으로 인해 `querySelector`는 `null`을 반환할 위험이 높다. 반드시 **`page.waitForSelector(".selector")`**를 사용하여 요소가 나타날 때까지 대기한 후 검증을 수행한다.
 - **빌드 구성 누락 방지**: 신규 테스트용 GWT 모듈(`*Test.gwt.xml`) 추가 시, 해당 프로젝트의 `build.gradle.kts` 내 `gwt { devMode { modules = [...] } }` 목록에 반드시 명시하여 컴파일 대상에 포함시킨다.
 
@@ -99,14 +86,17 @@ Render render = frame -> {
 WindowRenderBridge.next(render);
 ```
 
-### 4.2 이벤트 및 DOM 규칙
+### 4.2 API 통신 및 리비전 동기화 (Selective Patch)
+- **변경분 선택 전송**: `SaveAction` 실행 시 `ChangeTracker`를 조회하여 실제 변경된 개체와 필드만 선별하여 전송한다. 불필요한 전체 업데이트와 DB 부하를 방지한다.
+- **낙관적 잠금 (Optimistic Locking) 보존**: 도메인 객체 생성 및 변환 시 기존의 **`rev`** 값을 반드시 유지하여 서버 전송 시 포함시켜야 한다.
+- **응답 기반 상태 동기화**: 리소스 수정 요청에 대한 응답은 반드시 최신 리비전이 포함된 객체를 반환해야 하며, 클라이언트는 이를 `Store`와 `Provider`에 즉시 반영하여 **연속 저장**이 가능한 상태를 유지해야 한다.
+
+### 4.3 이벤트 및 DOM 규칙
 - **선언적 DOM (Elemento)**: HTML 문자열이나 네이티브 HTML 조작 대신 `div()`, `button()` 등 Elemento 빌더와 `sayaya-ui` MD3 컴포넌트 래퍼를 사용한다.
 - **!important 사용 금지**: CSS에서 `!important` 사용을 엄격히 금지한다. 스타일 우선순위 문제는 셀렉터의Specificity(특이도) 조절이나 논리적인 CSS 구조 설계를 통해 해결한다.
 - **클래스 기반 상태 관리**: 자바 코드에서 `element.style.display`와 같은 인라인 스타일을 직접 조작하는 것을 지양한다. 대신 `visible`, `hidden`, `mobile` 등 의미 있는 상태 클래스를 `classList`에 추가/제거하고, CSS 파일에서 해당 클래스에 따른 스타일을 정의한다.
 - **Box Sizing 표준화**: 모든 UI 모듈의 CSS는 `* { box-sizing: border-box; }` 설정을 포함하거나 준수하여, 패딩과 테두리가 전체 너비/높이에 포함되도록 한다.
-- **너비(Width) 관리**: 블록 레벨 요소나 플렉스 자식 요소에 불필요한 `width: 100%` 사용을 지양한다. 특히 패딩이나 마진이 있는 요소에 `100%`를 지정할 경우 부모 영역을 초과할 수 있으므로 주의한다.
 - **동적 DOM 재배치 (Dynamic Reparenting) 패턴**: 버튼의 활성화 상태나 이벤트 리스너 등 복잡한 내부 상태를 유지해야 하는 컴포넌트는 다중 인스턴스로 분리할 경우 상태 동기화 비용이 크다. 이를 방지하기 위해, 반응형 레이아웃 전환 시 **단일 `@Singleton` 인스턴스를 유지하면서 뷰포트 상태에 따라 부모 컨테이너를 변경(`appendChild`)하는 동적 재배치 방식**을 사용한다. 단, DOM Stealing 방지를 위해 재배치는 반드시 하나의 코디네이터(예: `StatusHeaderElement`)에서 중앙 통제해야 한다.
-- **이벤트 1회 등록**: 이벤트 리스너는 동적으로 여러 번 달고 제거하지 않으며, 초기 생성 시 1회만 등록하고 핸들러 내부에서 조건문으로 동작을 제어한다.
 - **모듈 간 통신**: 모듈 간 통신은 SSE 메시지를 `WindowToolPublisherBridge` 등이 수신하여 `DomGlobal.window.dispatchEvent(CustomEvent)` 형태로 브로드캐스트하는 방식을 따른다.
 
 ---
@@ -116,19 +106,10 @@ WindowRenderBridge.next(render);
 공용 도메인이 GWT 전용 네이티브 인터페이스(`JsPropertyMap` 등)를 포함할 경우, 백엔드(JVM) 환경에서 `UnsatisfiedLinkError`가 발생한다. 이를 방지하기 위해 **Java Reflection Proxy**를 사용하여 JVM용 가짜 객체를 주입한다.
 
 - **Proxy 패턴**: `java.lang.reflect.Proxy`를 사용하여 인터페이스의 가짜 구현체를 생성하고, 내부적으로는 Java/Kotlin의 `Map`에 위임한다.
-- **Jackson 호환성 (직렬화)**: Jackson 3(JsonMapper)는 Proxy 객체의 내부 속성을 자동으로 읽지 못하므로, **직렬화 전 반드시 일반 `Map` 객체로 명시적 변환**을 거쳐야 한다.
-- **Jackson 호환성 (역직렬화)**: `JsPropertyMapModule`을 통해 `JsPropertyMap` 인터페이스에 대한 Deserializer를 제공하고, 중첩된 객체의 제레릭 타입을 보존하기 위해 `createContextual`을 활용한다.
-- **WebFlux 코덱 강제**: Spring WebFlux는 커텀 `ObjectMapper` 빈이 존재해도 기본 코덱을 사용하는 경우가 있으므로, `WebFluxConfigurer.configureHttpMessageCodecs`를 통해 명시적으로 커스텀 매퍼를 등록해야 한다.
-- **CUD API 상태 동기화**: 리소스 생성/수정/삭제 요청(POST, PUT, PATCH, DELETE)에 대한 응답은 가급적 **영향을 받은 최신 상태의 도메인 객체 목록**을 포함해야 한다. 이는 프론트엔드가 별도의 조회 없이도 서버의 최신 리비전(rev)이나 자동 생성된 ID를 즉시 동기화하여 409 Conflict를 방지하기 위함이다.
-- **구현 예시**:
-```kotlin
-// 직렬화 전 변환 예시
-val posMap = mutableMapOf<String, Position>()
-Js.asPropertyMap(layout.positions()).forEach { key ->
-    posMap[key] = Js.cast(Js.asPropertyMap(layout.positions()).get(key))
-}
-val json = objectMapper.writeValueAsString(posMap)
-```
+- **Jackson 3 직렬화 자동화**: `JsPropertyMapSerializer`를 통해 Proxy 객체를 수동 변환 없이 직접 JSON으로 변환한다. 이때 Proxy의 내부 필드(h 등) 리플렉션 접근을 차단하고 맵 엔트리를 순회하며 기록한다.
+- **구현 일관성**: `type-command` 및 `type-query` 등 개별 서비스에서 프록시를 생성하지 않고, `authentication` 모듈의 **`JsPropertyMapModule.createProxy()`** 공용 메서드를 사용하여 기능(forEach 지원 등)을 통일한다.
+- **Long-Double 어댑팅**: 도메인 규격인 `double`과 데이터베이스 규격인 `Long` 간의 변환은 엔티티 레이어(`fromDomain`, `toDomain`)에서 명시적 캐스팅을 통해 처리한다.
+
 ---
 
 ## 6. 에이전트 컨텍스트 관리 표준 (Agent Context Management)
@@ -138,4 +119,3 @@ val json = objectMapper.writeValueAsString(posMap)
 - **자동 로딩 (SessionStart Hook)**: 세션 시작 시 `.gemini/hooks/context-loader.sh`가 실행되어 핵심 설계 문서(`architecture.md`, `system-overview.md`, `engineering-standards.md`) 및 요구사항/유스케이스 요약을 컨텍스트에 주입한다.
 - **최신성 유지**: 모든 아키텍처 결정이나 규칙 변경은 반드시 관련 문서에 즉시 반영되어야 한다. 에이전트는 주입된 컨텍스트를 기반으로 동작하므로, 문서의 최신성이 에이전트의 품질을 결정한다.
 - **문서 구조**: 대규모 문서는 요약(Index)과 상세(Details)로 분리하여 에이전트가 필요한 시점에 상세 내용을 선택적으로 읽을 수 있도록 구성한다.
-
