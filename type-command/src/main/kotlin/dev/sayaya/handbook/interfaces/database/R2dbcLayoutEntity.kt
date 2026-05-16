@@ -49,12 +49,14 @@ data class R2dbcLayoutEntity(
     companion object {
         fun fromDomain(workspace: UUID, layout: TypeLayout, positionsJson: String?): R2dbcLayoutEntity {
             val isNew = layout.id() == null
+            val rev = if (layout.rev() == -1L) null else layout.rev()
             return R2dbcLayoutEntity(
                 id = layout.id()?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
                 workspace = workspace,
                 effectDateTime = Instant.ofEpochMilli(layout.effectDateTime().toLong()),
                 expireDateTime = Instant.ofEpochMilli(layout.expireDateTime().toLong()),
                 positions = positionsJson?.let { io.r2dbc.postgresql.codec.Json.of(it) },
+                rev = rev
             ).apply { this.isNewRecord = isNew }
         }
     }
