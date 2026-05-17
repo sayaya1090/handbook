@@ -113,30 +113,60 @@ public class SaveAction implements Action {
         SchemaPatch patch = SchemaPatch.create(typeOps.toArray(new SchemaPatch.TypeOperation[0]), layoutOps.toArray(new SchemaPatch.LayoutOperation[0]));
         
         typeRepository.patchSchema(patch).subscribe(result -> {
-            // 트래커와 액션 매니저를 먼저 초기화하여 재렌더링 시 하이라이트가 제거되도록 함
+            // 1. 트래커와 액션 매니저 초기화 (하이라이트 제거 준비)
             tracker.reset();
             actionManager.clear();
 
-            // 서버에서 반환된 최신 데이터로 UI 상태 동기화 (리비전 갱신)
+            // 2. 타입 동기화 (서버에서 반환된 최신 데이터로 교체)
             if (result.types() != null) {
+                java.util.Set<Type> nextTypes = new java.util.LinkedHashSet<>(typeList.getValue());
                 for (SchemaPatch.TypeOperation op : result.types()) {
                     if ("UPSERT".equals(op.op())) {
-                        typeList.update(op.data(), op.data()); // 리비전 갱신
+                        Type updated = op.data();
+                        // 기존 목록에서 동일한 ID:Version을 찾아 최신 객체(rev 포함)로 교체
+                        nextTypes.removeIf(t -> t.key().equals(updated.key()));
+                        nextTypes.add(updated);
                     }
                 }
+                typeList.replace(nextTypes);
             }
+
+            // 3. 레이아웃 동기화 (서버에서 반환된 최신 데이터로 교체)
             if (result.layouts() != null) {
+                java.util.List<TypeLayout> nextLayouts = new java.util.ArrayList<>(layoutList.getValue());
                 for (SchemaPatch.LayoutOperation op : result.layouts()) {
                     if ("UPSERT".equals(op.op())) {
-                        layoutList.update(op.data(), op.data()); // 리비전 갱신
+                        TypeLayout updated = op.data();
+                        // 3.1. 기존 목록에서 매칭되는 레이아웃 찾아 교체 (ID 또는 기간 기반)
+                        boolean matched = false;
+                        for (int i = 0; i < nextLayouts.size(); i++) {
+                            TypeLayout existing = nextLayouts.get(i);
+                            if (existing.id() != null && existing.id().equals(updated.id())) {
+                                nextLayouts.set(i, updated);
+                                matched = true;
+                                break;
+                            } else if (existing.id() == null && 
+                                     Math.abs(existing.effectDateTime() - updated.effectDateTime()) < 0.1 && 
+                                     Math.abs(existing.expireDateTime() - updated.expireDateTime()) < 0.1) {
+                                // ID가 없던 신규 항목은 기간으로 매칭하여 ID가 부여된 최신 객체로 대체
+                                nextLayouts.set(i, updated);
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (!matched) nextLayouts.add(updated);
                         
-                        // 현재 사용 중인 레이아웃이라면 LayoutProvider에도 즉시 동기화 (연속 저장 성공을 위해 필수)
+                        // 3.2. 현재 활성 레이아웃인 경우 Provider도 즉시 갱신 (연속 저장 보장)
                         TypeLayout current = layoutProvider.getValue();
-                        if (current != null && current.id().equals(op.data().id())) {
-                            layoutProvider.replace(op.data());
+                        if (current != null && (
+                            (current.id() != null && current.id().equals(updated.id())) ||
+                            (current.id() == null && Math.abs(current.effectDateTime() - updated.effectDateTime()) < 0.1 && Math.abs(current.expireDateTime() - updated.expireDateTime()) < 0.1)
+                        )) {
+                            layoutProvider.replace(updated);
                         }
                     }
                 }
+                layoutList.replace(nextLayouts);
             }
             
             if (toastContainer != null) {
