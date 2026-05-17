@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
+import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.TypeToolManager;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
@@ -33,9 +34,14 @@ public class RemoveTypeButton implements IsElement<HTMLElement> {
     @Delegate private final IconButtonElementBuilder.PlainIconButtonElementBuilder _this;
 
     @Inject
-    RemoveTypeButton(TypeToolManager toolManager, LabelProvider labelProvider) {
+    RemoveTypeButton(TypeToolManager toolManager, SelectedBoxElement selection, LabelProvider labelProvider) {
         _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-trash"))
-                .css("type-ctrl-btn", "type-ctrl-btn-remove");
+                .css("type-ctrl-btn", "type-ctrl-btn-remove")
+                .disabled(true);
+
+        selection.subscribe(selected -> {
+            _this.disabled(selected == null || selected.isEmpty());
+        });
 
         _this.onClick(e -> toolManager.executeRemove());
 

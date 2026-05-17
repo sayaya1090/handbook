@@ -442,6 +442,22 @@ classDiagram
         -AttributeValue attribute
         +ValueElement(attr, onEdit, onDelete)
     }
+    class TypeFloatingToolbar {
+        <<@Singleton>>
+        -RemoveTypeButton removeBtn
+        -NewVersionButton newVersionBtn
+    }
+    class RemoveTypeButton {
+        <<@Singleton>>
+        -TypeToolManager toolManager
+        -SelectedBoxElement selection
+    }
+    class NewVersionButton {
+        <<@Singleton>>
+        -SelectedBoxElement selection
+        -TypeList typeList
+        -VersionCreationDialog creationDialog
+    }
 
     CanvasElement *-- TypeElement : elementMap
     CanvasElement --> BoxElementFactory : creates
@@ -453,6 +469,7 @@ classDiagram
     CanvasElement --> StatusHeaderElement
     CanvasElement --> TypePropertyBar
     CanvasElement --> ToolRailElement
+    CanvasElement --> TypeFloatingToolbar
     StatusHeaderElement --> EditorContext
     TypePropertyBar --> EditorContext
     StatusHeaderElement *-- ActionDialElement : coordinates (Dynamic Reparenting)
@@ -464,6 +481,10 @@ classDiagram
     BoxContextMenuElement --> AttributeEditorDialog
     CanvasContextMenuElement --> ContextMenuHelper : uniqueTypeId
     BoxContextMenuElement --> ContextMenuHelper
+    TypeFloatingToolbar *-- RemoveTypeButton
+    TypeFloatingToolbar *-- NewVersionButton
+    RemoveTypeButton --> SelectedBoxElement : 구독
+    NewVersionButton --> SelectedBoxElement : 구독
 ```
 
 ## 속성 편집 다이얼로그

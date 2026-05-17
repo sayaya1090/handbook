@@ -22,7 +22,7 @@ graph TD
 |:---|:---|:---|:---|
 | **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, ModeToggle, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 모드 전환. **원형 아이콘 버튼(Plain)** 표준 적용. |
 | **인스펙터 (Inspector)** | `TypeInspectorPanel` (PC) / `TypeBottomSheet` (Mobile) | ID, 버전, 유효기간, 속성 등 상세 정보 표시 및 편집 | 단일 타입 선택 시 노출. 데스크톱은 우측 슬라이드 패널, 모바일은 하단 바텀 시트로 노출되어 에이전트 UI와의 간섭을 피함. 기간 편집 진입점. |
-| **플로팅 툴바** | `TypeFloatingToolbar` | 삭제, 새 버전 등 빠른 액션 | 데스크톱 환경에서 타입 선택 시 박스 근처에 노출되어 시선 이동을 최소화함. |
+| **플로팅 툴바** | `TypeFloatingToolbar` | 삭제, 새 버전 등 빠른 액션 | 화면 하단에 상시 노출되어 시선 이동을 최소화함. 선택된 타입 유무에 따라 버튼이 동적으로 활성화/비활성화됨. |
 | **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 편집 도구. **원형 아이콘 버튼(Plain)** 표준 적용. |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)
@@ -816,6 +816,6 @@ sequenceDiagram
     - 에이전트에 의한 Mutate 시 `AuditEntry` 발행 여부는 `type-command` 레이어에서 보장됨.
 5. **Agent Command 타겟**:
     - **Navigate**: `#!type/{workspaceId}`
-    - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`, `.type-speed-dial`, `.type-floating-pill`
+    - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`, `.type-speed-dial`, `.type-floating-pill`, `.type-floating-toolbar`
     - **Mutate**: `CREATE type`, `DELETE type`, `ADD field`, `REMOVE field`, `SET type`
     - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
