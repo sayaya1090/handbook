@@ -23,7 +23,7 @@ gwt {
     gwtVersion = "2.13.0"
     sourceLevel = "auto"
     devMode {
-        modules = listOf("dev.sayaya.handbook.Type", "dev.sayaya.handbook.CanvasTest")
+        modules = listOf("dev.sayaya.handbook.Type", "dev.sayaya.handbook.CanvasTest", "dev.sayaya.handbook.NavigationTest")
         war = file("src/test/webapp")
     }
     generateJsInteropExports = true

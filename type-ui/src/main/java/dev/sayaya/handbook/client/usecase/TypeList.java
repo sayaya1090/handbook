@@ -43,6 +43,16 @@ public class TypeList {
         subject.next(types);
     }
 
+    public void merge(Set<Type> types) {
+        if (types == null || types.isEmpty()) return;
+        Set<Type> next = new LinkedHashSet<>(subject.getValue());
+        for (Type t : types) {
+            next.removeIf(existing -> t.key().equals(existing.key()));
+            next.add(t);
+        }
+        subject.next(next);
+    }
+
     public void add(Type type) {
         Set<Type> next = new LinkedHashSet<>(subject.getValue());
         next.add(type);

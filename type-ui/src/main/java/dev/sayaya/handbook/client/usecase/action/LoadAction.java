@@ -29,10 +29,12 @@ public class LoadAction implements Action {
     private final ActionManager actionManager;
     private final LayoutProvider layoutProvider;
     private final LayoutList layoutList;
+    private final dev.sayaya.handbook.client.usecase.TypeDataCoordinator coordinator;
 
     public LoadAction(TypeRepository typeRepository, LayoutRepository layoutRepository,
                       TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
-                      ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList) {
+                      ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList,
+                      dev.sayaya.handbook.client.usecase.TypeDataCoordinator coordinator) {
         this.typeRepository = typeRepository;
         this.layoutRepository = layoutRepository;
         this.typeList = typeList;
@@ -41,10 +43,12 @@ public class LoadAction implements Action {
         this.actionManager = actionManager;
         this.layoutProvider = layoutProvider;
         this.layoutList = layoutList;
+        this.coordinator = coordinator;
     }
 
     @Override
     public void execute() {
+        if (coordinator != null) coordinator.clearCache();
         layoutRepository.layouts().subscribe(periods -> {
             if (periods == null || periods.isEmpty()) {
                 TypeLayout defaultPeriod = TypeLayout.create(null, null, 0, 253402214400000.0, null);
@@ -55,17 +59,9 @@ public class LoadAction implements Action {
                 layoutProvider.selectBestMatch(periods);
             }
 
-            TypeLayout current = layoutProvider.getValue();
-            typeRepository.list(current.toPeriod()).subscribe(types -> {
-                if (types != null) {
-                    typeList.replace(types);
-                    tracker.reset();
-                    actionManager.clear();
-                }
-            });
-            layoutRepository.positions(current.toPeriod()).subscribe(positions -> {
-                positionMap.replace(positions);
-            });
+            // 타입 및 위치 로딩은 TypeDataCoordinator가 layoutProvider 구독을 통해 수행함
+            if (tracker != null) tracker.reset();
+            actionManager.clear();
         });
     }
 

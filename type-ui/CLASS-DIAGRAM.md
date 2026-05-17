@@ -83,6 +83,7 @@ classDiagram
         +getValue(): Set~TypeValue~
         +asObservable(): Observable~Set~TypeValue~~
         +dispatch(action: Action)
+        +merge(types: Set~TypeValue~)
         -replace(types: Set~TypeValue~)
         -add(type: TypeValue)
         -remove(type: TypeValue)
@@ -95,9 +96,17 @@ classDiagram
         +asObservable(): Observable~Map~String,Position~~
         +dispatch(action: Action)
         +get(typeKey): Position
+        +merge(positions: Map~String,Position~)
         -put(typeKey, position)
         -move(typeKey, dx, dy)
         -replace(map)
+    }
+    class TypeDataCoordinator {
+        <<@Singleton>>
+        -Set~String~ loadedLayoutIds
+        +init() LayoutProvider 구독
+        +clearCache()
+        -onLayoutChanged(layout)
     }
     class LayoutList {
         <<@Singleton>>
@@ -170,6 +179,10 @@ classDiagram
     PeriodRecalculationService --> TypeList : 구독
     PeriodRecalculationService --> LayoutList : 갱신
     PeriodRecalculationService --> LayoutProvider : best match 선택
+
+    TypeDataCoordinator --> LayoutProvider : 구독
+    TypeDataCoordinator --> TypeList : merge
+    TypeDataCoordinator --> PositionMap : merge
 
     class ChangeState {
         <<enum>>

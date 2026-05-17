@@ -49,6 +49,7 @@ public class Application implements EntryPoint {
         
         // 동적 도구 관리자 초기화
         component.typeToolManager().init();
+        component.typeDataCoordinator().init();
 
         var container = div().css("type-container")
                 .add(component.statusHeader())
@@ -92,7 +93,8 @@ public class Application implements EntryPoint {
                 component.changeTracker(),
                 component.actionManager(),
                 component.layoutProvider(),
-                component.layoutList()
+                component.layoutList(),
+                component.typeDataCoordinator()
         ).execute();
     }
 

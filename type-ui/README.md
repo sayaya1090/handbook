@@ -231,6 +231,7 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | `TypeList` | 현재 로딩된 전체 타입 목록 |
 | `LayoutList` / `LayoutProvider` | 레이아웃 기간 목록 / 현재 선택 기간 |
 | `PositionMap` | 타입별 캔버스 좌표 |
+| `TypeDataCoordinator` | 레이아웃 전환 시 자동 데이터 로딩 관리 |
 | `ChangeTracker` | NOT_CHANGED / CHANGED / DELETED 추적 |
 | `CanvasMode` | VIEW / LAYOUT / TYPE 편집 모드 |
 | `GridSnap` | 격자 스냅 on/off |
@@ -252,6 +253,17 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 | `LayoutRepository.layouts()` | `GET /workspaces/{id}/layouts` | 레이아웃 기간 목록 |
 | `LayoutRepository.positions(period)` | `GET /workspaces/{id}/layouts/{period}` | 기간별 위치 조회 |
 | `LayoutRepository.savePositions(...)` | `PUT /workspaces/{id}/layouts` | 위치 저장 |
+
+---
+
+## 데이터 로딩 전략 (Incremental Loading)
+
+Type-UI는 대규모 워크스페이스에서도 부드러운 탐색을 제공하기 위해 **반응형 점진적 로딩** 방식을 채택한다.
+
+1.  **지연 로딩 (Lazy Loading)**: 초기 로딩 시 전체 데이터를 가져오지 않고, 현재 선택된 레이아웃 기간에 필요한 데이터만 서버에서 조회한다.
+2.  **자동 동기화 (TypeDataCoordinator)**: 사용자가 기간 이동(Before/After) 버튼을 누르면 `TypeDataCoordinator`가 이를 감지하여 해당 기간의 데이터를 백엔드에서 비동기로 추가 로드한다.
+3.  **상태 통합 (Merge Strategy)**: 새로 로드된 데이터는 기존 메모리에 있는 `TypeList` 및 `PositionMap`과 병합(Merge)된다. 이를 통해 이미 방문한 기간으로 다시 돌아갈 때는 네트워크 요청 없이 즉시 렌더링이 가능하다.
+4.  **캐시 무결성**: 서버 저장(Save) 또는 새로고침(Reload) 시에는 로컬 캐시를 초기화하여 최신 상태를 유지한다.
 
 ---
 

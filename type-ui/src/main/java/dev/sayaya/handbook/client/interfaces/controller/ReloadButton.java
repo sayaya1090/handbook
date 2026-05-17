@@ -31,13 +31,15 @@ public class ReloadButton implements IsElement<HTMLElement> {
     ReloadButton(TypeRepository typeRepository, LayoutRepository layoutRepository,
                  TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                  ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList,
+                 dev.sayaya.handbook.client.usecase.TypeDataCoordinator typeDataCoordinator,
                  LabelProvider labelProvider) {
         _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-rotate-right"))
                 .css("type-ctrl-btn", "type-ctrl-btn-reload");
 
         _this.onClick(e ->
                 new LoadAction(typeRepository, layoutRepository, typeList, positionMap,
-                        tracker, actionManager, layoutProvider, layoutList).execute()
+                        tracker, actionManager, layoutProvider, layoutList,
+                        typeDataCoordinator).execute()
         );
 
         labelProvider.subscribe(labels ->

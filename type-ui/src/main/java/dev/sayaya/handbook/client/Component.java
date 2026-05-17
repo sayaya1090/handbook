@@ -54,6 +54,7 @@ public interface Component {
     ChangeTracker changeTracker();
     LayoutProvider layoutProvider();
     LayoutList layoutList();
+    TypeDataCoordinator typeDataCoordinator();
     dev.sayaya.handbook.client.usecase.PeriodRecalculationService periodRecalculationService();
     dev.sayaya.handbook.client.interfaces.controller.inspector.TypeInspectorPanel typeInspectorPanel();
     dev.sayaya.handbook.client.interfaces.controller.inspector.TypeBottomSheet typeBottomSheet();

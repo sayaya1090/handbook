@@ -139,6 +139,7 @@ sequenceDiagram
     participant Shell as Shell (WorkspaceSelect)
     participant Bridge as WindowWorkspaceEventBridge
     participant App as Application
+    participant DC as TypeDataCoordinator
     participant LA as LayoutApi
     participant LL as LayoutList
     participant LP as LayoutProvider
@@ -152,19 +153,20 @@ sequenceDiagram
     Note over Bridge: "CustomEvent('handbook-workspace-context')"
     
     App->>Bridge: "receiver().workspaceId().subscribe()"
-    Bridge-->>App: "workspaceId 발행 (누락 시 URL에서 폴백 추출)"
+    Bridge-->>App: "workspaceId 발행"
     
-    App->>TA: "setWorkspace(id)"
-    App->>LA: "setWorkspace(id)"
+    App->>DC: "init() (LayoutProvider 구독 시작)"
     
     Note over App: "LoadAction 실행"
     App->>LA: "layouts()"
     LA-->>LL: "LayoutPeriod[] 발행"
     LP->>LP: "selectBestMatch(periods) (최신 레이아웃 자동 선택)"
-    App->>TA: "list(selectedPeriod)"
-    TA-->>TL: "Set<TypeValue> 발행"
-    App->>LA: "positions(selectedPeriod)"
-    LA-->>PM: "Map<String,Position> 발행"
+    
+    Note over LP,DC: "상태 변경 감지"
+    DC->>TA: "list(selectedPeriod)"
+    TA-->>TL: "Set<TypeValue> 발행 (merge)"
+    DC->>LA: "positions(selectedPeriod)"
+    LA-->>PM: "Map<String,Position> 발행 (merge)"
     
     TL-->>PRS: "타입 변경 감지"
     PRS->>PRS: "기간 경계 재계산"
@@ -335,6 +337,7 @@ sequenceDiagram
 | **선행조건** | 워크스페이스 선택 완료, Shell이 type-ui 모듈을 로딩 |
 | **정상 흐름** | 1. Shell이 `type/type.nocache.js`를 동적 로딩한다.<br>2. `LoadAction`이 실행되어 백엔드에서 레이아웃 기간 목록을 가져온다.<br>3. `LayoutProvider`가 현재 시점과 가장 많이 겹치는 기간을 자동 선택한다. (중첩도가 같을 경우 **시작점이 일치하는 구간** 또는 **더 늦게 시작하는 구간** 우선)<br>4. **빈 워크스페이스 대응**: 목록이 비어있을 경우, 기본 기간(0 ~ 253402214400000.0(∞))을 생성하여 주입한다.<br>5. 선택된 기간의 유효 타입들만 필터링하여 캔버스에 렌더링한다.<br>6. `PeriodRecalculationService`가 전체 타입의 유효기간 시점들을 수집하여 타임라인이 끊기지 않도록 레이아웃 기간 목록을 상시 재계산한다. |
 | **결과** | 캔버스에 타입 카드와 참조 화살표가 표시된다. |
+| **비고** | 사용자가 레이아웃 기간을 이동하면(UC-T8) `TypeDataCoordinator`가 해당 기간의 데이터를 서버에서 자동으로 가져와 기존 목록에 통합(Merge)한다. |
 
 ## UC-T2: 타입 생성
 

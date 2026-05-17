@@ -44,12 +44,14 @@ public class TypeToolManager {
     private final ConfirmDialog confirmDialog;
     private final dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog;
     private final TypeSearchProvider typeSearchProvider;
+    private final TypeDataCoordinator typeDataCoordinator;
     private Labels currentLabels = Labels.empty();
 
     @Inject
     TypeToolManager(ToolProvider toolProvider, ActionManager actionManager, ChangeTracker tracker,
                     TypeRepository typeRepository, LayoutRepository layoutRepository, TypeList typeList,
                     PositionMap positionMap, LayoutProvider layoutProvider, LayoutList layoutList,
+                    TypeDataCoordinator typeDataCoordinator,
                     dev.sayaya.handbook.client.components.ToastContainer toastContainer,
                     LabelProvider labelProvider, CanvasMode canvasMode, GridSnap gridSnap,
                     SelectedBoxElement selection, ConfirmDialog confirmDialog,
@@ -64,6 +66,7 @@ public class TypeToolManager {
         this.positionMap = positionMap;
         this.layoutProvider = layoutProvider;
         this.layoutList = layoutList;
+        this.typeDataCoordinator = typeDataCoordinator;
         this.toastContainer = toastContainer;
         this.labelProvider = labelProvider;
         this.canvasMode = canvasMode;
@@ -196,6 +199,6 @@ public class TypeToolManager {
     }
 
     public void executeReload() {
-        new LoadAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, layoutList).execute();
+        new LoadAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, layoutList, typeDataCoordinator).execute();
     }
 }

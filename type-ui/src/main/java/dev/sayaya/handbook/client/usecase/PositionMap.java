@@ -43,6 +43,13 @@ public class PositionMap {
         subject.next(positions);
     }
 
+    public void merge(Map<String, Position> positions) {
+        if (positions == null || positions.isEmpty()) return;
+        Map<String, Position> next = new LinkedHashMap<>(subject.getValue());
+        next.putAll(positions);
+        subject.next(next);
+    }
+
     public Position get(String typeKey) {
         return subject.getValue().get(typeKey);
     }
