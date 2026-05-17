@@ -6,6 +6,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
+import org.springframework.data.annotation.Transient
+import org.springframework.data.domain.Persistable
 import java.time.Instant
 import java.util.*
 
@@ -16,12 +18,12 @@ import java.util.*
  * 속성(attributes)은 별도 테이블([R2dbcAttributeEntity])에 저장되므로,
  * [toDomain] 호출 시 속성 리스트를 외부에서 주입받는다.
  *
- * **주의:** id는 타입 이름 문자열이며, version과 함께 복합 비즈니스 키를 형성한다.
- * rev 컬럼은 @Version으로 낙관적 잠금에 사용된다.
+ * **주의:** PK는 (id, version, workspace) 복합키이다. Spring Data R2DBC의 한계를 극복하기 위해
+ * Persistable을 구현하여 isNew 상태를 직접 관리한다.
  */
 @Table("types")
 data class R2dbcTypeEntity(
-    @Id val id: String,
+    @Id private val id: String,
     val version: String,
     val workspace: UUID,
     @Column("effect_date_time") val effectDateTime: Instant,
@@ -30,7 +32,11 @@ data class R2dbcTypeEntity(
     val primitive: Boolean,
     val parent: String?,
     @Version val rev: Long? = null,
-) {
+) : Persistable<String> {
+    @Transient var isNewRecord: Boolean = false
+    override fun getId(): String = id
+    override fun isNew(): Boolean = isNewRecord || rev == null
+
     fun toDomain(attributes: List<Attribute> = emptyList()): Type {
         val type = Type.create(
             id,
@@ -44,16 +50,19 @@ data class R2dbcTypeEntity(
     }
 
     companion object {
-        fun fromDomain(workspace: UUID, type: Type): R2dbcTypeEntity = R2dbcTypeEntity(
-            id = type.id(),
-            version = type.version(),
-            workspace = workspace,
-            effectDateTime = Instant.ofEpochMilli(type.effectDateTime().toLong()),
-            expireDateTime = Instant.ofEpochMilli(type.expireDateTime().toLong()),
-            description = type.description(),
-            primitive = type.primitive(),
-            parent = type.parent(),
-            rev = if (type.rev() == -1.0) null else type.rev().toLong(),
-        )
+        fun fromDomain(workspace: UUID, type: Type): R2dbcTypeEntity {
+            val isNew = type.rev() == -1.0
+            return R2dbcTypeEntity(
+                id = type.id(),
+                version = type.version(),
+                workspace = workspace,
+                effectDateTime = Instant.ofEpochMilli(type.effectDateTime().toLong()),
+                expireDateTime = Instant.ofEpochMilli(type.expireDateTime().toLong()),
+                description = type.description(),
+                primitive = type.primitive(),
+                parent = type.parent(),
+                rev = if (isNew) null else type.rev().toLong(),
+            ).apply { this.isNewRecord = isNew }
+        }
     }
 }

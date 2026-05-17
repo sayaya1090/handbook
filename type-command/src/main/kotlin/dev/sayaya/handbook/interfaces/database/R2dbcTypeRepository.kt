@@ -15,6 +15,9 @@ import java.util.*
 
 /** Spring Data R2DBC 자동 구현 인터페이스. types 테이블에 대한 기본 CRUD + 기간별 조회를 제공한다. */
 interface R2dbcTypeEntityRepository : ReactiveCrudRepository<R2dbcTypeEntity, String> {
+    @Query("SELECT * FROM types WHERE id = :id AND version = :version AND workspace = :workspace")
+    fun findByPk(id: String, version: String, workspace: UUID): Mono<R2dbcTypeEntity>
+
     @Query("""
         SELECT * FROM types
         WHERE workspace = :workspace
@@ -82,7 +85,33 @@ class R2dbcTypeRepositoryAdapter(
 
     private fun saveOne(workspace: UUID, type: Type): Mono<Type> {
         val entity = R2dbcTypeEntity.fromDomain(workspace, type)
-        return typeRepo.save(entity)
+        val persistenceOp = if (entity.isNew) {
+            typeRepo.save(entity)
+        } else {
+            // 복합키(id, version, workspace) 및 리비전(rev) 동시 체크를 위한 수동 UPDATE
+            databaseClient.sql("""
+                UPDATE types 
+                SET effect_date_time = :effect, expire_date_time = :expire, 
+                    description = :desc, primitive = :primitive, parent = :parent, rev = rev + 1
+                WHERE id = :id AND version = :version AND workspace = :workspace AND rev = :rev
+            """)
+                .bind("id", entity.id!!)
+                .bind("version", entity.version)
+                .bind("workspace", workspace)
+                .bind("rev", entity.rev!!)
+                .bind("effect", entity.effectDateTime)
+                .bind("expire", entity.expireDateTime)
+                .bind("desc", entity.description ?: "")
+                .bind("primitive", entity.primitive)
+                .bind("parent", entity.parent ?: "")
+                .fetch().rowsUpdated()
+                .flatMap { rowsUpdated ->
+                    if (rowsUpdated == 0L) Mono.error(DuplicateKeyException("Version conflict for type ${entity.id}:${entity.version} in workspace $workspace"))
+                    else typeRepo.findByPk(entity.id!!, entity.version, workspace) // 업데이트 후 최신 상태 조회 (rev 증가됨)
+                }
+        }
+
+        return persistenceOp
             .flatMap { saved ->
                 attrRepo.deleteByTypeIdAndTypeVersion(type.id(), type.version())
                     .thenReturn(saved)
@@ -105,22 +134,24 @@ class R2dbcTypeRepositoryAdapter(
     }
 
     private fun patchOne(workspace: UUID, patch: TypePatch): Mono<Type> {
-        // 1. rev 체크 + description 업데이트 + rev 증가
+        // 1. rev 체크 + description 업데이트 + rev 증가 (Full PK 사용: id, version, workspace)
         val spec = if (patch.description != null) {
-            databaseClient.sql("UPDATE types SET rev = rev + 1, description = :desc WHERE id = :id AND version = :version AND rev = :rev")
+            databaseClient.sql("UPDATE types SET rev = rev + 1, description = :desc WHERE id = :id AND version = :version AND workspace = :workspace AND rev = :rev")
                 .bind("id", patch.id)
                 .bind("version", patch.version)
+                .bind("workspace", workspace)
                 .bind("rev", patch.rev)
                 .bind("desc", patch.description)
         } else {
-            databaseClient.sql("UPDATE types SET rev = rev + 1 WHERE id = :id AND version = :version AND rev = :rev")
+            databaseClient.sql("UPDATE types SET rev = rev + 1 WHERE id = :id AND version = :version AND workspace = :workspace AND rev = :rev")
                 .bind("id", patch.id)
                 .bind("version", patch.version)
+                .bind("workspace", workspace)
                 .bind("rev", patch.rev)
         }
         return spec.fetch().rowsUpdated()
             .flatMap { rowsUpdated ->
-                if (rowsUpdated == 0L) return@flatMap Mono.error<Type>(DuplicateKeyException("Version conflict for type ${patch.id}:${patch.version}"))
+                if (rowsUpdated == 0L) return@flatMap Mono.error<Type>(DuplicateKeyException("Version conflict for type ${patch.id}:${patch.version} in workspace $workspace"))
                 // 2. 변경 속성만 upsert (이름 기준으로 삭제 후 삽입)
                 val attrOps = Flux.fromIterable(patch.attributes)
                     .flatMap { attr ->
@@ -129,7 +160,7 @@ class R2dbcTypeRepositoryAdapter(
                     }
                 // 3. 전체 타입 조회하여 반환
                 attrOps.then(
-                    typeRepo.findById(patch.id).flatMap { entity ->
+                    typeRepo.findByPk(patch.id, patch.version, workspace).flatMap { entity ->
                         attrRepo.findByTypeIdAndTypeVersion(patch.id, patch.version)
                             .collectList()
                             .map { attrs -> entity.toDomain(attrs.map { attrMapper.toDomain(it) }.sortedBy { it.order() }) }
@@ -142,7 +173,13 @@ class R2dbcTypeRepositoryAdapter(
         return Flux.fromIterable(types)
             .flatMap { type ->
                 attrRepo.deleteByTypeIdAndTypeVersion(type.id(), type.version())
-                    .then(typeRepo.delete(R2dbcTypeEntity.fromDomain(workspace, type)))
+                    .then(
+                        databaseClient.sql("DELETE FROM types WHERE id = :id AND version = :version AND workspace = :workspace")
+                            .bind("id", type.id())
+                            .bind("version", type.version())
+                            .bind("workspace", workspace)
+                            .fetch().rowsUpdated()
+                    )
             }
             .`as`(tx::transactional)
             .then()
