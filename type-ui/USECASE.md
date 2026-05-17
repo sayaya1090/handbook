@@ -20,9 +20,9 @@ graph TD
 
 | 구분 | 컴포넌트 | 포함 기능 (버튼) | 역할 설명 |
 |:---|:---|:---|:---|
-| **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, ModeToggle, Before/After, Snap | 데이터 영속성 관리, 히스토리 제어, 모드 전환. **원형 아이콘 버튼(Plain)** 표준 적용. |
-| **인스펙터 (Inspector)** | `TypeInspectorPanel` (PC) / `TypeBottomSheet` (Mobile) | ID, 버전, 유효기간, 속성 등 상세 정보 표시 및 편집 | 단일 타입 선택 시 노출. 데스크톱은 우측 슬라이드 패널, 모바일은 하단 바텀 시트로 노출되어 에이전트 UI와의 간섭을 피함. 기간 편집 진입점. |
-| **플로팅 툴바** | `TypeFloatingToolbar` | 삭제, 새 버전 등 빠른 액션 | 화면 하단에 상시 노출되어 시선 이동을 최소화함. 선택된 타입 유무에 따라 버튼이 동적으로 활성화/비활성화됨. |
+| **상단바** | `StatusHeaderElement` | Save, Reload, Undo, Redo, ModeToggle, Before/After, Snap, Type Info | 데이터 영속성 관리 및 히스토리 제어. **기간 정보와 타입 속성 정보(`TypePropertyBar`)가 중앙에 상시 노출**되어 선택 상태와 무관하게 일관된 레이아웃을 유지함. |
+| **인스펙터 (Inspector)** | `TypeInspectorPanel` (PC) / `TypeBottomSheet` (Mobile) | 속성 목록 등 상세 편집 | 타입 선택 시 노출되는 우측 슬라이드 패널 또는 하단 바텀 시트. |
+| **플로팅 툴바** | `TypeFloatingToolbar` | 삭제, 새 버전 등 빠른 액션 | 화면 하단에 상시 노출. 선택된 타입 유무에 따라 버튼이 동적으로 활성화/비활성화되어 빠른 편집을 지원함. |
 | **좌측 레일** | `ControllerElement` | AddType, Remove, BulkDelete | 캔버스 내 개체 생성 및 편집 도구. **원형 아이콘 버튼(Plain)** 표준 적용. |
 
 ## 동적 도구 연동 시퀀스 (Dynamic Tool Integration)

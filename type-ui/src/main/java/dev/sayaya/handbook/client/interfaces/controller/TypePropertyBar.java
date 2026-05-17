@@ -40,7 +40,6 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
     private final HTMLElement datesLabel = span().css("type-property-dates").element();
 
     private final TypeList typeList;
-    private final NewVersionButton newVersionBtn;
     private final ConfirmDialog confirmDialog;
     private final ActionManager actionManager;
     private final ChangeTracker tracker;
@@ -48,26 +47,27 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
 
     @Inject
     TypePropertyBar(SelectedBoxElement selection, TypeList typeList, LabelProvider labelProvider,
-                    DateCorrectionDialog correctionDialog, NewVersionButton newVersionBtn,
+                    DateCorrectionDialog correctionDialog,
                     ActionManager actionManager, ChangeTracker tracker, ConfirmDialog confirmDialog) {
         this.typeList = typeList;
-        this.newVersionBtn = newVersionBtn;
         this.confirmDialog = confirmDialog;
         this.actionManager = actionManager;
         this.tracker = tracker;
         
-        this.root = div().css("type-property-bar")
+        this.root = div().css("type-property-bar", "visible", "type-fade-item")
                 .add(idLabel)
                 .add(span().css("type-property-divider").text("|"))
                 .add(versionLabel)
                 .add(span().css("type-property-divider").text("|"))
                 .add(datesLabel)
-                .add(newVersionBtn)
                 .element();
 
         selection.subscribe(selected -> this.refresh(selected, typeList.getValue()));
         typeList.subscribe(types -> this.refresh(selection.getValue(), types));
         
+        // 초기 상태 설정
+        clearLabels();
+
         // 전체 영역을 클릭할 수 있도록 root에 이벤트 바인딩 (UX 개선)
         root.addEventListener("click", e -> {
             if (currentType != null) {
@@ -76,7 +76,14 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
         });
     }
 
+    private void clearLabels() {
+        idLabel.textContent = "-";
+        versionLabel.textContent = "-";
+        datesLabel.textContent = "-";
+    }
+
     private void handleDateCorrection(DateCorrectionDialog.DateResult result) {
+        // ... (이전과 동일)
         Type target = currentType;
         boolean effectChanged = Math.abs(target.effectDateTime() - result.effect()) > 0.1;
         boolean expireChanged = Math.abs(target.expireDateTime() - result.expire()) > 0.1;
@@ -130,6 +137,7 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
                     .ifPresent(this::update);
         } else {
             currentType = null;
+            clearLabels();
         }
     }
 

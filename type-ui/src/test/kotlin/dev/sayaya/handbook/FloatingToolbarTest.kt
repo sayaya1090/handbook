@@ -19,14 +19,25 @@ internal class FloatingToolbarTest: GwtTestSpec({
             page.waitForSelector(".type-floating-toolbar.visible")
         }
 
-        Then("초기 상태에서 삭제 및 새 버전 버튼은 비활성화되어 있어야 한다") {
-            page.locator(".type-ctrl-btn-remove").getAttribute("disabled") shouldBe ""
-            page.locator(".type-ctrl-btn-new-version").getAttribute("disabled") shouldBe ""
+        Then("상단 바에 기간 정보가 상시 노출되어야 한다") {
+            page.waitForSelector(".type-nav-group")
+            page.locator(".type-period-label").isVisible shouldBe true
+        }
+
+        Then("초기 상태에서 상단 속성 바는 비어있는 상태('-')로 노출된다") {
+            page.locator(".type-status-header .type-property-id").textContent() shouldBe "-"
+            page.locator(".type-status-header .type-property-version").textContent() shouldBe "-"
         }
 
         When("타입(customer:1.0)을 하나 선택하면") {
             page.click(".type-box[data-type-key='customer:1.0'] .type-header", com.microsoft.playwright.Page.ClickOptions().setForce(true))
             
+            Then("상단 속성 바에 타입 정보가 표시되고, 기간 정보도 여전히 유지된다") {
+                page.locator(".type-status-header .type-property-id").textContent() shouldBe "customer"
+                page.locator(".type-status-header .type-property-version").textContent() shouldBe "1.0"
+                page.locator(".type-period-label").isVisible shouldBe true
+            }
+
             Then("삭제 버튼과 새 버전 버튼이 모두 활성화된다") {
                 page.waitForFunction("() => !document.querySelector('.type-ctrl-btn-remove').disabled")
                 page.waitForFunction("() => !document.querySelector('.type-ctrl-btn-new-version').disabled")

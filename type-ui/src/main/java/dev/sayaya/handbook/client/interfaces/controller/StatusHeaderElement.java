@@ -43,6 +43,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
     private final SnapButton snapButton;
     private final ActionDialElement actionDial;
     private final SettingsDialElement settingsDial;
+    private final TypePropertyBar typePropertyBar;
 
     @Inject
     StatusHeaderElement(ModeToggleButton modeToggle,
@@ -52,6 +53,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
                         SnapButton snapButton,
                         ActionDialElement actionDial,
                         SettingsDialElement settingsDial,
+                        TypePropertyBar typePropertyBar,
                         LayoutProvider layoutProvider,
                         SelectedBoxElement selection,
                         ViewportObserver viewportObserver) {
@@ -65,16 +67,12 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         this.snapButton = snapButton;
         this.actionDial = actionDial;
         this.settingsDial = settingsDial;
+        this.typePropertyBar = typePropertyBar;
 
         initDesktopLayout();
         initMobileLayout();
 
         viewportObserver.isMobile().subscribe(this::updateLayout);
-        selection.subscribe(keys -> {
-            boolean hasSelection = keys != null && !keys.isEmpty();
-            navGroup.classList.toggle("type-fade-out", hasSelection);
-            navGroup.classList.toggle("type-fade-in", !hasSelection);
-        });
 
         layoutProvider.subscribe(this::updatePeriod);
     }
@@ -86,6 +84,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
         navGroup.classList.add("type-nav-group", "type-fade-in");
 
         centerArea.appendChild(navGroup);
+        centerArea.appendChild(typePropertyBar.element());
 
         root.appendChild(persistenceGroup);
         root.appendChild(historyGroup);
@@ -121,6 +120,7 @@ public class StatusHeaderElement implements IsElement<HTMLDivElement> {
             navGroup.appendChild(afterBtn.element());
             
             centerArea.appendChild(navGroup);
+            centerArea.appendChild(typePropertyBar.element());
         }
     }
 
