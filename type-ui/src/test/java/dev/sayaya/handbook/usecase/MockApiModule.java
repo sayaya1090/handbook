@@ -38,11 +38,14 @@ public class MockApiModule {
             @Override
             public Observable<Set<Type>> list(LayoutPeriod period) {
                 Set<Type> types = new HashSet<>();
-                JsPropertyMap<Type[]> mock = Js.cast(Js.asPropertyMap(DomGlobal.window).get("__mock_types"));
-                if (mock != null) {
-                    String key = period.effectDateTime() + ":" + period.expireDateTime();
-                    Type[] arr = mock.get(key);
-                    if (arr != null) Collections.addAll(types, arr);
+                JsPropertyMap<Object> window = Js.asPropertyMap(DomGlobal.window);
+                if (window.has("__mock_types")) {
+                    JsPropertyMap<Type[]> mock = Js.cast(window.get("__mock_types"));
+                    if (mock != null) {
+                        String key = period.effectDateTime() + ":" + period.expireDateTime();
+                        Type[] arr = mock.get(key);
+                        if (arr != null) Collections.addAll(types, arr);
+                    }
                 }
                 return BehaviorSubject.behavior(types).asObservable();
             }
@@ -60,18 +63,24 @@ public class MockApiModule {
             @Override
             public Observable<List<TypeLayout>> layouts() {
                 List<TypeLayout> layouts = new ArrayList<>();
-                TypeLayout[] arr = Js.cast(Js.asPropertyMap(DomGlobal.window).get("__mock_layouts"));
-                if (arr != null) Collections.addAll(layouts, arr);
+                JsPropertyMap<Object> window = Js.asPropertyMap(DomGlobal.window);
+                if (window.has("__mock_layouts")) {
+                    TypeLayout[] arr = Js.cast(window.get("__mock_layouts"));
+                    if (arr != null) Collections.addAll(layouts, arr);
+                }
                 return BehaviorSubject.behavior(layouts).asObservable();
             }
             @Override
             public Observable<Map<String, Position>> positions(LayoutPeriod period) {
                 Map<String, Position> positions = new HashMap<>();
-                JsPropertyMap<JsPropertyMap<Position>> mock = Js.cast(Js.asPropertyMap(DomGlobal.window).get("__mock_positions"));
-                if (mock != null) {
-                    String key = period.effectDateTime() + ":" + period.expireDateTime();
-                    JsPropertyMap<Position> map = mock.get(key);
-                    if (map != null) map.forEach(k -> positions.put(k, map.get(k)));
+                JsPropertyMap<Object> window = Js.asPropertyMap(DomGlobal.window);
+                if (window.has("__mock_positions")) {
+                    JsPropertyMap<JsPropertyMap<Position>> mock = Js.cast(window.get("__mock_positions"));
+                    if (mock != null) {
+                        String key = period.effectDateTime() + ":" + period.expireDateTime();
+                        JsPropertyMap<Position> map = mock.get(key);
+                        if (map != null) map.forEach(k -> positions.put(k, map.get(k)));
+                    }
                 }
                 return BehaviorSubject.behavior(positions).asObservable();
             }

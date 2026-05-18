@@ -49,6 +49,9 @@ public class LoadAction implements Action {
     @Override
     public void execute() {
         if (coordinator != null) coordinator.clearCache();
+        typeList.replace(java.util.Collections.emptySet());
+        positionMap.replace(java.util.Collections.emptyMap());
+        
         layoutRepository.layouts().subscribe(periods -> {
             if (periods == null || periods.isEmpty()) {
                 TypeLayout defaultPeriod = TypeLayout.create(null, null, 0, 253402214400000.0, null);

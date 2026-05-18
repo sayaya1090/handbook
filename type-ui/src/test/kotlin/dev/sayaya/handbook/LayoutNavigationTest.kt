@@ -54,9 +54,15 @@ internal class LayoutNavigationTest: GwtTestSpec({
             })()
         """.trimIndent())
 
-        When("애플리케이션이 로드되면") {
+        When("애플리케이션이 로드되고 워크스페이스 이벤트가 발생하면") {
             page.reload()
-            
+            page.evaluate("""
+                (function() {
+                    var detail = { workspaceId: 'demo' };
+                    window.dispatchEvent(new CustomEvent('handbook-workspace-context', {detail: JSON.stringify(detail), bubbles: false}));
+                })()
+            """.trimIndent())
+
             Then("가장 최신 레이아웃(l1)이 자동 선택되고 해당 타입(type-current)이 표시된다") {
                 page.waitForSelector(".type-box[data-type-key='type-current:1.0']")
                 page.locator(".type-box[data-type-key='type-past:1.0']").count() shouldBe 0
@@ -65,7 +71,8 @@ internal class LayoutNavigationTest: GwtTestSpec({
         }
 
         When("'Before' 버튼을 클릭하여 이전 기간(l0)으로 이동하면") {
-            page.click(".type-ctrl-btn-before")
+            page.click(".type-ctrl-btn-before", com.microsoft.playwright.Page.ClickOptions().setForce(true))
+
             
             Then("레이아웃 기간 라벨이 변경된다") {
                 // pastStart=1000.0, pastEnd=2000.0 -> "1970-01-01 ~ 1970-01-01"

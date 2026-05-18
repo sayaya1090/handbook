@@ -796,7 +796,7 @@ sequenceDiagram
 | UC-T22 (이벤트폭주) | — | 에이전트 연동, 상태 관리 | TypeEventHandler, WorkspaceEventReceiver | ✅ 구현 완료 (CollaborationTest) |
 | UC-T23 (벌크삭제) | — | Action 계층, 캔버스 | BulkDeleteButton, SelectedTBoxElement, DeleteTBoxAction | ✅ 구현 완료 (TypeBulkActionTest) |
 | UC-T24 (버전히스토리) | — | 캔버스, API 어댑터 | VersionHistoryPanel, TypeRepository.versions() | ❌ 테스트 미작성 (기능 구현 완료) |
-| UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest: 워크스페이스 전환 확인) |
+| UC-T25 (워크스페이스 전환) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | WindowWorkspaceEventBridge, Application, LoadAction | ✅ 구현 완료 (CollaborationTest, WorkspaceSwitchTest) |
 | UC-T26 (ID 폴백) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | Application, WorkspaceEventListener | ✅ 구현 완료 (CollaborationTest: URL에서 ID 추출 검증) |
 | UC-T27 (새 버전 생성) | 타입 새 버전 생성 시퀀스 | Action 계층, 상태 관리, API 어댑터 | SchemaEvolutionAction, LayoutProvider, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
 | UC-T28 (기간 편집) | 타입 유효기간 편집 시퀀스 | Action 계층, 상태 관리, API 어댑터 | EditTBoxDateAction, TypeInspectorPanel, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
