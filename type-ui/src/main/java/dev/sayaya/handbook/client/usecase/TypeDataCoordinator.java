@@ -45,7 +45,7 @@ public class TypeDataCoordinator {
         if (layout == null) return;
         
         // 이미 로드된 레이아웃(ID 기준)이거나, 신규 생성 중인 레이아웃(ID 없음)인 경우 스킵
-        if (layout.id() != null && loadedLayoutIds.contains(layout.id())) return;
+        if (layout.id() == null || loadedLayoutIds.contains(layout.id())) return;
 
         elemental2.dom.DomGlobal.console.log("[TypeDataCoordinator] Loading data for period: " 
                 + layout.effectDateTime() + " ~ " + layout.expireDateTime());

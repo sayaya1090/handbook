@@ -93,13 +93,16 @@ internal class VersioningTest: GwtTestSpec({
                 page.click("#version-creation-submit")
                 page.waitForSelector("#version-creation-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
                 
-                Then("새 버전의 타입이 기존 레이아웃 좌표를 상속받는다 (X, Y 동일)") {
+                Then("새 버전의 타입이 기존 레이아웃 좌표를 상속받고, 이전 버전은 화면에서 사라진다") {
                     val newBoxSelector = ".type-box[data-type-key*='2.0-final']"
                     val newBox = page.locator(newBoxSelector)
                     newBox.waitFor()
                     val afterPos = newBox.boundingBox()!!
                     abs(afterPos.x - beforePos.x) shouldBeLessThan 5.0
                     abs(afterPos.y - beforePos.y) shouldBeLessThan 5.0
+
+                    // 이전 버전은 새 레이아웃(현재 뷰)에서 보이지 않아야 함
+                    page.locator(boxSelector).count() shouldBe 0
                 }
             }
         }

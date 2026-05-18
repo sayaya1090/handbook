@@ -73,3 +73,147 @@ CREATE TABLE IF NOT EXISTS type_layouts (
 
 CREATE INDEX IF NOT EXISTS idx_type_layouts_workspace
     ON type_layouts (workspace, effect_date_time, expire_date_time);
+
+-- -----------------------------------------------------------------------------
+-- Data Integrity Triggers for Types
+-- -----------------------------------------------------------------------------
+
+-- 1. 같은 타입(ID) 내에서는 유효기간 중복이 없어야 한다
+CREATE OR REPLACE FUNCTION enforce_no_overlap_type_periods()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM types
+        WHERE workspace = NEW.workspace
+          AND id = NEW.id
+          AND version <> NEW.version -- 자기 자신(현재 버전) 제외
+          AND (NEW.effect_date_time, NEW.expire_date_time) OVERLAPS (effect_date_time, expire_date_time)
+    ) THEN
+        RAISE EXCEPTION 'Overlapping periods are not allowed for type id: %, version: %, effect: %, expire: %',
+            NEW.id, NEW.version, NEW.effect_date_time, NEW.expire_date_time;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS enforce_no_overlap_type_periods_trigger ON types;
+CREATE CONSTRAINT TRIGGER enforce_no_overlap_type_periods_trigger
+    AFTER INSERT OR UPDATE ON types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+EXECUTE FUNCTION enforce_no_overlap_type_periods();
+
+-- 2. 부모 타입의 존속성을 확인하고, 해당 기간 동안 gap 없이 NEW를 커버하는지 검사
+CREATE OR REPLACE FUNCTION enforce_parent_type_consistency()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF (NEW.parent IS NOT NULL) THEN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM types
+            WHERE workspace = NEW.workspace
+              AND id = NEW.parent
+              AND (effect_date_time, expire_date_time) OVERLAPS (NEW.effect_date_time, NEW.expire_date_time)
+        ) THEN
+            RAISE EXCEPTION 'Parent type (id=%) does not exist during the effective period.', NEW.parent;
+        END IF;
+
+        IF EXISTS (
+            SELECT 1
+            FROM (
+                     SELECT
+                         MIN(effect_date_time) AS combined_start,
+                         MAX(expire_date_time) AS combined_end,
+                         SUM(CASE WHEN previous_expire_date_time IS NOT NULL AND previous_expire_date_time <> effect_date_time THEN 1 ELSE 0 END) AS gaps
+                     FROM (
+                              SELECT
+                                  effect_date_time,
+                                  expire_date_time,
+                                  LAG(expire_date_time) OVER (ORDER BY effect_date_time) AS previous_expire_date_time
+                              FROM types
+                              WHERE workspace = NEW.workspace
+                                AND id = NEW.parent
+                                AND (effect_date_time, expire_date_time) OVERLAPS (NEW.effect_date_time, NEW.expire_date_time)
+                          ) parent_subquery
+                 ) merged_period
+            WHERE gaps > 0
+               OR combined_start > NEW.effect_date_time
+               OR combined_end < NEW.expire_date_time
+        ) THEN
+            RAISE EXCEPTION 'Parent type (id=%) is missing, has gaps, or does not fully cover the period [%, %]',
+                NEW.parent, NEW.effect_date_time, NEW.expire_date_time;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS enforce_parent_type_consistency_trigger ON types;
+CREATE CONSTRAINT TRIGGER enforce_parent_type_consistency_trigger
+    AFTER INSERT OR UPDATE ON types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+EXECUTE FUNCTION enforce_parent_type_consistency();
+
+-- 3. 타입 삭제 시, 상속한 자식 타입 부재 확인
+CREATE OR REPLACE FUNCTION prevent_deletion_if_children_exist()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM types AS child
+        WHERE child.workspace = OLD.workspace
+          AND child.parent = OLD.id
+          AND (child.effect_date_time, child.expire_date_time) OVERLAPS (OLD.effect_date_time, OLD.expire_date_time)
+    ) THEN
+        RAISE EXCEPTION 'Cannot delete parent type (id=%, version=%) as it still has associated children during the period [% → %].',
+            OLD.id, OLD.version, OLD.effect_date_time, OLD.expire_date_time;
+    END IF;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS prevent_deletion_if_children_exist_trigger ON types;
+CREATE CONSTRAINT TRIGGER prevent_deletion_if_children_exist_trigger
+    AFTER DELETE ON types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_deletion_if_children_exist();
+
+-- 4. 부모 타입 유효기간 축소 방지 (자식 타입이 존재하는 기간을 벗어나는 수정 차단)
+CREATE OR REPLACE FUNCTION prevent_invalid_parent_period_update()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        IF (NEW.effect_date_time <> OLD.effect_date_time OR NEW.expire_date_time <> OLD.expire_date_time) THEN
+            IF EXISTS (
+                SELECT 1
+                FROM types AS child
+                WHERE child.workspace = OLD.workspace
+                  AND child.parent = OLD.id
+                  AND (child.effect_date_time, child.expire_date_time) OVERLAPS (OLD.effect_date_time, OLD.expire_date_time)
+                  AND (
+                    GREATEST(child.effect_date_time, OLD.effect_date_time) < NEW.effect_date_time
+                        OR LEAST(child.expire_date_time, OLD.expire_date_time) > NEW.expire_date_time
+                    )
+            ) THEN
+                RAISE EXCEPTION 'Cannot modify parent type (id=%) as the new effective period [% → %] does not cover the overlapping periods with children.',
+                    NEW.id, NEW.effect_date_time, NEW.expire_date_time;
+            END IF;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS prevent_invalid_parent_period_update_trigger ON types;
+CREATE CONSTRAINT TRIGGER prevent_invalid_parent_period_update_trigger
+    AFTER UPDATE ON types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_invalid_parent_period_update();

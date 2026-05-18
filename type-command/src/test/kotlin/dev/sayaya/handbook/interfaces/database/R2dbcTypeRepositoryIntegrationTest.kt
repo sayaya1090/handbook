@@ -91,6 +91,21 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
                 PRIMARY KEY (id)
             )
         """).then().block()
+        client.sql("""
+            CREATE OR REPLACE FUNCTION enforce_no_overlap_type_periods() RETURNS TRIGGER AS $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM types
+                    WHERE workspace = NEW.workspace AND id = NEW.id AND version <> NEW.version
+                      AND (NEW.effect_date_time, NEW.expire_date_time) OVERLAPS (effect_date_time, expire_date_time)
+                ) THEN
+                    RAISE EXCEPTION 'Overlapping periods are not allowed for type id: %, version: %, effect: %, expire: %', NEW.id, NEW.version, NEW.effect_date_time, NEW.expire_date_time;
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            CREATE CONSTRAINT TRIGGER enforce_no_overlap_type_periods_trigger AFTER INSERT OR UPDATE ON types DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION enforce_no_overlap_type_periods();
+        """).then().block()
     }
 
     afterSpec { postgres.stop() }

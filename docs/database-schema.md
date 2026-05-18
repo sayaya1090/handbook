@@ -154,6 +154,14 @@ erDiagram
 | positions | JSONB | 타입별 캔버스 좌표 `{"customer:1.0":{"x":100,"y":200,"width":200,"height":150}}` |
 | effect/expire_date_time | Instant | 레이아웃 유효 기간 |
 
+### 데이터 무결성 제약 조건 (Data Integrity Triggers)
+PostgreSQL 트리거를 통해 애플리케이션 외부의 조작이나 동시성 이슈에서도 타입 데이터의 정합성을 강력하게 보호한다.
+
+1. **`enforce_no_overlap_type_periods`**: 동일한 타입(`id`) 내에서 서로 다른 버전 간에 유효기간(`effect_date_time`, `expire_date_time`)이 중복(Overlap)되지 않도록 차단한다.
+2. **`enforce_parent_type_consistency`**: 부모 타입(`parent`)이 설정된 경우, 부모 타입이 자식 타입의 유효기간 동안 존재하며 중간에 공백(gap) 없이 유효기간을 완전히 커버하는지 검증한다.
+3. **`prevent_deletion_if_children_exist`**: 부모 타입을 삭제할 때, 해당 유효기간 내에 상속받은 자식 타입이 존재하면 삭제를 방지한다.
+4. **`prevent_invalid_parent_period_update`**: 부모 타입의 유효기간을 축소(수정)할 때, 이미 해당 기간에 의존하고 있는 자식 타입이 있다면 수정을 차단한다.
+
 ### webhooks
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
