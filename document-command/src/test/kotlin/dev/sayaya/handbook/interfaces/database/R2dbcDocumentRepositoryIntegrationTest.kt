@@ -73,6 +73,21 @@ class R2dbcDocumentRepositoryIntegrationTest : BehaviorSpec({
                 PRIMARY KEY (id)
             )
         """).then().block()
+        client.sql("""
+            CREATE OR REPLACE FUNCTION enforce_no_overlap_document_periods() RETURNS TRIGGER AS $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM documents
+                    WHERE workspace = NEW.workspace AND type = NEW.type AND serial = NEW.serial AND id <> NEW.id
+                      AND (NEW.effect_date_time, NEW.expire_date_time) OVERLAPS (effect_date_time, expire_date_time)
+                ) THEN
+                    RAISE EXCEPTION 'Overlapping periods are not allowed for document type: %, serial: %, effect: %, expire: %', NEW.type, NEW.serial, NEW.effect_date_time, NEW.expire_date_time;
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            CREATE CONSTRAINT TRIGGER enforce_no_overlap_document_periods_trigger AFTER INSERT OR UPDATE ON documents DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION enforce_no_overlap_document_periods();
+        """).then().block()
     }
 
     afterSpec { postgres.stop() }
