@@ -42,6 +42,10 @@ public class EditTBoxDateAction implements Action {
         typeList.update(after, before);
     }
 
+    public Type getAfter() {
+        return after;
+    }
+
     private boolean isSameDates(Type b, Type a) {
         if (b == a) return true;
         if (b == null || a == null) return false;

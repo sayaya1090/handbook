@@ -44,4 +44,6 @@ public interface TestComponent {
     dev.sayaya.handbook.client.interfaces.controller.inspector.TypeInspectorPanel typeInspectorPanel();
     dev.sayaya.handbook.client.interfaces.controller.inspector.TypeBottomSheet typeBottomSheet();
     dev.sayaya.handbook.client.interfaces.controller.toolbar.TypeFloatingToolbar typeFloatingToolbar();
+    dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog conflictResolutionDialog();
+    dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityAnalysisService();
 }

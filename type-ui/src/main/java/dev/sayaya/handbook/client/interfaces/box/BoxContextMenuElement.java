@@ -112,7 +112,7 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
         if (type == null) return;
         int nextOrder = (type.attributes() != null ? type.attributes().length : 0) + 1;
         Attribute newAttr = Attribute.create(null, "attr-" + nextOrder, nextOrder, AttributeType.text());
-        editorDialog.show(newAttr, applied -> {
+        editorDialog.show(type, newAttr, applied -> {
             Type before = type;
             Attribute[] oldAttrs = before.attributes() != null ? before.attributes() : new Attribute[0];
             Attribute[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);

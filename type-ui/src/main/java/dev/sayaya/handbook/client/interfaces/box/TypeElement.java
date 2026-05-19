@@ -228,7 +228,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
     // ── 속성 편집 ──
     private void editAttribute(Attribute attr) {
-        editorDialog.show(attr, applied -> {
+        editorDialog.show(type, attr, applied -> {
             Type before = type;
             Attribute[] oldAttrs = before.attributes();
             Attribute[] newAttrs = new Attribute[oldAttrs.length];

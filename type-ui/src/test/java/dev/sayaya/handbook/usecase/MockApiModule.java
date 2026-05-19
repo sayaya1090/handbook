@@ -32,6 +32,12 @@ public class MockApiModule {
         };
     }
 
+    private String periodKey(LayoutPeriod period) {
+        String key = (long) Math.floor(period.effectDateTime()) + ":" + (long) Math.floor(period.expireDateTime());
+        return key;
+    }
+
+
     @Provides
     public TypeRepository typeRepository() {
         return new TypeRepository() {
@@ -42,7 +48,7 @@ public class MockApiModule {
                 if (window.has("__mock_types")) {
                     JsPropertyMap<Type[]> mock = Js.cast(window.get("__mock_types"));
                     if (mock != null) {
-                        String key = period.effectDateTime() + ":" + period.expireDateTime();
+                        String key = periodKey(period);
                         Type[] arr = mock.get(key);
                         if (arr != null) Collections.addAll(types, arr);
                     }
@@ -77,7 +83,7 @@ public class MockApiModule {
                 if (window.has("__mock_positions")) {
                     JsPropertyMap<JsPropertyMap<Position>> mock = Js.cast(window.get("__mock_positions"));
                     if (mock != null) {
-                        String key = period.effectDateTime() + ":" + period.expireDateTime();
+                        String key = periodKey(period);
                         JsPropertyMap<Position> map = mock.get(key);
                         if (map != null) map.forEach(k -> positions.put(k, map.get(k)));
                     }

@@ -18,12 +18,26 @@ public class TestApplication implements EntryPoint {
         // 동적 도구 관리자 초기화
         component.typeToolManager().init();
         component.typeDataCoordinator().init();
+        
+        // UC-T11/T12: 에이전트 mutation 핸들러 초기화 (생성자에서 구독 등록)
+        component.agentMutationHandler();
+        component.periodRecalculationService(); // Eager instantiation for reactive subscriptions
+        org.jboss.elemento.Elements.body().add(component.toastContainer());
 
         var container = div().css("type-container")
                 .add(component.statusHeader())
                 .add(component.controller())
                 .add(div().css("type-canvas-wrapper")
-                        .add(component.canvas()));
+                        .add(component.typeInspectorPanel())
+                        .add(component.typeFloatingToolbar())
+                        .add(component.typeBottomSheet())
+                        .add(component.canvas()))
+                .add(component.attributeEditor())
+                .add(component.dateCorrectionDialog())
+                .add(component.versionCreationDialog())
+                .add(component.conflictResolutionDialog())
+                .add(component.actionDial())
+                .add(component.settingsDial());
 
         body().add(container);
 

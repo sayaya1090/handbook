@@ -63,6 +63,7 @@ public class TestApplication implements EntryPoint {
                 .add(component.attributeEditor())
                 .add(component.dateCorrectionDialog())
                 .add(component.versionCreationDialog())
+                .add(component.conflictResolutionDialog())
                 .add(component.actionDial())
                 .add(component.settingsDial()));
     }

@@ -31,4 +31,17 @@ public interface TestComponent {
     dev.sayaya.handbook.client.interfaces.api.TypeRepository typeRepository();
     dev.sayaya.handbook.client.interfaces.api.LayoutRepository layoutRepository();
     dev.sayaya.handbook.client.usecase.TypeToolManager typeToolManager();
+    dev.sayaya.handbook.client.interfaces.controller.inspector.TypeInspectorPanel typeInspectorPanel();
+    dev.sayaya.handbook.client.interfaces.controller.inspector.TypeBottomSheet typeBottomSheet();
+    dev.sayaya.handbook.client.interfaces.controller.toolbar.TypeFloatingToolbar typeFloatingToolbar();
+    dev.sayaya.handbook.client.interfaces.editor.AttributeEditorDialog attributeEditor();
+    dev.sayaya.handbook.client.interfaces.editor.DateCorrectionDialog dateCorrectionDialog();
+    dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog();
+    dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog conflictResolutionDialog();
+    dev.sayaya.handbook.client.interfaces.controller.ActionDialElement actionDial();
+    dev.sayaya.handbook.client.interfaces.controller.SettingsDialElement settingsDial();
+    dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityAnalysisService();
+    dev.sayaya.handbook.client.usecase.AgentMutationHandler agentMutationHandler();
+    dev.sayaya.handbook.client.usecase.PeriodRecalculationService periodRecalculationService();
+    dev.sayaya.handbook.client.components.ToastContainer toastContainer();
 }
