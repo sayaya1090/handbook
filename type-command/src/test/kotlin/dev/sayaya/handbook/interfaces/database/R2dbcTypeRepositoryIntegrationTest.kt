@@ -105,10 +105,143 @@ class R2dbcTypeRepositoryIntegrationTest : BehaviorSpec({
             END;
             $$ LANGUAGE plpgsql;
             CREATE CONSTRAINT TRIGGER enforce_no_overlap_type_periods_trigger AFTER INSERT OR UPDATE ON types DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION enforce_no_overlap_type_periods();
+
+            CREATE OR REPLACE FUNCTION enforce_parent_type_consistency() RETURNS TRIGGER AS $$
+            BEGIN
+                IF (NEW.parent IS NOT NULL AND NEW.parent <> '') THEN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM types WHERE workspace = NEW.workspace AND id = NEW.parent
+                          AND (effect_date_time, expire_date_time) OVERLAPS (NEW.effect_date_time, NEW.expire_date_time)
+                    ) THEN
+                        RAISE EXCEPTION 'Parent type (id=%) does not exist during the effective period.', NEW.parent;
+                    END IF;
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            CREATE CONSTRAINT TRIGGER enforce_parent_type_consistency_trigger AFTER INSERT OR UPDATE ON types DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION enforce_parent_type_consistency();
+
+            CREATE OR REPLACE FUNCTION enforce_attribute_reference_consistency() RETURNS TRIGGER AS $$
+            DECLARE
+                owner_effect TIMESTAMPTZ;
+                owner_expire TIMESTAMPTZ;
+                ref_type_id  VARCHAR(255);
+            BEGIN
+                ref_type_id := NEW.attribute_type ->> 'referenced_type';
+                IF (ref_type_id IS NULL) THEN RETURN NEW; END IF;
+                
+                SELECT effect_date_time, expire_date_time INTO owner_effect, owner_expire FROM types
+                WHERE workspace = NEW.workspace AND id = NEW.type_id AND version = NEW.type_version;
+                
+                IF owner_effect IS NULL THEN
+                    RAISE EXCEPTION 'Owner type (id=%, version=%) not found in types table.', NEW.type_id, NEW.type_version;
+                END IF;
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM types WHERE workspace = NEW.workspace AND id = ref_type_id
+                      AND (effect_date_time, expire_date_time) OVERLAPS (owner_effect, owner_expire)
+                ) THEN
+                    RAISE EXCEPTION 'Referenced type (id=%) does not exist during the owner type period.', ref_type_id;
+                END IF;
+                
+                IF EXISTS (
+                    SELECT 1 FROM (
+                             SELECT MIN(effect_date_time) AS combined_start, MAX(expire_date_time) AS combined_end,
+                                 SUM(CASE WHEN previous_expire_date_time IS NOT NULL AND previous_expire_date_time <> effect_date_time THEN 1 ELSE 0 END) AS gaps
+                             FROM (
+                                      SELECT effect_date_time, expire_date_time, LAG(expire_date_time) OVER (ORDER BY effect_date_time) AS previous_expire_date_time
+                                      FROM types WHERE workspace = NEW.workspace AND id = ref_type_id
+                                        AND (effect_date_time, expire_date_time) OVERLAPS (owner_effect, owner_expire)
+                                  ) sub
+                         ) merged
+                    WHERE gaps > 0 OR combined_start > owner_effect OR combined_end < owner_expire
+                ) THEN
+                    RAISE EXCEPTION 'Referenced type (id=%) has gaps or does not fully cover the owner type period [%, %]', ref_type_id, owner_effect, owner_expire;
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            CREATE CONSTRAINT TRIGGER enforce_attribute_reference_consistency_trigger AFTER INSERT OR UPDATE ON type_attributes FOR EACH ROW EXECUTE FUNCTION enforce_attribute_reference_consistency();
+
+            CREATE OR REPLACE FUNCTION prevent_invalid_type_period_update_for_refs() RETURNS TRIGGER AS $$
+            BEGIN
+                IF (NEW.effect_date_time <> OLD.effect_date_time OR NEW.expire_date_time <> OLD.expire_date_time) THEN
+                    IF EXISTS (
+                        SELECT 1 FROM type_attributes attr WHERE attr.workspace = NEW.workspace AND attr.type_id = NEW.id AND attr.type_version = NEW.version
+                          AND attr.attribute_type ->> 'referenced_type' IS NOT NULL
+                          AND (
+                            SELECT COUNT(*) > 0 FROM (
+                                 SELECT MIN(effect_date_time) AS combined_start, MAX(expire_date_time) AS combined_end,
+                                     SUM(CASE WHEN previous_expire_date_time IS NOT NULL AND previous_expire_date_time <> effect_date_time THEN 1 ELSE 0 END) AS gaps
+                                 FROM (
+                                          SELECT effect_date_time, expire_date_time, LAG(expire_date_time) OVER (ORDER BY effect_date_time) AS previous_expire_date_time
+                                          FROM types WHERE workspace = NEW.workspace AND id = attr.attribute_type ->> 'referenced_type'
+                                            AND (effect_date_time, expire_date_time) OVERLAPS (NEW.effect_date_time, NEW.expire_date_time)
+                                      ) sub
+                            ) merged
+                            WHERE gaps > 0 OR combined_start > NEW.effect_date_time OR combined_end < NEW.expire_date_time
+                          )
+                    ) THEN
+                        RAISE EXCEPTION 'Cannot modify type period as its attribute references would have gaps or lack coverage.';
+                    END IF;
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            CREATE CONSTRAINT TRIGGER prevent_invalid_type_period_update_for_refs_trigger AFTER UPDATE ON types FOR EACH ROW EXECUTE FUNCTION prevent_invalid_type_period_update_for_refs();
         """).then().block()
     }
 
     afterSpec { postgres.stop() }
+
+    Given("참조 무결성 위반 테스트") {
+        val ws = UUID.randomUUID()
+        val typeB = Type.create(
+            "typeB", "1.0",
+            Instant.parse("2026-05-25T00:00:00Z").toEpochMilli().toDouble(),
+            253402214400000.0
+        ).description("5/25일부터 유효한 타입").primitive(false)
+
+        val typeA = Type.create(
+            "typeA", "1.0",
+            Instant.parse("2026-05-25T00:00:00Z").toEpochMilli().toDouble(),
+            253402214400000.0
+        ).description("5/25일부터 유효한 타입").primitive(false).attributes(
+            arrayOf(
+                Attribute.create(UUID.randomUUID().toString(), "ref", 0, AttributeType.document("typeB"))
+            )
+        )
+
+        When("유효한 참조 상태에서 소유자 타입 A의 기간을 과거로 확장하면 (B가 존재하지 않는 기간까지)") {
+            Then("데이터베이스 트리거에 의해 수정이 거부된다") {
+                val saved = adapter.save(ws, listOf(typeB, typeA)).collectList().block()!!
+                val savedA = saved.find { it.id() == "typeA" }!!
+                val expandedA = savedA.withAttributes(savedA.attributes()).effectDateTime(0.0)
+                
+                StepVerifier.create(adapter.save(ws, listOf(expandedA)))
+                    .expectErrorMatches { it.message!!.contains("Cannot modify type period as its attribute references would have gaps or lack coverage") }
+                    .verify()
+            }
+        }
+
+        When("전 기간 유효한 A가 일부 기간만 유효한 B를 참조하여 저장하면") {
+            Then("데이터베이스 트리거에 의해 예외가 발생한다") {
+                val typeA_invalid = Type.create(
+                    "typeA_invalid", "1.0",
+                    0.0,
+                    253402214400000.0
+                ).description("전 기간 유효한 타입").primitive(false).attributes(
+                    arrayOf(
+                        Attribute.create(UUID.randomUUID().toString(), "ref", 0, AttributeType.document("typeB"))
+                    )
+                )
+                // typeB는 이미 저장됨 (위 When에서)
+                StepVerifier.create(adapter.save(ws, listOf(typeA_invalid)))
+                    .expectErrorMatches { it.message!!.contains("Referenced type (id=typeB) has gaps or does not fully cover the owner type period") }
+                    .verify()
+            }
+        }
+    }
 
     Given("타입 저장") {
         val type = Type.create(

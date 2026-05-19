@@ -162,6 +162,8 @@ PostgreSQL 트리거를 통해 애플리케이션 외부의 조작이나 동시�
 2. **`enforce_parent_type_consistency`**: 부모 타입(`parent`)이 설정된 경우, 부모 타입이 자식 타입의 유효기간 동안 존재하며 중간에 공백(gap) 없이 유효기간을 완전히 커버하는지 검증한다.
 3. **`prevent_deletion_if_children_exist`**: 부모 타입을 삭제할 때, 해당 유효기간 내에 상속받은 자식 타입이 존재하면 삭제를 방지한다.
 4. **`prevent_invalid_parent_period_update`**: 부모 타입의 유효기간을 축소(수정)할 때, 이미 해당 기간에 의존하고 있는 자식 타입이 있다면 수정을 차단한다.
+5. **`enforce_attribute_reference_consistency`**: 특정 타입이 속성(Attribute)을 통해 다른 타입을 참조할 때, 참조 대상 타입이 참조하는 타입의 전체 유효기간 동안 공백 없이 존재하는지 검증한다.
+6. **`prevent_invalid_type_period_update_for_refs`**: 타입의 유효기간을 확장하거나 수정할 때, 해당 타입의 속성들이 참조하는 다른 타입들이 새로운 기간을 여전히 완전히 커버하는지 재검증한다.
 
 #### Documents 테이블 관련
 1. **`enforce_no_overlap_document_periods`**: 동일한 워크스페이스, 타입, 시리얼(`workspace`, `type`, `serial`)을 가진 문서들 간에 유효기간이 중복되지 않도록 차단한다. 이를 통해 특정 시점에 하나의 문서 실체는 단 하나의 버전만 유효함을 보장한다.

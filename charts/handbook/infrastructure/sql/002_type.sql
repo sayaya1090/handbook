@@ -110,7 +110,7 @@ CREATE OR REPLACE FUNCTION enforce_parent_type_consistency()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    IF (NEW.parent IS NOT NULL) THEN
+    IF (NEW.parent IS NOT NULL AND NEW.parent <> '') THEN
         IF NOT EXISTS (
             SELECT 1
             FROM types
@@ -217,3 +217,125 @@ CREATE CONSTRAINT TRIGGER prevent_invalid_parent_period_update_trigger
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
 EXECUTE FUNCTION prevent_invalid_parent_period_update();
+
+-- 5. 속성 참조 일관성 검사 (타입 A가 B를 참조할 때, A의 기간은 B의 존재 기간 내에 포함되어야 함)
+CREATE OR REPLACE FUNCTION enforce_attribute_reference_consistency()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    owner_effect TIMESTAMPTZ;
+    owner_expire TIMESTAMPTZ;
+    ref_type_id  VARCHAR(255);
+BEGIN
+    -- 1. 참조 대상 추출
+    ref_type_id := NEW.attribute_type ->> 'referenced_type';
+    IF (ref_type_id IS NULL) THEN
+        RETURN NEW;
+    END IF;
+
+    -- 2. 소유자 타입의 유효기간 조회
+    SELECT effect_date_time, expire_date_time 
+    INTO owner_effect, owner_expire
+    FROM types
+    WHERE workspace = NEW.workspace AND id = NEW.type_id AND version = NEW.type_version;
+
+    -- 3. 참조 대상 타입의 존속성 및 커버리지 확인
+    IF NOT EXISTS (
+        SELECT 1
+        FROM types
+        WHERE workspace = NEW.workspace
+          AND id = ref_type_id
+          AND (effect_date_time, expire_date_time) OVERLAPS (owner_effect, owner_expire)
+    ) THEN
+        RAISE EXCEPTION 'Referenced type (id=%) does not exist during the owner type period.', ref_type_id;
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM (
+                 SELECT
+                     MIN(effect_date_time) AS combined_start,
+                     MAX(expire_date_time) AS combined_end,
+                     SUM(CASE WHEN previous_expire_date_time IS NOT NULL AND previous_expire_date_time <> effect_date_time THEN 1 ELSE 0 END) AS gaps
+                 FROM (
+                          SELECT
+                              effect_date_time,
+                              expire_date_time,
+                              LAG(expire_date_time) OVER (ORDER BY effect_date_time) AS previous_expire_date_time
+                          FROM types
+                          WHERE workspace = NEW.workspace
+                            AND id = ref_type_id
+                            AND (effect_date_time, expire_date_time) OVERLAPS (owner_effect, owner_expire)
+                      ) sub
+             ) merged
+        WHERE gaps > 0
+           OR combined_start > owner_effect
+           OR combined_end < owner_expire
+    ) THEN
+        RAISE EXCEPTION 'Referenced type (id=%) has gaps or does not fully cover the owner type period [%, %]',
+            ref_type_id, owner_effect, owner_expire;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS enforce_attribute_reference_consistency_trigger ON type_attributes;
+CREATE CONSTRAINT TRIGGER enforce_attribute_reference_consistency_trigger
+    AFTER INSERT OR UPDATE ON type_attributes
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+EXECUTE FUNCTION enforce_attribute_reference_consistency();
+
+-- 6. 타입 유효기간 수정 시 속성 참조 일관성 재검증
+CREATE OR REPLACE FUNCTION prevent_invalid_type_period_update_for_refs()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        -- 유효기간이 변경된 경우, 해당 타입의 모든 속성들이 참조하는 타입의 존재 여부 재검사
+        IF (NEW.effect_date_time <> OLD.effect_date_time OR NEW.expire_date_time <> OLD.expire_date_time) THEN
+            IF EXISTS (
+                SELECT 1
+                FROM type_attributes attr
+                WHERE attr.workspace = NEW.workspace
+                  AND attr.type_id = NEW.id
+                  AND attr.type_version = NEW.version
+                  AND attr.attribute_type ->> 'referenced_type' IS NOT NULL
+                  AND (
+                    SELECT COUNT(*) > 0
+                    FROM (
+                         SELECT
+                             MIN(effect_date_time) AS combined_start,
+                             MAX(expire_date_time) AS combined_end,
+                             SUM(CASE WHEN previous_expire_date_time IS NOT NULL AND previous_expire_date_time <> effect_date_time THEN 1 ELSE 0 END) AS gaps
+                         FROM (
+                                  SELECT
+                                      effect_date_time,
+                                      expire_date_time,
+                                      LAG(expire_date_time) OVER (ORDER BY effect_date_time) AS previous_expire_date_time
+                                  FROM types
+                                  WHERE workspace = NEW.workspace
+                                    AND id = attr.attribute_type ->> 'referenced_type'
+                                    AND (effect_date_time, expire_date_time) OVERLAPS (NEW.effect_date_time, NEW.expire_date_time)
+                              ) sub
+                    ) merged
+                    WHERE gaps > 0
+                       OR combined_start > NEW.effect_date_time
+                       OR combined_end < NEW.expire_date_time
+                  )
+            ) THEN
+                RAISE EXCEPTION 'Cannot modify type period as its attribute references would have gaps or lack coverage.';
+            END IF;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS prevent_invalid_type_period_update_for_refs_trigger ON types;
+CREATE CONSTRAINT TRIGGER prevent_invalid_type_period_update_for_refs_trigger
+    AFTER UPDATE ON types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_invalid_type_period_update_for_refs();
