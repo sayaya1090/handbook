@@ -90,16 +90,33 @@ public class IntegrityAnalysisService {
 
     /** 돌연변이(유효기간, 속성 변경 등) 시점에 정방향/역방향 정합성을 미리 교차 검증한다. */
     public List<AnalysisResult> analyzeForMutation(Type mutatedType) {
-        // 기존 캔버스 상태에서 mutatedType을 대체한 가상 컨텍스트 생성
+        return analyzeForMutation(mutatedType, mutatedType);
+    }
+
+    public List<AnalysisResult> analyzeForMutation(Type mutatedType, Type originalType) {
+        // 1. 역방향 참조 검사 (ID 변경 시 참조 단절 감지)
+        List<AnalysisResult> conflicts = new ArrayList<>();
+        if (!mutatedType.id().equals(originalType.id())) {
+            for (Type other : typeList.getValue()) {
+                if (other.attributes() == null) continue;
+                java.util.Set<String> refs = new java.util.HashSet<>();
+                for (dev.sayaya.handbook.domain.Attribute attr : other.attributes()) {
+                    extractReferences(attr.type(), refs);
+                }
+                if (refs.contains(originalType.id())) {
+                    // ID 변경으로 인한 참조 깨짐 충돌
+                    conflicts.add(new AnalysisResult(false, originalType.id(), -1, -1, new ArrayList<>()));
+                }
+            }
+        }
+
+        // 2. 정방향/역방향 정합성 검사 (기간 중심)
         List<Type> virtualContext = new ArrayList<>();
         for (Type t : typeList.getValue()) {
             if (!t.key().equals(mutatedType.key())) virtualContext.add(t);
         }
         virtualContext.add(mutatedType);
 
-        List<AnalysisResult> conflicts = new ArrayList<>();
-
-        // 1. 정방향 (mutatedType가 참조하는 대상들이 여전히 유효한가?)
         if (mutatedType.attributes() != null) {
             java.util.Set<String> refs = new java.util.HashSet<>();
             for (dev.sayaya.handbook.domain.Attribute attr : mutatedType.attributes()) {
@@ -111,7 +128,6 @@ public class IntegrityAnalysisService {
             }
         }
 
-        // 2. 역방향 (캔버스의 다른 타입들이 mutatedType을 참조하고 있을 때, 그 참조가 깨지지 않았는가?)
         for (Type other : virtualContext) {
             if (other.key().equals(mutatedType.key()) || other.attributes() == null) continue;
             
@@ -124,7 +140,6 @@ public class IntegrityAnalysisService {
                 if (!res.valid()) conflicts.add(res);
             }
         }
-
         return conflicts;
     }
 
