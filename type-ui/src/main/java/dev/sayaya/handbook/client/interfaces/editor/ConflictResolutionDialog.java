@@ -37,14 +37,13 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
         });
 
         _this.attr("id", "conflict-resolution-dialog")
-                .headline("Integrity Conflict Detected")
                 .content(div().add(p().css("conflict-message").id("conflict-message-text"))
                         .add(proposalContainer))
                 .actions(div().add(cancelButton));
 
         labelProvider.subscribe(labels -> {
             currentLabels = labels;
-            _this.headline(labels.getOrDefault("type.conflict.headline", "Integrity Conflict Detected"));
+            // 헤드라인 제거 대신 빈 값 설정 후 팝업 내부의 타이틀로 제어
             cancelButton.element().textContent = labels.getOrDefault("type.conflict.cancel", "Cancel");
         });
     }
@@ -54,13 +53,16 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
         this.onSelect = onSelect;
         this.onCancel = onCancel;
 
+        // 다이얼로그 타이틀을 내부에서 직접 렌더링하도록 수정
+        String headline = currentLabels.getOrDefault("type.conflict.headline", "Integrity Conflict Detected");
         String message = currentLabels.getOrDefault("type.conflict.message", "The referenced type '{id}' is only available from {start} to {end}.")
                 .replace("{id}", result.refId())
                 .replace("{start}", result.coverageStart() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(result.coverageStart()))
                 .replace("{end}", result.coverageEnd() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(result.coverageEnd()));
 
-        _this.element().querySelector("#conflict-message-text").textContent = message;
         proposalContainer.innerHTML = "";
+        proposalContainer.appendChild(org.jboss.elemento.Elements.h(3, headline).css("conflict-headline").element());
+        proposalContainer.appendChild(p().css("conflict-message").text(message).element());
         
         for (ResolutionProposal p : result.proposals()) {
             String titleKey = p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.ADJUST_OWNER 
