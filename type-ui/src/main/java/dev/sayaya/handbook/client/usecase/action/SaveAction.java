@@ -84,29 +84,32 @@ public class SaveAction implements Action {
             }
         }
         
-        // 2. 변경된 타입 처리 및 무결성 검증
+        // 2. 저장 전 전역 참조 정합성 교차 검증 (역방향 참조 위반 방지)
         for (Type type : typeList.getValue()) {
-            if (changedKeys.contains(type.key())) {
-                // 저장 전 모든 속성에 대한 참조 정합성 교차 검증
-                if (type.attributes() != null) {
-                    Set<String> refs = new java.util.HashSet<>();
-                    for (Attribute attr : type.attributes()) {
-                        extractReferences(attr.type(), refs);
-                    }
-                    for (String refId : refs) {
-                        IntegrityAnalysisService.AnalysisResult res = integrityAnalysisService.analyze(type, refId);
-                        if (!res.valid()) {
-                            if (toastContainer != null) {
-                                String msg = labels.getOrDefault("type.conflict.message", "The referenced type '{id}' is only available from {start} to {end}.")
-                                        .replace("{id}", res.refId())
-                                        .replace("{start}", res.coverageStart() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(res.coverageStart()))
-                                        .replace("{end}", res.coverageEnd() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(res.coverageEnd()));
-                                toastContainer.show(ToastLevel.ERROR, labels.getOrDefault("toast.save.error.integrity", "Integrity check failed") + ": " + msg);
-                            }
-                            return; // 저장 중단
+            if (type.attributes() != null) {
+                Set<String> refs = new java.util.HashSet<>();
+                for (Attribute attr : type.attributes()) {
+                    extractReferences(attr.type(), refs);
+                }
+                for (String refId : refs) {
+                    IntegrityAnalysisService.AnalysisResult res = integrityAnalysisService.analyze(type, refId);
+                    if (!res.valid()) {
+                        if (toastContainer != null) {
+                            String msg = labels.getOrDefault("type.conflict.message", "The referenced type '{id}' is only available from {start} to {end}.")
+                                    .replace("{id}", res.refId())
+                                    .replace("{start}", res.coverageStart() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(res.coverageStart()))
+                                    .replace("{end}", res.coverageEnd() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(res.coverageEnd()));
+                            toastContainer.show(ToastLevel.ERROR, labels.getOrDefault("toast.save.error.integrity", "Integrity check failed") + ": " + msg);
                         }
+                        return; // 저장 중단
                     }
                 }
+            }
+        }
+        
+        // 3. 변경된 타입 추출
+        for (Type type : typeList.getValue()) {
+            if (changedKeys.contains(type.key())) {
                 typeOps.add(SchemaPatch.TypeOperation.upsert(type));
             }
         }
