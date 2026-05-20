@@ -89,7 +89,8 @@ internal class ReferenceIntegrityTest: GwtTestSpec({
             }
 
             When("소유자 기간 조정(Adjust Owner Period) 제안을 수락하면") {
-                page.click("#conflict-resolution-dialog .conflict-proposal-btn:has-text('Adjust Owner Period')")
+                // 개편된 카드 UI의 Apply 버튼 클릭 (i18n 폴백 대응을 위해 'Adjust'로 완화)
+                page.click(".conflict-proposal-card:has-text('Adjust') button")
                 
                 // 다이얼로그 닫힘 대기
                 page.waitForSelector("#conflict-resolution-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))

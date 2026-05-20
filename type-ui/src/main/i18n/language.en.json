@@ -14,5 +14,13 @@
   "types": "Data Type Design",
   "type.menu.supporting": "Define data structures, properties, and relations.",
   "type_definition": "Type Definition",
-  "type_canvas": "Type Canvas"
+  "type_canvas": "Type Canvas",
+  "type.conflict.headline": "Integrity Conflict Detected",
+  "type.conflict.message": "The referenced type '{id}' is only available from {start} to {end}.",
+  "type.conflict.cancel": "Cancel",
+  "type.conflict.apply": "Apply",
+  "type.conflict.adjust_owner.title": "Adjust Owner Period",
+  "type.conflict.adjust_owner.desc": "Change '{id}' to [{start} ~ {end}] to match reference.",
+  "type.conflict.extend_ref.title": "Extend Referenced Type",
+  "type.conflict.extend_ref.desc": "Expand '{id}' to [{start} ~ {end}]."
 }

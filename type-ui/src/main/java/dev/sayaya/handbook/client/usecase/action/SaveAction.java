@@ -97,7 +97,11 @@ public class SaveAction implements Action {
                         IntegrityAnalysisService.AnalysisResult res = integrityAnalysisService.analyze(type, refId);
                         if (!res.valid()) {
                             if (toastContainer != null) {
-                                toastContainer.show(ToastLevel.ERROR, labels.getOrDefault("toast.save.error.integrity", "Integrity check failed: " + res.message()));
+                                String msg = labels.getOrDefault("type.conflict.message", "The referenced type '{id}' is only available from {start} to {end}.")
+                                        .replace("{id}", res.refId())
+                                        .replace("{start}", res.coverageStart() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(res.coverageStart()))
+                                        .replace("{end}", res.coverageEnd() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(res.coverageEnd()));
+                                toastContainer.show(ToastLevel.ERROR, labels.getOrDefault("toast.save.error.integrity", "Integrity check failed") + ": " + msg);
                             }
                             return; // 저장 중단
                         }

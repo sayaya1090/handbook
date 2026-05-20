@@ -16,9 +16,10 @@ import java.util.stream.Collectors;
 public class IntegrityAnalysisService {
     private final TypeList typeList;
 
-    public record AnalysisResult(boolean valid, String message, List<ResolutionProposal> proposals) {}
+    public record AnalysisResult(boolean valid, String refId, double coverageStart, double coverageEnd, List<ResolutionProposal> proposals) {}
 
-    public record ResolutionProposal(String title, String description, double newStart, double newEnd, boolean targetIsOwner) {}
+    public enum ProposalType { ADJUST_OWNER, EXTEND_REFERENCE }
+    public record ResolutionProposal(ProposalType type, String targetId, double newStart, double newEnd, boolean targetIsOwner) {}
 
     @Inject
     IntegrityAnalysisService(TypeList typeList) {
@@ -33,7 +34,7 @@ public class IntegrityAnalysisService {
                 .collect(Collectors.toList());
 
         if (refVersions.isEmpty()) {
-            return new AnalysisResult(false, "Referenced type '" + referencedId + "' does not exist.", new ArrayList<>());
+            return new AnalysisResult(false, referencedId, -1, -1, new ArrayList<>());
         }
 
         double coverageStart = -1;
@@ -51,7 +52,7 @@ public class IntegrityAnalysisService {
         boolean startOk = coverageStart != -1 && coverageStart <= owner.effectDateTime() + 0.1;
         boolean endOk = coverageEnd != -1 && coverageEnd >= owner.expireDateTime() - 0.1;
 
-        if (startOk && endOk) return new AnalysisResult(true, null, null);
+        if (startOk && endOk) return new AnalysisResult(true, null, 0, 0, null);
 
         // 2. 안전한 해결책(Proposals) 취합
         List<ResolutionProposal> proposals = new ArrayList<>();
@@ -62,8 +63,8 @@ public class IntegrityAnalysisService {
         
         if (isSafeToAdjustOwner(owner, recStart, recEnd)) {
             proposals.add(new ResolutionProposal(
-                "Adjust Owner Period",
-                "Change '" + owner.id() + "' to [" + DateFormatter.format(recStart) + " ~ " + DateFormatter.format(recEnd) + "] to match reference.",
+                ProposalType.ADJUST_OWNER,
+                owner.id(),
                 recStart, recEnd, true
             ));
         }
@@ -73,17 +74,14 @@ public class IntegrityAnalysisService {
             Type ref = refVersions.get(0);
             if (isSafeToExpandReference(ref, owner.effectDateTime(), owner.expireDateTime())) {
                 proposals.add(new ResolutionProposal(
-                    "Extend Referenced Type",
-                    "Expand '" + referencedId + "' to [" + DateFormatter.format(owner.effectDateTime()) + " ~ " + DateFormatter.format(owner.expireDateTime()) + "].",
+                    ProposalType.EXTEND_REFERENCE,
+                    referencedId,
                     owner.effectDateTime(), owner.expireDateTime(), false
                 ));
             }
         }
-
-        String msg = "The referenced type '" + referencedId + "' is only available from " 
-                + DateFormatter.format(coverageStart) + " ~ " + DateFormatter.format(coverageEnd) + ".";
         
-        return new AnalysisResult(false, msg, proposals);
+        return new AnalysisResult(false, referencedId, coverageStart, coverageEnd, proposals);
     }
 
     /** 소유자 타입의 기간을 변경해도 자식 타입들이 고립되지 않는지 검사 */
