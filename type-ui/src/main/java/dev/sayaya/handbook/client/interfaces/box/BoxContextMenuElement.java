@@ -55,6 +55,7 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
     private final dev.sayaya.handbook.client.usecase.PositionMap positionMap;
     private final dev.sayaya.handbook.client.usecase.LayoutProvider layoutProvider;
     private final dev.sayaya.handbook.usecase.LabelProvider labelProvider;
+    private final dev.sayaya.handbook.client.components.ToastContainer toastContainer;
     private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService;
     private final dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog;
     private String targetTypeKey;
@@ -66,6 +67,7 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
                           dev.sayaya.handbook.client.usecase.PositionMap positionMap,
                           dev.sayaya.handbook.client.usecase.LayoutProvider layoutProvider,
                           dev.sayaya.handbook.usecase.LabelProvider labelProvider,
+                          dev.sayaya.handbook.client.components.ToastContainer toastContainer,
                           dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService,
                           dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog) {
         this.actionManager = actionManager;
@@ -77,9 +79,10 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
         this.positionMap = positionMap;
         this.layoutProvider = layoutProvider;
         this.labelProvider = labelProvider;
+        this.toastContainer = toastContainer;
         this.integrityService = integrityService;
         this.resolutionDialog = resolutionDialog;
-
+        
         HTMLElement addAttrItem = menuItem("Add Attribute");
         HTMLElement versionHistoryItem = menuItem("Version history");
         HTMLElement deleteItem = menuItem("Delete");
@@ -88,10 +91,10 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
         versionHistoryItem.addEventListener("click", e -> { showVersionHistory(); hide(); });
         deleteItem.addEventListener("click", e -> { deleteTarget(); hide(); });
 
-        labelProvider.subscribe(labels -> {
-            addAttrItem.textContent = labels.getOrDefault("type.attr.add", "Add Attribute");
-            versionHistoryItem.textContent = labels.getOrDefault("type.version_history", "Version history");
-            deleteItem.textContent = labels.getOrDefault("type.remove", "Delete");
+        labelProvider.subscribe(l -> {
+            addAttrItem.textContent = l.getOrDefault("type.attr.add", "Add Attribute");
+            versionHistoryItem.textContent = l.getOrDefault("type.version_history", "Version history");
+            deleteItem.textContent = l.getOrDefault("type.remove", "Delete");
         });
 
         root = div().css("ctx-menu", "ctx-box-menu")
