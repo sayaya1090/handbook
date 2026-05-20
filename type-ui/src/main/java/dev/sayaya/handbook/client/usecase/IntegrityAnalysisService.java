@@ -166,4 +166,21 @@ public class IntegrityAnalysisService {
                 .filter(t -> t.id().equals(ref.id()) && !t.version().equals(ref.version()))
                 .noneMatch(other -> targetStart < other.expireDateTime() && targetEnd > other.effectDateTime());
     }
+
+    /** 타입 삭제 시점에 다른 타입들이 이 타입을 참조하고 있는지 검사한다. */
+    public List<AnalysisResult> analyzeForDeletion(Type typeToDelete) {
+        List<AnalysisResult> conflicts = new ArrayList<>();
+        for (Type other : typeList.getValue()) {
+            if (other.key().equals(typeToDelete.key()) || other.attributes() == null) continue;
+            
+            java.util.Set<String> refs = new java.util.HashSet<>();
+            for (dev.sayaya.handbook.domain.Attribute attr : other.attributes()) {
+                extractReferences(attr.type(), refs);
+            }
+            if (refs.contains(typeToDelete.id())) {
+                conflicts.add(new AnalysisResult(false, typeToDelete.id(), -1, -1, new ArrayList<>()));
+            }
+        }
+        return conflicts;
+    }
 }

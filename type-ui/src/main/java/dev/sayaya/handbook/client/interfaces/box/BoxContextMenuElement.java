@@ -7,6 +7,7 @@ import dev.sayaya.handbook.client.interfaces.selection.SelectedBoxElement;
 import dev.sayaya.handbook.client.usecase.TypeList;
 import dev.sayaya.handbook.client.usecase.action.DeleteBoxAction;
 import dev.sayaya.handbook.client.usecase.action.EditBoxAction;
+import dev.sayaya.handbook.client.usecase.IntegrityAnalysisService;
 import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.AttributeType;
 import dev.sayaya.handbook.domain.Type;
@@ -19,6 +20,7 @@ import org.jboss.elemento.IsElement;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.List;
 
 import static dev.sayaya.handbook.client.interfaces.ContextMenuHelper.menuItem;
 import static org.jboss.elemento.Elements.div;
@@ -138,12 +140,17 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
 
     private void deleteTarget() {
         if (targetTypeKey == null) return;
-        for (Type type : typeList.getValue()) {
-            if (type.key().equals(targetTypeKey)) {
-                actionManager.execute(new DeleteBoxAction(typeList, tracker, type));
-                break;
-            }
+        Type typeToDelete = findType();
+        if (typeToDelete == null) return;
+
+        List<IntegrityAnalysisService.AnalysisResult> conflicts = integrityService.analyzeForDeletion(typeToDelete);
+        if (!conflicts.isEmpty()) {
+            // 삭제 정합성 위반 시 사용자에게 안내
+            // 예: "이 타입은 다른 곳에서 참조되고 있어 삭제할 수 없습니다."
+            return;
         }
+
+        actionManager.execute(new DeleteBoxAction(typeList, tracker, typeToDelete));
     }
 
     private Type findType() {
