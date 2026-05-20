@@ -112,6 +112,16 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         });
     }
 
+    private void extractReferences(AttributeType attrType, java.util.Set<String> refs) {
+        if (attrType == null) return;
+        if ("document".equals(attrType.type()) && attrType.referencedType() != null) {
+            refs.add(attrType.referencedType());
+        }
+        extractReferences(attrType.elementType(), refs);
+        extractReferences(attrType.keyType(), refs);
+        extractReferences(attrType.valueType(), refs);
+    }
+
     private void apply() {
         if (current == null || onApply == null) return;
         ValidatorEditor editor = validatorEditors.get(selectedType);
@@ -119,15 +129,15 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
         Attribute updated = Attribute.create(current.id(), nameField.value(), current.order(), attrType);
         updated.description(descField.value());
 
-        // 참조 무결성 검사
-        if ("document".equals(selectedType) || "array".equals(selectedType) || "map".equals(selectedType)) {
-            String refId = attrType.referencedType();
-            if (refId != null && !refId.isEmpty()) {
-                var result = integrityService.analyze(ownerType, refId);
-                if (!result.valid()) {
-                    resolutionDialog.show(result.message(), result.proposals(), p -> resolveConflict(p, updated));
-                    return; // 다이얼로그가 해결책을 제시하므로 여기서 중단
-                }
+        // 참조 무결성 검사 (중첩 구조 모두 포함)
+        java.util.Set<String> refs = new java.util.HashSet<>();
+        extractReferences(attrType, refs);
+        
+        for (String refId : refs) {
+            var result = integrityService.analyze(ownerType, refId);
+            if (!result.valid()) {
+                resolutionDialog.show(result.message(), result.proposals(), p -> resolveConflict(p, updated));
+                return; // 다이얼로그가 해결책을 제시하므로 여기서 중단
             }
         }
 
