@@ -54,10 +54,12 @@ public class EditBoxAction implements Action {
         List<IntegrityAnalysisService.AnalysisResult> conflicts = integrityService.analyzeForMutation(after, before);
         if (!conflicts.isEmpty()) {
             resolutionDialog.show(conflicts, p -> {
-                // 보정 로직 적용 (단순화: 캔버스 데이터 갱신)
+                // 보정 로직 적용
                 if (p.type() == IntegrityAnalysisService.ProposalType.ADJUST_OWNER) {
                     after.effectDateTime(p.newStart());
                     after.expireDateTime(p.newEnd());
+                } else if (p.type() == IntegrityAnalysisService.ProposalType.EXTEND_REFERENCE) {
+                    // 참조 대상 타입의 기간을 확장하는 액션은 별도 처리 (이번엔 생략)
                 }
                 // 보정된 상태로 실행
                 executeAction();
@@ -68,34 +70,6 @@ public class EditBoxAction implements Action {
     }
 
     private void executeAction() {
-        // 1. 인접한 버전들을 찾아 기간 연쇄 조정 (Chain Reaction)
-        if (Math.abs(before.expireDateTime() - after.expireDateTime()) > 0.1) {
-            typeList.getValue().stream()
-                .filter(t -> t.id().equals(after.id()) && Math.abs(t.effectDateTime() - before.expireDateTime()) < 0.1)
-                .findFirst()
-                .ifPresent(next -> {
-                    Type nextAfter = Type.create(next.id(), next.version(), after.expireDateTime(), next.expireDateTime());
-                    nextAfter.description(next.description());
-                    nextAfter.primitive(next.primitive());
-                    nextAfter.parent(next.parent());
-                    nextAfter.attributes(next.attributes());
-                    typeList.update(next, nextAfter);
-                });
-        }
-        if (Math.abs(before.effectDateTime() - after.effectDateTime()) > 0.1) {
-            typeList.getValue().stream()
-                .filter(t -> t.id().equals(after.id()) && Math.abs(t.expireDateTime() - before.effectDateTime()) < 0.1)
-                .findFirst()
-                .ifPresent(prev -> {
-                    Type prevAfter = Type.create(prev.id(), prev.version(), prev.effectDateTime(), after.effectDateTime());
-                    prevAfter.description(prev.description());
-                    prevAfter.primitive(prev.primitive());
-                    prevAfter.parent(prev.parent());
-                    prevAfter.attributes(prev.attributes());
-                    typeList.update(prev, prevAfter);
-                });
-        }
-
         if (!Objects.equals(before.key(), after.key()) && positionMap != null) {
             positionMap.changeKey(before.key(), after.key());
             if (layoutProvider != null && layoutProvider.getValue() != null) {
