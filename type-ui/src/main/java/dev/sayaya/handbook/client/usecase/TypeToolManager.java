@@ -45,6 +45,7 @@ public class TypeToolManager {
     private final dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog;
     private final TypeSearchProvider typeSearchProvider;
     private final TypeDataCoordinator typeDataCoordinator;
+    private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityAnalysisService;
     private Labels currentLabels = Labels.empty();
 
     @Inject
@@ -56,7 +57,8 @@ public class TypeToolManager {
                     LabelProvider labelProvider, CanvasMode canvasMode, GridSnap gridSnap,
                     SelectedBoxElement selection, ConfirmDialog confirmDialog,
                     dev.sayaya.handbook.client.interfaces.editor.VersionCreationDialog versionCreationDialog,
-                    TypeSearchProvider typeSearchProvider) {
+                    TypeSearchProvider typeSearchProvider,
+                    dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityAnalysisService) {
         this.toolProvider = toolProvider;
         this.actionManager = actionManager;
         this.tracker = tracker;
@@ -75,6 +77,7 @@ public class TypeToolManager {
         this.confirmDialog = confirmDialog;
         this.versionCreationDialog = versionCreationDialog;
         this.typeSearchProvider = typeSearchProvider;
+        this.integrityAnalysisService = integrityAnalysisService;
     }
 
     public void init() {
@@ -195,7 +198,7 @@ public class TypeToolManager {
     }
 
     public void executeSave() {
-        new SaveAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, layoutList, toastContainer, currentLabels).execute();
+        new SaveAction(typeRepository, layoutRepository, typeList, positionMap, tracker, actionManager, layoutProvider, layoutList, integrityAnalysisService, toastContainer, currentLabels).execute();
     }
 
     public void executeReload() {

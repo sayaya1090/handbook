@@ -48,13 +48,14 @@ public class SaveButton implements IsElement<HTMLElement> {
     SaveButton(TypeRepository typeRepository, LayoutRepository layoutRepository,
                TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                ActionManager actionManager, LayoutProvider layoutProvider, LayoutList layoutList,
+               dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityAnalysisService,
                ToastContainer toastContainer, LabelProvider labelProvider) {
         _this = button().icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-floppy-disk"))
                 .css("type-ctrl-btn", "type-ctrl-btn-save");
 
         _this.onClick(e ->
                 new SaveAction(typeRepository, layoutRepository, typeList, positionMap,
-                        tracker, actionManager, layoutProvider, layoutList, toastContainer, currentLabels).execute()
+                        tracker, actionManager, layoutProvider, layoutList, integrityAnalysisService, toastContainer, currentLabels).execute()
         );
 
         labelProvider.subscribe(labels -> {

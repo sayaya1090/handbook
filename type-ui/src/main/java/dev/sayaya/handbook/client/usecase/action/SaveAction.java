@@ -10,6 +10,7 @@ import dev.sayaya.handbook.client.usecase.LayoutList;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.IntegrityAnalysisService;
 import dev.sayaya.handbook.domain.*;
 import jsinterop.base.JsPropertyMap;
 
@@ -30,13 +31,15 @@ public class SaveAction implements Action {
     private final ActionManager actionManager;
     private final LayoutProvider layoutProvider;
     private final LayoutList layoutList;
+    private final IntegrityAnalysisService integrityAnalysisService;
     private final ToastContainer toastContainer;
     private final Labels labels;
 
     public SaveAction(TypeRepository typeRepository, LayoutRepository layoutRepository,
                       TypeList typeList, PositionMap positionMap, ChangeTracker tracker,
                       ActionManager actionManager, LayoutProvider layoutProvider,
-                      LayoutList layoutList, ToastContainer toastContainer, Labels labels) {
+                      LayoutList layoutList, IntegrityAnalysisService integrityAnalysisService, 
+                      ToastContainer toastContainer, Labels labels) {
         this.typeRepository = typeRepository;
         this.typeList = typeList;
         this.positionMap = positionMap;
@@ -44,8 +47,19 @@ public class SaveAction implements Action {
         this.actionManager = actionManager;
         this.layoutProvider = layoutProvider;
         this.layoutList = layoutList;
+        this.integrityAnalysisService = integrityAnalysisService;
         this.toastContainer = toastContainer;
         this.labels = labels;
+    }
+
+    private void extractReferences(AttributeType attrType, Set<String> refs) {
+        if (attrType == null) return;
+        if ("document".equals(attrType.type()) && attrType.referencedType() != null) {
+            refs.add(attrType.referencedType());
+        }
+        extractReferences(attrType.elementType(), refs);
+        extractReferences(attrType.keyType(), refs);
+        extractReferences(attrType.valueType(), refs);
     }
 
     @Override
@@ -70,9 +84,25 @@ public class SaveAction implements Action {
             }
         }
         
-        // 2. 변경된 타입 처리
+        // 2. 변경된 타입 처리 및 무결성 검증
         for (Type type : typeList.getValue()) {
             if (changedKeys.contains(type.key())) {
+                // 저장 전 모든 속성에 대한 참조 정합성 교차 검증
+                if (type.attributes() != null) {
+                    Set<String> refs = new java.util.HashSet<>();
+                    for (Attribute attr : type.attributes()) {
+                        extractReferences(attr.type(), refs);
+                    }
+                    for (String refId : refs) {
+                        IntegrityAnalysisService.AnalysisResult res = integrityAnalysisService.analyze(type, refId);
+                        if (!res.valid()) {
+                            if (toastContainer != null) {
+                                toastContainer.show(ToastLevel.ERROR, labels.getOrDefault("toast.save.error.integrity", "Integrity check failed: " + res.message()));
+                            }
+                            return; // 저장 중단
+                        }
+                    }
+                }
                 typeOps.add(SchemaPatch.TypeOperation.upsert(type));
             }
         }
