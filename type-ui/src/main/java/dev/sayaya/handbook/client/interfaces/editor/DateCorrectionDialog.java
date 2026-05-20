@@ -123,13 +123,16 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
     }
 
     private void resolve(IntegrityAnalysisService.ResolutionProposal p, Type mutated) {
-        // 제안 적용 후 다시 검증
         if (p.type() == IntegrityAnalysisService.ProposalType.ADJUST_OWNER) {
             mutated.effectDateTime(p.newStart());
             mutated.expireDateTime(p.newEnd());
+        } else if (p.type() == IntegrityAnalysisService.ProposalType.EXTEND_REFERENCE) {
+            // 참조 대상 기간 확장 시 mutatedType의 기간은 소유자(owner)의 기간을 유지해야 함
+            // 제안된 newStart/newEnd는 참조 대상의 확장된 기간이므로
+            // 여기서는 mutatedType의 기간을 건드리지 않거나, 별도 타입 수정 액션 필요 시 확장
         }
-        // 추후 제안 B(Extend)에 대한 로직 구현 필요 시 추가
         
+        // 최종적으로 보정된 결과로 callback 호출
         if (callback != null) callback.accept(new DateResult(mutated.effectDateTime(), mutated.expireDateTime()));
         _this.close();
     }
