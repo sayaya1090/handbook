@@ -299,14 +299,13 @@ sequenceDiagram
     AM->>LP: "createNewPeriod(effectDateTime, ∞)"
     
     Note over AM: "3. 새 버전 타입 등록"
-    AM->>TL: "cloneAndMutate(targetType, newFields)"
+    AM->>TL: "새 타입 추가 및 로컬 상태 반영"
     
-    AM->>API: "POST /evolution (Atomic Transaction)"
-    API-->>AM: "201 Created (newPeriodId)"
+    Note over AM: "4. 레이아웃 리스트 및 선택 갱신"
+    AM->>LP: "layoutProvider.replace(newLayout)"
+    LP-->>TL: "새 레이아웃 렌더링 트리거"
     
-    AM->>LP: "switchTo(newPeriodId)"
-    LP-->>TL: "새 기간 데이터 로드 트리거"
-    TL-->>Canvas: "새로운 레이아웃 렌더링"
+    Note over User,AM: "이후 SaveAction을 통해 PATCH /schema 로 일괄 저장 (원자적 처리)"
 ```
 
 ## 타입 유효기간 편집 (Date Correction) 시퀀스

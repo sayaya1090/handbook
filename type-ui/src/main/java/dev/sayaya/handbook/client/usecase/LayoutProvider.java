@@ -77,7 +77,9 @@ public class LayoutProvider {
                 best = p;
             }
         }
-        elemental2.dom.DomGlobal.console.log("[LayoutProvider] Best match selected: " + best.effectDateTime() + " ~ " + best.expireDateTime());
-        subject.next(best);
+        if (best != null) {
+            elemental2.dom.DomGlobal.console.log("[LayoutProvider] Best match selected: " + best.effectDateTime() + " ~ " + best.expireDateTime() + " (ID: " + best.id() + ")");
+            subject.next(best);
+        }
     }
 }

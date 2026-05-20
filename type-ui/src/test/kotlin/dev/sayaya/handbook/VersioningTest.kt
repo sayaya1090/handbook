@@ -15,7 +15,25 @@ import kotlin.math.abs
 @GwtHtml("canvastest.html")
 internal class VersioningTest: GwtTestSpec({
      Given("타입 편집기 초기화됨") {
+        page.onConsoleMessage { msg -> println("[BROWSER] ${msg.text()}") }
         page.setViewportSize(1280, 720)
+        
+        page.addInitScript("""
+            (function() {
+                window.__diag_logs = [];
+                const originalLog = console.log;
+                const originalError = console.error;
+                console.log = function() {
+                    window.__diag_logs.push(Array.from(arguments).join(' '));
+                    originalLog.apply(console, arguments);
+                };
+                console.error = function() {
+                    window.__diag_logs.push(Array.from(arguments).join(' '));
+                    originalError.apply(console, arguments);
+                };
+            })()
+        """.trimIndent())
+        
         page.reload()
         page.waitForSelector(".type-box[data-type-key='customer:1.0']")
         Thread.sleep(1500)
@@ -96,7 +114,21 @@ internal class VersioningTest: GwtTestSpec({
                 Then("새 버전의 타입이 기존 레이아웃 좌표를 상속받고, 이전 버전은 화면에서 사라진다") {
                     val newBoxSelector = ".type-box[data-type-key*='2.0-final']"
                     val newBox = page.locator(newBoxSelector)
-                    newBox.waitFor()
+                    
+                    try {
+                        newBox.waitFor(com.microsoft.playwright.Locator.WaitForOptions().setTimeout(10000.0))
+                    } catch (e: Exception) {
+                        val diag = page.evaluate("""
+                            (function() {
+                                return {
+                                    logs: window.__diag_logs,
+                                    boxes: Array.from(document.querySelectorAll('.type-box')).map(b => b.getAttribute('data-type-key'))
+                                };
+                            })()
+                        """.trimIndent())
+                        throw AssertionError("새 버전 렌더링 실패. Logs: $diag", e)
+                    }
+                    
                     val afterPos = newBox.boundingBox()!!
                     abs(afterPos.x - beforePos.x) shouldBeLessThan 5.0
                     abs(afterPos.y - beforePos.y) shouldBeLessThan 5.0

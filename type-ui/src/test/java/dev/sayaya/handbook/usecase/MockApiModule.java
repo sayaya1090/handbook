@@ -37,7 +37,6 @@ public class MockApiModule {
         return key;
     }
 
-
     @Provides
     public TypeRepository typeRepository() {
         return new TypeRepository() {
@@ -55,6 +54,7 @@ public class MockApiModule {
                 }
                 return BehaviorSubject.behavior(types).asObservable();
             }
+
             @Override public Observable<Set<Type>> save(Set<Type> types) { return BehaviorSubject.behavior(types).asObservable(); }
             @Override public Observable<Set<Type>> patch(List<JsPropertyMap<?>> patches) { return BehaviorSubject.<Set<Type>>behavior(new HashSet<>()).asObservable(); }
             @Override public Observable<Void> delete(Set<Type> types) { return BehaviorSubject.<Void>behavior(null).asObservable(); }

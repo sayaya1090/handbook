@@ -59,9 +59,26 @@ public class PeriodRecalculationService {
         }
 
         if (!newLayouts.isEmpty()) {
+            List<TypeLayout> current = layoutList.getValue();
+            if (isSame(current, newLayouts)) return;
             layoutList.replace(newLayouts);
             layoutProvider.selectBestMatch(newLayouts);
         }
+    }
+
+    private boolean isSame(List<TypeLayout> a, List<TypeLayout> b) {
+        if (a == null || b == null) return a == b;
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            TypeLayout l1 = a.get(i);
+            TypeLayout l2 = b.get(i);
+            if (l1 == null || l2 == null) { if (l1 != l2) return false; else continue; }
+            if (l1.id() != null && !l1.id().equals(l2.id())) return false;
+            if (l1.id() == null && l2.id() != null) return false;
+            if (Math.abs(l1.effectDateTime() - l2.effectDateTime()) > 0.1) return false;
+            if (Math.abs(l1.expireDateTime() - l2.expireDateTime()) > 0.1) return false;
+        }
+        return true;
     }
 
     private TypeLayout findMatch(List<TypeLayout> layouts, double start, double end) {

@@ -157,6 +157,7 @@ public class SchemaEvolutionAction implements Action {
             layouts.add(newLayout);
         }
         layoutList.replace(layouts); 
+        layoutProvider.replace(newLayout);
 
         // 6.4. 타입 리스트 갱신 (원자적 처리: PeriodRecalculationService가 중간 상태로 인해 레이아웃을 유실하지 않도록 1회만 발화)
         java.util.Set<Type> nextTypes = new java.util.LinkedHashSet<>(typeList.getValue());

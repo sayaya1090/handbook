@@ -33,13 +33,27 @@ public class BeforeButton implements IsElement<HTMLElement> {
         layoutList.subscribe(periods -> updateEnabled(layoutProvider, periods));
     }
 
+    private int findIndex(List<TypeLayout> layouts, TypeLayout current) {
+        if (layouts == null || current == null) return -1;
+        for (int i = 0; i < layouts.size(); i++) {
+            TypeLayout l = layouts.get(i);
+            if (l != null && l.id() != null && l.id().equals(current.id())) return i;
+            if (l != null && l.id() == null && current.id() == null) {
+                // ID가 둘 다 없으면 기간으로 비교
+                if (Math.abs(l.effectDateTime() - current.effectDateTime()) < 0.1 
+                        && Math.abs(l.expireDateTime() - current.expireDateTime()) < 0.1) return i;
+            }
+        }
+        return -1;
+    }
+
     private void updateEnabled(LayoutProvider provider, List<TypeLayout> layouts) {
         TypeLayout current = provider.getValue();
         if (current == null || layouts == null || layouts.isEmpty()) {
             _this.element().setAttribute("disabled", "true");
             return;
         }
-        int index = layouts.indexOf(current);
+        int index = findIndex(layouts, current);
         if (index > 0) {
             _this.element().removeAttribute("disabled");
         } else {
@@ -50,7 +64,7 @@ public class BeforeButton implements IsElement<HTMLElement> {
     private void navigate(LayoutProvider provider, LayoutList layoutList, ActionManager actionManager, int direction) {
         List<TypeLayout> layouts = layoutList.getValue();
         TypeLayout current = provider.getValue();
-        int index = layouts.indexOf(current);
+        int index = findIndex(layouts, current);
         int nextIndex = index + direction;
         if (nextIndex >= 0 && nextIndex < layouts.size()) {
             provider.replace(layouts.get(nextIndex));
