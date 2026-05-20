@@ -106,7 +106,7 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
             if (!conflicts.isEmpty()) {
                 // 첫 번째 충돌 건에 대해 보정 제안 다이얼로그 노출
                 _this.close();
-                resolutionDialog.show(conflicts.get(0), p -> {
+                resolutionDialog.show(conflicts, p -> {
                     // 보정 적용 로직 (임시: 실제 적용 액션 연결)
                     resolve(p, mutated);
                 }, () -> this.show(currentType, callback));

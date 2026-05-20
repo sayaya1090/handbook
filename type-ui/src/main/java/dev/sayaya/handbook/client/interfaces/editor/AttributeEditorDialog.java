@@ -137,7 +137,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
             var result = integrityService.analyze(ownerType, refId);
             if (!result.valid()) {
                 hide();
-                resolutionDialog.show(result, p -> resolveConflict(p, updated), () -> show(ownerType, current, onApply));
+                resolutionDialog.show(java.util.Collections.singletonList(result), p -> resolveConflict(p, updated), () -> show(ownerType, current, onApply));
                 return; // 다이얼로그가 해결책을 제시하므로 여기서 중단
             }
         }

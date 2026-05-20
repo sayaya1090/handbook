@@ -48,8 +48,14 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
         });
     }
 
-    public void show(dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.AnalysisResult result, 
+    public void show(List<dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.AnalysisResult> conflicts, 
                      Consumer<ResolutionProposal> onSelect, Runnable onCancel) {
+        if (conflicts.isEmpty()) {
+            _this.close();
+            return;
+        }
+        
+        var result = conflicts.get(0);
         this.onSelect = onSelect;
         this.onCancel = onCancel;
 
@@ -85,6 +91,12 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
                                     .on(EventType.click, e -> {
                                         if (this.onSelect != null) this.onSelect.accept(p);
                                         _this.close();
+                                        // 다음 충돌이 있으면 다시 보여줌
+                                        if (conflicts.size() > 1) {
+                                            java.util.List<dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.AnalysisResult> next = new java.util.ArrayList<>(conflicts);
+                                            next.remove(0);
+                                            show(next, onSelect, onCancel);
+                                        }
                                     })))
                     .element();
             proposalContainer.appendChild(card);

@@ -22,5 +22,6 @@
   "type.conflict.adjust_owner.title": "소유자 기간 조정",
   "type.conflict.adjust_owner.desc": "'{id}'의 유효기간을 [{start} ~ {end}]로 축소하여 참조 대상에 맞춥니다.",
   "type.conflict.extend_ref.title": "참조 대상 기간 확장",
-  "type.conflict.extend_ref.desc": "'{id}'의 유효기간을 [{start} ~ {end}]로 확장합니다."
+  "type.conflict.extend_ref.desc": "'{id}'의 유효기간을 [{start} ~ {end}]로 확장합니다.",
+  "type.error.delete_conflict": "해당 타입을 참조하는 다른 타입이 존재하여 삭제할 수 없습니다."
 }

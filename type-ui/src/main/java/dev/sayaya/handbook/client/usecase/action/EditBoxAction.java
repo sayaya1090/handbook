@@ -53,7 +53,7 @@ public class EditBoxAction implements Action {
         // 편집 즉시 정합성 검증 수행 (이전 버전과 비교하여 참조 단절 감지)
         List<IntegrityAnalysisService.AnalysisResult> conflicts = integrityService.analyzeForMutation(after, before);
         if (!conflicts.isEmpty()) {
-            resolutionDialog.show(conflicts.get(0), p -> {
+            resolutionDialog.show(conflicts, p -> {
                 // 보정 로직 적용 (단순화: 캔버스 데이터 갱신)
                 if (p.type() == IntegrityAnalysisService.ProposalType.ADJUST_OWNER) {
                     after.effectDateTime(p.newStart());

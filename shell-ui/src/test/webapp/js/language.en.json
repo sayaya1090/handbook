@@ -56,6 +56,7 @@
     "type.conflict.extend_ref.title": "Extend Referenced Type",
     "type.conflict.headline": "Integrity Conflict Detected",
     "type.conflict.message": "The referenced type '{id}' is only available from {start} to {end}.",
+    "type.error.delete_conflict": "Cannot delete this type because it is referenced by other types.",
     "type.event.changed": "Another user has changed the type",
     "type.menu.supporting": "Define data structures, properties, and relations.",
     "type.redo": "Redo",

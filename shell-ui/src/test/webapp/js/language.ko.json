@@ -56,6 +56,7 @@
     "type.conflict.extend_ref.title": "참조 대상 기간 확장",
     "type.conflict.headline": "참조 무결성 충돌 감지",
     "type.conflict.message": "참조된 타입 '{id}'는 {start}부터 {end}까지만 유효합니다.",
+    "type.error.delete_conflict": "해당 타입을 참조하는 다른 타입이 존재하여 삭제할 수 없습니다.",
     "type.event.changed": "다른 사용자가 타입을 변경했습니다",
     "type.menu.supporting": "문서의 구조와 속성, 데이터 간의 관계를 정의합니다.",
     "type.redo": "다시 실행",

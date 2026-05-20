@@ -22,5 +22,6 @@
   "type.conflict.adjust_owner.title": "Adjust Owner Period",
   "type.conflict.adjust_owner.desc": "Change '{id}' to [{start} ~ {end}] to match reference.",
   "type.conflict.extend_ref.title": "Extend Referenced Type",
-  "type.conflict.extend_ref.desc": "Expand '{id}' to [{start} ~ {end}]."
+  "type.conflict.extend_ref.desc": "Expand '{id}' to [{start} ~ {end}].",
+  "type.error.delete_conflict": "Cannot delete this type because it is referenced by other types."
 }
