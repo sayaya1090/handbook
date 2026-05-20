@@ -27,8 +27,12 @@ public class IntegrityAnalysisService {
     }
 
     public AnalysisResult analyze(Type owner, String referencedId) {
+        return analyze(owner, referencedId, typeList.getValue());
+    }
+
+    public AnalysisResult analyze(Type owner, String referencedId, java.util.Collection<Type> typesContext) {
         // 1. 참조 대상 타입의 가용한 전체 연속 구간(Coverage) 계산
-        List<Type> refVersions = typeList.getValue().stream()
+        List<Type> refVersions = typesContext.stream()
                 .filter(t -> t.id().equals(referencedId))
                 .sorted(Comparator.comparingDouble(Type::effectDateTime))
                 .collect(Collectors.toList());
@@ -61,7 +65,7 @@ public class IntegrityAnalysisService {
         double recStart = Math.max(owner.effectDateTime(), coverageStart == -1 ? owner.effectDateTime() : coverageStart);
         double recEnd = Math.min(owner.expireDateTime(), coverageEnd == -1 ? owner.expireDateTime() : coverageEnd);
         
-        if (isSafeToAdjustOwner(owner, recStart, recEnd)) {
+        if (isSafeToAdjustOwner(owner, recStart, recEnd, typesContext)) {
             proposals.add(new ResolutionProposal(
                 ProposalType.ADJUST_OWNER,
                 owner.id(),
@@ -72,7 +76,7 @@ public class IntegrityAnalysisService {
         // 제안 B: 참조 대상 타입의 기간을 소유자에 맞춰 확장 (버전 중첩이 없을 때만)
         if (refVersions.size() == 1) { // 단일 버전일 때만 단순 확장 제안 (안전성 확보 용이)
             Type ref = refVersions.get(0);
-            if (isSafeToExpandReference(ref, owner.effectDateTime(), owner.expireDateTime())) {
+            if (isSafeToExpandReference(ref, owner.effectDateTime(), owner.expireDateTime(), typesContext)) {
                 proposals.add(new ResolutionProposal(
                     ProposalType.EXTEND_REFERENCE,
                     referencedId,
@@ -84,16 +88,66 @@ public class IntegrityAnalysisService {
         return new AnalysisResult(false, referencedId, coverageStart, coverageEnd, proposals);
     }
 
+    /** 돌연변이(유효기간, 속성 변경 등) 시점에 정방향/역방향 정합성을 미리 교차 검증한다. */
+    public List<AnalysisResult> analyzeForMutation(Type mutatedType) {
+        // 기존 캔버스 상태에서 mutatedType을 대체한 가상 컨텍스트 생성
+        List<Type> virtualContext = new ArrayList<>();
+        for (Type t : typeList.getValue()) {
+            if (!t.key().equals(mutatedType.key())) virtualContext.add(t);
+        }
+        virtualContext.add(mutatedType);
+
+        List<AnalysisResult> conflicts = new ArrayList<>();
+
+        // 1. 정방향 (mutatedType가 참조하는 대상들이 여전히 유효한가?)
+        if (mutatedType.attributes() != null) {
+            java.util.Set<String> refs = new java.util.HashSet<>();
+            for (dev.sayaya.handbook.domain.Attribute attr : mutatedType.attributes()) {
+                extractReferences(attr.type(), refs);
+            }
+            for (String refId : refs) {
+                AnalysisResult res = analyze(mutatedType, refId, virtualContext);
+                if (!res.valid()) conflicts.add(res);
+            }
+        }
+
+        // 2. 역방향 (캔버스의 다른 타입들이 mutatedType을 참조하고 있을 때, 그 참조가 깨지지 않았는가?)
+        for (Type other : virtualContext) {
+            if (other.key().equals(mutatedType.key()) || other.attributes() == null) continue;
+            
+            java.util.Set<String> otherRefs = new java.util.HashSet<>();
+            for (dev.sayaya.handbook.domain.Attribute attr : other.attributes()) {
+                extractReferences(attr.type(), otherRefs);
+            }
+            if (otherRefs.contains(mutatedType.id())) {
+                AnalysisResult res = analyze(other, mutatedType.id(), virtualContext);
+                if (!res.valid()) conflicts.add(res);
+            }
+        }
+
+        return conflicts;
+    }
+
+    public static void extractReferences(dev.sayaya.handbook.domain.AttributeType attrType, java.util.Set<String> refs) {
+        if (attrType == null) return;
+        if ("document".equals(attrType.type()) && attrType.referencedType() != null) {
+            refs.add(attrType.referencedType());
+        }
+        extractReferences(attrType.elementType(), refs);
+        extractReferences(attrType.keyType(), refs);
+        extractReferences(attrType.valueType(), refs);
+    }
+
     /** 소유자 타입의 기간을 변경해도 자식 타입들이 고립되지 않는지 검사 */
-    private boolean isSafeToAdjustOwner(Type owner, double newStart, double newEnd) {
-        return typeList.getValue().stream()
+    private boolean isSafeToAdjustOwner(Type owner, double newStart, double newEnd, java.util.Collection<Type> context) {
+        return context.stream()
                 .filter(t -> owner.id().equals(t.parent()))
                 .allMatch(child -> child.effectDateTime() >= newStart - 0.1 && child.expireDateTime() <= newEnd + 0.1);
     }
 
     /** 참조 대상의 기간을 확장해도 다른 버전과 겹치지 않는지 검사 */
-    private boolean isSafeToExpandReference(Type ref, double targetStart, double targetEnd) {
-        return typeList.getValue().stream()
+    private boolean isSafeToExpandReference(Type ref, double targetStart, double targetEnd, java.util.Collection<Type> context) {
+        return context.stream()
                 .filter(t -> t.id().equals(ref.id()) && !t.version().equals(ref.version()))
                 .noneMatch(other -> targetStart < other.expireDateTime() && targetEnd > other.effectDateTime());
     }

@@ -2,6 +2,7 @@ package dev.sayaya.handbook.client.interfaces.editor;
 
 import dev.sayaya.handbook.client.components.ToastContainer;
 import dev.sayaya.handbook.client.usecase.DateFormatter;
+import dev.sayaya.handbook.client.usecase.IntegrityAnalysisService;
 import dev.sayaya.handbook.domain.ToastLevel;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
@@ -13,6 +14,7 @@ import org.jboss.elemento.IsElement;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.jboss.elemento.Elements.div;
@@ -29,14 +31,18 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder effectInput;
     private final TextFieldElementBuilder.OutlinedTextFieldElementBuilder expireInput;
     private final ToastContainer toastContainer;
+    private final IntegrityAnalysisService integrityService;
+    private final ConflictResolutionDialog resolutionDialog;
     private Consumer<DateResult> callback;
     private Type currentType;
 
     public record DateResult(double effect, double expire) {}
 
     @Inject
-    DateCorrectionDialog(ToastContainer toastContainer) {
+    DateCorrectionDialog(ToastContainer toastContainer, IntegrityAnalysisService integrityService, ConflictResolutionDialog resolutionDialog) {
         this.toastContainer = toastContainer;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
         effectInput = TextFieldElementBuilder.textField().outlined()
                 .attr("id", "date-correction-start")
                 .label("Effect Date (YYYY-MM-DD)");
@@ -78,7 +84,6 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
     private void apply() {
         String effectVal = effectInput.value();
         String expireVal = expireInput.value();
-        elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] apply() - raw effect: " + effectVal + ", raw expire: " + expireVal);
         
         effectInput.element().removeAttribute("error");
         expireInput.element().removeAttribute("error");
@@ -93,7 +98,20 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
                 return;
             }
             
-            elemental2.dom.DomGlobal.console.log("[DateCorrectionDialog] apply() - parsed effect: " + effect + ", parsed expire: " + expire);
+            // Type 복제 (생성자 기반)
+            Type mutated = Type.create(currentType.id(), currentType.version(), effect, expire);
+            mutated.description(currentType.description());
+            
+            List<IntegrityAnalysisService.AnalysisResult> conflicts = integrityService.analyzeForMutation(mutated);
+            if (!conflicts.isEmpty()) {
+                // 첫 번째 충돌 건에 대해 보정 제안 다이얼로그 노출
+                _this.close();
+                resolutionDialog.show(conflicts.get(0), p -> {
+                    // 보정 적용 로직 (임시: 실제 적용 액션 연결)
+                    resolve(p, mutated);
+                }, () -> this.show(currentType, callback));
+                return;
+            }
             
             if (callback != null) callback.accept(new DateResult(effect, expire));
             toastContainer.show(ToastLevel.SUCCESS, "Date corrected for " + currentType.id());
@@ -102,6 +120,18 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
             effectInput.element().setAttribute("error", "");
             effectInput.element().setAttribute("error-text", "Invalid date format");
         }
+    }
+
+    private void resolve(IntegrityAnalysisService.ResolutionProposal p, Type mutated) {
+        // 제안 적용 후 다시 검증
+        if (p.type() == IntegrityAnalysisService.ProposalType.ADJUST_OWNER) {
+            mutated.effectDateTime(p.newStart());
+            mutated.expireDateTime(p.newEnd());
+        }
+        // 추후 제안 B(Extend)에 대한 로직 구현 필요 시 추가
+        
+        if (callback != null) callback.accept(new DateResult(mutated.effectDateTime(), mutated.expireDateTime()));
+        _this.close();
     }
 
     @Override
