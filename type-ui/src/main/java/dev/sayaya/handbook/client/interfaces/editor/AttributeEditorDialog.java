@@ -154,7 +154,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
             
             // 2. 조정된 타입에 속성을 추가/수정하는 액션 생성
             Type finalType = applyAttributeToType(correctedOwner, updatedAttr);
-            dev.sayaya.handbook.client.usecase.action.EditBoxAction a2 = new dev.sayaya.handbook.client.usecase.action.EditBoxAction(typeList, positionMap, tracker, layoutProvider, correctedOwner, finalType);
+            dev.sayaya.handbook.client.usecase.action.EditBoxAction a2 = new dev.sayaya.handbook.client.usecase.action.EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, correctedOwner, finalType);
             
             actionManager.execute(new dev.sayaya.handbook.client.usecase.action.ComplexAction(a1, a2));
         } else {
@@ -164,7 +164,7 @@ public class AttributeEditorDialog implements IsElement<HTMLDivElement> {
             
             // 2. 소유자 타입에 속성을 추가/수정하는 액션 생성
             Type finalType = applyAttributeToType(ownerType, updatedAttr);
-            dev.sayaya.handbook.client.usecase.action.EditBoxAction a2 = new dev.sayaya.handbook.client.usecase.action.EditBoxAction(typeList, positionMap, tracker, layoutProvider, ownerType, finalType);
+            dev.sayaya.handbook.client.usecase.action.EditBoxAction a2 = new dev.sayaya.handbook.client.usecase.action.EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, ownerType, finalType);
             
             actionManager.execute(new dev.sayaya.handbook.client.usecase.action.ComplexAction(a1, a2));
         }

@@ -64,6 +64,8 @@ public class TypeElement implements IsElement<HTMLDivElement> {
     private final PositionMap positionMap;
     private final SelectedBoxElement selection;
     private final LayoutProvider layoutProvider;
+    private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService;
+    private final dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog;
     private DisplayMode displayMode = DisplayMode.DETAIL;
 
     private boolean dragging = false;
@@ -74,17 +76,22 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 PositionMap positionMap, SelectedBoxElement selection,
                 ActionManager actionManager, TypeList typeList, ChangeTracker tracker,
                 AttributeEditorDialog editorDialog, GridSnap gridSnap, CanvasMode canvasMode,
-                LayoutProvider layoutProvider) {
+                LayoutProvider layoutProvider,
+                dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService,
+                dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog) {
         this.type = type;
         this.positionMap = positionMap;
         this.selection = selection;
-        this.layoutProvider = layoutProvider;
         this.actionManager = actionManager;
         this.typeList = typeList;
         this.tracker = tracker;
         this.editorDialog = editorDialog;
         this.gridSnap = gridSnap;
         this.canvasMode = canvasMode;
+        this.layoutProvider = layoutProvider;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
+
 
         nameLabel = div().css("type-name").element();
         nameLabel.textContent = type.id();
@@ -182,7 +189,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 after.primitive(type.primitive());
                 after.parent(type.parent());
                 after.attributes(type.attributes());
-                actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after));
+                actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, type, after));
             }
             nameLabel.textContent = type.id();
         };
@@ -213,7 +220,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 after.primitive(type.primitive());
                 after.parent(type.parent());
                 after.attributes(type.attributes());
-                actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after));
+                actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, type, after));
             }
             versionLabel.textContent = type.version();
         };
@@ -241,7 +248,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 }
             }
             Type after = before.withAttributes(newAttrs);
-            actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, before, after));
+            actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, before, after));
         });
     }
 
@@ -257,7 +264,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         }
         Attribute[] newAttrs = list.toArray(new Attribute[0]);
         Type after = before.withAttributes(newAttrs);
-        actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, before, after));
+        actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, before, after));
     }
 
     // ── 리사이즈 핸들 ──

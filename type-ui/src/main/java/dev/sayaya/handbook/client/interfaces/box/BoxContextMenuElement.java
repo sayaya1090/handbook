@@ -52,15 +52,20 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
     private final VersionHistoryPanel versionHistoryPanel;
     private final dev.sayaya.handbook.client.usecase.PositionMap positionMap;
     private final dev.sayaya.handbook.client.usecase.LayoutProvider layoutProvider;
+    private final dev.sayaya.handbook.usecase.LabelProvider labelProvider;
+    private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService;
+    private final dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog;
     private String targetTypeKey;
 
     @Inject
     BoxContextMenuElement(ActionManager actionManager, TypeList typeList, ChangeTracker tracker,
                           SelectedBoxElement selection, AttributeEditorDialog editorDialog,
                           VersionHistoryPanel versionHistoryPanel,
-                          LabelProvider labelProvider,
                           dev.sayaya.handbook.client.usecase.PositionMap positionMap,
-                          dev.sayaya.handbook.client.usecase.LayoutProvider layoutProvider) {
+                          dev.sayaya.handbook.client.usecase.LayoutProvider layoutProvider,
+                          dev.sayaya.handbook.usecase.LabelProvider labelProvider,
+                          dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService,
+                          dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog) {
         this.actionManager = actionManager;
         this.typeList = typeList;
         this.tracker = tracker;
@@ -69,6 +74,9 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
         this.versionHistoryPanel = versionHistoryPanel;
         this.positionMap = positionMap;
         this.layoutProvider = layoutProvider;
+        this.labelProvider = labelProvider;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
 
         HTMLElement addAttrItem = menuItem("Add Attribute");
         HTMLElement versionHistoryItem = menuItem("Version history");
@@ -118,7 +126,7 @@ public class BoxContextMenuElement implements IsElement<HTMLDivElement> {
             Attribute[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
             newAttrs[oldAttrs.length] = applied;
             Type after = before.withAttributes(newAttrs);
-            actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, before, after));
+            actionManager.execute(new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, before, after));
         });
     }
 

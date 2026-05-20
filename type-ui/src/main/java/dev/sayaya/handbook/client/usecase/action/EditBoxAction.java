@@ -4,11 +4,14 @@ import dev.sayaya.handbook.client.components.ChangeTracker;
 import dev.sayaya.handbook.client.usecase.LayoutProvider;
 import dev.sayaya.handbook.client.usecase.PositionMap;
 import dev.sayaya.handbook.client.usecase.TypeList;
+import dev.sayaya.handbook.client.usecase.IntegrityAnalysisService;
+import dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog;
 import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Type;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -25,30 +28,54 @@ public class EditBoxAction implements Action {
     private final ChangeTracker tracker;
     private final PositionMap positionMap;
     private final LayoutProvider layoutProvider;
+    private final IntegrityAnalysisService integrityService;
+    private final ConflictResolutionDialog resolutionDialog;
     private final Type before;
     private final Type after;
 
-    public EditBoxAction(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider, Type before, Type after) {
+    public EditBoxAction(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, 
+                         LayoutProvider layoutProvider, 
+                         IntegrityAnalysisService integrityService, 
+                         ConflictResolutionDialog resolutionDialog,
+                         Type before, Type after) {
         this.typeList = typeList;
         this.positionMap = positionMap;
         this.tracker = tracker;
         this.layoutProvider = layoutProvider;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
         this.before = before;
         this.after = after;
     }
 
     @Override
     public void execute() {
+        // 편집 즉시 정합성 검증 수행
+        List<IntegrityAnalysisService.AnalysisResult> conflicts = integrityService.analyzeForMutation(after);
+        if (!conflicts.isEmpty()) {
+            resolutionDialog.show(conflicts.get(0), p -> {
+                // 보정 로직 적용 (단순화: 캔버스 데이터 갱신)
+                if (p.type() == IntegrityAnalysisService.ProposalType.ADJUST_OWNER) {
+                    after.effectDateTime(p.newStart());
+                    after.expireDateTime(p.newEnd());
+                }
+                // 보정된 상태로 실행
+                executeAction();
+            }, () -> {}); // 취소 시 아무 동작 안함
+            return;
+        }
+        executeAction();
+    }
+
+    private void executeAction() {
         if (!Objects.equals(before.key(), after.key()) && positionMap != null) {
             positionMap.changeKey(before.key(), after.key());
             if (layoutProvider != null && layoutProvider.getValue() != null) {
                 tracker.markChanged("LAYOUT:" + layoutProvider.getValue().id());
             }
         }
-        // UI 렌더링 전 트래커 상태 갱신 필수
         tracker.trackChange(after.key(), before, after, this::isSameType);
         markGranularChanges(before, after);
-        // 상태 갱신 완료 후 데이터 업데이트 (DOM 렌더 트리거)
         typeList.update(before, after);
     }
 

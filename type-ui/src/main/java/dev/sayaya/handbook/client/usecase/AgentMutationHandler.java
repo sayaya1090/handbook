@@ -21,18 +21,24 @@ import java.util.stream.Collectors;
 public class AgentMutationHandler {
     private final ActionManager actionManager;
     private final Map<String, MutationStrategy> strategies;
+    private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService;
+    private final dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog;
 
     @Inject
     AgentMutationHandler(ActionManager actionManager, TypeList typeList, PositionMap positionMap,
                          ChangeTracker tracker, LayoutProvider layoutProvider,
                          TypeSearchProvider typeSearchProvider,
-                         MutationReceiver mutationReceiver) {
+                         MutationReceiver mutationReceiver,
+                         dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService,
+                         dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog) {
         this.actionManager = actionManager;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
         this.strategies = Map.of(
             "CREATE", new CreateTypeStrategy(typeList, positionMap, tracker, layoutProvider, typeSearchProvider),
             "DELETE", new DeleteTypeStrategy(typeList, tracker),
-            "ADD",    new AddFieldStrategy(typeList, positionMap, tracker, layoutProvider),
-            "REMOVE", new RemoveFieldStrategy(typeList, positionMap, tracker, layoutProvider),
+            "ADD",    new AddFieldStrategy(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog),
+            "REMOVE", new RemoveFieldStrategy(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog),
             "SET",    new SetPropertyStrategy(typeList, tracker)
         );
 
@@ -128,11 +134,16 @@ class AddFieldStrategy implements MutationStrategy {
     private final ChangeTracker tracker;
     private final LayoutProvider layoutProvider;
 
-    AddFieldStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider) {
+    private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService;
+    private final dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog;
+
+    AddFieldStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider, dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService, dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog) {
         this.typeList = typeList;
         this.positionMap = positionMap;
         this.tracker = tracker;
         this.layoutProvider = layoutProvider;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
     }
 
     @Override
@@ -156,7 +167,7 @@ class AddFieldStrategy implements MutationStrategy {
         Attribute[] newAttrs = Arrays.copyOf(oldAttrs, oldAttrs.length + 1);
         newAttrs[oldAttrs.length] = newAttr;
         Type after = type.withAttributes(newAttrs);
-        return new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after);
+        return new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, type, after);
     }
 
     private Type findType(String typeKey) {
@@ -183,12 +194,18 @@ class RemoveFieldStrategy implements MutationStrategy {
     private final PositionMap positionMap;
     private final ChangeTracker tracker;
     private final LayoutProvider layoutProvider;
+    private final dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService;
+    private final dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog;
 
-    RemoveFieldStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider) {
+    RemoveFieldStrategy(TypeList typeList, PositionMap positionMap, ChangeTracker tracker, LayoutProvider layoutProvider, 
+                        dev.sayaya.handbook.client.usecase.IntegrityAnalysisService integrityService, 
+                        dev.sayaya.handbook.client.interfaces.editor.ConflictResolutionDialog resolutionDialog) {
         this.typeList = typeList;
         this.positionMap = positionMap;
         this.tracker = tracker;
         this.layoutProvider = layoutProvider;
+        this.integrityService = integrityService;
+        this.resolutionDialog = resolutionDialog;
     }
 
     @Override
@@ -207,7 +224,7 @@ class RemoveFieldStrategy implements MutationStrategy {
                 .filter(a -> !a.name().equals(attrName))
                 .toArray(Attribute[]::new);
         Type after = type.withAttributes(newAttrs);
-        return new EditBoxAction(typeList, positionMap, tracker, layoutProvider, type, after);
+        return new EditBoxAction(typeList, positionMap, tracker, layoutProvider, integrityService, resolutionDialog, type, after);
     }
 
     private Type findType(String typeKey) {
