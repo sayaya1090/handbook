@@ -196,6 +196,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
         input.addEventListener("blur", e -> commit.run());
         input.addEventListener("keydown", e -> {
+            e.stopPropagation();
             elemental2.dom.KeyboardEvent ke = (elemental2.dom.KeyboardEvent) e;
             if ("Enter".equals(ke.key)) input.blur();
             else if ("Escape".equals(ke.key)) { input.value = type.id(); input.blur(); }
@@ -227,6 +228,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
 
         input.addEventListener("blur", e -> commit.run());
         input.addEventListener("keydown", e -> {
+            e.stopPropagation();
             elemental2.dom.KeyboardEvent ke = (elemental2.dom.KeyboardEvent) e;
             if ("Enter".equals(ke.key)) input.blur();
             else if ("Escape".equals(ke.key)) { input.value = type.version(); input.blur(); }

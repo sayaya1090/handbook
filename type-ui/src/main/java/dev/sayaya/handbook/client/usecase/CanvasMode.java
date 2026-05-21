@@ -53,6 +53,10 @@ public class CanvasMode {
         }
         @Override
         public void onCanvasKeyDown(elemental2.dom.KeyboardEvent e, Runnable action) {
+            // TYPE 모드에서는 텍스트 편집을 위해 방향키 캔버스 이벤트를 차단한다.
+            if (e.key != null && e.key.startsWith("Arrow")) {
+                return;
+            }
             action.run();
         }
     }
