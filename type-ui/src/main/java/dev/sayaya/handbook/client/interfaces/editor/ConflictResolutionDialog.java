@@ -78,7 +78,7 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
 
             String title = currentLabels.getOrDefault(titleKey, "Adjust Period");
             String desc = currentLabels.getOrDefault(descKey, "Change '{id}' to [{start} ~ {end}].")
-                    .replace("{id}", p.targetId())
+                    .replace("{id}", p.targetKey())
                     .replace("{start}", dev.sayaya.handbook.client.usecase.DateFormatter.format(p.newStart()))
                     .replace("{end}", dev.sayaya.handbook.client.usecase.DateFormatter.format(p.newEnd()));
 

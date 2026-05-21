@@ -19,7 +19,7 @@ public class IntegrityAnalysisService {
     public record AnalysisResult(boolean valid, String refId, double coverageStart, double coverageEnd, List<ResolutionProposal> proposals) {}
 
     public enum ProposalType { ADJUST_OWNER, EXTEND_REFERENCE }
-    public record ResolutionProposal(ProposalType type, String targetId, double newStart, double newEnd, boolean targetIsOwner) {}
+    public record ResolutionProposal(ProposalType type, String targetKey, double newStart, double newEnd, boolean targetIsOwner) {}
 
     @Inject
     IntegrityAnalysisService(TypeList typeList) {
@@ -68,7 +68,7 @@ public class IntegrityAnalysisService {
         if (isSafeToAdjustOwner(owner, recStart, recEnd, typesContext)) {
             proposals.add(new ResolutionProposal(
                 ProposalType.ADJUST_OWNER,
-                owner.id(),
+                owner.key(),
                 recStart, recEnd, true
             ));
         }
@@ -79,7 +79,7 @@ public class IntegrityAnalysisService {
             if (isSafeToExpandReference(ref, owner.effectDateTime(), owner.expireDateTime(), typesContext)) {
                 proposals.add(new ResolutionProposal(
                     ProposalType.EXTEND_REFERENCE,
-                    referencedId,
+                    ref.key(),
                     owner.effectDateTime(), owner.expireDateTime(), false
                 ));
             }

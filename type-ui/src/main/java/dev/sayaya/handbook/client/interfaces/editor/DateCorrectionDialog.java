@@ -36,7 +36,7 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
     private Consumer<DateResult> callback;
     private Type currentType;
 
-    public record DateResult(double effect, double expire) {}
+    public record DateResult(double effect, double expire, dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ResolutionProposal proposal) {}
 
     @Inject
     DateCorrectionDialog(ToastContainer toastContainer, IntegrityAnalysisService integrityService, ConflictResolutionDialog resolutionDialog) {
@@ -113,7 +113,7 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
                 return;
             }
             
-            if (callback != null) callback.accept(new DateResult(effect, expire));
+            if (callback != null) callback.accept(new DateResult(effect, expire, null));
             toastContainer.show(ToastLevel.SUCCESS, "Date corrected for " + currentType.id());
             _this.close();
         } catch (IllegalArgumentException e) {
@@ -123,15 +123,17 @@ public class DateCorrectionDialog implements IsElement<HTMLElement> {
     }
 
     private void resolve(IntegrityAnalysisService.ResolutionProposal p, Type mutated) {
-        elemental2.dom.DomGlobal.console.error("[DateCorrectionDialog] resolve() - proposal: " + p.type() + ", mutated: " + mutated.id());
-        if (p.type() == IntegrityAnalysisService.ProposalType.ADJUST_OWNER) {
+        elemental2.dom.DomGlobal.console.error("[DateCorrectionDialog] resolve() - proposal: " + p.type() + ", targetKey: " + p.targetKey() + ", mutated: " + mutated.id());
+        
+        if (p.targetKey().equals(currentType.key())) {
+            // 제안이 현재 편집 중인 타입에 대한 것이면 (사용자 입력을 덮어씀)
             mutated.effectDateTime(p.newStart());
             mutated.expireDateTime(p.newEnd());
+            if (callback != null) callback.accept(new DateResult(mutated.effectDateTime(), mutated.expireDateTime(), null));
+        } else {
+            // 제안이 다른 타입(부모/자식 등)에 대한 것이면, 현재 타입의 변경과 함께 제안을 함께 전달
+            if (callback != null) callback.accept(new DateResult(mutated.effectDateTime(), mutated.expireDateTime(), p));
         }
-        
-        // 최종적으로 보정된 결과로 callback 호출
-        elemental2.dom.DomGlobal.console.error("[DateCorrectionDialog] Calling callback with: " + mutated.effectDateTime() + " ~ " + mutated.expireDateTime());
-        if (callback != null) callback.accept(new DateResult(mutated.effectDateTime(), mutated.expireDateTime()));
         _this.close();
     }
 

@@ -83,12 +83,23 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
     }
 
     private void handleDateCorrection(DateCorrectionDialog.DateResult result) {
-        // ... (이전과 동일)
         Type target = currentType;
         boolean effectChanged = Math.abs(target.effectDateTime() - result.effect()) > 0.1;
         boolean expireChanged = Math.abs(target.expireDateTime() - result.expire()) > 0.1;
 
-        if (!effectChanged && !expireChanged) return;
+        if (!effectChanged && !expireChanged && result.proposal() == null) return;
+
+        List<Action> actions = new ArrayList<>();
+        if (effectChanged || expireChanged) {
+            actions.add(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
+        }
+
+        if (result.proposal() != null) {
+            Type other = typeList.getValue().stream().filter(t -> t.key().equals(result.proposal().targetKey())).findFirst().orElse(null);
+            if (other != null) {
+                actions.add(new EditTBoxDateAction(typeList, tracker, other, result.proposal().newStart(), result.proposal().newEnd()));
+            }
+        }
 
         Type adjacentPrev = null;
         Type adjacentNext = null;
@@ -112,19 +123,24 @@ public class TypePropertyBar implements IsElement<HTMLDivElement> {
             
             confirmDialog.show(message, new String[]{"Yes", "No"}, option -> {
                 if ("Yes".equals(option)) {
-                    // Yes: 복합 액션 생성
-                    List<Action> actions = new ArrayList<>();
-                    actions.add(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
                     if (prev != null) actions.add(new EditTBoxDateAction(typeList, tracker, prev, prev.effectDateTime(), result.effect()));
                     if (next != null) actions.add(new EditTBoxDateAction(typeList, tracker, next, result.expire(), next.expireDateTime()));
-                    actionManager.execute(new ComplexAction(actions.toArray(new Action[0])));
-                } else {
-                    // No: 단일 액션
-                    actionManager.execute(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
                 }
+                
+                if (actions.size() == 1) {
+                    actionManager.execute(actions.get(0));
+                } else if (actions.size() > 1) {
+                    actionManager.execute(new ComplexAction(actions.toArray(new Action[0])));
+                }
+                refresh(java.util.Collections.singleton(target.key()), typeList.getValue());
             });
         } else {
-            actionManager.execute(new EditTBoxDateAction(typeList, tracker, target, result.effect(), result.expire()));
+            if (actions.size() == 1) {
+                actionManager.execute(actions.get(0));
+            } else if (actions.size() > 1) {
+                actionManager.execute(new ComplexAction(actions.toArray(new Action[0])));
+            }
+            refresh(java.util.Collections.singleton(target.key()), typeList.getValue());
         }
     }
 
