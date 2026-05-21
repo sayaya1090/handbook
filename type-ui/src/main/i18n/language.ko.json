@@ -23,5 +23,8 @@
   "type.conflict.adjust_owner.desc": "'{id}'의 유효기간을 [{start} ~ {end}]로 축소하여 참조 대상에 맞춥니다.",
   "type.conflict.extend_ref.title": "참조 대상 기간 확장",
   "type.conflict.extend_ref.desc": "'{id}'의 유효기간을 [{start} ~ {end}]로 확장합니다.",
+  "type.conflict.message.rename": "참조된 타입 '{id}'의 이름이 변경되었거나 삭제되었습니다. 이 타입을 가리키는 참조를 업데이트하거나 제거해야 합니다.",
+  "type.conflict.update_ref.title": "참조 업데이트",
+  "type.conflict.update_ref.desc": "'{id}'에 정의된 속성을 새로운 이름으로 자동 업데이트합니다.",
   "type.error.delete_conflict": "해당 타입을 참조하는 다른 타입이 존재하여 삭제할 수 없습니다."
 }
