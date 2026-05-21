@@ -18,7 +18,7 @@ public class IntegrityAnalysisService {
 
     public record AnalysisResult(boolean valid, String refId, double coverageStart, double coverageEnd, List<ResolutionProposal> proposals) {}
 
-    public enum ProposalType { ADJUST_OWNER, EXTEND_REFERENCE }
+    public enum ProposalType { ADJUST_OWNER, EXTEND_REFERENCE, UPDATE_REFERENCE }
     public record ResolutionProposal(ProposalType type, String targetKey, double newStart, double newEnd, boolean targetIsOwner) {}
 
     @Inject
@@ -105,7 +105,13 @@ public class IntegrityAnalysisService {
                 }
                 if (refs.contains(originalType.id())) {
                     // ID 변경으로 인한 참조 깨짐 충돌
-                    conflicts.add(new AnalysisResult(false, originalType.id(), -1, -1, new ArrayList<>()));
+                    List<ResolutionProposal> proposals = new ArrayList<>();
+                    proposals.add(new ResolutionProposal(
+                        ProposalType.UPDATE_REFERENCE,
+                        other.key(),
+                        0, 0, false
+                    ));
+                    conflicts.add(new AnalysisResult(false, originalType.id(), -1, -1, proposals));
                 }
             }
         }

@@ -121,4 +121,66 @@ internal class ReferenceIntegrityTest: GwtTestSpec({
             }
         }
     }
+
+    Given("타입 간 참조가 설정된 환경") {
+        page.setViewportSize(1280, 720)
+        page.addInitScript("""
+            (function() {
+                const infinity = 253402214400000.0;
+                window.__mock_layouts = [
+                    { id: "l1", workspace: "demo", effect_date_time: 0, expire_date_time: infinity, positions: { "parent-type:1.0": { x: 10, y: 10, width: 200, height: 150 }, "child-type:1.0": { x: 250, y: 10, width: 200, height: 150 } } }
+                ];
+                window.__mock_types = {
+                    "0:253402214400000": [
+                        { id: "parent-type", version: "1.0", effect_date_time: 0, expire_date_time: infinity, attributes: [
+                            { id: "attr-1", name: "childRef", type: { type: "document", referenced_type: "child-type" }, nullable: false, inherited: false, order: 1 }
+                        ] },
+                        { id: "child-type", version: "1.0", effect_date_time: 0, expire_date_time: infinity, attributes: [] }
+                    ]
+                };
+                window.__mock_positions = {
+                    "0:253402214400000": {
+                        "parent-type:1.0": { x: 10, y: 10, width: 200, height: 150 },
+                        "child-type:1.0": { x: 250, y: 10, width: 200, height: 150 }
+                    }
+                };
+            })()
+        """.trimIndent())
+        page.reload()
+        page.evaluate("""
+            (function() {
+                var detail = { workspaceId: 'demo' };
+                window.dispatchEvent(new CustomEvent('handbook-workspace-context', {detail: JSON.stringify(detail), bubbles: false}));
+            })()
+        """.trimIndent())
+        page.waitForSelector(".type-box[data-type-key='parent-type:1.0']")
+
+        When("자식 타입의 이름을 변경하면") {
+            // TYPE 모드로 전환
+            page.locator(".type-mode-toggle button").nth(1).click()
+            
+            // 인라인 이름 편집 진입
+            page.dblclick(".type-box[data-type-key='child-type:1.0'] .type-name")
+            val input = page.locator(".type-box[data-type-key='child-type:1.0'] .type-name-input")
+            input.fill("renamed-child")
+            input.press("Enter")
+
+            Then("참조 무결성 충돌 다이얼로그(Update References)가 표시된다") {
+                val dialog = page.locator("#conflict-resolution-dialog[open]")
+                dialog.waitFor()
+                dialog.textContent() shouldContain "renamed or deleted"
+            }
+
+            When("Update References 제안을 수락하면") {
+                page.click(".conflict-proposal-card:has-text('Update References') button")
+                page.waitForSelector("#conflict-resolution-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
+
+                Then("부모 타입의 참조 대상이 새로운 이름으로 자동 업데이트된다") {
+                    val attrRow = page.locator(".type-box[data-type-key='parent-type:1.0'] .type-attr-row:has-text('childRef')")
+                    attrRow.waitFor()
+                    attrRow.textContent() shouldContain "renamed-child"
+                }
+            }
+        }
+    }
 })

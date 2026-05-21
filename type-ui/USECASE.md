@@ -799,7 +799,7 @@ sequenceDiagram
 | UC-T26 (ID 폴백) | 타입 조회 (초기 로딩 및 전환) | API 어댑터, 에이전트 연동 | Application, WorkspaceEventListener | ✅ 구현 완료 (CollaborationTest: URL에서 ID 추출 검증) |
 | UC-T27 (새 버전 생성) | 타입 새 버전 생성 시퀀스 | Action 계층, 상태 관리, API 어댑터 | SchemaEvolutionAction, LayoutProvider, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
 | UC-T28 (기간 편집) | 타입 유효기간 편집 시퀀스 | Action 계층, 상태 관리, API 어댑터 | EditTBoxDateAction, TypePropertyBar, TypeInspectorPanel, TypeBottomSheet, TypeApi | ✅ 구현 완료 (VersioningTest.kt) |
-| UC-T29 (참조 보정) | — | 정합성 엔진, 다이얼로그, Action 계층 | IntegrityAnalysisService, ConflictResolutionDialog, DateCorrectionDialog, ComplexAction | ✅ 구현 완료 (ReferenceIntegrityTest.kt) |
+| UC-T29 (참조 보정) | — | 정합성 엔진, 다이얼로그, Action 계층 | IntegrityAnalysisService, ConflictResolutionDialog, DateCorrectionDialog, ComplexAction | ✅ 구현 완료 (ReferenceIntegrityTest.kt) - 이름 변경 시 자동 참조 갱신(Update References) 포함 |
 
 ---
 

@@ -60,6 +60,20 @@ public class EditBoxAction implements Action {
                     after.expireDateTime(p.newEnd());
                 } else if (p.type() == IntegrityAnalysisService.ProposalType.EXTEND_REFERENCE) {
                     // 참조 대상 타입의 기간을 확장하는 액션은 별도 처리 (이번엔 생략)
+                } else if (p.type() == IntegrityAnalysisService.ProposalType.UPDATE_REFERENCE) {
+                    // 다른 타입의 참조를 새 ID로 자동 업데이트
+                    for (Type t : typeList.getValue()) {
+                        if (t.key().equals(p.targetKey()) && t.attributes() != null) {
+                            Attribute[] newAttrs = new Attribute[t.attributes().length];
+                            for (int i = 0; i < t.attributes().length; i++) {
+                                newAttrs[i] = updateAttributeRef(t.attributes()[i], before.id(), after.id());
+                            }
+                            Type tAfter = t.withAttributes(newAttrs);
+                            tracker.trackChange(tAfter.key(), t, tAfter, (b, a) -> isSameTypeStatic(b, a));
+                            typeList.update(t, tAfter);
+                            break;
+                        }
+                    }
                 }
                 // 보정된 상태로 실행
                 executeAction();
@@ -67,6 +81,45 @@ public class EditBoxAction implements Action {
             return;
         }
         executeAction();
+    }
+
+    private Attribute updateAttributeRef(Attribute attr, String oldId, String newId) {
+        dev.sayaya.handbook.domain.AttributeType newType = updateAttrTypeRef(attr.type(), oldId, newId);
+        Attribute newAttr = dev.sayaya.handbook.domain.Attribute.create(
+            attr.id(), attr.name(), attr.order(), newType
+        );
+        newAttr.description(attr.description());
+        newAttr.nullable(attr.nullable());
+        newAttr.inherited(attr.inherited());
+        newAttr.readRoles(attr.readRoles());
+        newAttr.writeRoles(attr.writeRoles());
+        return newAttr;
+    }
+
+    private dev.sayaya.handbook.domain.AttributeType updateAttrTypeRef(dev.sayaya.handbook.domain.AttributeType type, String oldId, String newId) {
+        if (type == null) return null;
+        String ref = type.referencedType();
+        if (oldId.equals(ref)) ref = newId;
+        
+        dev.sayaya.handbook.domain.AttributeType newType = dev.sayaya.handbook.domain.AttributeType.create(type.type());
+        newType.referencedType(ref);
+        newType.elementType(updateAttrTypeRef(type.elementType(), oldId, newId));
+        newType.keyType(updateAttrTypeRef(type.keyType(), oldId, newId));
+        newType.valueType(updateAttrTypeRef(type.valueType(), oldId, newId));
+        newType.min(type.min());
+        newType.max(type.max());
+        newType.regexPatterns(type.regexPatterns());
+        newType.allowedValues(type.allowedValues());
+        newType.before(type.before());
+        newType.after(type.after());
+        newType.extensions(type.extensions());
+        return newType;
+    }
+
+    private static boolean isSameTypeStatic(Type b, Type a) {
+        if (b == a) return true;
+        if (b == null || a == null) return false;
+        return elemental2.core.Global.JSON.stringify(b).equals(elemental2.core.Global.JSON.stringify(a));
     }
 
     private void executeAction() {

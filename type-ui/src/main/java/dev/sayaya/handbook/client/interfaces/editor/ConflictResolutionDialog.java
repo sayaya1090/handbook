@@ -61,10 +61,17 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
 
         // 다이얼로그 타이틀을 내부에서 직접 렌더링하도록 수정
         String headline = currentLabels.getOrDefault("type.conflict.headline", "Integrity Conflict Detected");
-        String message = currentLabels.getOrDefault("type.conflict.message", "The referenced type '{id}' is only available from {start} to {end}.")
+        
+        String message;
+        if (result.coverageStart() == -1 && result.coverageEnd() == -1) {
+             message = currentLabels.getOrDefault("type.conflict.message.rename", "The referenced type '{id}' has been renamed or deleted. References to this type must be updated or removed.")
+                .replace("{id}", result.refId());
+        } else {
+             message = currentLabels.getOrDefault("type.conflict.message", "The referenced type '{id}' is only available from {start} to {end}.")
                 .replace("{id}", result.refId())
-                .replace("{start}", result.coverageStart() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(result.coverageStart()))
-                .replace("{end}", result.coverageEnd() == -1 ? "N/A" : dev.sayaya.handbook.client.usecase.DateFormatter.format(result.coverageEnd()));
+                .replace("{start}", dev.sayaya.handbook.client.usecase.DateFormatter.format(result.coverageStart()))
+                .replace("{end}", dev.sayaya.handbook.client.usecase.DateFormatter.format(result.coverageEnd()));
+        }
 
         proposalContainer.innerHTML = "";
         proposalContainer.appendChild(org.jboss.elemento.Elements.h(3, headline).css("conflict-headline").element());
@@ -72,15 +79,27 @@ public class ConflictResolutionDialog implements IsElement<HTMLElement> {
         
         for (ResolutionProposal p : result.proposals()) {
             String titleKey = p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.ADJUST_OWNER 
-                    ? "type.conflict.adjust_owner.title" : "type.conflict.extend_ref.title";
+                    ? "type.conflict.adjust_owner.title" 
+                    : (p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.EXTEND_REFERENCE 
+                        ? "type.conflict.extend_ref.title" 
+                        : "type.conflict.update_ref.title");
             String descKey = p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.ADJUST_OWNER 
-                    ? "type.conflict.adjust_owner.desc" : "type.conflict.extend_ref.desc";
+                    ? "type.conflict.adjust_owner.desc" 
+                    : (p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.EXTEND_REFERENCE 
+                        ? "type.conflict.extend_ref.desc" 
+                        : "type.conflict.update_ref.desc");
 
-            String title = currentLabels.getOrDefault(titleKey, "Adjust Period");
-            String desc = currentLabels.getOrDefault(descKey, "Change '{id}' to [{start} ~ {end}].")
+            String title = currentLabels.getOrDefault(titleKey, p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.UPDATE_REFERENCE ? "Update References" : "Adjust Period");
+            String desc;
+            if (p.type() == dev.sayaya.handbook.client.usecase.IntegrityAnalysisService.ProposalType.UPDATE_REFERENCE) {
+                desc = currentLabels.getOrDefault(descKey, "Update attributes in '{id}' to point to the new name.")
+                    .replace("{id}", p.targetKey());
+            } else {
+                desc = currentLabels.getOrDefault(descKey, "Change '{id}' to [{start} ~ {end}].")
                     .replace("{id}", p.targetKey())
                     .replace("{start}", dev.sayaya.handbook.client.usecase.DateFormatter.format(p.newStart()))
                     .replace("{end}", dev.sayaya.handbook.client.usecase.DateFormatter.format(p.newEnd()));
+            }
 
             var card = div().css("type-card", "conflict-proposal-card")
                     .add(div().css("conflict-proposal-content")
