@@ -419,8 +419,9 @@ sequenceDiagram
 | **액터** | 사용자, AI 에이전트 |
 | **선행조건** | `ChangeTracker.hasChanges() == true` (상태바 저장 버튼 활성화 상태) |
 | **정상 흐름 (저장)** | 1. 사용자가 상단 바의 **[Save]** 버튼을 클릭한다.<br>2. `SaveAction`은 `ChangeTracker`를 조회하여 **실제로 변경된 타입과 레이아웃(LAYOUT:{id})만** 수집한다.<br>3. **저장 전역 검증 (Pre-save Validation)**: 변경된 타입을 중심으로 정방향(참조하는 대상) 및 역방향(참조받는 대상) 무결성을 교차 스캔하여 위반 발견 시 저장을 중단하고 에러 토스트를 표시한다.<br>4. 각 객체의 **기존 리비전(`rev`)을 요청 페이로드에 포함**하여 낙관적 잠금(Optimistic Locking)을 지원한다.<br>5. `PATCH /workspaces/{ws}/schema` API를 단일 호출로 실행한다.<br>6. 서버가 성공 응답과 함께 **최신 리비전이 포함된 객체 목록**을 반환하면, 이를 `TypeList` 및 `LayoutProvider`에 즉시 동기화한다.<br>7. 성공 시 `ChangeTracker`와 `ActionManager`를 초기화한다. |
-| **정상 흐름 (로드)** | 상태바 Reload 버튼 → `LoadAction` 실행. 서버에서 최신 데이터(타입 및 레이아웃)를 다시 로드한다. 미저장 변경 사항은 소실된다. |
+| **정상 흐름 (로드)** | 상태바 Reload 버튼 → `LoadAction` 실행. `ChangeTracker.hasChanges()`가 true이면 미저장 변경 사항 소실에 대한 컨펌 다이얼로그를 표시하며, 승인 시에만 서버에서 데이터를 다시 로드한다. |
 | **결과 정합성** | 변경된 개체만 효율적으로 전송하며, 리비전 동기화를 통해 페이지 새로고침 없이 연속적인 저장이 가능하다. |
+| **비고** | 변경 사항이 없을 때는 컨펌 없이 즉시 다시 로드된다. |
 
 ```mermaid
 sequenceDiagram

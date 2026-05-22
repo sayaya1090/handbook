@@ -4,6 +4,7 @@
   "type.save": "Save",
   "type.undo": "Undo",
   "type.redo": "Redo",
+  "type.reload.confirm": "Unsaved changes exist. Are you sure you want to discard them and reload?",
   "type.attr.name": "Name",
   "type.attr.type": "Type",
   "type.attr.description": "Description",

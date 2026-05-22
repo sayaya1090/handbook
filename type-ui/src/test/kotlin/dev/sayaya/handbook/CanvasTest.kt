@@ -4,6 +4,7 @@ import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 
 /**
  * UC-T1: 타입 조회
@@ -159,6 +160,50 @@ internal class CanvasTest: GwtTestSpec({
         // UC-T1: 스냅 버튼
         Then("스냅 버튼이 존재한다") {
             page.querySelector(".type-snap-button") shouldNotBe null
+        }
+
+        // UC-T10: Reload 버튼 컨펌 로직
+        When("변경사항이 있을 때 Reload 버튼을 클릭하면") {
+            // 앞선 테스트들(삭제, 생성 등)로 인해 이미 변경사항이 있는 상태임
+            page.click(".type-ctrl-btn-reload")
+            Thread.sleep(500)
+            
+            Then("경고 컨펌 다이얼로그가 표시된다") {
+                val dialog = page.waitForSelector("md-dialog[open]")
+                dialog shouldNotBe null
+                dialog.textContent() shouldContain "Unsaved changes"
+            }
+            
+            When("다이얼로그에서 No를 클릭하면") {
+                page.click("md-dialog[open] md-text-button:has-text('No')")
+                Thread.sleep(500)
+                
+                Then("다이얼로그가 닫히고 캔버스는 유지된다") {
+                    val dialog = page.querySelector("md-dialog[open]")
+                    dialog shouldBe null
+                }
+            }
+
+            When("다이얼로그에서 Yes를 클릭하면") {
+                page.click(".type-ctrl-btn-reload")
+                Thread.sleep(500)
+                page.click("md-dialog[open] md-text-button:has-text('Yes')")
+                Thread.sleep(1000)
+                
+                Then("다이얼로그가 닫히고 변경사항이 초기화된다") {
+                    val dialog = page.querySelector("md-dialog[open]")
+                    dialog shouldBe null
+                }
+            }
+        }
+        
+        When("변경사항이 없을 때(초기화 후) Reload 버튼을 클릭하면") {
+            page.click(".type-ctrl-btn-reload")
+            Thread.sleep(500)
+            Then("컨펌 다이얼로그가 뜨지 않고 새로고침된다") {
+                val dialog = page.querySelector("md-dialog[open]")
+                dialog shouldBe null
+            }
         }
     }
 })
