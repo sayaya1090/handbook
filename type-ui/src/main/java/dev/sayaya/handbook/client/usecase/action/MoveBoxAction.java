@@ -42,6 +42,7 @@ public class MoveBoxAction implements Action {
     public void execute() {
         typeKeys.forEach(key -> {
             dev.sayaya.handbook.domain.Position before = positionMap.get(key);
+            if (before == null) before = dev.sayaya.handbook.domain.Position.of(20, 20, 240, 160);
             positionMap.move(key, dx, dy);
             dev.sayaya.handbook.domain.Position after = positionMap.get(key);
             tracker.trackChange(key + ":position", before, after, this::isSamePosition);
@@ -52,9 +53,9 @@ public class MoveBoxAction implements Action {
     @Override
     public void rollback() {
         typeKeys.forEach(key -> {
-            dev.sayaya.handbook.domain.Position before = positionMap.get(key);
+            dev.sayaya.handbook.domain.Position before = positionMap.get(key); // 이건 after 위치
             positionMap.move(key, -dx, -dy);
-            dev.sayaya.handbook.domain.Position after = positionMap.get(key);
+            dev.sayaya.handbook.domain.Position after = positionMap.get(key); // 이건 복원된 before 위치
             tracker.trackChange(key + ":position", after, after, this::isSamePosition); // 원상 복구
         });
         markLayoutChanged();

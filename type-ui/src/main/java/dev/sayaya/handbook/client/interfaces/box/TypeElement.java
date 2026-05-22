@@ -283,7 +283,9 @@ public class TypeElement implements IsElement<HTMLDivElement> {
                 startXY[0] = (int) me.clientX;
                 startXY[1] = (int) me.clientY;
                 startPos[0] = positionMap.get(type.key());
-                if (startPos[0] == null) return;
+                if (startPos[0] == null) {
+                    startPos[0] = Position.of(20, 20, 240, 160);
+                }
 
                 elemental2.dom.EventListener moveListener = new elemental2.dom.EventListener() {
                     @Override public void handleEvent(elemental2.dom.Event evt) {

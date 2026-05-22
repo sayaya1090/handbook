@@ -62,7 +62,9 @@ public class PositionMap {
 
     public void move(String typeKey, int dx, int dy) {
         Position current = get(typeKey);
-        if (current == null) return;
+        if (current == null) {
+            current = Position.of(20, 20, 240, 160);
+        }
         put(typeKey, current.move(dx, dy));
     }
 
