@@ -104,6 +104,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         versionLabel.textContent = type.version();
         versionLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
+            if (type.rev() > 0) return;
             canvasMode.getCurrentState().onVersionDblClick(e, this::startVersionEdit);
         });
 

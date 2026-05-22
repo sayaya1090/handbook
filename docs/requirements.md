@@ -137,6 +137,7 @@ flowchart LR
 ### 2.4 Type (문서 타입/스키마)
 
 - 속성: id, version, effectDateTime, expireDateTime, description, primitive, parent
+- **조건부 불변 식별자**: 타입 ID와 버전은 서버에 최초 저장(Persistent, rev > 0)된 이후에는 변경할 수 없다. 아직 저장되지 않은 신규 타입(Transient, rev = 0)인 경우에만 편집을 허용한다.
 - 버전 관리를 지원한다 (이전/다음 버전 링크, HATEOAS).
 - 계층 구조를 지원한다 (parent를 통한 타입 상속).
 - 유효 기간(effectDateTime ~ expireDateTime)으로 시간 기반 버전을 관리한다.
@@ -254,6 +255,7 @@ flowchart LR
 ### 3.4 타입(Type) 관리
 
 - 워크스페이스 내에서 문서 타입(스키마)을 정의할 수 있다.
+- **식별자 무결성**: 한 번 서버에 저장되어 정식 식별자가 된 타입의 이름(ID)과 버전은 변경할 수 없다. 단, 저장 전(rev=0) 단계에서는 자유로운 수정이 가능하다.
 - 타입은 속성(Attribute)의 집합으로 구성된다.
 - 타입 변경 시 기존 버전은 보존되고 새 버전이 생성된다 (불변 이력).
 - 계층 구조(parent)를 통한 타입 상속을 지원한다.
@@ -356,6 +358,7 @@ flowchart LR
 #### 타입 관리 (Type Editor)
 
 - 타입의 속성(Attribute)을 추가·삭제하고 Validator를 설정할 수 있다.
+- 타입 ID와 버전은 서버 저장 여부(rev)에 따라 편집 가능 여부가 결정된다 (rev=0: 편집 가능, rev>0: 읽기 전용).
 - Undo/Redo를 지원한다.
 
 #### 타입 시각화 (Type Canvas)
@@ -1949,5 +1952,8 @@ visible(menu, state) =
 - **AssistantService 분리**: 255줄 → SubAgentOrchestrator, ExecutionLifecycleManager, AuditingService 3클래스.
 - **테스트 커버리지 80% (미구현)**: 전 모듈 Kover 최소 커버리지 충족. 에러 경로/타임아웃 테스트 보강.
 - **누락 Javadoc 보완 (미구현)**: 헬퍼/유틸리티 클래스 문서화.
+문서화.
+�.
+ **누락 Javadoc 보완 (미구현)**: 헬퍼/유틸리티 클래스 문서화.
 문서화.
 �.

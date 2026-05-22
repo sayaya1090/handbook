@@ -374,13 +374,14 @@ sequenceDiagram
 | **선행조건** | LAYOUT 모드 |
 | **정상 흐름** | 1. 타입 박스 우하단 리사이즈 핸들에서 mousedown.<br>2. mousemove → 박스 크기가 실시간으로 변경된다. (최소 120x60, 스냅 시 20px 단위)<br>3. mouseup → `ResizeTBoxAction`이 실행된다. |
 
-## UC-T6: 타입 이름/버전 편집
+## UC-T6: 타입 이름/버전 편집 (조건부)
 
 | 항목 | 내용 |
 |------|------|
 | **액터** | 사용자 |
-| **선행조건** | TYPE 모드 |
+| **선행조건** | TYPE 모드, 편집 대상 타입의 `rev == 0` (미저장 상태) |
 | **정상 흐름** | 1. 타입 헤더의 이름 또는 버전 배지를 더블클릭한다.<br>2. 텍스트가 input 요소로 전환된다.<br>3. 입력 후 Enter → `EditTBoxAction`이 실행되고 값이 반영된다.<br>4. Esc → 편집이 취소된다. |
+| **비고** | 서버에 한 번이라도 저장된 타입(`rev > 0`)은 이름과 버전을 수정할 수 없으며, 더블클릭 시 편집 불가 안내 토스트를 표시한다. |
 
 ## UC-T7: 속성 추가/편집
 
@@ -776,7 +777,7 @@ sequenceDiagram
 | UC-T3 (삭제) | — | Action 계층, 컨트롤러 | DeleteTBoxAction, RemoveTypeButton, ChangeTracker | ✅ 구현 완료 (CanvasTest: Delete 키 입력 검증) |
 | UC-T4 (이동) | 드래그 & 드롭 | Action 계층, 캔버스, 상태 관리 | DragShapeElement, MoveTBoxAction, PushOutOverlapAction, ComplexAction, GridSnap, PositionMap, SelectedTBoxElement | ✅ 구현 완료 (CanvasTest: 선택 및 드래그(Mock)) |
 | UC-T5 (리사이즈) | 리사이즈 | Action 계층, 캔버스, 상태 관리 | ResizeTBoxAction, TypeElement, GridSnap, PositionMap | ✅ 구현 완료 (CanvasTest: 리사이즈 핸들 존재 확인) |
-| UC-T6 (이름편집) | — | Action 계층, 캔버스, 상태 관리 | TypeElement, EditTBoxAction, CanvasMode | ✅ 구현 완료 (CanvasTest: 타입 이름 편집 확인) |
+| UC-T6 (이름/버전편집) | — | Action 계층, 캔버스, 상태 관리 | TypeElement, EditTBoxAction, CanvasMode | ✅ 구현 완료 (CanvasTest: 조건부 편집 확인) |
 | UC-T7 (속성) | 속성 편집 | Action 계층, 속성 편집 다이얼로그, 캔버스 | AttributeEditorDialog, ValidatorEditorFactory, ValidatorEditor, ArrayValidatorEditor, MapValidatorEditor, EditTBoxAction | ✅ 구현 완료 (CanvasTest: 속성 표시 검증) |
 | UC-T8 (기간이동) | — | Action 계층, 컨트롤러, 상태 관리 | ChangeLayoutAction, BeforeButton, AfterButton, LayoutProvider, LayoutList | ✅ 구현 완료 (CanvasTest: Before/After 버튼 확인, TypeEditorRegressionTest: 기간 라벨 표시) |
 | UC-T9 (Undo) | 에이전트 타입 조작 | Action 계층, 컨트롤러 | ActionManager, UndoButton, RedoButton | ✅ 구현 완료 (CanvasTest: Undo/Redo 기능 검증) |
@@ -818,4 +819,5 @@ sequenceDiagram
     - **Navigate**: `#!type/{workspaceId}`
     - **Highlight**: `.type-card[data-id='{typeKey}']`, `.type-attr-row[data-id='{attrKey}']`, `.type-speed-dial`, `.type-floating-pill`, `.type-floating-toolbar`
     - **Mutate**: `CREATE type`, `DELETE type`, `ADD field`, `REMOVE field`, `SET type`
+    - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
     - **Selector**: 캔버스 내 개체는 `data-id` 속성을 통해 정밀 제어 가능.
