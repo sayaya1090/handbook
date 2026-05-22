@@ -358,7 +358,7 @@ flowchart LR
 #### 타입 관리 (Type Editor)
 
 - 타입의 속성(Attribute)을 추가·삭제하고 Validator를 설정할 수 있다.
-- 타입 ID와 버전은 서버 저장 여부(rev)에 따라 편집 가능 여부가 결정된다 (rev=0: 편집 가능, rev>0: 읽기 전용).
+- 타입 ID와 버전은 서버 저장 여부(rev)에 따라 편집 가능 여부가 결정된다 (rev < 0: 편집 가능, rev >= 0: 읽기 전용).
 - Undo/Redo를 지원한다.
 
 #### 타입 시각화 (Type Canvas)
@@ -1956,4 +1956,6 @@ visible(menu, state) =
 �.
  **누락 Javadoc 보완 (미구현)**: 헬퍼/유틸리티 클래스 문서화.
 문서화.
+�.
+서화.
 �.

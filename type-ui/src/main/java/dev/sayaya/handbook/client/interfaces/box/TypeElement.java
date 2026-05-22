@@ -97,6 +97,7 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         nameLabel.textContent = type.id();
         nameLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
+            if (type.rev() >= 0) return;
             canvasMode.getCurrentState().onNameDblClick(e, this::startInlineEdit);
         });
 
@@ -104,10 +105,9 @@ public class TypeElement implements IsElement<HTMLDivElement> {
         versionLabel.textContent = type.version();
         versionLabel.addEventListener("dblclick", e -> {
             e.stopPropagation();
-            if (type.rev() > 0) return;
+            if (type.rev() >= 0) return;
             canvasMode.getCurrentState().onVersionDblClick(e, this::startVersionEdit);
         });
-
         valueList = new ValueListElement();
         valueList.setOnEdit(this::editAttribute);
         valueList.setOnDelete(this::deleteAttribute);
