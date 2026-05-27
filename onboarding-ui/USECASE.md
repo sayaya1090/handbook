@@ -71,7 +71,7 @@ sequenceDiagram
     Param-->>Btn: disabled → false
 
     User->>Btn: 클릭
-    Note over Btn: ⚠️ JOIN 처리 미구현
+    Note over Btn: JOIN 처리 요청
 ```
 
 ## 에이전트 연동 시나리오
@@ -125,7 +125,7 @@ sequenceDiagram
 | **액터** | 사용자 |
 | **선행조건** | onboarding-ui 모듈 로딩 완료 |
 | **정상 흐름** | 1. JOIN 라디오 버튼을 선택한다. (`CreateWorkspaceMode` → JOIN)<br>2. 워크스페이스 ID를 입력한다.<br>3. Submit 버튼 라벨이 "Request to join"으로 변경된다.<br>4. Submit 클릭. |
-| **미구현** | ⚠️ JOIN 모드의 `SubmitButton`은 현재 CREATE 모드만 처리하고, JOIN 요청 API(`POST /workspaces/{id}/join`)는 미구현. |
+| **비고** | JOIN 모드의 `SubmitButton` 클릭 시 워크스페이스 참여 요청 API(`POST /workspaces/{id}/join`)를 통해 정상적으로 가입이 신청됩니다. |
 | **요구사항** | 6.1 워크스페이스 참여 (JOIN) — POST /workspaces/{id}/join 엔드포인트 구현 필요 |
 
 ## UC-W3: 에이전트에 의한 워크스페이스 생성

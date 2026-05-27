@@ -7,7 +7,7 @@
 - **assistant** — 내부 에이전트 실행 전체를 `AuditEntry` 로 기록
   - `usecase/AuditService.kt`, `domain/AuditEntry.kt`
   - `interfaces/api/AuditController.kt` → `GET /assistant/audit`
-- **gateway** — 외부 AI 에이전트 호출 시 `caller_type=external_agent` 로 감사 엔트리 생성
+- **gateway** — 외부 AI 에이전트 호출 시 `caller_type=external_agent` 로 감사 엔트리 생성 (현재 미구현 - 향후 구현 예정)
 - **(후속) mcp-server** — `caller_type=mcp_client` 로 감사 엔트리 생성
 - **command-*** — (예정) 사용자 직접 액션도 감사 추적 확대 (§6.9)
 
@@ -57,7 +57,7 @@ enum class CallerType {
 ## Caller Type 구분 로직
 
 - **INTERNAL_AGENT**: 내부 `assistant` 모듈이 Kafka 이벤트를 통해 액션을 수행할 때 발행. `executionId` 가 필수로 동반됨.
-- **EXTERNAL_AGENT**: 외부 시스템이 Personal Access Token(PAT)을 사용하여 REST API를 호출할 때 Gateway의 `AuditFilter`가 생성. `caller_id` 에는 토큰의 식별자가 기록됨.
+- **EXTERNAL_AGENT**: 외부 시스템이 Personal Access Token(PAT)을 사용하여 REST API를 호출할 때 Gateway의 `AuditFilter`가 생성. `caller_id` 에는 토큰의 식별자가 기록됨. (현재 Gateway의 AuditFilter는 미구현 상태이며 외부 호출에 대한 실시간 AuditEntry 발행은 비활성화 상태입니다. 향후 구현 시 활성화 예정)
 - **USER**: 사용자가 브라우저(UI)를 통해 직접 API를 호출할 때 생성. `caller_id` 는 사용자의 UUID.
 - **MCP_CLIENT**: MCP 서버를 통해 인입된 요청에 대해 부여.
 

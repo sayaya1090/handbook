@@ -5,7 +5,7 @@ Shell이 `ModuleScriptManager`로 `js/type/type.nocache.js`를 동적 로딩하�
 
 ## Mount 패턴
 
-`Application.onModuleLoad()` 은 `WindowRenderBridge.next(render)` 로 shell
+`Application.onModuleLoad()` 은 `RenderSharing.next(render)` 로 shell
 `FrameUpdater` 에 Render 위임. body 직접 append 금지 —
 [`docs/contracts/frame.md`](../../docs/contracts/frame.md).
 
@@ -191,34 +191,21 @@ Document 타입 속성이 다른 타입을 참조할 때 SVG 화살표를 그린
 
 ## 에이전트 연동
 
-에이전트가 현재 캔버스에서 편집 중인 타입 데이터를 읽고, 직접 Action을 실행할 수 있다. 에이전트 편집도 사용자 편집과 동일한 Action/ChangeTracker 경로를 타며, Undo/Redo 가능하다.
+### 내부 assistant
+- 호출 경로: AGENT_COMMAND 대상
+- 시나리오: "customer에 phone 속성 추가해줘" → 에이전트가 `TypeStateProvider`를 통해 상태를 조회한 뒤 `AgentMutationHandler`를 거쳐 `EditBoxAction` 등의 복합 액션을 캔버스 상에서 직접 실행하여 즉시 렌더링하고, 저장/Undo/Redo를 지원합니다.
 
-### 상태 조회 (TypeStateProvider)
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: 없음
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음 (클라이언트 UI 전용 모듈)
+- 감사 경로: `caller_type=EXTERNAL_AGENT` → `AuditEntry` (Gateway 또는 MCP 레이어 경유 시 감사 적용)
 
-`StateProvider` 인터페이스 구현. 현재 캔버스의 타입/속성 정보를 JSON으로 반환한다. 에이전트가 이 정보를 기반으로 지능적인 mutation을 생성할 수 있다.
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
 
-### Mutation 수신 (AgentMutationHandler)
-
-`MutationReceiver`를 구독하여 에이전트의 `MutateCommand` changes 문자열을 Action으로 변환하고 `ActionManager`에서 실행한다. 에이전트 작업도 Ctrl+Z로 되돌릴 수 있다.
-
-| 명령어 | 예시 | 동작 |
-|--------|------|------|
-| `CREATE type:<id>` | `CREATE type:customer` | 새 타입 생성 + 충돌 해소 |
-| `DELETE type:<key>` | `DELETE type:customer:1.0` | 타입 삭제 |
-| `ADD field:<key>:<name>:type=<type>` | `ADD field:customer:1.0:phone:type=text` | 속성 추가 |
-| `REMOVE field:<key>:<name>` | `REMOVE field:customer:1.0:phone` | 속성 삭제 |
-| `SET type:<key>:<prop>=<value>` | `SET type:customer:1.0:description=고객` | 타입 속성 변경 |
-
-### 연동 흐름
-
-```
-사용자: "customer에 phone 속성 추가해줘"
-  -> 에이전트: TypeStateProvider.snapshot()으로 현재 상태 조회
-  -> LLM: changes 배열 생성
-  -> MutateCommand -> MutationReceiver -> AgentMutationHandler
-  -> ActionManager.execute(EditBoxAction) -> 캔버스 즉시 반영
-  -> 사용자: Ctrl+Z로 에이전트 작업 되돌리기 가능
-```
+### Agent Command 타겟
+- navigate: type, canvas, schema
+- highlight/mutate selector 패턴: `.type-container`, `.type-box`, `.type-ctrl-btn`
 
 ---
 

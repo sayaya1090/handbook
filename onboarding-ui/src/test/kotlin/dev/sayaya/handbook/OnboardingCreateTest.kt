@@ -12,7 +12,7 @@ import io.kotest.matchers.shouldNotBe
  * UC-W5: 모바일 반응형 레이아웃
  */
 @GwtHtml("onboardingtest.html")
-internal class WorkspaceCreateTest: GwtTestSpec({
+internal class OnboardingCreateTest: GwtTestSpec({
     Given("워크스페이스 CREATE UI가 초기화됨") {
         // UC-W1: 워크스페이스 생성 — 구조 검증
         Then("다이얼로그(.ws-dialog)가 DOM에 존재한다") {

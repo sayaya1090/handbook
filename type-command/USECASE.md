@@ -184,7 +184,7 @@ sequenceDiagram
 | UC-PT2 | 타입 삭제 | `TypeController.delete()` | `TypeControllerTest`, `TypeServiceTest` | 구현 |
 | UC-PT3 | 레이아웃 저장 | `LayoutController.save()` | `LayoutControllerTest`, `LayoutServiceTest` | 구현 |
 | UC-PT4 | 이벤트 발행 | `KafkaTypeEventPublisher` | `KafkaTypeEventPublisherTest` | 구현 |
-| UC-PT5 | 스키마 일괄 패치 | `SchemaController.patch()` | `SchemaServiceTest` | 미구현 |
+| UC-PT5 | 스키마 일괄 패치 | `SchemaController.patch()` | `SchemaServiceTest` | 구현 완료 |
 | UC-82 | 에이전트 mutate | `TypeController` (PUT/DELETE) | `CollaborationTest` (type-ui) | 구현 |
 
 ---

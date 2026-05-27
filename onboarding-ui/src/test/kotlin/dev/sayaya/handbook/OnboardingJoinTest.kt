@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldNotBe
  * UC-W2: 워크스페이스 참여 요청
  */
 @GwtHtml("onboardingtest.html")
-internal class WorkspaceJoinTest: GwtTestSpec({
+internal class OnboardingJoinTest: GwtTestSpec({
     Given("워크스페이스 JOIN UI가 초기화됨") {
         // UC-W2: JOIN 모드 전환
         Then("JOIN 섹션이 존재한다") {

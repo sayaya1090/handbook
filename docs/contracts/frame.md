@@ -14,7 +14,7 @@ Render 콜백을 넘겨 shell 이 Frame 엘리먼트를 생성·배치·여백 �
 
 ## 소비자 (Consumers)
 
-자식 UI 모듈은 `Application.onModuleLoad()` 에서 `WindowRenderBridge.next(render)` 로
+자식 UI 모듈은 `Application.onModuleLoad()` 에서 `RenderSharing.next(render)` 로
 `Render` 객체(`HTMLElement frame -> boolean`) 를 전달한다. shell 은 Frame 을 만들고
 `onInvoke(frame.element())` 를 호출해 모듈이 frame 내부에 DOM 을 붙일 기회를 제공한다.
 
@@ -37,13 +37,13 @@ Render 콜백을 넘겨 shell 이 Frame 엘리먼트를 생성·배치·여백 �
 
 ```java
 import dev.sayaya.handbook.domain.Render;
-import dev.sayaya.handbook.usecase.WindowRenderBridge;
+import dev.sayaya.handbook.usecase.RenderSharing;
 
 Render render = frame -> {
     frame.append(component.contentElement().element());
     return true;
 };
-WindowRenderBridge.next(render);
+RenderSharing.next(render);
 ```
 
 - `Render` 는 `@JsFunction` 인터페이스 — 모듈 경계(GWT permutation) 를 넘어 전달 가능.
@@ -71,15 +71,15 @@ rail 이 본문 위로 overlay 되는 것이 의도된 동작이기 때문 (MD3 
 
 | 변경 | 체크 항목 |
 |------|----------|
-| 새 UI 모듈 추가 | `Application.onModuleLoad()` 에서 `WindowRenderBridge.next(render)` 사용. body 직접 append 금지. `:agent-bridge` 의존 추가 + `<inherits name="dev.sayaya.handbook.AgentBridge"/>` |
+| 새 UI 모듈 추가 | `Application.onModuleLoad()` 에서 `RenderSharing.next(render)` 사용. body 직접 append 금지. `:agent-bridge` 의존 추가 + `<inherits name="dev.sayaya.handbook.AgentBridge"/>` |
 | `.frame` 레이아웃 변경 | shell.css `.frame` 룰 + 토큰 4종 (app-bar/mobile-tabs/frame-left-offset/drawer-width). 모듈별 컨테이너의 height/width 가정 깨지는지 확인 |
 | 레이아웃 토큰 추가 | 본 문서 토큰 표 갱신 + `docs/contracts/design-tokens.md` 반영 |
-| FrameUpdater API 변경 | `WindowRenderBridge` signature 함께 검토 — `Render` 는 @JsFunction 이라 하위 모듈 재컴파일 필요 |
+| FrameUpdater API 변경 | `RenderSharing` signature 함께 검토 — `Render` 는 @JsFunction 이라 하위 모듈 재컴파일 필요 |
 
 ## 디버깅
 
 | 증상 | 원인 | 해결 |
 |------|------|------|
-| 모듈이 body 에 존재하는데 화면엔 안 보임 | `body{position:fixed; inset:0}` + 이미 점유된 shell `#content{height:100dvh}` 뒤에 스택되어 y=100dvh 에 렌더됨 | `body().add()` → `WindowRenderBridge.next(render)` 로 전환. `FrameUpdater` 가 rail/AppBar 오프셋 + 여백 적용 |
+| 모듈이 body 에 존재하는데 화면엔 안 보임 | `body{position:fixed; inset:0}` + 이미 점유된 shell `#content{height:100dvh}` 뒤에 스택되어 y=100dvh 에 렌더됨 | `body().add()` → `RenderSharing.next(render)` 로 전환. `FrameUpdater` 가 rail/AppBar 오프셋 + 여백 적용 |
 | 패널이 rail 에 가려짐 | rail EXPAND 동적 폭 계산 의존 (과거 문제) | 현재 `.frame` 은 `--shell-frame-left-offset` 고정 폭 사용. rail expand overlay 는 의도 |
 | 모바일 상단 tabs 에 컨텐츠 가려짐 | `.frame` top offset 에 MobileTabs 높이 미포함 | `--shell-mobile-tabs-height` 가 상단 offset 에 합산되는지 확인 |

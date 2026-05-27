@@ -6,7 +6,7 @@ Shell이 `ModuleScriptManager`로 `js/data/data.nocache.js`를 동적 로딩하�
 
 ## Mount 패턴
 
-`Application.onModuleLoad()` 은 `WindowRenderBridge.next(render)` 로 shell
+`Application.onModuleLoad()` 은 `RenderSharing.next(render)` 로 shell
 `FrameUpdater` 에 Render 위임. body 직접 append 금지 —
 [`docs/contracts/frame.md`](../../docs/contracts/frame.md).
 
@@ -59,22 +59,21 @@ Handsontable 6.2.4 (MIT) 라이브러리를 JsInterop으로 래핑한 테이블 
 
 ## 에이전트 연동
 
-### 상태 조회 (DocumentStateProvider)
+### 내부 assistant
+- 호출 경로: AGENT_COMMAND 대상
+- 시나리오: "문서 추가해줘", "셀 편집해줘" → 에이전트가 스프레드시트 상태를 파악한 뒤 `AgentDocumentHandler`를 거쳐 GWT 내의 Action으로 변환하여 셀을 동적으로 추가/편집/삭제하고 원자적으로 저장(Save)합니다.
 
-`StateProvider` 구현. 현재 스프레드시트의 문서 데이터를 JSON으로 반환한다.
+### 외부 AI (Tool Use)
+- 노출 엔드포인트: 없음
+- OpenAPI `summary` / `description` 기입 위치: 해당 없음 (클라이언트 UI 전용 모듈)
+- 감사 경로: `caller_type=EXTERNAL_AGENT` → `AuditEntry` (Gateway 또는 MCP 레이어 경유 시 적용)
 
-### Mutation 수신 (AgentDocumentHandler)
+### (후속) MCP
+- 관련 Tool 매니페스트: 미정
 
-`MutationReceiver`를 구독하여 에이전트 명령을 Action으로 변환한다.
-에이전트 편집도 사용자 편집과 동일한 Action/DirtyTracker 경로를 타며, Undo/Redo 가능하다.
-
-| 명령어 | 동작 |
-|--------|------|
-| `DOC_SELECT <type>` | 타입 탭 전환 (미저장 변경이 있으면 경고) |
-| `DOC_ADD` | 새 문서 추가 (DirtyTracker.created 등록) |
-| `DOC_EDIT <serial> <field> <value>` | 셀 편집 (DirtyTracker.changed 등록) |
-| `DOC_DELETE <serial>` | 문서 삭제 마킹 (DirtyTracker.deleted 등록) |
-| `DOC_SAVE` | 원자적 저장 (토스트: "에이전트가 저장을 요청했습니다") |
+### Agent Command 타겟
+- navigate: document, spreadsheet
+- highlight/mutate selector 패턴: `.doc-container`, `.handsontable`, `.type-ctrl-btn`
 
 ---
 

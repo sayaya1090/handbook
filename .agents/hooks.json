@@ -1,48 +1,53 @@
 {
-  "hooks": {
+  "context-loader": {
     "SessionStart": [
       {
         "matcher": "startup",
         "hooks": [
           {
-            "name": "context-loader",
             "type": "command",
-            "command": "bash \"$GEMINI_PROJECT_DIR\"/.gemini/hooks/context-loader.sh",
+            "command": "bash ./.agents/hooks/context-loader.sh",
             "timeout": 10
           }
         ]
       }
-    ],
+    ]
+  },
+  "route-checkpoint-reminder": {
     "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "\"$GEMINI_PROJECT_DIR\"/.gemini/hooks/route-checkpoint-reminder.sh",
+            "command": "./.agents/hooks/route-checkpoint-reminder.sh",
             "timeout": 5
           }
         ]
       }
-    ],
+    ]
+  },
+  "block-gwt-cache": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "run_command",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$GEMINI_PROJECT_DIR\"/.gemini/hooks/block-gwt-cache.sh",
+            "command": "./.agents/hooks/block-gwt-cache.sh",
             "timeout": 30
           }
         ]
       }
-    ],
+    ]
+  },
+  "detect-korean-hardcode": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "replace_file_content|write_to_file|multi_replace_file_content",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$GEMINI_PROJECT_DIR\"/.gemini/hooks/detect-korean-hardcode.sh",
+            "command": "./.agents/hooks/detect-korean-hardcode.sh",
             "timeout": 10
           }
         ]
