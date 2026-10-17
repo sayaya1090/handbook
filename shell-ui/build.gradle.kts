@@ -21,7 +21,7 @@ dependencies {
 }
 
 gwt {
-    gwtVersion = "2.13.0"
+    gwtVersion = "2.13.1"
     sourceLevel = "auto"
     devMode {
         modules = listOf(

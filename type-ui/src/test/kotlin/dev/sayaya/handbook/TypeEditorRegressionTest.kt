@@ -28,7 +28,7 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
         Then("레이아웃 기간 정보(.type-period-label)가 표시된다") {
             val label = page.querySelector(".type-period-label")
             label shouldNotBe null
-            label!!.textContent().contains(" ~ ") shouldBe true
+            (label!!.textContent() ?: "").contains(" ~ ") shouldBe true
         }
 
         Then("모든 도구 버튼(.type-ctrl-btn)은 원형(border-radius: 50%) 스타일을 가진다") {
@@ -77,7 +77,7 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
                 settingsDial shouldNotBe null
             }
 
-            When("FAB을 클릭하면") {
+            And("FAB을 클릭하면") {
                 page.evaluate("document.querySelector('.type-speed-dial:not(.settings) md-fab').click()")
                 Thread.sleep(300)
                 Then("메뉴가 확장된다 ([expanded] 속성)") {

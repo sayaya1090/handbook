@@ -5,7 +5,7 @@ plugins {
 dependencies {
     testImplementation(libs.kotest.runner)
     testImplementation(libs.kotest.assertions.core)
-    testImplementation("com.microsoft.playwright:playwright:1.52.0")
+    testImplementation("com.microsoft.playwright:playwright:1.63.0")
 }
 // E2E 테스트는 라이브 서버가 필요하므로 기본 test에서 제외
 tasks.test {

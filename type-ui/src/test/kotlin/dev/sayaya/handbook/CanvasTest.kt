@@ -171,10 +171,10 @@ internal class CanvasTest: GwtTestSpec({
             Then("경고 컨펌 다이얼로그가 표시된다") {
                 val dialog = page.waitForSelector("md-dialog[open]")
                 dialog shouldNotBe null
-                dialog.textContent() shouldContain "Unsaved changes"
+                dialog!!.textContent() shouldContain "Unsaved changes"
             }
             
-            When("다이얼로그에서 No를 클릭하면") {
+            And("다이얼로그에서 No를 클릭하면") {
                 page.click("md-dialog[open] md-text-button:has-text('No')")
                 Thread.sleep(500)
                 
@@ -184,7 +184,7 @@ internal class CanvasTest: GwtTestSpec({
                 }
             }
 
-            When("다이얼로그에서 Yes를 클릭하면") {
+            And("다이얼로그에서 Yes를 클릭하면") {
                 page.click(".type-ctrl-btn-reload")
                 Thread.sleep(500)
                 page.click("md-dialog[open] md-text-button:has-text('Yes')")

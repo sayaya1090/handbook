@@ -88,7 +88,7 @@ internal class ReferenceIntegrityTest: GwtTestSpec({
                 page.waitForSelector("#conflict-resolution-dialog[open]")
             }
 
-            When("소유자 기간 조정(Adjust Owner Period) 제안을 수락하면") {
+            And("소유자 기간 조정(Adjust Owner Period) 제안을 수락하면") {
                 // 개편된 카드 UI의 Apply 버튼 클릭 (i18n 폴백 대응을 위해 'Adjust'로 완화)
                 page.click(".conflict-proposal-card:has-text('Adjust') button")
                 
@@ -171,7 +171,7 @@ internal class ReferenceIntegrityTest: GwtTestSpec({
                 dialog.textContent() shouldContain "renamed or deleted"
             }
 
-            When("Update References 제안을 수락하면") {
+            And("Update References 제안을 수락하면") {
                 page.click(".conflict-proposal-card:has-text('Update References') button")
                 page.waitForSelector("#conflict-resolution-dialog", com.microsoft.playwright.Page.WaitForSelectorOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN))
 

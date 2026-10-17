@@ -270,7 +270,7 @@ internal class DrawerTest: GwtTestSpec({
                 page.evaluate("document.getElementById('module-script').dataset.keep = 'true'")
             }
 
-            When("동일한 스크립트를 로드하는 동일 메뉴를 다시 클릭하면") {
+            And("동일한 스크립트를 로드하는 동일 메뉴를 다시 클릭하면") {
                 page.click("#url1")
                 Thread.sleep(500)
                 
