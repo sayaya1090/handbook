@@ -4,19 +4,19 @@ dependencyResolutionManagement {
         create("libs") {
             // Versions
             // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies
-            version("spring-cloud", "2025.1.1")
+            version("spring-cloud", "2025.1.3")
             // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
             version("jjwt", "0.13.0")
             // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
-            version("bouncycastle", "1.83")
+            version("bouncycastle", "1.86")
             // https://mvnrepository.com/artifact/io.kotest/kotest-runner-junit5-jvm
             version("kotest", "6.1.3")
             // https://mvnrepository.com/artifact/io.mockk/mockk
-            version("mockk", "1.14.9")
+            version("mockk", "1.14.11")
             // https://mvnrepository.com/artifact/io.fabric8/kubernetes-server-mock
             version("kubernetes", "7.5.2")
             // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-            version("testcontainers", "2.0.3")
+            version("testcontainers", "2.0.5")
             // https://mvnrepository.com/artifact/org.jboss.elemento/elemento-core
             version("elemento", "2.4.9")
             // https://mvnrepository.com/artifact/dev.sayaya/ui
@@ -24,11 +24,11 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/dev.sayaya/rx
             version("sayaya-rx", "2.2.3")
             // https://mvnrepository.com/artifact/org.projectlombok/lombok
-            version("lombok", "1.18.42")
+            version("lombok", "1.18.48")
             // https://mvnrepository.com/artifact/com.google.dagger/dagger
-            version("dagger", "2.59.1")
+            version("dagger", "2.60.1")
             // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter
-            version("junit5", "6.0.3")
+            version("junit5", "6.1.3")
             // https://mvnrepository.com/artifact/dev.sayaya/gwt-test
             version("sayaya-test", "2.2.9.5")
 

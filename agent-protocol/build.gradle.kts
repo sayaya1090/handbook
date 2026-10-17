@@ -5,7 +5,7 @@ plugins {
 }
 dependencies {
     implementation("com.google.jsinterop:jsinterop-annotations:2.1.0")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.22")
     testImplementation("tools.jackson.core:jackson-databind:3.0.3")
     testImplementation(libs.kotest.runner)
     testImplementation(libs.kotest.assertions.core)
