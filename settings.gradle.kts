@@ -14,7 +14,7 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/io.mockk/mockk
             version("mockk", "1.14.11")
             // https://mvnrepository.com/artifact/io.fabric8/kubernetes-server-mock
-            version("kubernetes", "7.5.2")
+            version("kubernetes", "8.0.0")
             // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
             version("testcontainers", "2.0.5")
             // https://mvnrepository.com/artifact/org.jboss.elemento/elemento-core
@@ -60,7 +60,7 @@ dependencyResolutionManagement {
             bundle("spring-client", listOf("spring-log4j2", /*"spring-security"*/))
 
             // OpenAPI
-            version("springdoc", "2.8.9")
+            version("springdoc", "3.1.1")
             library("springdoc-webflux", "org.springdoc", "springdoc-openapi-starter-webflux-ui").versionRef("springdoc")
 
             // Kafka
@@ -103,8 +103,6 @@ dependencyResolutionManagement {
             library("testcontainers-junit", "org.testcontainers", "junit-jupiter").withoutVersion()
             library("testcontainers-postgresql", "org.testcontainers", "testcontainers-postgresql").withoutVersion()
             library("testcontainers-kafka", "org.testcontainers", "testcontainers-kafka").withoutVersion()
-            library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").versionRef("testcontainers")
-            bundle("test-containers", listOf("testcontainers-junit", "kotest-extensions-testcontainers"))
 
             // Web UI
             library("elemento-core", "org.jboss.elemento", "elemento-core").versionRef("elemento")

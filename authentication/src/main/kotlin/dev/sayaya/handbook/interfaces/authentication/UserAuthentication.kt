@@ -57,8 +57,8 @@ class UserAuthentication(
     // AbstractAuthenticationToken.equals/hashCode 는 getPrincipal() 을 비교/해싱하는데,
     // principal 이 this 를 반환하므로 기본 구현은 무한 재귀 → StackOverflowError.
     // SecurityContext 에는 요청당 단일 인스턴스이므로 identity 비교로 대체한다.
-    // 부모 AbstractAuthenticationToken 이 Java 규약상 equals(Object) 를 Any 비-null 로
-    // 노출하므로 override 시그니처도 Any 비-null 로 맞춘다.
-    override fun equals(other: Any): Boolean = this === other
+    // Spring Security 7.1(Spring Boot 4.1) 부터 AbstractAuthenticationToken.equals 가
+    // equals(obj: Any?) 로 노출되므로 override 시그니처도 Any? 로 맞춘다.
+    override fun equals(other: Any?): Boolean = this === other
     override fun hashCode(): Int = System.identityHashCode(this)
 }

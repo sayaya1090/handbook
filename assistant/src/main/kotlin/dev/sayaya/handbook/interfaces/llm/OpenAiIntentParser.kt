@@ -142,7 +142,9 @@ class OpenAiIntentParser(
                 role = node["role"]?.asText() ?: "",
                 task = node["task"]?.asText() ?: "",
                 group = node["group"]?.asInt() ?: 0,
-                dependsOn = node["dependsOn"]?.map { it.asText() } ?: emptyList(),
+                // Jackson 3.1 부터 JsonNode.map(Function) 멤버가 생겨 Iterable.map 확장보다 우선 선택되므로
+                // toList() 로 Kotlin List 로 바꾼 뒤 매핑한다.
+                dependsOn = node["dependsOn"]?.toList()?.map { it.asText() } ?: emptyList(),
             )
         } ?: emptyList()
         return ExecutionPlan(intent = intent, steps = steps, confidence = confidence, subAgents = subAgents)
