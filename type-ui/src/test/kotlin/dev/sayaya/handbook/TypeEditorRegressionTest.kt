@@ -20,8 +20,8 @@ internal class TypeEditorRegressionTest: GwtTestSpec({
             // 최신 기간(now)이 선택되었다면 'Next' 버튼은 비활성화되어야 함.
             val afterBtn = page.querySelector(".type-ctrl-btn-after")
             afterBtn shouldNotBe null
-            val isDisabled = afterBtn!!.getAttribute("disabled")
-            isDisabled shouldBe "" // disabled 속성이 존재함
+            // disabled 속성 존재 여부로 검사 (값 문자열은 번들마다 ""/"true" 로 다를 수 있음)
+            afterBtn!!.getAttribute("disabled") shouldNotBe null
         }
 
         // UC-T8: 기간 라벨 표시

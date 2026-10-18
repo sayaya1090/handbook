@@ -3,6 +3,7 @@ package dev.sayaya.handbook
 import dev.sayaya.gwt.test.GwtHtml
 import dev.sayaya.gwt.test.GwtTestSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * 플로팅 툴바 가시성 및 버튼 활성화 로직 검증 테스트.
@@ -49,8 +50,8 @@ internal class FloatingToolbarTest: GwtTestSpec({
             
             Then("툴바는 여전히 보이지만 버튼들은 다시 비활성화된다") {
                 page.waitForSelector(".type-floating-toolbar.visible")
-                page.locator(".type-ctrl-btn-remove").getAttribute("disabled") shouldBe ""
-                page.locator(".type-ctrl-btn-new-version").getAttribute("disabled") shouldBe ""
+                page.locator(".type-ctrl-btn-remove").getAttribute("disabled") shouldNotBe null
+                page.locator(".type-ctrl-btn-new-version").getAttribute("disabled") shouldNotBe null
             }
         }
 
@@ -62,7 +63,7 @@ internal class FloatingToolbarTest: GwtTestSpec({
 
             Then("삭제 버튼은 활성화되지만, 새 버전 버튼은 비활성화된다 (단일 선택 전용)") {
                 page.waitForFunction("() => !document.querySelector('.type-ctrl-btn-remove').disabled")
-                page.locator(".type-ctrl-btn-new-version").getAttribute("disabled") shouldBe ""
+                page.locator(".type-ctrl-btn-new-version").getAttribute("disabled") shouldNotBe null
             }
         }
     }

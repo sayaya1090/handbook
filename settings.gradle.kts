@@ -20,7 +20,7 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/org.jboss.elemento/elemento-core
             version("elemento", "2.5.9")
             // https://mvnrepository.com/artifact/dev.sayaya/ui
-            version("sayaya-ui", "2.5.0")
+            version("sayaya-ui", "2.5.0.2")
             // https://mvnrepository.com/artifact/dev.sayaya/rx
             version("sayaya-rx", "2.3.0")
             // https://mvnrepository.com/artifact/org.projectlombok/lombok

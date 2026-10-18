@@ -19,7 +19,7 @@ public class LoginProgressHandler {
             if (cmd == null) return;
             var btns = DomGlobal.document.querySelectorAll(".btn-oauth");
             for (int i = 0; i < btns.length; i++) {
-                ((elemental2.dom.HTMLElement) btns.item(i)).setAttribute("disabled", "true");
+                ((elemental2.dom.HTMLElement) btns.item(i)).setAttribute("disabled", "");
             }
             var msg = cmd.description();
             log.next("");

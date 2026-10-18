@@ -50,14 +50,14 @@ public class AfterButton implements IsElement<HTMLElement> {
     private void updateEnabled(LayoutProvider provider, List<TypeLayout> layouts) {
         TypeLayout current = provider.getValue();
         if (current == null || layouts == null || layouts.isEmpty()) {
-            _this.element().setAttribute("disabled", "true");
+            _this.disabled(true);
             return;
         }
         int index = findIndex(layouts, current);
         if (index >= 0 && index < layouts.size() - 1) {
-            _this.element().removeAttribute("disabled");
+            _this.enabled();
         } else {
-            _this.element().setAttribute("disabled", "true");
+            _this.disabled(true);
         }
     }
 
