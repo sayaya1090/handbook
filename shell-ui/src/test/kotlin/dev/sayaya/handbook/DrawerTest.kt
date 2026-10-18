@@ -893,6 +893,11 @@ internal class DrawerTest: GwtTestSpec({
             ).toString()
             v shouldBe "56px"
         }
+        Then("AppBar 는 md-top-app-bar 이고 실제 높이가 56px 이다 (::part(row) 로 64px 기본값 덮어씀)") {
+            page.evaluate("document.querySelector('.shell-app-bar').localName").toString() shouldBe "md-top-app-bar"
+            val h = (page.evaluate("document.querySelector('.shell-app-bar').getBoundingClientRect().height") as Number).toDouble()
+            h shouldBe 56.0
+        }
         Then("--shell-frame-left-offset 이 rail collapse 폭(3.5rem) 으로 고정된다") {
             // rail EXPAND 는 본문 위 overlay 가 의도된 동작이므로 동적 --shell-drawer-width 와 구분
             val v = page.evaluate(

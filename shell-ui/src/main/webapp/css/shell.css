@@ -605,11 +605,10 @@ body:has(nav.drawer[overlay]) {
     -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent);
     box-shadow: none;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
+    /* md-top-app-bar host — 행 레이아웃은 shadow 안 .row(part=row) 가 담당 */
+    display: block;
     box-sizing: border-box;
+    color: var(--md-sys-color-on-surface);
     /* left transition 은 .drawer width transition(600ms cubic-bezier(.4,0,.2,1)) 과 duration
        ·easing 을 일치시켜 Drawer 펼침/접힘 동작과 AppBar 좌측 경계 이동이 동시에 움직이도록
        한다. 배경/border/shadow 는 scroll state 전환용 짧은 150ms 로 별도 유지. */
@@ -625,6 +624,19 @@ body:has(nav.drawer[overlay]) {
 }
 .shell-app-bar[hide] {
     display: none;
+}
+/* md-top-app-bar 행 높이(64px 하드코딩) 를 shell 토큰(56px) 에 맞춘다. 좌우 여백은 host padding(8px) 이 담당. */
+.shell-app-bar::part(row) {
+    height: var(--shell-app-bar-height);
+    padding: 0;
+    gap: 8px;
+}
+/* headline part 에 center(WorkspaceSelect) 를 넣으므로 제목 타이포·nowrap·overflow 잘림을 해제 — 셀렉트 팝업이 잘리지 않게 */
+.shell-app-bar::part(headline) {
+    font: inherit;
+    color: inherit;
+    white-space: normal;
+    overflow: visible;
 }
 .shell-app-bar-leading,
 .shell-app-bar-trailing {

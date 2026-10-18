@@ -8,10 +8,10 @@ import dev.sayaya.handbook.domain.Menu;
 import dev.sayaya.handbook.usecase.LabelProvider;
 import dev.sayaya.ui.elements.IconButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
+import dev.sayaya.ui.elements.NavigationElementBuilder;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
-import lombok.experimental.Delegate;
 import org.jboss.elemento.EventType;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.htmlContainer;
+import static dev.sayaya.ui.elements.NavigationElementBuilder.topAppBar;
 
 /**
  * 데스크톱/모바일 공통 상단 AppBar.
@@ -41,6 +41,12 @@ import static org.jboss.elemento.Elements.htmlContainer;
  *   <li>{@code .shell-app-bar-trailing} — {@link ThemeToggle} / 세션 액션 / overflow 등</li>
  * </ul></p>
  *
+ * <p><b>구현:</b> sayaya-ui {@code topAppBar()}({@code md-top-app-bar}, Small) 위에 3 slot div 를 얹는다 —
+ * leading → {@code slot=leading}, center → {@code slot=headline}, trailing → {@code slot=trailing}.
+ * md-top-app-bar 의 행 높이(64px 하드코딩)는 shell.css 의 {@code .shell-app-bar::part(row)} 로
+ * {@code --shell-app-bar-height}(56px) 에 맞추고, headline part 의 타이포·overflow 는 center 콘텐츠용으로 해제한다.
+ * 스크롤 상태는 {@code body[data-scrolled]} 공용 앵커 때문에 autoScroll 대신 직접 갱신한다.</p>
+ *
  * <p><b>햄버거 위치 이력(2026-04):</b> AppBar 도입 초기엔 햄버거를 leading 에 두었으나
  * AppBar 가 {@code left: var(--shell-drawer-width)} 로 Drawer 오른쪽부터 시작하는 탓에
  * rail expand 상태에서 햄버거가 시각적으로 우측으로 밀리는 증상이 발생. MD3 Navigation
@@ -54,7 +60,7 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
     public static final String SLOT_CENTER = "center";
     public static final String SLOT_TRAILING = "trailing";
 
-    @Delegate private final HTMLContainerBuilder<HTMLElement> _this = htmlContainer("header", HTMLElement.class).css("shell-app-bar");
+    private final NavigationElementBuilder.TopAppBarBuilder _this = topAppBar().css("shell-app-bar");
     private final HTMLContainerBuilder<HTMLDivElement> leading = div().css("shell-app-bar-leading");
     private final HTMLContainerBuilder<HTMLDivElement> center = div().css("shell-app-bar-center");
     private final HTMLContainerBuilder<HTMLDivElement> trailing = div().css("shell-app-bar-trailing");
@@ -71,7 +77,9 @@ public class ShellAppBarElement implements IsElement<HTMLElement> {
                        WorkspaceSelectElement workspace, ThemeToggle themeToggle) {
         this.selected = selected;
         this.labelProvider = labelProvider;
-        _this.add(leading).add(center).add(trailing);
+        center.element().setAttribute("slot", "headline");
+        _this.leading(leading.element()).trailing(trailing.element());
+        _this.element().appendChild(center.element());
         slots.put(SLOT_LEADING, leading.element());
         slots.put(SLOT_CENTER, center.element());
         slots.put(SLOT_TRAILING, trailing.element());
