@@ -64,6 +64,8 @@ flowchart TD
 
 위치: 우측 상단 고정 (top: 60px, right: 20px, z-index: 10002)
 
+렌더링: `ToastContainer` 가 sayaya-ui `toast()`(`md-toast`)에 위임한다. 토스트는 sayaya-ui 가 body 에 만드는 `.md-toast-stack` 에 쌓이고(최대 5개, 넘으면 오래된 것부터 닫힘), host 에는 `ui-toast`, `ui-toast-<level>` 클래스가 붙는다. 닫기 버튼은 `[part=close]`, 퇴장 중 상태는 `[leaving]` 속성으로 접근한다. 위치는 `--md-toast-top`, `--md-toast-right`, `--md-toast-z-index` 변수로 바꿀 수 있다.
+
 ### 확인 다이얼로그 (ConfirmDialog)
 
 - 삭제 확인, 미저장 변경 경고, 에이전트 작업 승인

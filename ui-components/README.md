@@ -21,7 +21,7 @@ GWT 기반 공유 UI 컴포넌트 라이브러리. 에이전트 커맨드 처리
         ├── OverlayContainer.java  오버레이 안내 컨테이너 (코치마크, 스포트라이트 등)
         ├── RbacGuard.java         RBAC 권한 검증 유틸리티 (읽기 전용 판단)
         ├── ScrollEffect.java      스크롤 + 도착 강조 효과
-        └── ToastContainer.java    토스트 메시지 컨테이너
+        └── ToastContainer.java    토스트 메시지 (sayaya-ui toast()/md-toast 위임)
 ```
 
 ## 주요 컴포넌트
@@ -31,7 +31,7 @@ GWT 기반 공유 UI 컴포넌트 라이브러리. 에이전트 커맨드 처리
 | Action | 실행/롤백 인터페이스. 모든 편집 작업의 기본 단위 |
 | ActionManager | Undo/Redo 스택 관리 (최대 100개, BehaviorSubject 상태 전파) |
 | ChangeTracker | 키 기반 변경 상태 추적. document-ui(serial), type-ui(typeKey) 공용 |
-| ToastContainer | 레벨별(INFO/SUCCESS/WARNING/ERROR) 토스트 메시지 표시 |
+| ToastContainer | 레벨별(INFO/SUCCESS/WARNING/ERROR) 토스트 메시지 표시. 렌더링은 sayaya-ui 2.5.0.2+ `toast()`(`md-toast`)에 위임하며, 토스트는 sayaya-ui 가 body 에 만드는 `.md-toast-stack`(최대 5개)에 쌓인다. `element()` 는 DI 호환용 숨김 마커(`.ui-toast-container`)다 |
 | ConfirmDialog | 사용자 확인이 필요한 작업에 대한 모달 다이얼로그 |
 | DiffPanel | 변경 전/후 비교를 MD3 카드로 시각화 |
 | HighlightEffect | CSS 선택자로 요소를 찾아 pulse 강조 |
