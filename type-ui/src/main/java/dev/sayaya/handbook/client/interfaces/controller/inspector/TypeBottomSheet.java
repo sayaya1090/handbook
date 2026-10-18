@@ -13,6 +13,7 @@ import dev.sayaya.handbook.domain.Action;
 import dev.sayaya.handbook.domain.Attribute;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.ViewportObserver;
+import dev.sayaya.ui.dom.MdBottomSheetElement;
 import dev.sayaya.ui.elements.ButtonElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.DomGlobal;
@@ -26,11 +27,21 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+import static dev.sayaya.ui.elements.BottomSheetElementBuilder.bottomSheet;
 import static org.jboss.elemento.Elements.*;
 
 @Singleton
-public class TypeBottomSheet implements IsElement<HTMLDivElement> {
-    private final HTMLDivElement root = div().css("type-bottom-sheet").element();
+/**
+ * 모바일 타입 인스펙터 바텀 시트. sayaya-ui {@code bottomSheet().standard()}({@code md-bottom-sheet}) 위에 본문을 얹는다.
+ *
+ * <p><b>책임:</b> 선택된 타입의 ID·버전·유효 기간·속성 목록을 보여 주고, 선택이 있으면 {@code open}, 없으면 닫는다.
+ * 사용자가 핸들을 끌어내려 닫으면({@code closed} 이벤트) 선택을 해제한다.</p>
+ * <p><b>주의점:</b> host 에는 {@code .type-bottom-sheet}(+ 표시 중 {@code .visible}) 클래스가 붙고, 본문은 {@code .type-bottom-sheet-body}.
+ * 데스크톱(769px 이상)에서는 type-ui.css 가 숨긴다. {@code open} 은 property 로만 바꾸므로 closed 이벤트는 사용자 닫기에만 발생한다.</p>
+ */
+public class TypeBottomSheet implements IsElement<HTMLElement> {
+    private final HTMLDivElement root = div().css("type-bottom-sheet-body").element();
+    private final MdBottomSheetElement sheet;
     private final HTMLElement idLabel = span().css("inspector-value", "type-property-id").element();
     private final HTMLElement versionLabel = span().css("inspector-value", "type-property-version").element();
     private final HTMLElement datesLabel = span().css("inspector-value", "type-property-dates").element();
@@ -56,6 +67,9 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
         this.actionManager = actionManager;
         this.tracker = tracker;
         this.viewportObserver = viewportObserver;
+        // standard(비모달): 스크림 없음 — 캔버스·Speed Dial 조작을 막지 않는다. 끌어내려 닫으면 선택 해제.
+        this.sheet = bottomSheet().standard().css("type-bottom-sheet").onClosed(reason -> selection.clear()).element();
+        sheet.appendChild(root);
 
         HTMLElement closeBtn = ButtonElementBuilder.button()
                 .icon(IconElementBuilder.icon().css("fa-solid", "fa-xmark"))
@@ -92,7 +106,8 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
     private void updateFromList(java.util.Set<String> selected, java.util.Set<Type> list) {
         boolean hasSelection = selected != null && !selected.isEmpty();
         if (hasSelection) {
-            root.classList.add("visible");
+            sheet.classList.add("visible");
+            sheet.open = true;
             String key = selected.iterator().next();
             list.stream()
                     .filter(t -> t.key().equals(key))
@@ -112,7 +127,8 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
                         }
                     });
         } else {
-            root.classList.remove("visible");
+            sheet.classList.remove("visible");
+            sheet.open = false;
             currentType = null;
         }
     }
@@ -222,5 +238,5 @@ public class TypeBottomSheet implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() { return root; }
+    public HTMLElement element() { return sheet; }
 }

@@ -618,24 +618,23 @@ html, body {
     transform: translateY(0);
     pointer-events: auto;
 }
-.type-bottom-sheet {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+/* TypeBottomSheet — sayaya-ui md-bottom-sheet(standard) host. 위치·표시는 컴포넌트가 담당(open), 데스크톱에서는 숨김. */
+.type-bottom-sheet { z-index: 1000; }
+.type-bottom-sheet::part(container) {
     background: var(--md-sys-color-surface-container-high, white);
     border-radius: var(--md-sys-shape-corner-extra-large, 28px) var(--md-sys-shape-corner-extra-large, 28px) 0 0;
-    padding: 24px;
-    padding-bottom: calc(24px + 80px + env(safe-area-inset-bottom, 0px));
-    z-index: 1000;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 0.3s;
-    visibility: hidden;
-    pointer-events: none;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+}
+/* content part 좌우 16px + 8px = 기존 24px. 하단은 Speed Dial(80px) 여유 유지. */
+.type-bottom-sheet-body {
+    position: relative;
+    padding: 8px 8px calc(24px + 80px + env(safe-area-inset-bottom, 0px));
     display: flex;
     flex-direction: column;
     gap: 16px;
-    box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+}
+@media (min-width: 769px) {
+    .type-bottom-sheet { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -651,12 +650,6 @@ html, body {
     .type-speed-dial {
         display: flex !important;
         z-index: 1001; /* 바텀 시트(1000) 위로 올림 */
-    }
-    .type-bottom-sheet.visible {
-        transform: translateY(0);
-        visibility: visible;
-        pointer-events: auto;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 0s;
     }
     /* 바텀 시트 배경 딤 처리는 모달처럼 동작하여 버튼 클릭을 방해하므로 제거함 */
     .type-info-fab {

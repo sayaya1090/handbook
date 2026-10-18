@@ -151,7 +151,7 @@ internal class VersioningTest: GwtTestSpec({
                 page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-inspector-panel')).display === 'none'")
                 page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-floating-toolbar')).display === 'none'")
                 page.waitForFunction("() => document.querySelector('.type-bottom-sheet').classList.contains('visible')")
-                page.waitForFunction("() => window.getComputedStyle(document.querySelector('.type-bottom-sheet')).display === 'flex'")
+                page.waitForFunction("() => { const s = document.querySelector('.type-bottom-sheet'); return s.localName === 'md-bottom-sheet' && s.hasAttribute('open') && window.getComputedStyle(s).display !== 'none'; }")
                 
                 // 모바일 바텀 시트의 내용 확인
                 page.waitForSelector(".type-bottom-sheet .type-property-id:has-text('customer')")
