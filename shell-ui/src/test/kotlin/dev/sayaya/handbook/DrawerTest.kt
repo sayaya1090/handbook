@@ -235,6 +235,13 @@ internal class DrawerTest: GwtTestSpec({
             r[2] shouldBe r[1]
             if (r[1] != "0") r[3] shouldBe "28"
         }
+        Then("MenuRail 은 hide-collapsed-labels 이고 항목마다 supporting-text slot, 하위 도구가 여럿인 메뉴에는 trailing ▶ 가 있다 (sayaya-ui 2.5.0.3)") {
+            page.evaluate("document.querySelector('.menu-rail').hasAttribute('hide-collapsed-labels')") shouldBe true
+            val navCount = DrawerMock.menu.count { it.appBarSlot() == null }
+            page.querySelectorAll(".menu-rail > md-navigation-rail-item.item > [slot=supporting-text]").count() shouldBe navCount
+            val multiTool = DrawerMock.menu.count { it.appBarSlot() == null && it.tools() != null && it.tools().size > 1 }
+            page.querySelectorAll(".menu-rail > md-navigation-rail-item.item > .rail-trailing-more[slot=trailing]").count() shouldBe multiTool
+        }
         Then("모든 네비게이션 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
             // 각 네비 아이템(md-navigation-rail-item)은 inactive-icon slot 에 outline/filled 를 한 벌씩 렌더 → navCount.
             // appBarSlot 지정 메뉴와 .rail-bottom(ThemeToggle) 은 제외.

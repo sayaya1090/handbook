@@ -108,18 +108,20 @@ body,
    접힌 상태 indicator 를 40px 원으로 줄여 아이콘 중심 x=28px 정렬을 기존과 맞춘다.
    disabled 투명도는 컴포넌트가 내부 button 에 0.38 을 적용하므로 host opacity 는 1 로 되돌린다. */
 md-navigation-rail.rail {
-    padding: 0;
-    min-width: 0;
-    max-width: none;
+    /* sayaya-ui 2.5.0.3 공식 치수 변수 — 폭 자체는 .rail[collapse]/[expand] 규칙(3.5rem/16rem)이 정한다 */
+    --md-navigation-rail-collapsed-width: 3.5rem;
+    --md-navigation-rail-expanded-min-width: 16rem;
+    --md-navigation-rail-expanded-max-width: 16rem;
+    --md-navigation-rail-expanded-padding-inline: 0px;
+    --md-navigation-rail-top-space: 0px;
+    --md-navigation-rail-bottom-space: 0px;
+    --md-navigation-rail-item-indicator-width: 40px;
+    --md-navigation-rail-item-indicator-height: 40px;
     background: transparent;
 }
 .rail md-navigation-rail-item.item {
     padding: 0;
     min-height: 0;
-}
-.rail[collapse] md-navigation-rail-item.item::part(indicator) {
-    width: 40px;
-    height: 40px;
 }
 /* Font Awesome 글리프는 24px 아이콘 칸보다 좁아 왼쪽으로 붙는다 — 칸 폭에 맞춰 가운데 정렬해 아이콘 중심 x=28px 유지.
    display 는 outline 에만 지정하고, 선택 시 숨김(.rail .item[selected] .icon-outline, 0-4-0)이 이 규칙(0-3-1)보다 우선한다. */
@@ -666,9 +668,11 @@ body:has(nav.drawer[overlay]) {
 .shell-app-bar[hide] {
     display: none;
 }
-/* md-top-app-bar 행 높이(64px 하드코딩) 를 shell 토큰(56px) 에 맞춘다. 좌우 여백은 host padding(8px) 이 담당. */
+/* md-top-app-bar 행 높이를 sayaya-ui 2.5.0.3 공식 변수로 shell 토큰(56px) 에 맞춘다. 좌우 여백은 host padding(8px) 이 담당. */
+.shell-app-bar {
+    --md-top-app-bar-container-height: var(--shell-app-bar-height);
+}
 .shell-app-bar::part(row) {
-    height: var(--shell-app-bar-height);
     padding: 0;
     gap: 8px;
 }

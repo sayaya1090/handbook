@@ -46,12 +46,7 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
     private final HTMLElement _this = dev.sayaya.ui.elements.NavigationElementBuilder.navigationRail().css("rail", "menu-rail").element();
     @Override public HTMLElement element() { return _this; }
     private void add(MenuRailItemElement child) {
-        child.showLabel(_this.hasAttribute("expand"));
         _this.appendChild(child.element());
-    }
-    private void syncLabels() {
-        boolean expanded = _this.hasAttribute("expand");
-        for (var child : children) child.showLabel(expanded);
     }
     private final MenuRailItemFactory factory;
     private final List<MenuRailItemElement> children = new LinkedList<>();
@@ -64,6 +59,8 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
         element().setAttribute("hide", true);
         // 선택 상태는 RailItemElement.select 가 activeIndex 로 지정한다 — 기본값 0 이 첫 항목을 활성화하지 않도록.
         jsinterop.base.Js.asPropertyMap(_this).set("activeIndex", -1);
+        // 접힌 rail 에서는 라벨을 숨기고 aria-label 만 유지 (sayaya-ui 2.5.0.3+)
+        _this.setAttribute("hide-collapsed-labels", "");
     }
 
     private static final Comparator<Menu> MENU_COMPARATOR = nullsLast(comparing((Menu i) -> TRUE.equals(i.bottom())).thenComparing(Menu::order));
@@ -98,7 +95,6 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
             case COLLAPSE -> collapse();
             case HIDE -> hide();
         }
-        syncLabels();
     }
 
     public void setMobile(boolean mobile) {

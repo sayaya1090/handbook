@@ -56,6 +56,13 @@ public class MenuRailItemElement extends RailItemElement {
         icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"))
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled"))
                 ;
+        // 하위 도구가 여럿이면 펼친 rail 에 ▶ 표시 (trailing slot)
+        if (menu.tools() != null && menu.tools().length > 1) {
+            var arrow = (elemental2.dom.HTMLElement) elemental2.dom.DomGlobal.document.createElement("span");
+            arrow.classList.add("rail-trailing-more");
+            arrow.textContent = "\u25B6";
+            trailing(arrow);
+        }
 
         this.tooltip = TooltipCard.anchor(element()).position("end");
 
@@ -64,6 +71,7 @@ public class MenuRailItemElement extends RailItemElement {
             String sub = labels.getOrDefault(menu.supportingText(),
                     menu.supportingText() != null ? menu.supportingText() : "");
             label(title.toUpperCase());
+            supportingText(sub);
             tooltip.content(title, sub);
         });
 
