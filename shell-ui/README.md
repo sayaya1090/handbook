@@ -43,7 +43,7 @@ client/
 │   │   ├── UserApi                    # UserRepository 구현 (/user + 10분 갱신)
 │   │   └── ApiModule                  # Dagger 바인딩 (Repository → Api)
 │   └── drawer/                         # 드로어 + AppBar 네비게이션 UI
-│       ├── ShellAppBarElement         # MD3 Top App Bar — leading/center/trailing 3 slot.
+│       ├── ShellAppBarElement         # MD3 Top App Bar — sayaya-ui topAppBar()(md-top-app-bar) 위 leading/center(=headline slot)/trailing 3 slot. 행 높이는 ::part(row) 로 56px.
 │       │                              #   leading: 예비(appBarSlot=leading 동적 메뉴 승격), center: Workspace, trailing: Theme + appBarSlot=trailing 메뉴
 │       │                              #   AppBar 가 자기 slot 을 SRP 로 채움 (WorkspaceSelect/ThemeToggle 주입; 햄버거는 MenuRail 로 이관)
 │       ├── MobileTabsElement          # 모바일 상단 Scrollable Tabs (md-tabs + ResponsiveOverflow 3단계 폴백)
@@ -300,7 +300,7 @@ tasks.jar {
 
 ```
 body
-├── header.shell-app-bar          (fixed, left: var(--shell-drawer-width), right: 0)
+├── md-top-app-bar.shell-app-bar  (fixed, left: var(--shell-drawer-width), right: 0)
 ├── div.menu-tabs                 (모바일 전용 Tabs, AppBar 바로 아래)
 ├── div.progress-container
 └── div#content > nav.drawer(fixed top:0 bottom:0 width:var(--shell-drawer-width))
