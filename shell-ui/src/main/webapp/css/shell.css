@@ -100,6 +100,47 @@ body,
     width: 0px;
     padding-top: 0px;
 }
+/* ── sayaya-ui md-navigation-rail / md-navigation-rail-item 호환 (2026-10 이관) ──
+   MenuRail·ToolRail 은 md-navigation-rail host 에 .rail 을 붙인다. 컴포넌트 :host 기본값
+   (폭 96px, 펼침 min-width 220px·padding-inline 20px, padding 44px 0 20px, surface 배경)을
+   여기서 덮어 기존 3.5rem / 16rem 폭과 drawer glass 배경, frame 토큰(--shell-drawer-width)을 유지한다.
+   항목(md-navigation-rail-item.item)은 내부 button 이 min-height 64 를 가지므로 바깥 padding 을 없애고,
+   접힌 상태 indicator 를 40px 원으로 줄여 아이콘 중심 x=28px 정렬을 기존과 맞춘다.
+   disabled 투명도는 컴포넌트가 내부 button 에 0.38 을 적용하므로 host opacity 는 1 로 되돌린다. */
+md-navigation-rail.rail {
+    padding: 0;
+    min-width: 0;
+    max-width: none;
+    background: transparent;
+}
+.rail md-navigation-rail-item.item {
+    padding: 0;
+    min-height: 0;
+}
+.rail[collapse] md-navigation-rail-item.item::part(indicator) {
+    width: 40px;
+    height: 40px;
+}
+/* Font Awesome 글리프는 24px 아이콘 칸보다 좁아 왼쪽으로 붙는다 — 칸 폭에 맞춰 가운데 정렬해 아이콘 중심 x=28px 유지.
+   display 는 outline 에만 지정하고, 선택 시 숨김(.rail .item[selected] .icon-outline, 0-4-0)이 이 규칙(0-3-1)보다 우선한다. */
+.rail md-navigation-rail-item.item > .icon-outline,
+.rail md-navigation-rail-item.item > .icon-filled {
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+}
+.rail md-navigation-rail-item.item > .icon-outline {
+    display: inline-block;
+}
+/* 선택은 배경 채움이 아니라 outline→filled 아이콘 스왑으로 표현(기존 디자인 유지) — 컴포넌트의 active indicator 배경을 끈다. */
+.rail md-navigation-rail-item.item[active]::part(indicator) {
+    background: transparent;
+}
+.rail md-navigation-rail-item.item[disabled],
+.rail md-navigation-rail-item.item[disabled]:hover {
+    opacity: 1;
+}
 .rail[expand]:not(:first-of-type) {
     border-left: 1px solid var(--md-sys-color-outline-variant);
 }

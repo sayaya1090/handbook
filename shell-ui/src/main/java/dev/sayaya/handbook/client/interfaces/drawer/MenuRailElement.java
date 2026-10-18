@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.drawer;
 
+import elemental2.dom.HTMLElement;
 import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.usecase.MenuHover;
 import dev.sayaya.handbook.domain.Menu;
@@ -41,7 +42,17 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail", "menu-rail");
+    /** sayaya-ui md-navigation-rail. 기존 .rail/.menu-rail 클래스와 expand/collapse/hide 속성은 shell.css·frame 토큰 호환을 위해 유지. */
+    private final HTMLElement _this = dev.sayaya.ui.elements.NavigationElementBuilder.navigationRail().css("rail", "menu-rail").element();
+    @Override public HTMLElement element() { return _this; }
+    private void add(MenuRailItemElement child) {
+        child.showLabel(_this.hasAttribute("expand"));
+        _this.appendChild(child.element());
+    }
+    private void syncLabels() {
+        boolean expanded = _this.hasAttribute("expand");
+        for (var child : children) child.showLabel(expanded);
+    }
     private final MenuRailItemFactory factory;
     private final List<MenuRailItemElement> children = new LinkedList<>();
 
@@ -51,6 +62,8 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
         // 의 즉시 emit 으로 expand() 가 호출되어 한 프레임 동안 desktop [expand] 레이아웃
         // (좌측 컬럼) 이 노출된 뒤 [mobile] 이 붙어 하단 바로 점프하는 flash 가 생긴다.
         element().setAttribute("hide", true);
+        // 선택 상태는 RailItemElement.select 가 activeIndex 로 지정한다 — 기본값 0 이 첫 항목을 활성화하지 않도록.
+        jsinterop.base.Js.asPropertyMap(_this).set("activeIndex", -1);
     }
 
     private static final Comparator<Menu> MENU_COMPARATOR = nullsLast(comparing((Menu i) -> TRUE.equals(i.bottom())).thenComparing(Menu::order));
@@ -85,6 +98,7 @@ public class MenuRailElement implements NavigationRailElement<MenuRailElement> {
             case COLLAPSE -> collapse();
             case HIDE -> hide();
         }
+        syncLabels();
     }
 
     public void setMobile(boolean mobile) {

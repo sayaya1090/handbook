@@ -34,9 +34,7 @@ import static org.jboss.elemento.Elements.div;
  * <p><b>UC-S6 2026-04-17 재정의:</b> 과거 상태 무관 hover 전환은 CloseToolRailButton
  * 복귀 의사를 무시했음. 이제 **EXPAND 에서만 peek** 허용 — COLLAPSE/모바일은 tooltip 만.</p>
  */
-public class MenuRailItemElement extends NavigationRailItemElement {
-    private final HTMLContainerBuilder<HTMLDivElement> headline = div();
-    private final HTMLContainerBuilder<HTMLDivElement> supportingText = div();
+public class MenuRailItemElement extends RailItemElement {
     private final Menu menu;
     private final TooltipCard tooltip;
     private final MenuRailMode menuRailMode;
@@ -57,10 +55,7 @@ public class MenuRailItemElement extends NavigationRailItemElement {
         this.selected = selected;
         icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"))
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled"))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", menu.icon(), "icon-outline"))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-solid", menu.icon(), "icon-filled"))
-                .headline(headline.element()).supportingText(supportingText.element());
-        if(menu.tools() != null && menu.tools().length > 1) trailingSupportingText("\u25B6");
+                ;
 
         this.tooltip = TooltipCard.anchor(element()).position("end");
 
@@ -68,8 +63,7 @@ public class MenuRailItemElement extends NavigationRailItemElement {
             String title = labels.getOrDefault(menu.title(), menu.title() != null ? menu.title() : "");
             String sub = labels.getOrDefault(menu.supportingText(),
                     menu.supportingText() != null ? menu.supportingText() : "");
-            headline.element().innerHTML = title.toUpperCase();
-            supportingText.element().innerHTML = sub;
+            label(title.toUpperCase());
             tooltip.content(title, sub);
         });
 

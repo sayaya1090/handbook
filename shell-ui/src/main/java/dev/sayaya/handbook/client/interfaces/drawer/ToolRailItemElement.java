@@ -26,8 +26,7 @@ import static org.jboss.elemento.Elements.div;
  * 데스크톱 COLLAPSE 모드에서는 툴팁을 제공하며, 호버 탐색(peeking) 중에는 라벨이
  * 보이므로 툴팁을 비활성화한다.</p>
  */
-public class ToolRailItemElement extends NavigationRailItemElement {
-    private final HTMLContainerBuilder<HTMLDivElement> headline = div();
+public class ToolRailItemElement extends RailItemElement {
     private final Tool tool;
     private final TooltipCard tooltip;
 
@@ -37,16 +36,14 @@ public class ToolRailItemElement extends NavigationRailItemElement {
         this.tool = tool;
         icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"))
                 .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled"))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-light", tool.icon(), "icon-outline"))
-                .start(IconElementBuilder.icon().css("fa-sharp", "fa-solid", tool.icon(), "icon-filled"))
-                .headline(headline.element());
+                ;
         
         this.tooltip = TooltipCard.anchor(element()).position("end");
         
         labelProvider.subscribe(labels -> {
             String title = labels.getOrDefault(tool.title(), tool.title() != null ? tool.title() : "");
             // MenuRail 과 일관성을 위해 대문자 적용
-            headline.element().innerHTML = title.toUpperCase();
+            label(title.toUpperCase());
             tooltip.content(title, null);
         });
         

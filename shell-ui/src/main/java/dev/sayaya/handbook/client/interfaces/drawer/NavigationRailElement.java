@@ -12,17 +12,20 @@ import org.jboss.elemento.IsElement;
 public interface NavigationRailElement<E extends NavigationRailElement<E>> extends IsElement<HTMLElement> {
     default void expand() {
         element().setAttribute("expand", true);
+        element().setAttribute("expanded", "");
         element().removeAttribute("collapse");
         element().removeAttribute("hide");
     }
     default void collapse() {
         element().removeAttribute("expand");
         element().setAttribute("collapse", true);
+        element().removeAttribute("expanded");
         element().removeAttribute("hide");
     }
     default void hide() {
         element().removeAttribute("expand");
         element().removeAttribute("collapse");
         element().setAttribute("hide", true);
+        element().removeAttribute("expanded");
     }
 }

@@ -35,7 +35,17 @@ import static org.jboss.elemento.Elements.div;
  */
 @Singleton
 public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
-    @Delegate private final HTMLContainerBuilder<HTMLDivElement> _this = div().css("rail", "tool-rail");
+    /** sayaya-ui md-navigation-rail. 기존 .rail/.tool-rail 클래스와 expand/collapse/hide 속성은 shell.css·frame 토큰 호환을 위해 유지. */
+    private final HTMLElement _this = dev.sayaya.ui.elements.NavigationElementBuilder.navigationRail().css("rail", "tool-rail").element();
+    @Override public HTMLElement element() { return _this; }
+    private void add(ToolRailItemElement child) {
+        child.showLabel(_this.hasAttribute("expand"));
+        _this.appendChild(child.element());
+    }
+    private void syncLabels() {
+        boolean expanded = _this.hasAttribute("expand");
+        for (var child : children) child.showLabel(expanded);
+    }
     private final ToolRailItemFactory factory;
     private final List<ToolRailItemElement> children = new LinkedList<>();
     private final CloseToolRailButton close;
@@ -49,6 +59,8 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
         this.close = close;
         this.parent = parent;
         element().setAttribute("hide", true);
+        // 선택 상태는 RailItemElement.select 가 activeIndex 로 지정한다 — 기본값 0 이 첫 항목을 활성화하지 않도록.
+        jsinterop.base.Js.asPropertyMap(_this).set("activeIndex", -1);
     }
 
     public void update(List<Tool> tools) {
@@ -78,6 +90,7 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
             case COLLAPSE -> collapse();
             case HIDE -> hide();
         }
+        syncLabels();
         refreshCloseButton();
         offset(parent.getValue());
     }
@@ -109,7 +122,7 @@ public class ToolRailElement implements NavigationRailElement<ToolRailElement> {
         }
     }
 
-    public void offset(NavigationRailItemElement anchor) {
+    public void offset(org.jboss.elemento.IsElement<HTMLElement> anchor) {
         if(anchor == null || mobile) return;
         
         elemental2.dom.DomGlobal.requestAnimationFrame(t -> {

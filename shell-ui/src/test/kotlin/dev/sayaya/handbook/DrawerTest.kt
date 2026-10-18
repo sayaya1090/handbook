@@ -218,22 +218,40 @@ internal class DrawerTest: GwtTestSpec({
             filledDisplay shouldBe "none"
             outlineDisplay shouldNotBe "none"
         }
+        Then("MenuRail 은 md-navigation-rail 이고 상태별 폭(collapse 56px / expand 256px)과 아이콘 중심 x=28px 을 유지한다") {
+            Thread.sleep(500) // rail width transition(400ms) 종료 대기
+            val r = page.evaluate("""
+                (() => {
+                    const rail = document.querySelector('.menu-rail');
+                    const expected = rail.hasAttribute('expand') ? 256 : rail.hasAttribute('collapse') ? 56 : 0;
+                    const icon = rail.querySelector('md-navigation-rail-item.item .icon-outline');
+                    const rr = rail.getBoundingClientRect();
+                    const ir = icon ? icon.getBoundingClientRect() : null;
+                    const cx = ir && ir.width > 0 ? Math.round(ir.left + ir.width / 2 - rr.left) : -1;
+                    return [rail.localName, String(expected), String(Math.round(rr.width)), String(cx)].join('|');
+                })()
+            """.trimIndent()).toString().split("|")
+            r[0] shouldBe "md-navigation-rail"
+            r[2] shouldBe r[1]
+            if (r[1] != "0") r[3] shouldBe "28"
+        }
         Then("모든 네비게이션 메뉴 아이템이 outline + filled 두 아이콘을 모두 렌더한다") {
-            // 각 네비 아이템은 .collapse 와 md-item start slot 두 곳에 각각 outline/filled 렌더 → navCount * 2.
+            // 각 네비 아이템(md-navigation-rail-item)은 inactive-icon slot 에 outline/filled 를 한 벌씩 렌더 → navCount.
             // appBarSlot 지정 메뉴와 .rail-bottom(ThemeToggle) 은 제외.
-            val expected = DrawerMock.menu.count { it.appBarSlot() == null } * 2
+            val expected = DrawerMock.menu.count { it.appBarSlot() == null }
+            page.querySelectorAll(".menu-rail > md-navigation-rail-item.item").count() shouldBe expected
             val outlineCount = page.querySelectorAll(".menu-rail .item:not(.rail-bottom) .icon-outline").count()
             val filledCount = page.querySelectorAll(".menu-rail .item:not(.rail-bottom) .icon-filled").count()
             outlineCount shouldBe expected
             filledCount shouldBe expected
         }
-        Then("선택 상태에서 .collapse 배경이 secondary-container 가 아니다") {
+        Then("선택 상태에서 rail item indicator 배경이 채워지지 않는다") {
             // 배경 채움을 제거했으므로 어떤 아이템이 선택되어 있든 배경이 채워지지 않아야 함.
             // rgb(a) 포맷 문자열 안에 transparent/0 값 포함 여부로 확인.
             page.click("#url1")
             Thread.sleep(500)
             val bg = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item[selected] .collapse')).backgroundColor"
+                "getComputedStyle(document.querySelector('.menu-rail .item[selected]').shadowRoot.querySelector('[part=indicator]')).backgroundColor"
             ).toString()
             // transparent → 'rgba(0, 0, 0, 0)'
             (bg.contains("0, 0") || bg == "transparent") shouldBe true
@@ -540,17 +558,15 @@ internal class DrawerTest: GwtTestSpec({
             ).toString()
             hasExpand shouldBe "true"
         }
-        Then("모바일 [expand] 에서도 .item .collapse (아이콘 버튼) 이 visible 이어야 한다") {
-            // Regression guard: 데스크톱 .rail[expand] .item .collapse { display: none } 규칙이
-            // 모바일 [mobile][expand] 에도 매칭되면 하단 바의 아이콘이 모두 사라져 빈 버튼만 남는다.
-            // 모바일 전용 override (.rail[mobile][expand] .item .collapse { display:flex; visibility:visible })
-            // 가 필요하다. display + visibility 양쪽 검증.
+        Then("모바일 [expand] 에서도 rail item 아이콘(.icon-outline) 이 숨겨지지 않는다") {
+            // Regression guard: 펼침/모바일 상태 규칙이 rail item 의 아이콘 자체를 숨기면 빈 버튼만 남는다.
+            // (md-navigation-rail-item 이관 후 아이콘은 inactive-icon slot 에 있는 .icon-outline/.icon-filled)
             val vis = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item .collapse')).visibility"
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).visibility"
             ).toString()
             vis shouldBe "visible"
             val disp = page.evaluate(
-                "getComputedStyle(document.querySelector('.menu-rail .item .collapse')).display"
+                "getComputedStyle(document.querySelector('.menu-rail .item:not([selected]) .icon-outline')).display"
             ).toString()
             disp shouldNotBe "none"
         }
@@ -701,7 +717,7 @@ internal class DrawerTest: GwtTestSpec({
             Thread.sleep(500)
             Then("Menu 1 이 selected 된다") {
                 val selected = page.evaluate(
-                    "document.querySelector('.rail .item[selected] md-item [slot=headline]')?.textContent"
+                    "document.querySelector('.rail .item[selected]')?.getAttribute('aria-label')"
                 ).toString().lowercase()
                 selected shouldBe "menu 1"
             }
@@ -712,7 +728,7 @@ internal class DrawerTest: GwtTestSpec({
             Thread.sleep(500)
             Then("Menu 3 이 selected 로 변경된다") {
                 val selected = page.evaluate(
-                    "document.querySelector('.rail .item[selected] md-item [slot=headline]')?.textContent"
+                    "document.querySelector('.rail .item[selected]')?.getAttribute('aria-label')"
                 ).toString().lowercase()
                 selected shouldBe "menu 3"
             }
