@@ -22,6 +22,10 @@ internal class ToastTest: GwtTestSpec({
                 toast shouldNotBe null
             }
 
+            Then("토스트는 sayaya-ui 스택(.md-toast-stack) 안의 md-toast 로 표시된다") {
+                page.querySelector(".md-toast-stack > md-toast.ui-toast-info") shouldNotBe null
+            }
+
             Then("토스트에 ui-toast 기본 클래스가 적용된다") {
                 val toast = page.querySelector(".ui-toast-info")
                 val classes = toast!!.getAttribute("class") ?: ""
@@ -34,16 +38,16 @@ internal class ToastTest: GwtTestSpec({
             }
 
             Then("닫기 버튼이 존재한다") {
-                val closeBtn = page.querySelector(".ui-toast-info .ui-toast-close")
+                val closeBtn = page.querySelector(".ui-toast-info [part='close']")
                 closeBtn shouldNotBe null
             }
 
             Then("3초 후 페이드아웃되거나 제거된다") {
-                // 토스트는 3초 후 fadeout 클래스 추가, 그 300ms 후 DOM에서 제거됨
+                // md-toast 는 3초 후 leaving 속성 추가, 그 300ms 후 DOM에서 제거됨
                 // 테스트 시점에 따라 fadeout 상태이거나 이미 제거될 수 있음
                 Thread.sleep(3500)
                 val toast = page.querySelector(".ui-toast-info")
-                val fadeout = page.querySelector(".ui-toast-fadeout")
+                val fadeout = page.querySelector(".ui-toast[leaving]")
                 // 토스트가 이미 제거되었거나 fadeout 중이어야 함
                 (toast == null || fadeout != null) shouldBe true
             }
@@ -78,7 +82,7 @@ internal class ToastTest: GwtTestSpec({
             }
 
             Then("닫기 버튼을 클릭하면 토스트가 제거된다") {
-                page.click(".ui-toast-error .ui-toast-close")
+                page.click(".ui-toast-error [part='close']")
                 Thread.sleep(500)
                 val remaining = page.querySelectorAll(".ui-toast-error")
                 remaining.count() shouldBe 0
