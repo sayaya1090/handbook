@@ -157,7 +157,7 @@ sequenceDiagram
 | **선행조건** | 메뉴 목록 로딩 완료 |
 | **정상 흐름** | 1. Menu Rail에서 메뉴 아이템을 클릭한다.<br>2. `MenuSelected`에 선택된 메뉴가 발행된다.<br>3. 도구가 1개뿐이면 `ToolSelected`에 자동 선택된다.<br>4. `ModuleScriptManager`가 메뉴의 `script` 필드에 지정된 JavaScript를 동적으로 `<script>` 태그로 주입한다.<br>5. `HistoryManager`가 `Menu.url()` 필드가 있는 경우 `pushState()`로 URL을 업데이트한다.<br>6. `DrawerMode`가 COLLAPSE로 전환된다. |
 | **대안 흐름** | 도구가 여러 개이면 Tool Rail이 EXPAND되어 도구 목록을 표시한다. |
-| **선택 시각 표현** | 선택된 아이템은 `[selected]` 속성이 붙고 (1) 아이콘이 `fa-light` outline → `fa-solid` filled 로 교체되며, (2) rail 항목은 sayaya-ui `md-navigation-rail-item` 이며, 컴포넌트의 active indicator 배경은 shell.css `::part(indicator)` 로 끈다. 배경 채움은 사용하지 않는다 (MD3 nav rail 가이드: "선택 시 filled, 미선택 시 outlined"). 아이콘 스왑은 두 weight 를 `inactive-icon` slot 에 동시 렌더해 두고 CSS 로 가시성을 토글하는 방식이라 JS 재렌더가 필요 없다. 접힌 rail 에서는 라벨을 비워 아이콘만 표시하고(라벨은 aria-label 로 유지), 펼친 상태의 보조 텍스트·하위 도구 ▶ 표시는 라이브러리에 슬롯이 없어 표시하지 않는다(sayaya-ui 2.5.0.3 개선 요청 중). 동적 도구(URL 네비게이션)의 경우 ID가 null 일 수 있으므로 `title` 값을 보조 식별자로 사용하는 하이라이트 fallback 로직을 적용한다. |
+| **선택 시각 표현** | 선택된 아이템은 `[selected]` 속성이 붙고 (1) 아이콘이 `fa-light` outline → `fa-solid` filled 로 교체되며, (2) rail 항목은 sayaya-ui `md-navigation-rail-item` 이며, 컴포넌트의 active indicator 배경은 shell.css `::part(indicator)` 로 끈다. 배경 채움은 사용하지 않는다 (MD3 nav rail 가이드: "선택 시 filled, 미선택 시 outlined"). 아이콘 스왑은 두 weight 를 `inactive-icon` slot 에 동시 렌더해 두고 CSS 로 가시성을 토글하는 방식이라 JS 재렌더가 필요 없다. 접힌 rail 에서는 rail 의 `hide-collapsed-labels`(sayaya-ui 2.5.0.3)로 라벨을 숨겨 아이콘만 표시하고(라벨은 aria-label 로 유지), 펼친 상태에서는 보조 텍스트를 `supporting-text` slot, 하위 도구가 여럿인 메뉴의 ▶ 표시를 `trailing` slot 으로 렌더한다. 동적 도구(URL 네비게이션)의 경우 ID가 null 일 수 있으므로 `title` 값을 보조 식별자로 사용하는 하이라이트 fallback 로직을 적용한다. |
 
 ## UC-S3: 도구 선택 및 실행
 

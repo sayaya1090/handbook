@@ -193,7 +193,8 @@ classDiagram
         -HTMLElement _this  %% sayaya-ui railItem() = md-navigation-rail-item.item
         +icon(icon: Element): RailItemElement  %% inactive-icon slot (outline/filled 두 벌)
         +label(text: String): RailItemElement
-        +showLabel(visible: boolean)  %% 접힌 rail 에서는 라벨 비움
+        +supportingText(text: String): RailItemElement  %% supporting-text slot
+        +trailing(el: Element): RailItemElement  %% trailing slot (▶)
         +select(value: boolean)  %% [selected] + active + 부모 rail activeIndex
         +on(type, callback)
     }
