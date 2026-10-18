@@ -188,9 +188,19 @@ classDiagram
         +supportingText(text: String): NavigationRailItemElement
         +on(type, callback)
     }
+    class RailItemElement {
+        <<abstract>>
+        -HTMLElement _this  %% sayaya-ui railItem() = md-navigation-rail-item.item
+        +icon(icon: Element): RailItemElement  %% inactive-icon slot (outline/filled 두 벌)
+        +label(text: String): RailItemElement
+        +showLabel(visible: boolean)  %% 접힌 rail 에서는 라벨 비움
+        +select(value: boolean)  %% [selected] + active + 부모 rail activeIndex
+        +on(type, callback)
+    }
     class MenuRailElement {
         <<@Singleton>>
         -MenuRailItemFactory factory
+        -HTMLElement _this  %% sayaya-ui navigationRail() = md-navigation-rail.rail.menu-rail
         -List~MenuRailItemElement~ children
         +MenuRailElement(MenuList, MenuRailMode, factory, ViewportObserver, MenuToggleButton)
         -update(menus: List~Menu~)
@@ -199,11 +209,12 @@ classDiagram
     class ToolRailElement {
         <<@Singleton>>
         -ToolRailItemFactory factory
+        -HTMLElement _this  %% sayaya-ui navigationRail() = md-navigation-rail.rail.tool-rail
         -List~ToolRailItemElement~ children
         -CloseToolRailButton close
         +ToolRailElement(ToolList, ToolRailMode, MenuSelectedElementProvider, factory, close)
         -update(tools: List~Tool~)
-        -offset(parent: MenuRailItemElement)
+        -offset(anchor: IsElement~HTMLElement~)
     }
     class MenuRailItemElement {
         <<@AssistedInject>>
@@ -243,7 +254,7 @@ classDiagram
     }
     class MenuSelectedElementProvider {
         <<@Singleton>>
-        -BehaviorSubject~MenuRailItemElement~ _this
+        -BehaviorSubject~IsElement~HTMLElement~~ _this
     }
 
     ContentElement --> DrawerElement
@@ -252,8 +263,8 @@ classDiagram
     MenuRailElement --> MenuToggleButton
     NavigationRailElement <|.. MenuRailElement
     NavigationRailElement <|.. ToolRailElement
-    NavigationRailItemElement <|-- MenuRailItemElement
-    NavigationRailItemElement <|-- ToolRailItemElement
+    RailItemElement <|-- MenuRailItemElement
+    RailItemElement <|-- ToolRailItemElement
     NavigationRailItemElement <|-- CloseToolRailButton
     MenuRailElement --> MenuRailItemFactory : creates
     ToolRailElement --> ToolRailItemFactory : creates
@@ -421,7 +432,7 @@ classDiagram
 |------|------------|------|
 | **Observer** | `DrawerMode`, `MenuSelected`, `ToolSelected`, `MenuRailMode`, `ToolRailMode` | BehaviorSubject 기반 반응형 상태 관리. 메뉴 선택 → 도구 목록 갱신 → Drawer 축소 → Rail 상태 전환이 연쇄적으로 전파. |
 | **State** | `DrawerMode`(EXPAND/COLLAPSE/HIDE), `MenuRailMode`, `ToolRailMode` | 3단 상태(EXPAND/COLLAPSE/HIDE) 전환을 관리하며, 입력(메뉴 선택, 도구 개수, 사용자 상태)에 따라 자동 전이. |
-| **Factory** | `MenuRailItemFactory`, `ToolRailItemFactory` (@AssistedFactory) | Dagger Assisted Injection으로 Menu/Tool 도메인 객체를 받아 NavigationRailItemElement 서브클래스를 생성. |
+| **Factory** | `MenuRailItemFactory`, `ToolRailItemFactory` (@AssistedFactory) | Dagger Assisted Injection으로 Menu/Tool 도메인 객체를 받아 RailItemElement(md-navigation-rail-item) 서브클래스를 생성. |
 | **Template Method** | `NavigationRailElement` (인터페이스) | expand/collapse/hide 동작을 정의하여 `MenuRailElement`, `ToolRailElement`가 공통 행위를 상속. |
 | **Strategy** | `UrlBasedMenuResolver`, `ToolBasedMenuResolver` | 메뉴 자동 선택 전략 2가지: URL 정규식 매칭 vs 도구→부모 메뉴 역추적. 각각 독립적으로 구독하여 동작. |
 | **Adapter** | `MenuApi` → `MenuRepository`, `UserApi` → `UserRepository` | API 호출을 Repository 인터페이스로 래핑. FetchApi를 통해 HTTP 세부사항을 숨김. |
