@@ -4,7 +4,7 @@ dependencyResolutionManagement {
         create("libs") {
             // Versions
             // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-dependencies
-            version("spring-cloud", "2025.1.3")
+            version("spring-cloud", "2025.1.4")
             // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
             version("jjwt", "0.13.0")
             // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
@@ -18,7 +18,7 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
             version("testcontainers", "2.0.5")
             // https://mvnrepository.com/artifact/org.jboss.elemento/elemento-core
-            version("elemento", "2.5.9")
+            version("elemento", "2.5.10")
             // https://mvnrepository.com/artifact/dev.sayaya/ui
             version("sayaya-ui", "2.5.0.3")
             // https://mvnrepository.com/artifact/dev.sayaya/rx
@@ -60,7 +60,7 @@ dependencyResolutionManagement {
             bundle("spring-client", listOf("spring-log4j2", /*"spring-security"*/))
 
             // OpenAPI
-            version("springdoc", "3.1.1")
+            version("springdoc", "3.2.0")
             library("springdoc-webflux", "org.springdoc", "springdoc-openapi-starter-webflux-ui").versionRef("springdoc")
 
             // Kafka
