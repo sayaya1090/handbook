@@ -22,7 +22,7 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/dev.sayaya/ui
             version("sayaya-ui", "2.5.0.3")
             // https://mvnrepository.com/artifact/dev.sayaya/rx
-            version("sayaya-rx", "2.3.0")
+            version("sayaya-rx", "2.4.0")
             // https://mvnrepository.com/artifact/org.projectlombok/lombok
             version("lombok", "1.18.48")
             // https://mvnrepository.com/artifact/com.google.dagger/dagger
