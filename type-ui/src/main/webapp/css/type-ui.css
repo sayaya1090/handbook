@@ -367,7 +367,7 @@ html, body {
     transform: scale(1);
     opacity: 1;
 }
-.type-speed-dial md-fab[css="settings-dial"] {
+.type-speed-dial md-fab.settings-dial {
     --md-fab-container-color: var(--md-sys-color-tertiary-container);
     --md-fab-icon-color: var(--md-sys-color-on-tertiary-container);
 }

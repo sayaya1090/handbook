@@ -4,6 +4,8 @@ import dev.sayaya.handbook.client.interfaces.api.TypeRepository;
 import dev.sayaya.handbook.domain.Labels;
 import dev.sayaya.handbook.domain.Type;
 import dev.sayaya.handbook.usecase.LabelProvider;
+import dev.sayaya.ui.elements.ButtonElementBuilder;
+import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -53,9 +55,10 @@ public class VersionHistoryPanel implements IsElement<HTMLDivElement> {
         headerDiv = div().css("version-history-header").element();
         headerDiv.textContent = "Version History";
 
-        HTMLElement closeBtn = (HTMLElement) DomGlobal.document.createElement("button");
-        closeBtn.classList.add("version-history-close");
-        closeBtn.textContent = "\u2715";
+        // sayaya-ui 아이콘 버튼(md-icon-button). aria-label 은 아래 LabelProvider 구독에서 지정한다.
+        HTMLElement closeBtn = ButtonElementBuilder.button()
+                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-light", "fa-xmark"))
+                .css("version-history-close").element();
         closeBtn.addEventListener("click", e -> hide());
 
         var headerRow = div().css("version-history-header-row").element();

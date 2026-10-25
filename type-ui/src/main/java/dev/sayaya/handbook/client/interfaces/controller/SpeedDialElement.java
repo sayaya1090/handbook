@@ -1,5 +1,6 @@
 package dev.sayaya.handbook.client.interfaces.controller;
 
+import dev.sayaya.ui.elements.FabElementBuilder;
 import dev.sayaya.ui.elements.IconElementBuilder;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.htmlElement;
 
 /**
  * 모바일용 확장형 플로팅 버튼 (Speed Dial).
@@ -26,14 +26,12 @@ public class SpeedDialElement implements IsElement<HTMLDivElement> {
 
     public SpeedDialElement(String icon, String colorClass) {
         this.menu = div().css("speed-dial-menu").element();
-        var fab = htmlElement("md-fab", HTMLElement.class)
-                .attr("variant", "primary")
+        // sayaya-ui FAB 빌더(md-fab). 펼침 시 variant 전환은 아래 expand/collapse 에서 속성으로 한다.
+        var fab = new FabElementBuilder.PlainFabElementBuilder()
+                .variant(FabElementBuilder.Variant.Primary)
+                .icon(IconElementBuilder.icon().css("fa-sharp", "fa-solid", icon))
                 .css(colorClass)
                 .on(EventType.click, e -> toggle());
-        
-        HTMLElement iconEl = IconElementBuilder.icon().attr("slot", "icon").css("fa-sharp", "fa-solid", icon).element();
-        fab.element().appendChild(iconEl);
-        
         this.mainFab = fab.element();
         
         this.root = div().css("type-speed-dial")
