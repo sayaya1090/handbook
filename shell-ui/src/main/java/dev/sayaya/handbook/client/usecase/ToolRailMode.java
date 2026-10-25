@@ -4,7 +4,9 @@ import dev.sayaya.handbook.client.domain.DrawerState;
 import dev.sayaya.handbook.client.domain.MenuRailState;
 import dev.sayaya.handbook.client.domain.ToolRailState;
 import dev.sayaya.handbook.usecase.ViewportObserver;
+import dev.sayaya.rx.Operator;
 import dev.sayaya.rx.subject.BehaviorSubject;
+import jsinterop.base.Js;
 import lombok.experimental.Delegate;
 
 import javax.inject.Inject;
@@ -29,14 +31,15 @@ public class ToolRailMode {
 
     @Inject ToolRailMode(DrawerMode drawerMode, MenuRailMode menuMode, ToolList toolList, MenuHover hover, ViewportObserver viewport) {
         this.menuHover = hover;
-        viewport.isMobile().subscribe(isMobile -> {
-            this.mobile = isMobile;
-            update(drawerMode.getValue(), menuMode.getValue(), toolList.getValue().size() > 1, menuHover.getValue() != null);
+        // sayaya-rx 2.4.0 combineLatest: 다섯 소스(모두 BehaviorSubject) 중 하나가 바뀔 때마다 최신 값 묶음으로 재계산
+        Operator.combineLatest(viewport.isMobile(), drawerMode.asObservable(), menuMode.asObservable(),
+                toolList.asObservable(), hover.asObservable()).subscribe(v -> {
+            this.mobile = Js.<Boolean>uncheckedCast(v.getAt(0));
+            DrawerState drawerState = Js.uncheckedCast(v.getAt(1));
+            MenuRailState menuState = Js.uncheckedCast(v.getAt(2));
+            java.util.List<?> tools = Js.uncheckedCast(v.getAt(3));
+            update(drawerState, menuState, tools.size() > 1, v.getAt(4) != null);
         });
-        drawerMode.subscribe(drawerState -> update(drawerState, menuMode.getValue(), toolList.getValue().size() > 1, menuHover.getValue() != null));
-        menuMode.subscribe(menuState -> update(drawerMode.getValue(), menuState, toolList.getValue().size() > 1, menuHover.getValue() != null));
-        toolList.subscribe(tools -> update(drawerMode.getValue(), menuMode.getValue(), tools.size() > 1, menuHover.getValue() != null));
-        hover.subscribe(h -> update(drawerMode.getValue(), menuMode.getValue(), toolList.getValue().size() > 1, h != null));
     }
     private void update(DrawerState drawerState, MenuRailState menuState, boolean hasMultipleChildren, boolean isHovering) {
         if (mobile) {
