@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":schema"))
     implementation(project(":agent-bridge"))
     implementation(project(":ui-components"))
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.22")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.23")
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.dagger.compiler)

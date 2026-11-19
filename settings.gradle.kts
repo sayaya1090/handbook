@@ -8,17 +8,17 @@ dependencyResolutionManagement {
             // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
             version("jjwt", "0.13.0")
             // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
-            version("bouncycastle", "1.86")
+            version("bouncycastle", "1.87")
             // https://mvnrepository.com/artifact/io.kotest/kotest-runner-junit5-jvm
-            version("kotest", "6.2.6")
+            version("kotest", "6.2.7")
             // https://mvnrepository.com/artifact/io.mockk/mockk
-            version("mockk", "1.14.11")
+            version("mockk", "1.14.12")
             // https://mvnrepository.com/artifact/io.fabric8/kubernetes-server-mock
             version("kubernetes", "8.0.0")
             // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
             version("testcontainers", "2.0.5")
             // https://mvnrepository.com/artifact/org.jboss.elemento/elemento-core
-            version("elemento", "2.5.10")
+            version("elemento", "2.5.14")
             // https://mvnrepository.com/artifact/dev.sayaya/ui
             version("sayaya-ui", "2.5.0.7")
             // https://mvnrepository.com/artifact/dev.sayaya/rx

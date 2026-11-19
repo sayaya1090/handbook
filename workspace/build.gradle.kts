@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation(libs.bundles.sayaya.web)
     annotationProcessor(libs.lombok)
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.22")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.23")
     testImplementation(libs.kotest.runner)
     testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.bundles.test.web)
