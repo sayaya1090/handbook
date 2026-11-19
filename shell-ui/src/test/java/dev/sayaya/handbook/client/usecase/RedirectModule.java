@@ -54,7 +54,7 @@ public interface RedirectModule {
     }
 
     // 보조 의존성 (최소화된 Mock)
-    @Provides @Singleton static dev.sayaya.rx.Observer<dev.sayaya.handbook.domain.Progress> progress() { return dev.sayaya.rx.subject.Subject.subject(dev.sayaya.handbook.domain.Progress.class); }
+    @Provides @Singleton static dev.sayaya.rx.Observer<dev.sayaya.handbook.domain.Progress> progress() { return dev.sayaya.rx.subject.Subject.<dev.sayaya.handbook.domain.Progress>subject(); }
     
     @Provides @Singleton static MenuSelected menuSelected() { 
         // HistoryManager 를 위해 빈 MenuSelected 를 생성 (생성자 public 확인됨)

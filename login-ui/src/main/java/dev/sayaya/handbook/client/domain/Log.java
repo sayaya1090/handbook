@@ -10,6 +10,6 @@ import static dev.sayaya.rx.subject.ReplaySubject.replayWithBuffer;
 
 @Singleton
 public class Log {
-    @Delegate private final ReplaySubject<String> subject = replayWithBuffer(String.class, 50);
+    @Delegate private final ReplaySubject<String> subject = replayWithBuffer(50);
     @Inject Log() {}
 }

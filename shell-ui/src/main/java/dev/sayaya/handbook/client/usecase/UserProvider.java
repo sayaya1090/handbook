@@ -11,7 +11,7 @@ import static dev.sayaya.rx.subject.ReplaySubject.replayWithBuffer;
 
 @Singleton
 public class UserProvider {
-    @Delegate private final ReplaySubject<User> _this = replayWithBuffer(User.class, 1);
+    @Delegate private final ReplaySubject<User> _this = replayWithBuffer(1);
     @Inject UserProvider(UserRepository repo) {
         repo.find().subscribe(_this);
     }
